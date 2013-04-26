@@ -31,48 +31,12 @@ import com.kellislabs.bartsy.R;
  * the ACTION_MANAGE_NETWORK_USAGE action. This activity provides a settings UI
  * for users to specify network settings to control data usage.
  */
-public class MapActivity extends Activity
-        implements
-            OnSharedPreferenceChangeListener, OnClickListener{
+public class MapActivity extends Activity {
 
-	ImageView bars_map, bar_detail;
-	Boolean toggle = true;
-	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		setContentView(R.layout.bars_main);
-
-		bars_map = (ImageView) findViewById(R.id.bars_map);
-		bars_map.setOnClickListener(this);
-		bar_detail = (ImageView) findViewById(R.id.bar_detail);
-		bar_detail.setOnClickListener(this);
+        setContentView(R.layout.maps_main);
     }
-
-	/*
-	 * On click, switch between the map image and the bar detail image
-	 */
-
-	@Override
-	public void onClick(View v) {
-
-		if (toggle) {
-			bars_map.setVisibility(View.INVISIBLE);
-			bar_detail.setVisibility(View.VISIBLE);
-		} else {
-			bars_map.setVisibility(View.VISIBLE);
-			bar_detail.setVisibility(View.INVISIBLE);
-		}
-		toggle = !toggle;
-	}
-
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-			String key) {
-		// TODO Auto-generated method stub
-		
-	}
 	
 }
