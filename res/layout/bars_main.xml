@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity$DummySectionFragment" >
+
+	<ImageView 
+		android:id="@+id/bars_map"
+		android:src="@drawable/mock_bars_map"
+		android:visibility="visible"
+		android:clickable="true"
+		android:scaleType="fitXY"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent" 
+	/>
+
+	<ImageView 
+		android:id="@+id/bar_detail"
+		android:src="@android:drawable/ic_menu_help"
+		android:visibility="invisible"
+		android:clickable="true"
+		android:scaleType="fitXY"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent" 
+	/>
+	
+	
+</RelativeLayout>

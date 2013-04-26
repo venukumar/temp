@@ -1,0 +1,54 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    
+   	<item 
+        android:id="@+id/action_requests"
+        android:showAsAction="always"
+        android:title="Notifications"
+        android:icon="@drawable/requests" />
+    
+   	<item 
+        android:id="@+id/action_messages"
+        android:showAsAction="always"
+        android:title="Notifications"
+        android:icon="@drawable/messages" />
+   	
+	<item 
+        android:id="@+id/action_notifications"
+        android:showAsAction="always"
+        android:title="Notifications"
+        android:icon="@drawable/notifications" />
+    
+	
+   	<item 
+   	    android:id="@+id/action_profile"
+        android:title="Profile..."
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/action_payment_types"
+        android:title="Payment types..."
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/action_previous_orders"
+        android:title="Previous orders..."
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/action_previous_orders"
+        android:title="Support"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="never" />
+    
+    <item android:id="@+id/action_settings"
+        android:title="@string/settings"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:showAsAction="never" />
+
+    <item android:id="@+id/action_quit"
+        android:title="@string/action_quit"
+        android:showAsAction="never" />
+    
+    
+</menu>

@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android1="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:divider="@drawable/div_light_grey"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:showDividers="middle|end" >
+
+        <SearchView
+            android1:id="@+id/searchView1"
+            android1:layout_width="wrap_content"
+            android1:layout_height="wrap_content"
+            android1:layout_gravity="right" >
+
+        </SearchView>
+
+        <LinearLayout
+            android1:id="@+id/people_notifications"
+            android1:layout_width="match_parent"
+            android1:layout_height="wrap_content"
+            android1:background="@drawable/div_light_grey"
+            android1:orientation="vertical" >
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView17"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/brickmortar" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView19"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="wrap_content"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView25"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView16"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/checkout" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView27"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Auto checked-out"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView39"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_launcher" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView36"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You earned 12 points total. 20 points to go for Diamond status"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView26"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="2 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:baselineAligned="false"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView12"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/peter" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView11"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="0dp"
+                    android1:layout_height="fill_parent"
+                    android1:layout_weight="2"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView23"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView15"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitCenter"
+                                android1:src="@drawable/twitter" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView22"
+                            android1:layout_width="0dp"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:layout_weight="2"
+                            android1:text="You posted a comment on Brick+Mortar&apos;s wall"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView24"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_gravity="bottom"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="18 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <TextView
+                        android1:id="@+id/textView2"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:padding="@dimen/activity_vertical_margin"
+                        android1:text="&quot;I loved it here and met some GREAT girls with Bartsy. Definitely coming back! :)&quot;"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textSize="8sp" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView38"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:baselineAligned="false"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView42"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/peter" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView44"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="0dp"
+                    android1:layout_height="fill_parent"
+                    android1:layout_weight="2"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView37"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView41"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitCenter"
+                                android1:src="@drawable/instagram" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView39"
+                            android1:layout_width="0dp"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:layout_weight="2"
+                            android1:text="You posted a picture on Brick+Mortar&apos;s wall"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView38"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="18 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView43"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="centerCrop"
+                        android1:src="@drawable/photo" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView45"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView35"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/brickmortar" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView36"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="fill_parent"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView33"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView34"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitCenter"
+                                android1:src="@drawable/sambuca" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView35"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Your Sambuca on the rocks order is ready"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView34"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="22 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView21"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/peter" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView20"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="wrap_content"
+                    android1:layout_height="wrap_content"
+                    android1:layout_weight="2"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView15"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Emily"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView22"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/drink" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView10"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You sent her a drink for $15 max"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView30"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_launcher" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView29"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You earned 5 points"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/textView1"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="30 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView47"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/emily" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView46"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView40"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/peter" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView37"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="wrap_content"
+                    android1:layout_height="wrap_content"
+                    android1:layout_weight="2"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView16"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView25"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/sambuca" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView17"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You ordered a Sambuca, rocks."
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView31"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_launcher" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView30"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You earned 5 points"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView18"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="31 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView24"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/brickmortar" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView23"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView10"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/peter" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView07"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="wrap_content"
+                    android1:layout_height="fill_parent"
+                    android1:layout_weight="2"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView08"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Emily"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView18"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/heart" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView07"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You like her too!"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView33"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_launcher" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView32"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="You earned 1 point"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView09"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="40 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView29"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="centerCrop"
+                        android1:src="@drawable/emily" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView32"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView28"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/emily" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView27"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="fill_parent"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView20"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Emily"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView26"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/heart" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView21"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="She likes you!"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView19"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="32 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView05"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/brickmortar" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView04"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="fill_parent"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView04"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar host"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView06"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/skip" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView05"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Skip the line invitation"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView06"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="50 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView13"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/christina" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView09"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="fill_parent"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView12"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Christina Tyral"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView14"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/facebook" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView13"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Your Facebook friend is also here!"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView11"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="55 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android1:layout_width="match_parent"
+                android1:layout_height="wrap_content"
+                android1:layout_marginBottom="1dp"
+                android1:background="@android:color/background_light"
+                android1:padding="4dp" >
+
+                <RelativeLayout
+                    android1:layout_width="80dp"
+                    android1:layout_height="80dp" >
+
+                    <ImageView
+                        android1:id="@+id/ImageView02"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:padding="3dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/brickmortar" />
+
+                    <ImageView
+                        android1:id="@+id/ImageView01"
+                        android1:layout_width="105dp"
+                        android1:layout_height="105dp"
+                        android1:scaleType="fitXY"
+                        android1:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android1:layout_width="fill_parent"
+                    android1:layout_height="wrap_content"
+                    android1:orientation="vertical"
+                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <TextView
+                        android1:id="@+id/TextView02"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:text="Brick+Mortar"
+                        android1:textAppearance="?android:attr/textAppearanceMedium"
+                        android1:textStyle="bold" />
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView03"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_checked_in" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView03"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Auto checked-in.\nYou were last here 7 days ago."
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android1:layout_width="match_parent"
+                        android1:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:padding="1dp" >
+
+                            <ImageView
+                                android1:id="@+id/ImageView08"
+                                android1:layout_width="17dp"
+                                android1:layout_height="17dp"
+                                android1:scaleType="fitXY"
+                                android1:src="@drawable/ic_launcher" />
+                        </FrameLayout>
+
+                        <TextView
+                            android1:id="@+id/TextView14"
+                            android1:layout_width="wrap_content"
+                            android1:layout_height="wrap_content"
+                            android1:layout_gravity="center_vertical"
+                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android1:text="Platinum status"
+                            android1:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android1:id="@+id/TextView01"
+                        android1:layout_width="wrap_content"
+                        android1:layout_height="wrap_content"
+                        android1:layout_weight="2"
+                        android1:gravity="bottom"
+                        android1:text="55 min ago"
+                        android1:textAppearance="?android:attr/textAppearanceSmall"
+                        android1:textColor="@android:color/darker_gray" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
