@@ -15,15 +15,28 @@
 package com.kellislabs.bartsy;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.kellislabs.bartsy.R;
 
 /**
@@ -31,12 +44,113 @@ import com.kellislabs.bartsy.R;
  * the ACTION_MANAGE_NETWORK_USAGE action. This activity provides a settings UI
  * for users to specify network settings to control data usage.
  */
-public class MapActivity extends Activity {
+public class MapActivity extends Activity implements LocationListener {
 
+	private GoogleMap mMap = null;
+	private LocationManager locationManager;
+	private static final long MIN_TIME = 400;
+	private static final float MIN_DISTANCE = 1000;
+	
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_main);
+        
+        if (mMap == null) {
+            // Try to obtain the map from the SupportMapFragment.
+
+    		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        
+    		// Make sure we got a map, if not exit
+    		if (mMap == null) {
+                Toast.makeText(this, "Could not connect to Google maps", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+        }
+        
+        mMap.setMyLocationEnabled(true);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this); 
+        
+        
+        // Add some markers - in the working version a call is placed to the Bartsy server with the current location of the user and a radius.
+        // The server returns Bartsy points within this radius along with number of people in each.
+        LatLng AREAL = new LatLng(33.999786, -118.481364);
+        mMap.addMarker(new MarkerOptions()
+        .position(AREAL)
+        .title("Areal")
+        .snippet("People checked in: 6"));
+
+        LatLng CHAYA = new LatLng(33.997031, -118.47932);
+        mMap.addMarker(new MarkerOptions()
+        .position(CHAYA)
+        .title("Chaya Venice")
+        .snippet("People checked in: 8"));
+        
+        LatLng BRICK = new LatLng(34.003544, -118.484955);
+        mMap.addMarker(new MarkerOptions()
+        .position(BRICK)
+        .title("Brick & Mortar")
+        .snippet("People checked in: 17"));
+        
+        LatLng CIRCLE = new LatLng(33.998872, -118.480602);
+        mMap.addMarker(new MarkerOptions()
+        .position(CIRCLE)
+        .title("Circle Bar")
+        .snippet("People checked in: 14"));
+        
+        LatLng THREEONETEN = new LatLng(33.999203, -118.48059);
+        mMap.addMarker(new MarkerOptions()
+        .position(THREEONETEN)
+        .title("31Ten")
+        .snippet("People checked in: 23"));
+       
+        LatLng BASESEMENT = new LatLng(33.999203, -118.48059);
+        mMap.addMarker(new MarkerOptions()
+        .position(BASESEMENT)
+        .title("Basement Tavern")
+        .snippet("People checked in: 18"));
+       
+        LatLng MAIN = new LatLng(33.99895, -118.48052);
+        mMap.addMarker(new MarkerOptions()
+        .position(MAIN)
+        .title("Main on Main")
+        .snippet("People checked in: 14"));
+        
+
     }
+
+
+	@Override
+	public void onLocationChanged(Location location) {
+	    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+	    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
+	    mMap.animateCamera(cameraUpdate);
+	    locationManager.removeUpdates(this);
+	}
+
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

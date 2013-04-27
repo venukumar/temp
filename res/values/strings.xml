@@ -11,7 +11,7 @@
     <string name="config_user_info">user_account_info</string>
     <string name="config_user_location">user_location</string>
     <string name="config_user_description">user_description</string>
-    <string name="config_venue_channel_name">Areal</string>
+    <string name="config_venue_channel_name">Venue</string>
     
     
     <!-- Action bar items -->
