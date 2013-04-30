@@ -16,6 +16,7 @@ import com.google.android.gms.plus.PlusClient;
 import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
+import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.PeopleDialogFragment.UserDialogListener;
 
@@ -46,7 +47,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class InitActivity extends FragmentActivity implements ConnectionCallbacks, OnConnectionFailedListener,
-	OnPersonLoadedListener, UserDialogListener, OnClickListener {
+	OnPersonLoadedListener, ProfileDialogListener, OnClickListener {
     
     private ViewPager pager;
     private static int NUM_VIEWS = 2;
@@ -151,6 +152,7 @@ public class InitActivity extends FragmentActivity implements ConnectionCallback
 		            // mPlusClient is now disconnected and access has been revoked.
 		            // Trigger app logic to comply with the developer policies
 			        Toast.makeText(mActivity, "Disconnected App from Google", Toast.LENGTH_SHORT).show();
+			        clearUserProfile();
 		        }
 		     });
 
@@ -214,10 +216,7 @@ public class InitActivity extends FragmentActivity implements ConnectionCallback
 	    	// Save person
 	    	mPerson = arg1;
 	    	
-	    	// Show dialog for now
-	    	PeopleDialogFragment dialog = new PeopleDialogFragment();
-	    	dialog.mUser = arg1;
-	    	dialog.show(getSupportFragmentManager(), "User profile");
+	    	
 	    	
 	    	// Save profile picture in the background
 	    	new DownloadImageTask().execute(arg1.getImage().getUrl(),  
@@ -233,12 +232,45 @@ public class InitActivity extends FragmentActivity implements ConnectionCallback
     	    editor.putString(r.getString(R.string.config_user_info), mPerson.getTagline());
     	    editor.putString(r.getString(R.string.config_user_description), mPerson.getAboutMe());
     	    editor.commit();
+    	    
+	    	// Show dialog and on exit start Bartsy (there should be an option to change the profile)
+	    	ProfileDialogFragment dialog = new ProfileDialogFragment();
+	    	dialog.mUser = arg1;
+	    	dialog.show(getSupportFragmentManager(), "Your profile");
+
+    	    
+    	    
 	    } else {
 	    	Log.d(TAG, "Error loading person");
 	    }
 	}
 
+	@Override
+	public void onUserDialogPositiveClick(DialogFragment dialog) {
+		// User accepted the profile, launch Bartsy
+		finish();
+		this.startActivity(new Intent().setClass(this, BartsyActivity.class));
+	}
 
+	@Override
+	public void onUserDialogNegativeClick(DialogFragment dialog) {
+		// User wants to edit the profile. For now, do nothing - TODO
+		
+	}
+
+
+	void clearUserProfile() {
+	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+	    SharedPreferences.Editor editor = sharedPref.edit();
+	    Resources r = getResources();
+	    editor.remove(r.getString(R.string.config_user_account_name));
+	    editor.remove(r.getString(R.string.config_user_name));
+	    editor.remove(r.getString(R.string.config_user_location));
+	    editor.remove(r.getString(R.string.config_user_info));
+	    editor.remove(r.getString(R.string.config_user_description));
+	    editor.commit();
+	}
+	
 	@Override
 	public void onDisconnected() {
 	    Log.d(TAG, "disconnected");
@@ -411,19 +443,4 @@ public class InitActivity extends FragmentActivity implements ConnectionCallback
 	            return null;
 	    }
     }
-
-
-
-	@Override
-	public void onUserDialogPositiveClick(DialogFragment dialog) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onUserDialogNegativeClick(DialogFragment dialog) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }
