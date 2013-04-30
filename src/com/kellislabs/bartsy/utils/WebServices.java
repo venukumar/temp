@@ -3,14 +3,21 @@ package com.kellislabs.bartsy.utils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+
+import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.model.Section;
 
 public class WebServices {
 
@@ -42,7 +49,7 @@ public class WebServices {
 	 * This Method i am using for each and every request which is going through
 	 * get() method.
 	 */
-	public static String getBarList(String url, Context context) {
+	public static String getRequest(String url, Context context) {
 
 		BufferedReader bufferReader = null;
 		StringBuffer stringBuffer = new StringBuffer("");
@@ -58,8 +65,8 @@ public class WebServices {
 
 				HttpResponse response = httpClient.execute(httpRequest);
 
-				bufferReader = new BufferedReader(new InputStreamReader(response
-						.getEntity().getContent()));
+				bufferReader = new BufferedReader(new InputStreamReader(
+						response.getEntity().getContent()));
 				String line = "";
 				String NL = System.getProperty("line.separator");
 				while ((line = bufferReader.readLine()) != null) {
@@ -76,4 +83,39 @@ public class WebServices {
 		return result;
 	}
 
+	public static void getMenuList(Context context) {
+		String response = null;
+		response = getRequest(Constants.URL_GET_BAR_LIST, context);
+		if (response == null) {
+
+		} else {
+			try {
+				JSONArray jsonArray = new JSONArray(response);
+
+				for (int section = 0; section < jsonArray.length(); section++) {
+
+					JSONObject jsonObject = jsonArray.getJSONObject(section);
+					if (jsonObject.has("section_name")) {
+
+						Section menuSection = new Section(jsonObject);
+						DatabaseManager.getInstance().saveSection(menuSection);
+
+						for (int i = 0; i < menuSection.getDrinks().size(); i++) {
+
+							DatabaseManager.getInstance().saveDrink(
+									menuSection.getDrinks().get(i));
+						}
+
+					}
+
+				}
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+	}
 }
