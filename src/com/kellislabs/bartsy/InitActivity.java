@@ -247,9 +247,9 @@ public class InitActivity extends FragmentActivity implements ConnectionCallback
 
 	@Override
 	public void onUserDialogPositiveClick(DialogFragment dialog) {
-		// User accepted the profile, launch Bartsy
+		// User accepted the profile, launch main activity
 		finish();
-		this.startActivity(new Intent().setClass(this, BartsyActivity.class));
+		this.startActivity(new Intent().setClass(this, MainActivity.class));
 	}
 
 	@Override

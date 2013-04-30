@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:shadowColor="#000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="3"
+        android:text="Welcome to Bartsy"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="24sp" />
+
+    <GridLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:columnCount="2"
+        android:rowCount="2" >
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/activity_vertical_margin" >
+
+            <Button
+                android:id="@+id/button_checkin"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="140dp"
+                android:layout_height="100dp"
+                android:drawableTop="@drawable/icon_bartender"
+                android:gravity="top|center_horizontal"
+                android:padding="@dimen/activity_vertical_margin"
+                android:text="Order something from a bar"
+                android:textSize="14sp" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/activity_vertical_margin" >
+
+            <Button
+                android:id="@+id/Button02"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="140dp"
+                android:layout_height="100dp"
+                android:drawableTop="@drawable/icon_favorites"
+                android:padding="@dimen/activity_vertical_margin"
+                android:text="Look at past orders and rewards"
+                android:textSize="14sp" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill_horizontal"
+            android:layout_margin="@dimen/activity_vertical_margin" >
+
+            <Button
+                android:id="@+id/Button03"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="140dp"
+                android:layout_height="100dp"
+                android:drawableTop="@drawable/icon_drink"
+                android:gravity="top|center_horizontal"
+                android:padding="@dimen/activity_vertical_margin"
+                android:text="See what cocktails you can mix"
+                android:textSize="14sp" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/activity_vertical_margin" >
+
+            <Button
+                android:id="@+id/button_settings"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="140dp"
+                android:layout_height="100dp"
+                android:drawableTop="@drawable/icon_settings"
+                android:gravity="top|center_horizontal"
+                android:padding="@dimen/activity_vertical_margin"
+                android:text="Set up your profile and other options"
+                android:textSize="14sp" />
+
+        </FrameLayout>
+    </GridLayout>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:gravity="bottom|center_horizontal"
+        android:padding="@dimen/activity_vertical_margin"
+        android:text="Bartsy is Copyright (C) Vendsy, Inc. All rights reserved."
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="10sp" />
+
+</LinearLayout>

@@ -61,17 +61,22 @@ public class AllJoynTabWidget extends TabActivity {
         
         tabHost.setCurrentTab(0);
         
-        
-        // If the user profile has no been set, start the init, if it has, start Bartsy
-	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-	    if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "").equalsIgnoreCase("")) {
-	    	// Profile not set
-	    	intent = new Intent().setClass(this, InitActivity.class);
-	    } else {
-	        // Start Bartsy - for now we start it here so that we can go back and see 
-	        // what is happening using the Alljoyn stub tab host activity which logs messages
+        // Start the right activity depending on wether we're a tablet or a phone
+        if (getResources().getBoolean(R.bool.isTablet))
+        {
 	    	intent = new Intent().setClass(this, BartsyActivity.class);
-	    }
+        } else {
+	        // If the user profile has no been set, start the init, if it has, start Bartsy
+		    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		    if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "").equalsIgnoreCase("")) {
+		    	// Profile not set
+		    	intent = new Intent().setClass(this, InitActivity.class);
+		    } else {
+		        // Start Bartsy - for now we start it here so that we can go back and see 
+		        // what is happening using the Alljoyn stub tab host activity which logs messages
+		    	intent = new Intent().setClass(this, MainActivity.class);
+		    }
+        }
         this.startActivity(intent);
     }
 }

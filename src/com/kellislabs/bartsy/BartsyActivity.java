@@ -230,9 +230,6 @@ public class BartsyActivity extends FragmentActivity implements
 		// Load user profile information if it exists
 		loadUserProfile();
 		
-		// Update channel state. If we're connected to an existing channel, use that channels name. 
-		// If not, set our channel to 
-
 	}
 
     @Override
@@ -268,6 +265,21 @@ public class BartsyActivity extends FragmentActivity implements
     	  // This initiates a series of events from the application, handled by the hander
     	  mBartsyApplication.hostInitChannel();
       }
+      
+      
+		// Update channel state. If we're connected to an existing channel, use that channels name. 
+		// If not, set our channel to 
+		
+		if (!mIsServer &&
+			mBartsyApplication.getFoundChannels() != null   && 
+			mBartsyApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE ) {
+		// Already found a new channel that's not connected. Launch the handler 
+	      Log.i(TAG, "BartsyActivity.onCreate() - channels already found, initiating auto-connection sequence");
+	      Message message = mHandler.obtainMessage(HANDLE_NEW_CHANNEL_FOUND_EVENT);
+	      mHandler.sendMessage(message);
+		}    		
+
+      
     }
 
     
@@ -603,11 +615,10 @@ public class BartsyActivity extends FragmentActivity implements
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
-            case HANDLE_APPLICATION_QUIT_EVENT: {
+            case HANDLE_APPLICATION_QUIT_EVENT: 
 	            Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_APPLICATION_QUIT_EVENT");
 	            finish();
 	            break; 
-            }
             case HANDLE_NEW_CHANNEL_FOUND_EVENT: 
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_NEW_CHANNEL_FOUND_EVENT");
              
@@ -633,11 +644,11 @@ public class BartsyActivity extends FragmentActivity implements
 	                mBartsyApplication.useJoinChannel();
                 }
             	String name = mBartsyApplication.useGetChannelName();
-            	if (name == null) {
-            		name = "Not set";
-            	}
+//            	if (name == null) {
+//            		name = "Not set";
+//            	}
 	            break;
-            case HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT: 
+            case HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT:
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT");
                 // Host channel started, join the channel as a user in order to be able to start receiving messages
                 
