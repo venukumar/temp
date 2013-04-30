@@ -3,20 +3,14 @@
  */
 package com.kellislabs.bartsy;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -25,8 +19,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.model.MenuDrink;
+import com.kellislabs.bartsy.model.Section;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
@@ -58,26 +57,79 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 			mInflater = inflater;
 			mContainer = container;
 
-			loadDrinks();
+			List<Section> sections = DatabaseManager.getInstance()
+					.getMenuSections();
+
+			if (sections != null && sections.size() > 0) {
+				// loadMenuSections();
+			} else {
+				loadMenuSections();
+			}
 
 			// Add any existing orders in the layout, one by one
-			Log.d("Bartsy", "About to add drink list to the View");
-			Log.d("Bartsy", "mOrders list size = " + mDrinks.size());
+			// Log.d("Bartsy", "About to add drink list to the View");
+			// Log.d("Bartsy", "mOrders list size = " + mDrinks.size());
 
-			for (Drink barOrder : mDrinks) {
-				Log.d("Bartsy", "Adding an item to the layout");
-				barOrder.view = (View) mInflater.inflate(R.layout.drink_item,
-						mContainer, false);
-				barOrder.updateView(this); // sets up view specifics and sets
-											// listener to this
-				mDrinksListView.addView(barOrder.view);
-				// ((Bartsy)getActivity()).appendStatus("Added new view");
+			List<Section> drinkSections = DatabaseManager.getInstance()
+					.getMenuSections();
+
+			for (Section menuSection : drinkSections) {
+
+				updateView(menuSection);
 			}
+
+			// for (Drink barOrder : mDrinks) {
+			// Log.d("Bartsy", "Adding an item to the layout");
+			// barOrder.view = (View) mInflater.inflate(R.layout.drink_item,
+			// mContainer, false);
+			// barOrder.updateView(this); // sets up view specifics and sets
+			// // listener to this
+			// mDrinksListView.addView(barOrder.view);
+			// // ((Bartsy)getActivity()).appendStatus("Added new view");
+			// }
 		}
 
 		return mRootView;
 	}
 
+	private void updateView(final Section menuSection) {
+		// TODO Auto-generated method stub
+
+		LayoutInflater linflater = (LayoutInflater) getActivity()
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = linflater.inflate(R.layout.menu_section, null);
+
+		((ImageView) view.findViewById(R.id.view_drink_image))
+				.setImageResource(R.drawable.happyhour);
+		((TextView) view.findViewById(R.id.view_drink_title))
+				.setText(menuSection.getName());
+		// ((TextView)
+		// view.findViewById(R.id.view_drink_price)).setText("" +
+		// this.price);
+		view.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+
+				List<MenuDrink> drinkMenu = DatabaseManager.getInstance()
+				.getMenuDrinks(menuSection);
+				for (MenuDrink menuDrink : drinkMenu) {
+
+					//updateView1(menuDrink);
+				}
+				
+			}
+
+		});
+
+		// sets up view specifics and sets
+		// listener to this
+		mDrinksListView.addView(view);
+
+	}
+
+	
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
@@ -102,7 +154,10 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	private void loadDrinks() {
+	/**
+	 * To get Sections and Drinks from the server
+	 */
+	private void loadMenuSections() {
 
 		new Thread(new Runnable() {
 
@@ -110,26 +165,7 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 			public void run() {
 				// TODO Auto-generated method stub
 
-				String barList = null;
-
-				barList = WebServices.getBarList(Constants.URL_GET_BAR_LIST,
-						getActivity());
-				if (barList == null) {
-					System.out.println("bar list null !!!!!!! ");
-
-				} else {
-					try {
-						
-						JSONObject jsonObject = new JSONObject(barList);
-						System.out.println("jsonObject  " + jsonObject);
-
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-
+				WebServices.getMenuList(getActivity());
 				
 				 mDrinks.add(new Drink(R.drawable.sambuca, "Sambuca rocks",
 				 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
