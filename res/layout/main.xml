@@ -30,8 +30,8 @@
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="@dimen/activity_vertical_margin" >
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:background="@drawable/rounded_corner" >
 
             <Button
                 android:id="@+id/button_checkin"
@@ -41,7 +41,7 @@
                 android:drawableTop="@drawable/icon_bartender"
                 android:gravity="top|center_horizontal"
                 android:padding="@dimen/activity_vertical_margin"
-                android:text="Order something from a bar"
+                android:text="Browse and check in at venues"
                 android:textSize="14sp" />
 
         </FrameLayout>
@@ -50,7 +50,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="@dimen/activity_vertical_margin" >
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:background="@drawable/rounded_corner" >
 
             <Button
                 android:id="@+id/Button02"
@@ -68,7 +69,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="fill_horizontal"
-            android:layout_margin="@dimen/activity_vertical_margin" >
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:background="@drawable/rounded_corner" >
 
             <Button
                 android:id="@+id/Button03"
@@ -87,7 +89,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="@dimen/activity_vertical_margin" >
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:background="@drawable/rounded_corner" >
 
             <Button
                 android:id="@+id/button_settings"
@@ -101,6 +104,7 @@
                 android:textSize="14sp" />
 
         </FrameLayout>
+
     </GridLayout>
 
     <TextView

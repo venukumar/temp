@@ -16,6 +16,7 @@ package com.kellislabs.bartsy;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
@@ -24,6 +25,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.FragmentActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -56,6 +58,11 @@ public class MapActivity extends Activity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_main);
+        
+        // Set the action bar to enable back navigation
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        
         
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
@@ -123,6 +130,17 @@ public class MapActivity extends Activity implements LocationListener {
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // app icon in action bar clicked; go home
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
 	@Override
 	public void onLocationChanged(Location location) {

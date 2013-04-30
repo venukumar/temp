@@ -195,6 +195,7 @@ public class BartsyActivity extends FragmentActivity implements
 		actionBar.setDisplayShowHomeEnabled(true);
 		View homeIcon = findViewById(android.R.id.home);
 		((View) homeIcon.getParent()).setVisibility(View.GONE);
+	    actionBar.setDisplayHomeAsUpEnabled(true);
 		
 		// Create the adapter that will return a fragment for each of the 
 		// primary sections of the app.

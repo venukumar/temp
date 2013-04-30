@@ -130,10 +130,10 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 
 				}
 
-				//
-				// mDrinks.add(new Drink(R.drawable.sambuca, "Sambuca rocks",
-				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				// "12"));
+				
+				 mDrinks.add(new Drink(R.drawable.sambuca, "Sambuca rocks",
+				 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
+				 "12"));
 				// mDrinks.add(new Drink(R.drawable.absinthe, "Absinth drip",
 				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
 				// "14"));
