@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:background="@android:color/background_light"
+        android:orientation="horizontal"
+        android:padding="@dimen/activity_vertical_margin" >
+
+        <RelativeLayout
+            android:layout_width="60dp"
+            android:layout_height="60dp" >
+
+            <ImageView
+                android:id="@+id/view_drink_image"
+                android:layout_width="105dp"
+                android:layout_height="105dp"
+                android:padding="3dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/sambuca" />
+
+            <ImageView
+                android:id="@+id/ImageView02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitCenter"
+                android:src="@drawable/frame" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin" >
+
+            <TextView
+                android:id="@+id/view_drink_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sambuca on the rocks"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:id="@+id/view_drink_qualifier_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="1dp" >
+
+                        <ImageView
+                            android:id="@+id/ImageView01"
+                            android:layout_width="17dp"
+                            android:layout_height="17dp"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/star" />
+                    </FrameLayout>
+
+                   
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+       
+    </LinearLayout>
+
+</FrameLayout>
