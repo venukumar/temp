@@ -25,58 +25,82 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
 import com.kellislabs.bartsy.*;
+import com.kellislabs.bartsy.db.DatabaseManager;
 
 public class AllJoynTabWidget extends TabActivity {
-    private static final String TAG = "Bartsy";
-    @Override
+	private static final String TAG = "Bartsy";
+
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreate()");
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.alljoyn_service_main);
+		Log.i(TAG, "onCreate()");
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.alljoyn_service_main);
 
-        Resources res = getResources();
-        TabHost tabHost = getTabHost();
-        TabHost.TabSpec spec;
-        Intent intent;
+		Resources res = getResources();
+		TabHost tabHost = getTabHost();
+		TabHost.TabSpec spec;
+		Intent intent;
 
-        intent = new Intent().setClass(this, AllJoynUseActivity.class);
-        spec = tabHost.newTabSpec("Command client").setIndicator("Command Client", 
-        		res.getDrawable(R.drawable.ic_tab_use)).setContent(intent);
-        tabHost.addTab(spec);
+		intent = new Intent().setClass(this, AllJoynUseActivity.class);
+		spec = tabHost
+				.newTabSpec("Command client")
+				.setIndicator("Command Client",
+						res.getDrawable(R.drawable.ic_tab_use))
+				.setContent(intent);
+		tabHost.addTab(spec);
 
-        intent = new Intent().setClass(this, AllJoynHostActivity.class);
-        spec = tabHost.newTabSpec("Command host").setIndicator("Command Host", 
-        		res.getDrawable(R.drawable.ic_tab_host)).setContent(intent);
-        tabHost.addTab(spec);
+		intent = new Intent().setClass(this, AllJoynHostActivity.class);
+		spec = tabHost
+				.newTabSpec("Command host")
+				.setIndicator("Command Host",
+						res.getDrawable(R.drawable.ic_tab_host))
+				.setContent(intent);
+		tabHost.addTab(spec);
 
-        intent = new Intent().setClass(this, ContactsClient.class);
-        spec = tabHost.newTabSpec("People client").setIndicator("People Client", 
-        		res.getDrawable(R.drawable.friend)).setContent(intent);
-        tabHost.addTab(spec);
+		intent = new Intent().setClass(this, ContactsClient.class);
+		spec = tabHost
+				.newTabSpec("People client")
+				.setIndicator("People Client",
+						res.getDrawable(R.drawable.friend)).setContent(intent);
+		tabHost.addTab(spec);
 
-        intent = new Intent().setClass(this, ContactsService.class);
-        spec = tabHost.newTabSpec("people receive").setIndicator("People Host", 
-        		res.getDrawable(R.drawable.friend)).setContent(intent);
-        tabHost.addTab(spec);
-        
-        tabHost.setCurrentTab(0);
-        
-        // Start the right activity depending on wether we're a tablet or a phone
-        if (getResources().getBoolean(R.bool.isTablet))
-        {
-	    	intent = new Intent().setClass(this, BartsyActivity.class);
-        } else {
-	        // If the user profile has no been set, start the init, if it has, start Bartsy
-		    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		    if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "").equalsIgnoreCase("")) {
-		    	// Profile not set
-		    	intent = new Intent().setClass(this, InitActivity.class);
-		    } else {
-		        // Start Bartsy - for now we start it here so that we can go back and see 
-		        // what is happening using the Alljoyn stub tab host activity which logs messages
-		    	intent = new Intent().setClass(this, MainActivity.class);
-		    }
-        }
-        this.startActivity(intent);
-    }
+		intent = new Intent().setClass(this, ContactsService.class);
+		spec = tabHost
+				.newTabSpec("people receive")
+				.setIndicator("People Host", res.getDrawable(R.drawable.friend))
+				.setContent(intent);
+		tabHost.addTab(spec);
+
+		tabHost.setCurrentTab(0);
+
+		// DataBase initialization - First activity should call this method
+		DatabaseManager.getNewInstance(this);
+
+		// Start the right activity depending on wether we're a tablet or a
+		// phone
+		if (!getResources().getBoolean(R.bool.isTablet)) {
+			intent = new Intent().setClass(this, BartsyActivity.class);
+		} else {
+			// If the user profile has no been set, start the init, if it has,
+			// start Bartsy
+			SharedPreferences sharedPref = getSharedPreferences(getResources()
+					.getString(R.string.config_shared_preferences_name),
+					Context.MODE_PRIVATE);
+			if (sharedPref
+					.getString(
+							getResources().getString(
+									R.string.config_user_account_name), "")
+					.equalsIgnoreCase("")) {
+				// Profile not set
+				intent = new Intent().setClass(this, InitActivity.class);
+			} else {
+				// Start Bartsy - for now we start it here so that we can go
+				// back and see
+				// what is happening using the Alljoyn stub tab host activity
+				// which logs messages
+				intent = new Intent().setClass(this, MainActivity.class);
+			}
+		}
+		this.startActivity(intent);
+	}
 }
