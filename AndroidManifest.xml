@@ -76,7 +76,7 @@
         
         <service
             android:name="AllJoynService">
-        </service>service>
+        </service>
         
         <activity
             android:name=".BartsyActivity"
