@@ -81,7 +81,7 @@ public class BartsyActivity extends FragmentActivity implements
     // A pointer to the parent application. In the MVC model, the parent application is the Model
     // that this observe changes and observes
     
-    private BartsyApplication mBartsyApplication = null;    
+    private BartsyApplication mApplication = null;    
     
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -101,9 +101,7 @@ public class BartsyActivity extends FragmentActivity implements
     private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
     private static final int HANDLE_HISTORY_CHANGED_EVENT = 1;
     private static final int HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT = 2;
-    private static final int HANDLE_NEW_CHANNEL_FOUND_EVENT = 3;
-    private static final int HANDLE_ALLJOYN_ERROR_EVENT = 4;
-    private static final int HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT = 5;
+    private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
 
     
     
@@ -247,48 +245,33 @@ public class BartsyActivity extends FragmentActivity implements
        * we need to "check in" with the application so it can ensure that our
        * required services are running.
        */
-      mBartsyApplication = (BartsyApplication)getApplication();
-      mBartsyApplication.checkin();
-      
-      /*
-       * Call down into the model to get its current state.  Since the model
-       * outlives its Activities, this may actually be a lot of state and not
-       * just empty.
-       */
-      updateChannelState();
+      mApplication = (BartsyApplication)getApplication();
+      mApplication.checkin();
       
       /*
        * Now that we're all ready to go, we are ready to accept notifications
        * from other components.
        */
-      mBartsyApplication.addObserver(this);
+      mApplication.addObserver(this);
       if (mIsServer) {
     	  // This initiates a series of events from the application, handled by the hander
-    	  mBartsyApplication.hostInitChannel();
+    	  mApplication.hostInitChannel();
       }
       
+      /*
+       * update the state of the action bar depending on our connection state.
+       */
+      updateActionBarStatus();
       
-		// Update channel state. If we're connected to an existing channel, use that channels name. 
-		// If not, set our channel to 
-		
-		if (!mIsServer &&
-			mBartsyApplication.getFoundChannels() != null   && 
-			mBartsyApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE ) {
-		// Already found a new channel that's not connected. Launch the handler 
-	      Log.i(TAG, "BartsyActivity.onCreate() - channels already found, initiating auto-connection sequence");
-	      Message message = mHandler.obtainMessage(HANDLE_NEW_CHANNEL_FOUND_EVENT);
-	      mHandler.sendMessage(message);
-		}    		
 
-      
     }
 
     
 	public void onStop() {
         super.onStop();
         appendStatus("onStop()");
-        mBartsyApplication = (BartsyApplication)getApplication();
-        mBartsyApplication.deleteObserver(this);
+        mApplication = (BartsyApplication)getApplication();
+        mApplication.deleteObserver(this);
  	}
 
 	
@@ -385,7 +368,7 @@ public class BartsyActivity extends FragmentActivity implements
                 break;
 
 	        case R.id.action_quit:
-                mBartsyApplication.quit();
+                mApplication.quit();
 	        	break;
                 
 	         default:
@@ -395,12 +378,12 @@ public class BartsyActivity extends FragmentActivity implements
 	}
 	
 	
-    private void updateChannelState() {
+    private void updateActionBarStatus() {
     	
         Log.i(TAG, "updateChannelState()");
 
-        AllJoynService.UseChannelState channelState = mBartsyApplication.useGetChannelState();
-    	String name = mBartsyApplication.useGetChannelName();
+        AllJoynService.UseChannelState channelState = mApplication.useGetChannelState();
+    	String name = mApplication.useGetChannelName();
     	if (name == null) {
     		name = "Not set";
     	}
@@ -601,12 +584,6 @@ public class BartsyActivity extends FragmentActivity implements
         } else if (qualifier.equals(BartsyApplication.USE_CHANNEL_STATE_CHANGED_EVENT)) {
             Message message = mHandler.obtainMessage(HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT);
             mHandler.sendMessage(message);
-        } else if (qualifier.equals(BartsyApplication.HOST_CHANNEL_STATE_CHANGED_EVENT)) {
-            Message message = mHandler.obtainMessage(HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT);
-            mHandler.sendMessage(message);
-        } else if (qualifier.equals(BartsyApplication.NEW_CHANNEL_FOUND_EVENT)) {
-            Message message = mHandler.obtainMessage(HANDLE_NEW_CHANNEL_FOUND_EVENT);
-            mHandler.sendMessage(message);
         } else if (qualifier.equals(BartsyApplication.ALLJOYN_ERROR_EVENT)) {
             Message message = mHandler.obtainMessage(HANDLE_ALLJOYN_ERROR_EVENT);
             mHandler.sendMessage(message);
@@ -620,79 +597,14 @@ public class BartsyActivity extends FragmentActivity implements
 	            Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_APPLICATION_QUIT_EVENT");
 	            finish();
 	            break; 
-            case HANDLE_NEW_CHANNEL_FOUND_EVENT: 
-                Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_NEW_CHANNEL_FOUND_EVENT");
-             
-                if (mBartsyApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
-                	// We haven't yet connected to any channels, connect to the first one found
-	                List<String> channels = mBartsyApplication.getFoundChannels(); 
-	                String channel = null;
-	                for (String c : channels) {
-	                	int lastDot = c.lastIndexOf('.');
-	                	if (lastDot < 0) {
-	                		continue;
-	                	}
-	                	channel = c.substring(lastDot + 1);
-	                }
-
-	                if (channel == null) {
-	                	appendStatus("ERROR - NEW CHANNEL EVENT WITH EMPTY CHANNEL LIST");
-	                	break; 
-	                }
-	                
-	                Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): setting use channel name to: " + channels.get(0));
-	                mBartsyApplication.useSetChannelName(channel);
-	                mBartsyApplication.useJoinChannel();
-                }
-            	String name = mBartsyApplication.useGetChannelName();
-//            	if (name == null) {
-//            		name = "Not set";
-//            	}
-	            break;
-            case HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT:
-                Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT");
-                // Host channel started, join the channel as a user in order to be able to start receiving messages
-                
-                switch ( mBartsyApplication.hostGetChannelState()) {
-                case IDLE:
-                	// wait for the channel to be named
-                    Log.i(TAG, "Host channel state is idle. Naming it: " + getResources().getString(R.string.config_venue_channel_name));
-              	  	mBartsyApplication.hostSetChannelName(getResources().getString(R.string.config_venue_channel_name));
-	                mBartsyApplication.hostStartChannel();
-                	break; 
-                case ADVERTISED:
-                    Log.i(TAG, "Host channel state is advertised.");
-                case CONNECTED:
-                    Log.i(TAG, "Host channel state is connected.");
-                	// as soon as the channel is advertised, join it
-                	if (mBartsyApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
-                		// Join the service as a user 
-                        Log.i(TAG, "Use channel state is IDLE.");
-                		
-                		String host_name = mBartsyApplication.hostGetChannelName();
-                		
-	                	int lastDot = host_name.lastIndexOf('.');
-	                	if (lastDot < 0) {
-	                		appendStatus("Found channel with wrong name: " + host_name);
-	                		break;
-	                	}
-                		String channel = host_name.substring(lastDot + 1);
-                        Log.i(TAG, "Joining use channel: " + channel);
-
-		                mBartsyApplication.useSetChannelName(channel);
-		                mBartsyApplication.useJoinChannel();
-                	}
-                	break;
-                }
-                break;
             case HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT: 
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT");
-                updateChannelState();
+                updateActionBarStatus();
                 break;
             case HANDLE_HISTORY_CHANGED_EVENT: {
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
 
-                String message = mBartsyApplication.getLastMessage();
+                String message = mApplication.getLastMessage();
                 
                 // The history could be empty because this event is sent even on a channel init
                 if (message == null)
@@ -719,8 +631,8 @@ public class BartsyActivity extends FragmentActivity implements
     };
 
     private void alljoynError() {
-    	if (mBartsyApplication.getErrorModule() == BartsyApplication.Module.GENERAL ||
-    		mBartsyApplication.getErrorModule() == BartsyApplication.Module.USE) {
+    	if (mApplication.getErrorModule() == BartsyApplication.Module.GENERAL ||
+    		mApplication.getErrorModule() == BartsyApplication.Module.USE) {
     		appendStatus("AllJoyn ERROR!!!!!!");
     		//showDialog(DIALOG_ALLJOYN_ERROR_ID);
     	}
@@ -809,7 +721,7 @@ public class BartsyActivity extends FragmentActivity implements
     	sendProfileCommand();
     	
     	// Send order to server
-        mBartsyApplication.newLocalUserMessage(
+        mApplication.newLocalUserMessage(
         			"<command><opcode>order</opcode>" +
         			"<argument>" + mOrderIDs + "</argument>"+					// client order ID
         			"<argument>" + mOrderIDs + "</argument>"+					// server order ID        			
@@ -882,7 +794,7 @@ public class BartsyActivity extends FragmentActivity implements
     	// Expects the order status and the server ID to be already set on this end
     	appendStatus("Sending order response for order: " + order.serverID);
     	
-        mBartsyApplication.newLocalUserMessage(
+        mApplication.newLocalUserMessage(
         			"<command><opcode>order_status_changed</opcode>" +
         			"<argument>" + order.status + "</argument>" +		// arg(0) - status is already updated on this end
             		"<argument>" + order.serverID + "</argument>" +	// arg(1)
@@ -974,7 +886,7 @@ public class BartsyActivity extends FragmentActivity implements
     	
     	appendStatus("Sending drink to: " + user.getNickname());
     	
-        mBartsyApplication.newLocalUserMessage(
+        mApplication.newLocalUserMessage(
         			"<command><opcode>message</opcode>" +
         			"<argument>" + user.getNickname() + "</argument>" +
             		"<argument>" + "hi buddy" + "</argument>" +
@@ -993,7 +905,7 @@ public class BartsyActivity extends FragmentActivity implements
     	
     	appendStatus("Sending message to: " + user.getNickname());
     	
-        mBartsyApplication.newLocalUserMessage(
+        mApplication.newLocalUserMessage(
         			"<command><opcode>message</opcode>" +
         			"<argument>" + user.getNickname() + "</argument>" +
             		"<argument>" + "hi buddy" + "</argument>" +
@@ -1074,7 +986,7 @@ public class BartsyActivity extends FragmentActivity implements
     	*/
     	
     	appendStatus("Sending user profile for: " + mProfile.username);
-        mBartsyApplication.newLocalUserMessage(
+        mApplication.newLocalUserMessage(
     			"<command><opcode>profile</opcode>" +
     			"<argument>" + mProfile.userID + "</argument>" +		// arg(0) - userID
     			"<argument>" + mProfile.username + "</argument>" +		// arg(1) - username

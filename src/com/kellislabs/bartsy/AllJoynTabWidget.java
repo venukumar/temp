@@ -76,9 +76,9 @@ public class AllJoynTabWidget extends TabActivity {
 		// DataBase initialization - First activity should call this method
 		DatabaseManager.getNewInstance(this);
 
-		// Start the right activity depending on wether we're a tablet or a
+		// Start the right activity depending on whether we're a tablet or a
 		// phone
-		if (!getResources().getBoolean(R.bool.isTablet)) {
+		if (getResources().getBoolean(R.bool.isTablet)) {
 			intent = new Intent().setClass(this, BartsyActivity.class);
 		} else {
 			// If the user profile has no been set, start the init, if it has,
