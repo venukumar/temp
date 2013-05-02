@@ -26,7 +26,7 @@ import android.widget.ToggleButton;
 public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	private View mRootView = null;
-	private LinearLayout mOrderListView = null;
+	LinearLayout mOrderListView = null;
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
 	BartsyApplication mApp = null;
@@ -58,27 +58,37 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			mInflater = inflater;
 			mContainer = container;
 			
-			// Add any existing orders in the layout, one by one
-			Log.d("Bartsy", "About to add orders list to the View");
-			Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
-
-			for (BarOrder barOrder : mApp.mOrders) {
-				Log.d("Bartsy", "Adding an item to the layout");
-				barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
-				barOrder.updateView();
-				mOrderListView.addView(barOrder.view);
-//				((Bartsy)getActivity()).appendStatus("Added new view");
-			}
-			
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
-			
+			updateOrdersView();
 		}
 		return mRootView;
 
 	}
 
+	public void updateOrdersView() {
+		
+		// Make sure the list view is empty
+		mOrderListView.removeAllViews();
+		
+		
+		// Add any existing orders in the layout, one by one
+		Log.d("Bartsy", "About to add orders list to the View");
+		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
+
+		for (BarOrder barOrder : mApp.mOrders) {
+			Log.d("Bartsy", "Adding an item to the layout");
+			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
+			barOrder.updateView();
+			mOrderListView.addView(barOrder.view);
+//			((Bartsy)getActivity()).appendStatus("Added new view");
+		}
+		
+		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
+		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
+		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
+		
+	}
+	
+	
 	@Override 
 	public void onDestroyView() {
 		super.onDestroyView();

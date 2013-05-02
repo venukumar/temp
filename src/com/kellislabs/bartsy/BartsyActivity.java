@@ -400,6 +400,8 @@ public class BartsyActivity extends FragmentActivity implements
 
             // For now simply delete any open orders from the list
             mApplication.mOrders.clear();
+            if (mOrdersFragment != null && mOrdersFragment.mOrderListView != null)
+            	mOrdersFragment.updateOrdersView();
             break;
         case JOINED: // There are only two states so this switch statement is complete
             // Set action bar item to the connected machine's name
