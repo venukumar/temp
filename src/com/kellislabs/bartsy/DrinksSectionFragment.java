@@ -61,32 +61,30 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 					.getMenuSections();
 
 			if (sections != null && sections.size() > 0) {
-				// loadMenuSections();
+				List<Section> drinkSections = DatabaseManager.getInstance()
+						.getMenuSections();
+
+				for (Section menuSection : drinkSections) {
+					updateView(menuSection);
+				};
 			} else {
+				
+				// DB empty, load drinks manually
+				
 				loadMenuSections();
+				
+				// Add any existing orders in the layout, one by one
+				 Log.d("Bartsy", "About to add drink list to the View");
+				 Log.d("Bartsy", "mOrders list size = " + mDrinks.size());
+				 for (Drink barOrder : mDrinks) {
+					 Log.d("Bartsy", "Adding an item to the layout");
+					 barOrder.view = (View) mInflater.inflate(R.layout.drink_item,
+					 mContainer, false);
+					 barOrder.updateView(this); // sets up view specifics and sets
+					 // listener to this
+					 mDrinksListView.addView(barOrder.view);
+				 }
 			}
-
-			// Add any existing orders in the layout, one by one
-			// Log.d("Bartsy", "About to add drink list to the View");
-			// Log.d("Bartsy", "mOrders list size = " + mDrinks.size());
-
-			List<Section> drinkSections = DatabaseManager.getInstance()
-					.getMenuSections();
-
-			for (Section menuSection : drinkSections) {
-
-				updateView(menuSection);
-			}
-
-			// for (Drink barOrder : mDrinks) {
-			// Log.d("Bartsy", "Adding an item to the layout");
-			// barOrder.view = (View) mInflater.inflate(R.layout.drink_item,
-			// mContainer, false);
-			// barOrder.updateView(this); // sets up view specifics and sets
-			// // listener to this
-			// mDrinksListView.addView(barOrder.view);
-			// // ((Bartsy)getActivity()).appendStatus("Added new view");
-			// }
 		}
 
 		return mRootView;
@@ -165,37 +163,20 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 		 mDrinks.add(new Drink(R.drawable.absinthe, "Absinth drip",
 		 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
 		 "14"));
+		 mDrinks.add(new Drink(R.drawable.moscowmule, "Moscow Mule",
+		 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
+		 "10"));
+		 mDrinks.add(new Drink(R.drawable.martini,
+		 "Martini vodka dirty",
+		 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
+		 "10"));
+		 mDrinks.add(new Drink(R.drawable.margarita, "Margarita",
+		 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
+		 "8"));
+		 mDrinks.add(new Drink(R.drawable.whiskey, "Whiskey neat",
+		 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
+		 "8"));
 		
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-
-				WebServices.getMenuList(getActivity());
-				
-				 mDrinks.add(new Drink(R.drawable.sambuca, "Sambuca rocks",
-				 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				 "12"));
-				 mDrinks.add(new Drink(R.drawable.absinthe, "Absinth drip",
-				 "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				 "14"));
-				// mDrinks.add(new Drink(R.drawable.moscowmule, "Moscow Mule",
-				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				// "10"));
-				// mDrinks.add(new Drink(R.drawable.martini,
-				// "Martini vodka dirty",
-				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				// "10"));
-				// mDrinks.add(new Drink(R.drawable.margarita, "Margarita",
-				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				// "8"));
-				// mDrinks.add(new Drink(R.drawable.whiskey, "Whiskey neat",
-				// "1 shot Sambuca\n3 coffee beans for good luck (optional)\nIce",
-				// "8"));
-
-			}
-		}).start();
 	}
 
 	@Override

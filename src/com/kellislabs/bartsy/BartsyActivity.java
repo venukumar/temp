@@ -225,10 +225,6 @@ public class BartsyActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-		
-		// Load user profile information if it exists
-		loadUserProfile();
-		
 	}
 
     @Override
@@ -341,7 +337,11 @@ public class BartsyActivity extends FragmentActivity implements
 	    switch (item.getItemId()) {
 	        case android.R.id.home:
 	            // app icon in action bar clicked; go home
-	            Intent intent = new Intent(this, MainActivity.class);
+	            Intent intent;
+	            if (mIsServer)
+	            	intent = new Intent(this, AllJoynTabWidget.class);
+	            else
+	            	intent = new Intent(this, MainActivity.class);
 	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	            startActivity(intent);
 	            return true;
@@ -400,14 +400,6 @@ public class BartsyActivity extends FragmentActivity implements
     	    view = View.inflate(getApplicationContext(), R.layout.actionbar_connected, null);
     	    ((TextView )view.findViewById(R.id.actionBarConnectedText)).setText(name);
             appendStatus("Joined a channel");
-            
-            
-            // For now, send the profile here. It should be actually stored in the application and sent 
-            // by the Alljoyn service when a channel is joined
-
-            appendStatus("About to send profile to host");
-            sendProfileCommand();
-            
             break;	
         }
     
@@ -717,9 +709,6 @@ public class BartsyActivity extends FragmentActivity implements
     	
     	appendStatus("Placing order for: " + drink.title);
     	
-    	// Send user profile to make sure we're on the list of people present
-    	sendProfileCommand();
-    	
     	// Send order to server
         mApplication.newLocalUserMessage(
         			"<command><opcode>order</opcode>" +
@@ -729,7 +718,7 @@ public class BartsyActivity extends FragmentActivity implements
             		"<argument>" + drink.description + "</argument>" +
             		"<argument>" + drink.price + "</argument>" +
             		"<argument>" + drink.image_resource + "</argument>" +
-        			"<argument>" + mProfile.userID+ "</argument>" +				// Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+        			"<argument>" + mApplication.mProfile.userID+ "</argument>" +				// Each order contains the profile of the sender (and later the profile of the person that should pick it up)
         			"</command>"
             		);
     	appendStatus("Placed drink order");
@@ -741,7 +730,7 @@ public class BartsyActivity extends FragmentActivity implements
     					drink.description,						// arg(3) - Description
     					drink.price,							// arg(4) - Price
     					Integer.toString(drink.image_resource),	// arg(5) - Image resource for the order
-    					mProfile);								// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+    					mApplication.mProfile);					// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
     	mOrdersFragment.addOrder(barOrder);
     	
     	// Increment the local order count
@@ -863,6 +852,7 @@ public class BartsyActivity extends FragmentActivity implements
     		
 			// Trash the order for now (later save it to log of past orders)
 			mOrdersFragment.removeOrder(localOrder);
+
 			break;
      	}
     	return false;
@@ -921,83 +911,8 @@ public class BartsyActivity extends FragmentActivity implements
      * 
      */
     
-    Profile mProfile;
-//    ArrayList<User> mPeople = new ArrayList<User>();
+
     
-    String mAccountName;
-    String mUserDescription;
-    
-    void loadUserProfile () {
-	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		mProfile = null;
-
-	    appendStatus("Loading user profile from " + getFilesDir()+File.separator + getResources().getString(R.string.config_user_profile_picture));
-	    
-	    Bitmap image = null;
-		try {
-			image = BitmapFactory.decodeFile(getFilesDir()+File.separator + getResources().getString(R.string.config_user_profile_picture));
-		} catch (Exception e) {
-			e.printStackTrace();
-			appendStatus("Could not load profile image");
-			return;
-		}
-	    
-		appendStatus("Profile image found, creating profile...");
-
-		
-	    mProfile = new Profile(
-	    		sharedPref.getString(getResources().getString(R.string.config_user_account_name), ""), 
-	    		sharedPref.getString(getResources().getString(R.string.config_user_name), ""),
-	    	    sharedPref.getString(getResources().getString(R.string.config_user_location), ""), 
-	    		sharedPref.getString(getResources().getString(R.string.config_user_info), ""),
-	    		sharedPref.getString(getResources().getString(R.string.config_user_description), ""),
-	    		image);
-    }    
-   	
-    void sendProfileCommand() {
-    	
-		appendStatus("Sending profile command...");
-
-    	
-    	// Skip if there is no profile
-    	if (mProfile == null || mProfile.image == null) {
-    		appendStatus("Profile not found, skipping commmand...");
-    		return;
-    	}
-    	
-    	// Encode image into a compressed JPEG stream
-    	Bitmap bm = mProfile.image;
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();  
-    	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object   
-    	byte[] b = baos.toByteArray();
-        //String encodedImage = Base64.encode(b, Base64.DEFAULT);
-        String image_string = Base64.encodeToString(b, Base64.DEFAULT);
-    	
-    	
-    	/* We could be just converting the file into a string instead... 
-    	String image_string = "";
-		try {
-			image_string = readFileAsString(getResources().getString(R.string.config_user_profile_picture));
-		} catch (NotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	*/
-    	
-    	appendStatus("Sending user profile for: " + mProfile.username);
-        mApplication.newLocalUserMessage(
-    			"<command><opcode>profile</opcode>" +
-    			"<argument>" + mProfile.userID + "</argument>" +		// arg(0) - userID
-    			"<argument>" + mProfile.username + "</argument>" +		// arg(1) - username
-    			"<argument>" + mProfile.location + "</argument>" +		// arg(2) - location
-    			"<argument>" + mProfile.info + "</argument>" +			// arg(3) - info
-    			"<argument>" + mProfile.description + "</argument>" +	// arg(4) - description
-    			"<argument>" + image_string + "</argument>" +			// arg(5) - image
-    			"</command>"
-        		);
-
-    }
  
     void processProfile(BartsyCommand command) {
     	

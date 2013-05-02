@@ -20,7 +20,11 @@ package com.kellislabs.bartsy;
 import android.app.Application;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import android.util.Log;
 
@@ -30,6 +34,7 @@ import java.util.Iterator;
 
 import java.util.Date;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -94,7 +99,42 @@ public class BartsyApplication extends Application implements AllJoynObservable 
         if (mRunningService == null) {
             Log.i(TAG, "onCreate(): failed to startService()");
         }
+        
+        // load user profile if it exists. this is an application-wide variable.
+        loadUserProfile();
 	}
+    
+    Profile mProfile;
+  
+  void loadUserProfile () {
+	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		mProfile = null;
+
+		Log.d(TAG, "Loading user profile from " + getFilesDir()+File.separator + getResources().getString(R.string.config_user_profile_picture));
+	    
+	    Bitmap image = null;
+		try {
+			image = BitmapFactory.decodeFile(getFilesDir()+File.separator + getResources().getString(R.string.config_user_profile_picture));
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.d(TAG, "Could not load profile image");
+			return;
+		}
+	    
+		Log.d(TAG, "Profile image found, creating profile...");
+
+		
+	    mProfile = new Profile(
+	    		sharedPref.getString(getResources().getString(R.string.config_user_account_name), ""), 
+	    		sharedPref.getString(getResources().getString(R.string.config_user_name), ""),
+	    	    sharedPref.getString(getResources().getString(R.string.config_user_location), ""), 
+	    		sharedPref.getString(getResources().getString(R.string.config_user_info), ""),
+	    		sharedPref.getString(getResources().getString(R.string.config_user_description), ""),
+	    		image);
+  }    
+ 	
+    
+    
     
     ComponentName mRunningService = null;
     
@@ -470,7 +510,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 		notifyObservers(HOST_CHANNEL_STATE_CHANGED_EVENT);
 		notifyObservers(HOST_STOP_CHANNEL_EVENT);
 	}
-	
+		
 	/**
 	 * The object we use in notifications to indicate that user has requested
 	 * that we initialize the host channel parameters in the "use" tab.

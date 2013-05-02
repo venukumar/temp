@@ -16,6 +16,7 @@
 package com.kellislabs.bartsy;
 
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import org.alljoyn.bus.BusAttachment;
@@ -44,7 +45,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 
+import android.util.Base64;
 import android.util.Log;
 
 public class AllJoynService extends Service implements AllJoynObserver {
@@ -240,7 +243,11 @@ public class AllJoynService extends Service implements AllJoynObserver {
             mHandler.sendMessage(message);
         }
 
-    }
+        if (qualifier.equals(BartsyApplication.USE_CHANNEL_STATE_CHANGED_EVENT)) {
+            Message message = mHandler.obtainMessage(HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT);
+            mHandler.sendMessage(message);
+        }
+     }
      
     /**
      * This is the Android Service message handler.  It runs in the context of the
@@ -323,6 +330,12 @@ public class AllJoynService extends Service implements AllJoynObserver {
                 Log.i(TAG, "AllJoynService.mhandler.handleMessage(): HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT");
                 mBackgroundHandler.hostAutoConnect();
                 break;
+            	
+            // Connected to a use channel, send our profile (if phone)
+            case HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT: 
+                Log.i(TAG, "AllJoynService.mhandler.handleMessage(): HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT");
+                mBackgroundHandler.sendProfileCommand();
+            	break;
             }
         }
     };
@@ -371,7 +384,12 @@ public class AllJoynService extends Service implements AllJoynObserver {
     private static final int HANDLE_NEW_CHANNEL_FOUND_EVENT = 7;
     private static final int HANDLE_HOST_CHANNEL_STATE_CHANGED_EVENT = 8;
 
-
+    /* 
+     * Send the other side profile information upon connecting to a new channel
+     */
+    
+    private static final int HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT = 10;
+    
     /**
      * Enumeration of the states of the AllJoyn bus attachment.  This
      * lets us make a note to ourselves regarding where we are in the process
@@ -652,6 +670,55 @@ public class AllJoynService extends Service implements AllJoynObserver {
 				break;
             }
         }
+        
+        
+        
+        public void sendProfileCommand() {
+        	
+    		Log.d(TAG, "Sending profile command...");
+
+        	
+        	// Skip if there is no profile
+        	if (mApplication.mProfile == null || mApplication.mProfile.image == null) {
+        		Log.d(TAG, "Profile not found, skipping commmand...");
+        		return;
+        	}
+        	
+        	// Encode image into a compressed JPEG stream
+        	Bitmap bm = mApplication.mProfile.image;
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+        	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object   
+        	byte[] b = baos.toByteArray();
+            //String encodedImage = Base64.encode(b, Base64.DEFAULT);
+            String image_string = Base64.encodeToString(b, Base64.DEFAULT);
+        	
+        	
+        	/* We could be just converting the file into a string instead... 
+        	String image_string = "";
+    		try {
+    			image_string = readFileAsString(getResources().getString(R.string.config_user_profile_picture));
+    		} catch (NotFoundException e) {
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
+        	*/
+        	
+        	Log.d(TAG, "Sending user profile for: " + mApplication.mProfile.username);
+            mApplication.newLocalUserMessage(
+        			"<command><opcode>profile</opcode>" +
+        			"<argument>" + mApplication.mProfile.userID + "</argument>" +		// arg(0) - userID
+        			"<argument>" + mApplication.mProfile.username + "</argument>" +		// arg(1) - username
+        			"<argument>" + mApplication.mProfile.location + "</argument>" +		// arg(2) - location
+        			"<argument>" + mApplication.mProfile.info + "</argument>" +			// arg(3) - info
+        			"<argument>" + mApplication.mProfile.description + "</argument>" +	// arg(4) - description
+        			"<argument>" + image_string + "</argument>" +			// arg(5) - image
+        			"</command>"
+            );
+
+        }
+        
+        
         
         /**
          * The message handler for the worker thread that handles background
