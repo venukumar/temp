@@ -3,7 +3,6 @@ package com.kellislabs.bartsy.utils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -17,6 +16,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 
 import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.model.MenuDrink;
 import com.kellislabs.bartsy.model.Section;
 
 public class WebServices {
@@ -50,7 +50,7 @@ public class WebServices {
 	 * get() method.
 	 */
 	public static String getRequest(String url, Context context) {
-
+		System.out.println("web service calling ");
 		BufferedReader bufferReader = null;
 		StringBuffer stringBuffer = new StringBuffer("");
 		HttpClient httpClient = new DefaultHttpClient();
@@ -84,6 +84,8 @@ public class WebServices {
 	}
 
 	public static void getMenuList(Context context) {
+
+		System.out.println("get menu list");
 		String response = null;
 		response = getRequest(Constants.URL_GET_BAR_LIST, context);
 		if (response == null) {
@@ -91,24 +93,49 @@ public class WebServices {
 		} else {
 			try {
 				JSONArray jsonArray = new JSONArray(response);
-
+				System.out.println("json arrya " + jsonArray.length());
+				
 				for (int section = 0; section < jsonArray.length(); section++) {
 
 					JSONObject jsonObject = jsonArray.getJSONObject(section);
-					if (jsonObject.has("section_name")) {
-
-						Section menuSection = new Section(jsonObject);
-						DatabaseManager.getInstance().saveSection(menuSection);
-
-						for (int i = 0; i < menuSection.getDrinks().size(); i++) {
-
-							DatabaseManager.getInstance().saveDrink(
-									menuSection.getDrinks().get(i));
+					Section menuSection = null;
+					if (jsonObject.has("section_name") && jsonObject.has("subsections")) {
+						
+						String name = jsonObject.getString("section_name");
+						
+						JSONArray subsections = jsonObject.getJSONArray("subsections");
+						if (subsections != null && subsections.length() > 0) {
+							if (name.trim().length()>0 && subsections.length()==1) {
+								menuSection = new Section();
+								menuSection.setName(name);
+								DatabaseManager.getInstance().saveSection(menuSection);
+							}
+						
+							for (int i = 0; i < subsections.length(); i++) {
+									JSONObject subSection = subsections.getJSONObject(i);
+									String subName = subSection.getString("subsection_name");
+									
+									if(subName.trim().length()>0){
+										String newName = name+" - "+subName;
+										menuSection = new Section();
+										menuSection.setName(newName);
+										DatabaseManager.getInstance().saveSection(menuSection);
+									}
+									
+									JSONArray contents = subSection.getJSONArray("contents");
+									for (int k = 0; k < contents.length(); k++)
+									{
+										MenuDrink menuDrink = new MenuDrink(
+												contents.getJSONObject(k));
+										menuDrink.setSection(menuSection);
+										DatabaseManager.getInstance().saveDrink(menuDrink);
+									}
+								}
+							}
 						}
-
+						
 					}
 
-				}
 
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

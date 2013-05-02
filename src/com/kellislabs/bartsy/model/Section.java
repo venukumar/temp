@@ -36,44 +36,6 @@ public class Section {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Section(JSONObject object) {
-		// TODO Auto-generated constructor stub
-
-		try {
-			this.name = object.getString("section_name");
-
-			if (object.has("subsections")) {
-				JSONArray subsections = object.getJSONArray("subsections");
-
-				if (subsections != null && subsections.length() > 0) {
-
-					JSONObject subSection = subsections.getJSONObject(0);
-					if (subSection.has("contents")) {
-
-						JSONArray contents = subSection
-								.getJSONArray("contents");
-						for (int i = 0; i < contents.length(); i++)
-
-						{
-							MenuDrink menuDrink = new MenuDrink(
-									contents.getJSONObject(i));
-							menuDrink.setSection(this);
-							drinks.add(menuDrink);
-
-						}
-
-					}
-
-				}
-
-			}
-
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * @return the id
 	 */
