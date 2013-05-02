@@ -81,7 +81,7 @@ public class BartsyActivity extends FragmentActivity implements
     // A pointer to the parent application. In the MVC model, the parent application is the Model
     // that this observe changes and observes
     
-    private BartsyApplication mApplication = null;    
+    public BartsyApplication mApplication = null;    
     
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -165,6 +165,8 @@ public class BartsyActivity extends FragmentActivity implements
 		// Set base view for the activity
 		setContentView(R.layout.activity_main);
 
+		// Setup application pointer
+		mApplication = (BartsyApplication)getApplication();
 		
 		// Initialize debug view for logging purposes
 		if (mDebugFragment == null) {
@@ -174,6 +176,7 @@ public class BartsyActivity extends FragmentActivity implements
 		// Initialize orders view
 		if (mOrdersFragment == null) {
 			mOrdersFragment = new OrdersSectionFragment();
+			mOrdersFragment.mApp = mApplication;
 		}
 		
 		// Initialize people view 
@@ -241,7 +244,7 @@ public class BartsyActivity extends FragmentActivity implements
        * we need to "check in" with the application so it can ensure that our
        * required services are running.
        */
-      mApplication = (BartsyApplication)getApplication();
+
       mApplication.checkin();
       
       /*
@@ -394,6 +397,9 @@ public class BartsyActivity extends FragmentActivity implements
         case IDLE:
     	    view = View.inflate(getApplicationContext(), R.layout.actionbar_indeterminate_progress, null);
             appendStatus("Channel iddle");
+
+            // For now simply delete any open orders from the list
+            mApplication.mOrders.clear();
             break;
         case JOINED: // There are only two states so this switch statement is complete
             // Set action bar item to the connected machine's name
@@ -742,7 +748,6 @@ public class BartsyActivity extends FragmentActivity implements
     int mSessionID = 0;
     
     void processCommandOrder(BartsyCommand command) { 
-    	BarOrder barOrder = new BarOrder();
 
     	appendStatus("Processing command for order:" + command.arguments.get(0));
 
@@ -760,6 +765,7 @@ public class BartsyActivity extends FragmentActivity implements
     		return;
     	}
     	
+    	BarOrder barOrder = new BarOrder();
     	barOrder.initialize(Integer.parseInt(command.arguments.get(0)),		// client order ID
     					mSessionID++,										// server order ID
     					command.arguments.get(2),							// Title
@@ -805,11 +811,11 @@ public class BartsyActivity extends FragmentActivity implements
     	// Make sure the order exists only once on this side and some other conditions are met. 
     	BarOrder localOrder = null;
     	int order_index = -1, i =0;
-    	for (BarOrder order : mOrdersFragment.mOrders) {
+    	for (BarOrder order : mApplication.mOrders) {
     		appendStatus("Looking at order " + order.clientID + " in position " + i);
     		if (order.clientID == client_id) {
             	appendStatus("ORDER FOUND at position " + i);
-    			localOrder = mOrdersFragment.mOrders.get(i);
+    			localOrder = mApplication.mOrders.get(i);
     			order_index = i;
     		}
     		i++;

@@ -27,10 +27,10 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	private View mRootView = null;
 	private LinearLayout mOrderListView = null;
-	ArrayList<BarOrder> mOrders = new ArrayList<BarOrder>();
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
-
+	BartsyApplication mApp = null;
+	
 //	private String mDBText = "";
 
 	/*
@@ -44,6 +44,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		
 		Log.d("Bartsy", "OrdersSectionFragment.onCreateView()");
 
+		
 		if (mOrderListView == null) {
 			mRootView = inflater.inflate(R.layout.orders_main, container, false);
 			mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
@@ -59,9 +60,9 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			
 			// Add any existing orders in the layout, one by one
 			Log.d("Bartsy", "About to add orders list to the View");
-			Log.d("Bartsy", "mOrders list size = " + mOrders.size());
+			Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
 
-			for (BarOrder barOrder : mOrders) {
+			for (BarOrder barOrder : mApp.mOrders) {
 				Log.d("Bartsy", "Adding an item to the layout");
 				barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
 				barOrder.updateView();
@@ -69,9 +70,9 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 //				((Bartsy)getActivity()).appendStatus("Added new view");
 			}
 			
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
 			
 		}
 		return mRootView;
@@ -107,12 +108,12 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			
 			Log.d("Bartsy", "The orders view in null. Adding to the orders list only");
 			
-			mOrders.add(barOrder);
+			mApp.mOrders.add(barOrder);
 		} else {
 
 			Log.d("Bartsy", "The orders view in not null. Adding to the orders list and the view");
 
-			mOrders.add(barOrder);
+			mApp.mOrders.add(barOrder);
 			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
 			barOrder.updateView();
 
@@ -121,14 +122,14 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			mOrderListView.addView(barOrder.view);
 			
 			// Update header buttons
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
+			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
 
 			Log.d("Bartsy", "Adding new order to orders list View");
 //			((Bartsy)getActivity()).appendStatus("Added new order to order list view");
 		}
-		Log.d("Bartsy", "mOrders list size = " + mOrders.size());
+		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
 	}
 
 
@@ -158,7 +159,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			mOrderListView.removeView(order.view);
 //		((ViewGroup) order.view.getParent()).removeView(order.view);
 		order.view = null;
-		mOrders.remove(order);
+		mApp.mOrders.remove(order);
 	}
 
 	

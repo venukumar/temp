@@ -104,6 +104,13 @@ public class BartsyApplication extends Application implements AllJoynObservable 
         loadUserProfile();
 	}
     
+    /*** 
+     * 
+     * THe user profile is saved in teh application state. It's small
+     * enough that it shouldn't cause memory issues
+     * 
+     */
+    
     Profile mProfile;
   
   void loadUserProfile () {
@@ -133,7 +140,22 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	    		image);
   }    
  	
-    
+
+  	/**********
+  	 * 
+  	 * The order list is saved in the global application state. This
+  	 * is done to avoid losing any orders while the other activities
+  	 * are swapped in and out as the user navigates in different screens.
+  	 * 
+  	 */
+  
+	ArrayList<BarOrder> mOrders = new ArrayList<BarOrder>();
+  
+  
+  
+  
+  
+  
     
     
     ComponentName mRunningService = null;
