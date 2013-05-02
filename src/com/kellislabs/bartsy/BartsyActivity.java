@@ -347,7 +347,7 @@ public class BartsyActivity extends FragmentActivity implements
 	            	intent = new Intent(this, MapActivity.class);
 	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	            startActivity(intent);
-	            return true;
+	            return true; 
 	            
 	        case R.id.action_messages:
 	        	item.getActionView().findViewById(R.id.view_action_bar_messages).setBackgroundColor(0xaaaaee);
@@ -363,7 +363,7 @@ public class BartsyActivity extends FragmentActivity implements
 
                 // Restart WiFi Direct discovery
                 restartP2P();
-                break;
+                break; 
   */ 
 	        case R.id.action_settings:
 	            Intent settingsActivity = new Intent(getBaseContext(), SettingsActivity.class);

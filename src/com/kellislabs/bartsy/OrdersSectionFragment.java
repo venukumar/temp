@@ -44,22 +44,13 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		
 		Log.d("Bartsy", "OrdersSectionFragment.onCreateView()");
 
+		mInflater = inflater;
+		mContainer = container;
+		mRootView = mInflater.inflate(R.layout.orders_main, mContainer, false);
+		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 		
-		if (mOrderListView == null) {
-			mRootView = inflater.inflate(R.layout.orders_main, container, false);
-			mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
-
-			if (mOrderListView == null)
-				Log.d("Bartsy", "COULD NOT CREATE ORDERS LIST VIEW!!");
-			else
-				Log.d("Bartsy", "Orders list view created");
-
-			
-			mInflater = inflater;
-			mContainer = container;
-			
-			updateOrdersView();
-		}
+		updateOrdersView();
+		
 		return mRootView;
 
 	}
@@ -69,7 +60,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		// Make sure the list view is empty
 		mOrderListView.removeAllViews();
 		
-		
+
 		// Add any existing orders in the layout, one by one
 		Log.d("Bartsy", "About to add orders list to the View");
 		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
@@ -78,6 +69,9 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			Log.d("Bartsy", "Adding an item to the layout");
 			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
 			barOrder.updateView();
+			barOrder.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
+			barOrder.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
+
 			mOrderListView.addView(barOrder.view);
 //			((Bartsy)getActivity()).appendStatus("Added new view");
 		}
@@ -146,9 +140,13 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 	
 	@Override
 	public void onClick(View v) {
+
+		Log.i("Bartsy", "Click event");
+
 		switch (v.getId()) {
 		case R.id.view_order_button_positive:
 			BarOrder order = (BarOrder) v.getTag();
+			Log.i("Bartsy", "Clicked on order positive button");
 
 			// Update the order status locally and send the update to the remote
 			order.nextPositiveState();

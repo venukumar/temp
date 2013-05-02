@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
 public class BarOrder  {
@@ -103,6 +104,7 @@ public class BarOrder  {
 		
 		// Update sender profile section
 		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);
+		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setScaleType(ScaleType.FIT_CENTER);
 		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(this.orderSender.username);
 
 
