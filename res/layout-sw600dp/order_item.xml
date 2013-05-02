@@ -5,6 +5,7 @@
                android:orientation="vertical" >
 
                 <LinearLayout
+                    android:id="@+id/view_order_background"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_corner"
@@ -15,7 +16,8 @@
                         android:id="@+id/view_order_header"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_corner_red"
+                        android:layout_margin="@dimen/activity_vertical_margin"
+                        android:background="@drawable/rounded_corner_dark"
                         android:gravity="center_horizontal"
                         android:padding="@dimen/activity_vertical_margin"
                         android:text="Order 12 (NEW)"
@@ -26,12 +28,16 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_margin="@dimen/activity_vertical_margin"
+                        android:background="@drawable/rounded_corner"
                         android:padding="@dimen/activity_vertical_margin" >
 
                         <TextView
                             android:id="@+id/textView2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
                             android:text="Placed at: "
                             android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -39,6 +45,7 @@
                             android:id="@+id/view_order_time"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
                             android:text="9:22 PM"
                             android:textColor="#995555"
                             android:textSize="16sp"
@@ -48,6 +55,7 @@
                             android:id="@+id/textView1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
                             android:text=" on "
                             android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -55,6 +63,7 @@
                             android:id="@+id/view_order_date"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
                             android:layout_weight="2"
                             android:text="Apr 11, 2013"
                             android:textAppearance="?android:attr/textAppearanceSmall" />
@@ -63,6 +72,7 @@
                             android:id="@+id/textView4"
                             android:layout_width="wrap_content"
                             android:layout_height="fill_parent"
+                            android:layout_gravity="center_vertical"
                             android:layout_marginRight="@dimen/activity_horizontal_margin"
                             android:gravity="center_vertical"
                             android:text="Price: "
@@ -73,6 +83,7 @@
                             android:id="@+id/view_order_price"
                             android:layout_width="wrap_content"
                             android:layout_height="fill_parent"
+                            android:layout_gravity="center_vertical"
                             android:layout_marginRight="@dimen/activity_horizontal_margin"
                             android:gravity="center_vertical"
                             android:text="$12"

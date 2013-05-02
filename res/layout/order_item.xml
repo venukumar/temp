@@ -5,6 +5,7 @@
                android:orientation="vertical" >
 
                 <LinearLayout
+                    android:id="@+id/view_order_background"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_corner"
@@ -15,77 +16,85 @@
                         android:id="@+id/view_order_header"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_corner_red"
+                        android:background="@drawable/rounded_corner_dark"
                         android:gravity="center_horizontal"
                         android:padding="@dimen/activity_vertical_margin"
                         android:text="Order 12 (NEW)"
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         android:textColor="#ffffff"
                         android:textStyle="bold" />
- 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/activity_vertical_margin" >
-
-                        <TextView
-                            android:id="@+id/textView2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Placed at: "
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                        <TextView
-                            android:id="@+id/view_order_time"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="9:22 PM"
-                            android:textColor="#995555"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" on "
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                        <TextView
-                            android:id="@+id/view_order_date"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:text="Apr 11, 2013"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin" >
+                        android:layout_marginTop="@dimen/activity_vertical_margin"
+                        android:background="@drawable/rounded_corner"
+                        android:orientation="vertical" >
 
-                        <TextView
-                            android:id="@+id/textView4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="fill_parent"
-                            android:layout_marginRight="@dimen/activity_horizontal_margin"
-                            android:gravity="center_vertical"
-                            android:text="Price: "
-                            android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:textSize="16sp" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/activity_vertical_margin" >
 
-                        <TextView
-                            android:id="@+id/view_order_price"
-                            android:layout_width="wrap_content"
-                            android:layout_height="fill_parent"
-                            android:layout_marginRight="@dimen/activity_horizontal_margin"
-                            android:gravity="center_vertical"
-                            android:text="$12"
-                            android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:textSize="21sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/textView2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Placed at: "
+                                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                            <TextView
+                                android:id="@+id/view_order_time"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="9:22 PM"
+                                android:textColor="#995555"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/textView1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=" on "
+                                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                            <TextView
+                                android:id="@+id/view_order_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:text="Apr 11, 2013"
+                                android:textAppearance="?android:attr/textAppearanceSmall" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin" >
+
+                            <TextView
+                                android:id="@+id/textView4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="fill_parent"
+                                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                android:gravity="center_vertical"
+                                android:text="Price: "
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:id="@+id/view_order_price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="fill_parent"
+                                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                android:gravity="center_vertical"
+                                android:text="$12"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:textSize="21sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
                     </LinearLayout>
 
                     <LinearLayout
@@ -170,7 +179,7 @@
                         <LinearLayout
                             android:layout_width="fill_parent"
                             android:layout_height="fill_parent"
-                            android:layout_margin="@dimen/activity_vertical_margin"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"
                             android:layout_weight="10"
                             android:background="@drawable/rounded_corner" >
 

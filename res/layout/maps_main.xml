@@ -29,12 +29,13 @@
     android:layout_height="wrap_content" >
 
 <LinearLayout
-    android:id="@+id/view_drinks_list"
+    android:id="@+id/view_venues_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="right"
     android:layout_marginBottom="@dimen/activity_vertical_margin"
     android:background="#dddddd"
+    android:clickable="true"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
@@ -66,8 +67,10 @@
                     android:id="@+id/ImageView23"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
                     android:scaleType="fitXY"
                     android:src="@drawable/frame" />
+
             </RelativeLayout>
         </LinearLayout>
 
@@ -186,8 +189,10 @@
                     android:id="@+id/ImageView19"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
                     android:scaleType="fitXY"
                     android:src="@drawable/frame" />
+
             </RelativeLayout>
         </LinearLayout>
 
@@ -306,8 +311,10 @@
                     android:id="@+id/ImageView14"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
                     android:scaleType="fitXY"
                     android:src="@drawable/frame" />
+
             </RelativeLayout>
         </LinearLayout>
 

@@ -79,7 +79,7 @@ public class MainActivity extends FragmentActivity implements  OnClickListener {
 		
 		switch (v.getId()) {
 		case R.id.button_checkin:
-			this.startActivity(new Intent().setClass(this, BartsyActivity.class));
+			this.startActivity(new Intent().setClass(this, MapActivity.class));
 			break;
 		case R.id.button_settings:
 			this.startActivity(new Intent().setClass(this, SettingsActivity.class));

@@ -46,7 +46,7 @@ import com.kellislabs.bartsy.R;
  * the ACTION_MANAGE_NETWORK_USAGE action. This activity provides a settings UI
  * for users to specify network settings to control data usage.
  */
-public class MapActivity extends Activity implements LocationListener {
+public class MapActivity extends Activity implements LocationListener, OnClickListener {
 
 	private GoogleMap mMap = null;
 	private LocationManager locationManager;
@@ -127,6 +127,8 @@ public class MapActivity extends Activity implements LocationListener {
         .title("Main on Main")
         .snippet("People checked in: 14"));
         
+        
+        findViewById(R.id.view_venues_list).setOnClickListener(this);
 
     }
 
@@ -169,6 +171,12 @@ public class MapActivity extends Activity implements LocationListener {
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onClick(View arg0) {
+		// Just start the bartsy activity regardless of where the use clicks for now
+		this.startActivity(new Intent().setClass(this, BartsyActivity.class));
 	}
 	
 }
