@@ -75,7 +75,7 @@ public class DatabaseManager {
 	}
 	
 	/**
-	 * To get list of Menu Drink from the db
+	 * To get list of Menu Drinks by section from the db
 	 * @param id
 	 * @return
 	 */
@@ -84,6 +84,24 @@ public class DatabaseManager {
 			QueryBuilder<MenuDrink, Integer> surveyQb = dbHelper
 					.getDrinkDao().queryBuilder();
 			surveyQb.where().eq("section_id", section.getId());
+			PreparedQuery<MenuDrink> query = surveyQb.prepare();
+			return dbHelper.getDrinkDao().query(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * To get list of Menu Drink from the db
+	 * @param id
+	 * @return
+	 */
+	public List<MenuDrink> getMenuDrinks() {
+		try {
+			QueryBuilder<MenuDrink, Integer> surveyQb = dbHelper
+					.getDrinkDao().queryBuilder();
+			surveyQb.where().isNotNull("section_id");
 			PreparedQuery<MenuDrink> query = surveyQb.prepare();
 			return dbHelper.getDrinkDao().query(query);
 		} catch (SQLException e) {

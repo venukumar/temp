@@ -107,6 +107,7 @@ public class WebServices {
 						if (subsections != null && subsections.length() > 0) {
 							if (name.trim().length()>0 && subsections.length()==1) {
 								menuSection = new Section();
+								if(name.length()>0)
 								menuSection.setName(name);
 								DatabaseManager.getInstance().saveSection(menuSection);
 							}

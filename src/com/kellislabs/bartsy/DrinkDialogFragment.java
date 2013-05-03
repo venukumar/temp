@@ -3,23 +3,18 @@
  */
 package com.kellislabs.bartsy;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.kellislabs.bartsy.model.MenuDrink;
 
 /**
  * @author peterkellis
@@ -27,7 +22,7 @@ import android.widget.TextView;
  */
 public class DrinkDialogFragment extends DialogFragment  {
 
-	public Drink drink;
+	public MenuDrink drink;
 	
 	
     /* The activity that creates an instance of this dialog fragment must
@@ -67,13 +62,15 @@ public class DrinkDialogFragment extends DialogFragment  {
 	    // Inflate and set the layout for the dialog
 	    // Pass null as the parent view because its going in the dialog layout
 	    
+	    
+	    
 	    View view = inflater.inflate(R.layout.dialog_drink_order, null);
 	    
 	    // Customize dialog for this drink
-	    ((TextView)view.findViewById(R.id.view_dialog_drink_title)).setText(drink.title);
-	    ((TextView)view.findViewById(R.id.view_dialog_drink_description)).setText(drink.description);
-	    ((TextView)view.findViewById(R.id.view_dialog_drink_price)).setText(drink.price);
-	    ((ImageView)view.findViewById(R.id.view_dialog_drink_image_resource)).setImageResource(drink.image_resource);
+	    ((TextView)view.findViewById(R.id.view_dialog_drink_title)).setText(drink.getTitle());
+	    ((TextView)view.findViewById(R.id.view_dialog_drink_description)).setText(drink.getDescription());
+	    ((TextView)view.findViewById(R.id.view_dialog_drink_price)).setText(drink.getPrice());
+//	    ((ImageView)view.findViewById(R.id.view_dialog_drink_image_resource)).setImageResource(drink.image_resource);
 	    view.findViewById(R.id.view_dialog_drink_title).setTag(this.drink);
 	    
 	    builder.setView(view)

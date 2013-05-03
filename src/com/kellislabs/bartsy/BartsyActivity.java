@@ -50,6 +50,7 @@ import android.widget.TextView;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.kellislabs.bartsy.CommandParser.BartsyCommand;
+import com.kellislabs.bartsy.model.MenuDrink;
 
 
 public class BartsyActivity extends FragmentActivity implements
@@ -718,20 +719,20 @@ public class BartsyActivity extends FragmentActivity implements
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
     	
-    	Drink drink = ((DrinkDialogFragment)dialog).drink;
+    	MenuDrink drink = ((DrinkDialogFragment)dialog).drink;
     	
     	
-    	appendStatus("Placing order for: " + drink.title);
+    	appendStatus("Placing order for: " + drink.getTitle());
     	
     	// Send order to server
         mApp.newLocalUserMessage(
         			"<command><opcode>order</opcode>" +
         			"<argument>" + mOrderIDs + "</argument>"+					// client order ID
         			"<argument>" + mOrderIDs + "</argument>"+					// server order ID        			
-        			"<argument>" + drink.title + "</argument>" +
-            		"<argument>" + drink.description + "</argument>" +
-            		"<argument>" + drink.price + "</argument>" +
-            		"<argument>" + drink.image_resource + "</argument>" +
+        			"<argument>" + drink.getTitle() + "</argument>" +
+            		"<argument>" + drink.getDescription() + "</argument>" +
+            		"<argument>" + drink.getPrice() + "</argument>" +
+            		"<argument>" + drink.getImage() + "</argument>" +
         			"<argument>" + mApp.mProfile.userID + "</argument>" +		// Each order contains the profile of the sender (and later the profile of the person that should pick it up)
         			"</command>"
             		);
@@ -740,10 +741,10 @@ public class BartsyActivity extends FragmentActivity implements
     	BarOrder barOrder = new BarOrder();
     	barOrder.initialize(mOrderIDs,							// arg(0) - Client order ID
     					mOrderIDs,								// arg(1) - Server order ID - use client ID for now
-    					drink.title,							// arg(2) - Title
-    					drink.description,						// arg(3) - Description
-    					drink.price,							// arg(4) - Price
-    					Integer.toString(drink.image_resource),	// arg(5) - Image resource for the order
+    					drink.getTitle(),							// arg(2) - Title
+    					drink.getDescription(),						// arg(3) - Description
+    					drink.getPrice(),							// arg(4) - Price
+    					drink.getImage(),	// arg(5) - Image resource for the order
     					mApp.mProfile);							// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
     	mOrdersFragment.addOrder(barOrder);
     	

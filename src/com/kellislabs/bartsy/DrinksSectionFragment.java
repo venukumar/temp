@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
+import android.widget.ExpandableListView.OnChildClickListener;
+
 import com.kellislabs.bartsy.adapters.ExpandableListAdapter;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
@@ -24,14 +25,13 @@ import com.kellislabs.bartsy.utils.WebServices;
  * @author peterkellis
  * 
  */
-public class DrinksSectionFragment extends Fragment implements OnClickListener {
+public class DrinksSectionFragment extends Fragment{
 	private View mRootView = null;
 	private ExpandableListView mDrinksListView = null;
-	ArrayList<Drink> mDrinks = new ArrayList<Drink>();
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
+	private Handler handler = new Handler();
 
-	ImageButton btnSambuca, btnAbsinth;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,92 +53,63 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 					.getMenuSections();
 
 			if (sections != null && sections.size() > 0) {
-				// loadMenuSections();
+				updateListView(sections);
 			} else {
 				loadMenuSections();
 			}
-			List<Section> sectionsList = DatabaseManager.getInstance()
-					.getMenuSections();
-			ArrayList<String> groupNames = new ArrayList<String>();
-			for (int i = 0; i < sectionsList.size(); i++) {
-				groupNames.add(sectionsList.get(i).getName());
-			}
-			ArrayList<ArrayList<MenuDrink>> menuDrinks = new ArrayList<ArrayList<MenuDrink>>();
-
-			for (int j = 0; j < sectionsList.size(); j++) {
-				List<MenuDrink> list = DatabaseManager.getInstance()
-						.getMenuDrinks(sectionsList.get(j));
-				ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
-				menuDrinks.add(menu);
-
-			}
-
-			/*
-			 * for (int i = 0; i < sections.size(); i++) { Section section =
-			 * sections.get(i); List<MenuDrink> menuDrinks =
-			 * DatabaseManager.getInstance() .getMenuDrinks(section);
-			 * section.setDrinks(menuDrinks); }
-			 */
-
-			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
-					groupNames, menuDrinks));
-			//
-			// for (Section menuSection : sections) {
-			//
-			// updateView(menuSection);
-			// }
-
-			// for (Drink barOrder : mDrinks) {
-			// Log.d("Bartsy", "Adding an item to the layout");
-			// barOrder.view = (View) mInflater.inflate(R.layout.drink_item,
-			// mContainer, false);
-			// barOrder.updateView(this); // sets up view specifics and sets
-			// // listener to this
-			// mDrinksListView.addView(barOrder.view);
-			// // ((Bartsy)getActivity()).appendStatus("Added new view");
-			// }
 		}
 
 		return mRootView;
 	}
+	
+	/**
+	 * To update listview from the db
+	 * 
+	 * @param sectionsList
+	 */
+	public void updateListView(List<Section> sectionsList){
+		
+		ArrayList<String> groupNames = new ArrayList<String>();
+		// Default group name for individual drinks
+		List<MenuDrink> defaultList = DatabaseManager.getInstance().getMenuDrinks();
+		if(defaultList!=null && defaultList.size()>0){
+			groupNames.add("Drinks");
+		}
+		
+		for (int i = 0; i < sectionsList.size(); i++) {
+			groupNames.add(sectionsList.get(i).getName());
+		}
+		
+		final ArrayList<ArrayList<MenuDrink>> menuDrinks = new ArrayList<ArrayList<MenuDrink>>();
+		if(defaultList!=null && defaultList.size()>0){
+			ArrayList<MenuDrink> defaultmenu = new ArrayList<MenuDrink>(defaultList);
+			menuDrinks.add(defaultmenu);
+		}
+		for (int j = 0; j < sectionsList.size(); j++) {
+			List<MenuDrink> list = DatabaseManager.getInstance()
+					.getMenuDrinks(sectionsList.get(j));
+			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
+			menuDrinks.add(menu);
+		}
 
-	private void updateView(final Section menuSection) {
-		// TODO Auto-generated method stub
-
-		// LayoutInflater linflater = (LayoutInflater) getActivity()
-		// .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		// View view = linflater.inflate(R.layout.menu_section, null);
-		//
-		// ((ImageView) view.findViewById(R.id.view_drink_image))
-		// .setImageResource(R.drawable.happyhour);
-		// ((TextView) view.findViewById(R.id.view_drink_title))
-		// .setText(menuSection.getName());
-		// // ((TextView)
-		// // view.findViewById(R.id.view_drink_price)).setText("" +
-		// // this.price);
-		// view.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View v) {
-		// // TODO Auto-generated method stub
-		//
-		// List<MenuDrink> drinkMenu = DatabaseManager.getInstance()
-		// .getMenuDrinks(menuSection);
-		// for (MenuDrink menuDrink : drinkMenu) {
-		//
-		// //updateView1(menuDrink);
-		// }
-		//
-		// }
-		//
-		// });
-		//
-		//
-
-		// sets up view specifics and sets
-		// listener to this
-		// mDrinksListView.setAdapter(new ());
-
+		mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
+				groupNames, menuDrinks));
+		mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
+			
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v,
+					int groupPosition, int childPosition, long id) {
+				MenuDrink menuDrink= menuDrinks.get(groupPosition).get(childPosition);
+				
+				// Create an instance of the dialog fragment and show it
+				DrinkDialogFragment dialog = new DrinkDialogFragment();
+				dialog.drink = menuDrink;
+				dialog.show(getActivity().getSupportFragmentManager(), "Order drink");
+				
+				return false;
+			}
+		});
+		
 	}
 
 	@Override
@@ -160,16 +131,20 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 			@Override
 			public void run() {
 				WebServices.getMenuList(getActivity());
+				final List<Section> sectionsList = DatabaseManager.getInstance()
+						.getMenuSections();
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						updateListView(sectionsList);
+					}
+				});
+				
 			}
 		}).start();
 	}
 
-	@Override
-	public void onClick(View v) {
-		// Create an instance of the dialog fragment and show it
-		DrinkDialogFragment dialog = new DrinkDialogFragment();
-		dialog.drink = (Drink) v.getTag();
-		dialog.show(getActivity().getSupportFragmentManager(), "Order drink");
-	}
+	
 
 }
