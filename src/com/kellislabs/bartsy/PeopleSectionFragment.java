@@ -28,8 +28,8 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	View mRootView = null;
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
-	ArrayList<Profile> mPeople = new ArrayList<Profile>();
-	private LinearLayout mPeopleListView = null;
+	 LinearLayout mPeopleListView = null;
+	public BartsyApplication mApp = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,9 +47,9 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 			
 			// Add any existing people in the layout, one by one
 			Log.d("Bartsy", "About to add people list to the View");
-			Log.d("Bartsy", "mUsers list size = " + mPeople.size());
+			Log.d("Bartsy", "mUsers list size = " + mApp.mPeople.size());
 
-			for (Profile profile : mPeople) {
+			for (Profile profile : mApp.mPeople) {
 				Log.d("Bartsy", "Adding a user item to the layout");
 				profile.view = (View) mInflater.inflate(R.layout.user_item, mContainer, false);
 				profile.updateView(this); // sets up view specifics and sets listener to this
@@ -118,7 +118,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		Log.d("Bartsy", "Adding new person to people list: " + person.userID);
 		
 		// Check to see if person is already "here" and don't add them if so
-		for (Profile p : mPeople) {
+		for (Profile p : mApp.mPeople) {
 			if (p.userID.equalsIgnoreCase(person.userID)) {
 				Log.d("Bartsy", "Profile already exists in the list, skip adding it");
 				return;
@@ -129,12 +129,12 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 			
 			Log.d("Bartsy", "The people view in null. Adding to the people list only");
 			
-			mPeople.add(person);
+			mApp.mPeople.add(person);
 		} else {
 
 			Log.d("Bartsy", "The people view in not null. Adding to the people list and the view");
 
-			mPeople.add(person);
+			mApp.mPeople.add(person);
 			person.view = (View) mInflater.inflate(R.layout.user_item, mContainer, false);
 			person.updateView(this);
 
@@ -148,7 +148,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 			Log.d("Bartsy", "Added new person to people list View");
 //			((Bartsy)getActivity()).appendStatus("Added new order to order list view");
 		}
-		Log.d("Bartsy", "mPeople list size = " + mPeople.size());
+		Log.d("Bartsy", "mPeople list size = " + mApp.mPeople.size());
 	}
 
 	

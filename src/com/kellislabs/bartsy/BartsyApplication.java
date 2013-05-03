@@ -106,7 +106,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
     
     /*** 
      * 
-     * THe user profile is saved in teh application state. It's small
+     * The user profile is saved in the application state. It's small
      * enough that it shouldn't cause memory issues
      * 
      */
@@ -138,9 +138,18 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	    		sharedPref.getString(getResources().getString(R.string.config_user_info), ""),
 	    		sharedPref.getString(getResources().getString(R.string.config_user_description), ""),
 	    		image);
-  }    
- 	
+  	}    
 
+  	/*****
+  	 * 
+  	 *  The list of people present (when checked in) is also saved here, in the global state
+  	 *  
+  	 */
+  
+	ArrayList<Profile> mPeople = new ArrayList<Profile>();
+
+  
+  
   	/**********
   	 * 
   	 * The order list is saved in the global application state. This

@@ -60,12 +60,11 @@ public class BartsyActivity extends FragmentActivity implements
 	/****************
 	 * 
 	 * 
-	 * TODO - Global variables  
 	 * 
 	 *  
 	 */
        
-	public boolean mIsServer = false;						// the app switches personalities for now depending on this (tablet = bar, phone = user)
+	public boolean mIsHost = false;						// the app switches personalities for now depending on this (tablet = bar, phone = user)
 	public boolean mDebug = false;							// set up for extra debugging tabs
     public static final String TAG = "Bartsy";
     private DebugSectionFragment mDebugFragment = null;
@@ -81,7 +80,7 @@ public class BartsyActivity extends FragmentActivity implements
     // A pointer to the parent application. In the MVC model, the parent application is the Model
     // that this observe changes and observes
     
-    public BartsyApplication mApplication = null;    
+    public BartsyApplication mApp = null;    
     
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -160,13 +159,13 @@ public class BartsyActivity extends FragmentActivity implements
 		 */
 
 		// Make sure global settings get set first
-		mIsServer = getResources().getBoolean(R.bool.isTablet);
+		mIsHost = getResources().getBoolean(R.bool.isTablet);
 
 		// Set base view for the activity
 		setContentView(R.layout.activity_main);
 
 		// Setup application pointer
-		mApplication = (BartsyApplication)getApplication();
+		mApp = (BartsyApplication)getApplication();
 		
 		// Initialize debug view for logging purposes
 		if (mDebugFragment == null) {
@@ -176,12 +175,13 @@ public class BartsyActivity extends FragmentActivity implements
 		// Initialize orders view
 		if (mOrdersFragment == null) {
 			mOrdersFragment = new OrdersSectionFragment();
-			mOrdersFragment.mApp = mApplication;
+			mOrdersFragment.mApp = mApp;
 		}
 		
 		// Initialize people view 
 		if (mPeopleFragment == null) {
 			mPeopleFragment = new PeopleSectionFragment();
+			mPeopleFragment.mApp = mApp;
 		}
 		
 		// Log function call
@@ -245,16 +245,16 @@ public class BartsyActivity extends FragmentActivity implements
        * required services are running.
        */
 
-      mApplication.checkin();
+      mApp.checkin();
       
       /*
        * Now that we're all ready to go, we are ready to accept notifications
        * from other components.
        */
-      mApplication.addObserver(this);
-      if (mIsServer) {
+      mApp.addObserver(this);
+      if (mIsHost) {
     	  // This initiates a series of events from the application, handled by the hander
-    	  mApplication.hostInitChannel();
+    	  mApp.hostInitChannel();
       }
       
       /*
@@ -269,8 +269,8 @@ public class BartsyActivity extends FragmentActivity implements
 	public void onStop() {
         super.onStop();
         appendStatus("onStop()");
-        mApplication = (BartsyApplication)getApplication();
-        mApplication.deleteObserver(this);
+        mApp = (BartsyApplication)getApplication();
+        mApp.deleteObserver(this);
  	}
 
 	
@@ -341,7 +341,7 @@ public class BartsyActivity extends FragmentActivity implements
 	        case android.R.id.home:
 	            // app icon in action bar clicked; go home
 	            Intent intent;
-	            if (mIsServer)
+	            if (mIsHost)
 	            	intent = new Intent(this, AllJoynTabWidget.class);
 	            else
 	            	intent = new Intent(this, MapActivity.class);
@@ -371,7 +371,7 @@ public class BartsyActivity extends FragmentActivity implements
                 break;
 
 	        case R.id.action_quit:
-                mApplication.quit();
+                mApp.quit();
 	        	break;
                 
 	         default:
@@ -385,8 +385,8 @@ public class BartsyActivity extends FragmentActivity implements
     	
         Log.i(TAG, "updateChannelState()");
 
-        AllJoynService.UseChannelState channelState = mApplication.useGetChannelState();
-    	String name = mApplication.useGetChannelName();
+        AllJoynService.UseChannelState channelState = mApp.useGetChannelState();
+    	String name = mApp.useGetChannelName();
     	if (name == null) {
     		name = "Not set";
     	}
@@ -399,13 +399,19 @@ public class BartsyActivity extends FragmentActivity implements
             appendStatus("Channel iddle");
 
             // For now simply delete any open orders from the list
-            mApplication.mOrders.clear();
+            mApp.mOrders.clear();
             if (mOrdersFragment != null && mOrdersFragment.mOrderListView != null)
             	mOrdersFragment.updateOrdersView();
+            
+            // For now, also simply delete the list of people present
+            mApp.mPeople.clear();
+            if (mPeopleFragment != null && mPeopleFragment.mPeopleListView != null)
+            	mPeopleFragment.mPeopleListView.removeAllViews();
+             
             break;
         case JOINED: // There are only two states so this switch statement is complete
             // Set action bar item to the connected machine's name
-    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_connected, null);
+    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_connected, null); 
     	    ((TextView )view.findViewById(R.id.actionBarConnectedText)).setText(name);
             appendStatus("Joined a channel");
             break;	
@@ -477,11 +483,11 @@ public class BartsyActivity extends FragmentActivity implements
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
 			
-			if (mDebug && mIsServer) {
+			if (mDebug && mIsHost) {
 				mTabs = tabsDebugTablet;
-			} else if (mDebug && !mIsServer) {
+			} else if (mDebug && !mIsHost) {
 				mTabs = tabsDebugPhone;
-			} else if (mIsServer) {
+			} else if (mIsHost) {
 				mTabs = tabsTablet;
 			} else {
 				mTabs = tabsPhone;
@@ -604,7 +610,7 @@ public class BartsyActivity extends FragmentActivity implements
             case HANDLE_HISTORY_CHANGED_EVENT: {
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
 
-                String message = mApplication.getLastMessage();
+                String message = mApp.getLastMessage();
                 
                 // The history could be empty because this event is sent even on a channel init
                 if (message == null)
@@ -631,8 +637,8 @@ public class BartsyActivity extends FragmentActivity implements
     };
 
     private void alljoynError() {
-    	if (mApplication.getErrorModule() == BartsyApplication.Module.GENERAL ||
-    		mApplication.getErrorModule() == BartsyApplication.Module.USE) {
+    	if (mApp.getErrorModule() == BartsyApplication.Module.GENERAL ||
+    		mApp.getErrorModule() == BartsyApplication.Module.USE) {
     		appendStatus("AllJoyn ERROR!!!!!!");
     		//showDialog(DIALOG_ALLJOYN_ERROR_ID);
     	}
@@ -718,7 +724,7 @@ public class BartsyActivity extends FragmentActivity implements
     	appendStatus("Placing order for: " + drink.title);
     	
     	// Send order to server
-        mApplication.newLocalUserMessage(
+        mApp.newLocalUserMessage(
         			"<command><opcode>order</opcode>" +
         			"<argument>" + mOrderIDs + "</argument>"+					// client order ID
         			"<argument>" + mOrderIDs + "</argument>"+					// server order ID        			
@@ -726,7 +732,7 @@ public class BartsyActivity extends FragmentActivity implements
             		"<argument>" + drink.description + "</argument>" +
             		"<argument>" + drink.price + "</argument>" +
             		"<argument>" + drink.image_resource + "</argument>" +
-        			"<argument>" + mApplication.mProfile.userID+ "</argument>" +				// Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+        			"<argument>" + mApp.mProfile.userID + "</argument>" +		// Each order contains the profile of the sender (and later the profile of the person that should pick it up)
         			"</command>"
             		);
     	appendStatus("Placed drink order");
@@ -738,7 +744,7 @@ public class BartsyActivity extends FragmentActivity implements
     					drink.description,						// arg(3) - Description
     					drink.price,							// arg(4) - Price
     					Integer.toString(drink.image_resource),	// arg(5) - Image resource for the order
-    					mApplication.mProfile);					// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+    					mApp.mProfile);							// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
     	mOrdersFragment.addOrder(barOrder);
     	
     	// Increment the local order count
@@ -752,10 +758,14 @@ public class BartsyActivity extends FragmentActivity implements
     void processCommandOrder(BartsyCommand command) { 
 
     	appendStatus("Processing command for order:" + command.arguments.get(0));
+    	
+    	// Ignore order commands if not the host
+    	if (!mIsHost)
+    		return;
 
     	// Find the person who placed the order in the list of people in this bar. If not found, don't accept the order
     	Profile person = null;
-    	for (Profile p : mPeopleFragment.mPeople) {
+    	for (Profile p : mApp.mPeople) {
     		if (p.userID.equalsIgnoreCase(command.arguments.get(6))) {
     			// User found
     			person = p;
@@ -767,6 +777,7 @@ public class BartsyActivity extends FragmentActivity implements
     		return;
     	}
     	
+    	// Create a new order
     	BarOrder barOrder = new BarOrder();
     	barOrder.initialize(Integer.parseInt(command.arguments.get(0)),		// client order ID
     					mSessionID++,										// server order ID
@@ -791,11 +802,12 @@ public class BartsyActivity extends FragmentActivity implements
     	// Expects the order status and the server ID to be already set on this end
     	appendStatus("Sending order response for order: " + order.serverID);
     	
-        mApplication.newLocalUserMessage(
+        mApp.newLocalUserMessage(
         			"<command><opcode>order_status_changed</opcode>" +
-        			"<argument>" + order.status + "</argument>" +		// arg(0) - status is already updated on this end
-            		"<argument>" + order.serverID + "</argument>" +	// arg(1)
-        			"<argument>" + order.clientID + "</argument>" +	// arg(2)
+        			"<argument>" + order.status + "</argument>" +				// arg(0) - status is already updated on this end
+            		"<argument>" + order.serverID + "</argument>" +				// arg(1)
+        			"<argument>" + order.clientID + "</argument>" +				// arg(2)
+        			"<argument>" + order.orderSender.userID + "</argument>" +	// arg(3)
         			"</command>"
             		);
     }
@@ -807,17 +819,23 @@ public class BartsyActivity extends FragmentActivity implements
     	appendStatus("Received new remote order status: " + command.arguments.get(1));
 
     	int remote_status = Integer.parseInt(command.arguments.get(0));
-		int server_id = Integer.parseInt(command.arguments.get(1));
-		int client_id = Integer.parseInt(command.arguments.get(2));
+		long server_id = Long.parseLong(command.arguments.get(1));
+		long client_id = Long.parseLong(command.arguments.get(2));
+		String orderSenderID = command.arguments.get(3);
 
+		// Because with Alljoyn every connected client gets a command, we make sure this command is for us
+		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
+			return true;  
+		
+		
     	// Make sure the order exists only once on this side and some other conditions are met. 
     	BarOrder localOrder = null;
     	int order_index = -1, i =0;
-    	for (BarOrder order : mApplication.mOrders) {
+    	for (BarOrder order : mApp.mOrders) {
     		appendStatus("Looking at order " + order.clientID + " in position " + i);
     		if (order.clientID == client_id) {
             	appendStatus("ORDER FOUND at position " + i);
-    			localOrder = mApplication.mOrders.get(i);
+    			localOrder = mApp.mOrders.get(i);
     			order_index = i;
     		}
     		i++;
@@ -884,7 +902,7 @@ public class BartsyActivity extends FragmentActivity implements
     	
     	appendStatus("Sending drink to: " + user.getNickname());
     	
-        mApplication.newLocalUserMessage(
+        mApp.newLocalUserMessage(
         			"<command><opcode>message</opcode>" +
         			"<argument>" + user.getNickname() + "</argument>" +
             		"<argument>" + "hi buddy" + "</argument>" +
@@ -903,7 +921,7 @@ public class BartsyActivity extends FragmentActivity implements
     	
     	appendStatus("Sending message to: " + user.getNickname());
     	
-        mApplication.newLocalUserMessage(
+        mApp.newLocalUserMessage(
         			"<command><opcode>message</opcode>" +
         			"<argument>" + user.getNickname() + "</argument>" +
             		"<argument>" + "hi buddy" + "</argument>" +

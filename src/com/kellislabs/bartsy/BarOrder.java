@@ -104,7 +104,7 @@ public class BarOrder  {
 		
 		// Update sender profile section
 		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);
-		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setScaleType(ScaleType.FIT_CENTER);
+		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setScaleType(ScaleType.FIT_XY);
 		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(this.orderSender.username);
 
 

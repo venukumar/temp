@@ -16,14 +16,14 @@
             android:layout_height="100dp" >
 
             <ImageView
-                android:id="@+id/ImageView16"
+                android:id="@+id/view_user_list_image_resource"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:scaleType="fitXY"
                 android:src="@drawable/christina" />
 
             <ImageView
-                android:id="@+id/view_user_list_image_resource"
+                android:id="@+id/ImageView16"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:scaleType="fitXY"
