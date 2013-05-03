@@ -42,7 +42,6 @@
                 android:id="@+id/view_drink_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sambuca on the rocks"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -51,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
-
+<!--  
                 <LinearLayout
                     android:id="@+id/view_drink_qualifier_list"
                     android:layout_width="match_parent"
@@ -79,6 +78,7 @@
                         android:text="It&apos;s in your favorites"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
                 </LinearLayout>
+-->
             </LinearLayout>
         </LinearLayout>
 
@@ -94,7 +94,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center_horizontal"
-                android:text="$6"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="#995555"
                 android:textSize="24sp"
