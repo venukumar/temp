@@ -6,29 +6,18 @@ package com.kellislabs.bartsy;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
 import com.kellislabs.bartsy.adapters.ExpandableListAdapter;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
 import com.kellislabs.bartsy.model.Section;
-import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
 /**
@@ -68,15 +57,31 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 			} else {
 				loadMenuSections();
 			}
+			List<Section> sectionsList = DatabaseManager.getInstance()
+					.getMenuSections();
+			ArrayList<String> groupNames = new ArrayList<String>();
+			for (int i = 0; i < sectionsList.size(); i++) {
+				groupNames.add(sectionsList.get(i).getName());
+			}
+			ArrayList<ArrayList<MenuDrink>> menuDrinks = new ArrayList<ArrayList<MenuDrink>>();
 
-			for (int i = 0; i < sections.size(); i++) {
-				Section section = sections.get(i);
-				List<MenuDrink> menuDrinks = DatabaseManager.getInstance()
-						.getMenuDrinks(section);
-				section.setDrinks(menuDrinks);
+			for (int j = 0; j < sectionsList.size(); j++) {
+				List<MenuDrink> list = DatabaseManager.getInstance()
+						.getMenuDrinks(sectionsList.get(j));
+				ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
+				menuDrinks.add(menu);
+
 			}
 
-			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),mDrinksListView,sections));
+			/*
+			 * for (int i = 0; i < sections.size(); i++) { Section section =
+			 * sections.get(i); List<MenuDrink> menuDrinks =
+			 * DatabaseManager.getInstance() .getMenuDrinks(section);
+			 * section.setDrinks(menuDrinks); }
+			 */
+
+			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
+					groupNames, menuDrinks));
 			//
 			// for (Section menuSection : sections) {
 			//
@@ -145,7 +150,6 @@ public class DrinksSectionFragment extends Fragment implements OnClickListener {
 		mContainer = null;
 	}
 
-	
 	/**
 	 * To get Sections and Drinks from the server
 	 */
