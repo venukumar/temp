@@ -48,28 +48,41 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements  OnClickListener {
     
+	BartsyApplication mApp = null;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+        mApp = (BartsyApplication) getApplication();
         
-		if (((BartsyApplication)getApplication()).activeVenue == null) {
-			// No active venue - hide active menue UI
-			findViewById(R.id.button_active_venue).setVisibility(View.GONE);
+        VenueProfile venue = ((BartsyApplication)getApplication()).activeVenue;
+        
+		if ( venue == null) {
+			// No active venue - hide active menu UI
+			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
 		} else {
 			// Active venue exists - set up the active venue view
 			// For now just show it
-			findViewById(R.id.button_active_venue).setVisibility(View.VISIBLE);
-		}
+			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
 			
-
+			// Set up button 
+			Button b = (Button) findViewById(R.id.button_active_venue);
+			b.setText("Checked in at " + venue.name + "\n(" + mApp.mOrders.size() + ")");
+		}
         
         // Set up button listeners
 		((Button) findViewById(R.id.button_checkin)).setOnClickListener(this);
 		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
 		((View) findViewById(R.id.button_active_venue)).setOnClickListener(this);
+		((View) findViewById(R.id.button_notifications)).setOnClickListener(this);
+		((View) findViewById(R.id.button_payments)).setOnClickListener(this);
+		((View) findViewById(R.id.button_profile)).setOnClickListener(this);
+		((View) findViewById(R.id.button_payments_dismiss)).setOnClickListener(this);
+		((View) findViewById(R.id.button_profile_dismiss)).setOnClickListener(this);
+		((View) findViewById(R.id.button_my_venues)).setOnClickListener(this);
         
         // Hide action bar
         getActionBar().hide();
@@ -99,8 +112,27 @@ public class MainActivity extends FragmentActivity implements  OnClickListener {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
+		case R.id.button_payments:
+			break;
+		case R.id.button_payments_dismiss:
+			// For now simply modify the UI. This should open a dialog with choices: remind again, don't remind again
+			((View)v.getParent()).setVisibility(View.GONE);
+			break;
+		case R.id.button_profile:
+			break;
+		case R.id.button_profile_dismiss:
+			// For now simply modify the UI. This should open a dialog with choices: remind again, don't remind again
+			((View)v.getParent()).setVisibility(View.GONE);
+			break;
 		case R.id.button_checkin:
 			intent = new Intent().setClass(this, MapActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
+			break;
+		case R.id.button_my_venues:
+			break;
+		case R.id.button_notifications:
+			intent = new Intent().setClass(this, NotificationsActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;

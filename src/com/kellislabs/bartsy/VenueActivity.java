@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.xmlpull.v1.XmlPullParserException;
+
+import wifi.AllJoynTabWidget;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
@@ -55,7 +57,7 @@ import com.kellislabs.bartsy.model.MenuDrink;
 
 public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener, PeopleDialogFragment.UserDialogListener,
-		AllJoynObserver {
+		AppObserver {
 
  
 	/****************
@@ -404,7 +406,7 @@ public class VenueActivity extends FragmentActivity implements
     	
         Log.i(TAG, "updateChannelState()");
 
-        AllJoynService.UseChannelState channelState = mApp.useGetChannelState();
+        ConnectivityService.UseChannelState channelState = mApp.useGetChannelState();
     	String name = mApp.useGetChannelName();
     	if (name == null) {
     		name = "Not Checked in";
@@ -609,7 +611,7 @@ public class VenueActivity extends FragmentActivity implements
      */
 
 
-    public synchronized void update(AllJoynObservable o, Object arg) {
+    public synchronized void update(AppObservable o, Object arg) {
         Log.i(TAG, "update(" + arg + ")");
         String qualifier = (String)arg;
         
@@ -769,8 +771,8 @@ public class VenueActivity extends FragmentActivity implements
             		);
     	appendStatus("Placed drink order");
     	
-    	BarOrder barOrder = new BarOrder();
-    	barOrder.initialize(mApp.mOrderIDs,						// arg(0) - Client order ID
+    	Order order = new Order();
+    	order.initialize(mApp.mOrderIDs,						// arg(0) - Client order ID
     					mApp.mOrderIDs,							// arg(1) - Server order ID - use client ID for now
     					drink.getTitle(),							// arg(2) - Title
     					drink.getDescription(),						// arg(3) - Description
@@ -778,7 +780,7 @@ public class VenueActivity extends FragmentActivity implements
     					Integer.toString(R.drawable.drinks), // for now always use the same picture for the drink
 //    					drink.getImage(),	// arg(5) - Image resource for the order
     					mApp.mProfile);							// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
-    	mOrdersFragment.addOrder(barOrder);
+    	mOrdersFragment.addOrder(order);
     	
     	// Increment the local order count
     	mApp.mOrderIDs++;
@@ -812,15 +814,15 @@ public class VenueActivity extends FragmentActivity implements
     	}
     	
     	// Create a new order
-    	BarOrder barOrder = new BarOrder();
-    	barOrder.initialize(Integer.parseInt(command.arguments.get(0)),		// client order ID
+    	Order order = new Order();
+    	order.initialize(Integer.parseInt(command.arguments.get(0)),		// client order ID
     					mApp.mSessionID++,									// server order ID
     					command.arguments.get(2),							// Title
     					command.arguments.get(3),							// Description
     					command.arguments.get(4),							// Price
     					command.arguments.get(5),							// Image resource
     					person);											// Order sender ID
-    	mOrdersFragment.addOrder(barOrder);
+    	mOrdersFragment.addOrder(order);
     	
     	updateOrdersCount();
     }
@@ -833,7 +835,7 @@ public class VenueActivity extends FragmentActivity implements
      */
     
     
-    public void sendOrderStatusChanged(BarOrder order) {
+    public void sendOrderStatusChanged(Order order) {
     	// Expects the order status and the server ID to be already set on this end
     	appendStatus("Sending order response for order: " + order.serverID);
     	
@@ -868,9 +870,9 @@ public class VenueActivity extends FragmentActivity implements
 		
 		
     	// Make sure the order exists only once on this side and some other conditions are met. 
-    	BarOrder localOrder = null;
+    	Order localOrder = null;
     	int order_index = -1, i =0;
-    	for (BarOrder order : mApp.mOrders) {
+    	for (Order order : mApp.mOrders) {
     		appendStatus("Looking at order " + order.clientID + " in position " + i);
     		if (order.clientID == client_id) {
             	appendStatus("ORDER FOUND at position " + i);
@@ -884,7 +886,7 @@ public class VenueActivity extends FragmentActivity implements
         	appendStatus("ERROR - ORDER MISMATCH");
     		return true;
     	}
-    	if (remote_status != BarOrder.ORDER_STATUS_IN_PROGRESS && localOrder.serverID != server_id)
+    	if (remote_status != Order.ORDER_STATUS_IN_PROGRESS && localOrder.serverID != server_id)
     	{
         	appendStatus("ERROR - ORDER ID MISMATCH");
     		return true;
@@ -892,26 +894,26 @@ public class VenueActivity extends FragmentActivity implements
     	
     	// Update the status of the local order based on that of the remote order and return on error
     	switch (remote_status) {
-    	case BarOrder.ORDER_STATUS_IN_PROGRESS:
+    	case Order.ORDER_STATUS_IN_PROGRESS:
     		// The order has been accepted remotely. Set the server_id on this order and update status and view
-    		if (localOrder.status != BarOrder.ORDER_STATUS_NEW)
+    		if (localOrder.status != Order.ORDER_STATUS_NEW)
     			return true;
     		localOrder.serverID = server_id;
     		localOrder.nextPositiveState();
     		localOrder.updateView();
     		break;
-    	case BarOrder.ORDER_STATUS_READY:
+    	case Order.ORDER_STATUS_READY:
     		// Remote order ready. Notify client with a notification and update status/view
-    		if (localOrder.status != BarOrder.ORDER_STATUS_IN_PROGRESS)
+    		if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
     			return true;
     		localOrder.nextPositiveState();
     		localOrder.updateView();
     		this.createNotification("Your " + localOrder.title + " order is ready", 
     				"Please go to the Bartsy Point to pick it up");
     		break;
-    	case BarOrder.ORDER_STATUS_COMPLETE:
+    	case Order.ORDER_STATUS_COMPLETE:
     		// Remote order ready. Notify client with a notification and update status/view
-    		if (localOrder.status != BarOrder.ORDER_STATUS_READY)
+    		if (localOrder.status != Order.ORDER_STATUS_READY)
     			return true;
     		localOrder.nextPositiveState();
     		

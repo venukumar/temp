@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.kellislabs.bartsy;
+package wifi;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -34,6 +34,8 @@ import android.util.Log;
 
 import java.util.List;
 import com.kellislabs.bartsy.*;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 
 public class AllJoynDialogBuilder {
     private static final String TAG = "Bartsy";

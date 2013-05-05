@@ -15,9 +15,9 @@
  */
 package com.kellislabs.bartsy;
 
-import com.kellislabs.bartsy.AllJoynObserver;
+import com.kellislabs.bartsy.AppObserver;
 
-public interface AllJoynObservable {
-	public void addObserver(AllJoynObserver obs);
-	public void deleteObserver(AllJoynObserver obs);
+public interface AppObservable {
+	public void addObserver(AppObserver obs);
+	public void deleteObserver(AppObserver obs);
 }

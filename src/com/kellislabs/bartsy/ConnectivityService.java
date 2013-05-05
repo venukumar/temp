@@ -33,6 +33,8 @@ import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
 import org.alljoyn.bus.p2p.WifiDirectAutoAccept;
 
+import wifi.AllJoynChatInterface;
+
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -51,7 +53,7 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
 
-public class AllJoynService extends Service implements AllJoynObserver {
+public class ConnectivityService extends Service implements AppObserver {
 	private static final String TAG = "Bartsy";
 
 	/**
@@ -195,7 +197,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
      * Android thread.
      */
     @Override
-	public synchronized void update(AllJoynObservable o, Object arg) {
+	public synchronized void update(AppObservable o, Object arg) {
         Log.i(TAG, "update(" + arg + ")");
         String qualifier = (String)arg;
         
@@ -603,7 +605,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         }
         
         public void useAutoConnect() {
-            if (mApp.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
+            if (mApp.useGetChannelState() == ConnectivityService.UseChannelState.IDLE) {
             	// We haven't yet connected to any channels, connect to the first one found
                 List<String> channels = mApp.getFoundChannels(); 
                 String channel = null;
@@ -629,7 +631,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
 //        		name = "Not set";
 //        	}
         	
-        	// For now just check in the venue with this channel, ignoring the fact we may already be checking in
+        	// For now just check in the venue with this channel, ignoring the fact we may already be checked in
         	mApp.activeVenue = new VenueProfile("locu_venue_id",
         			name, "Santa Monica, CA", 
         			"Cool venue", "very cool venue",
@@ -651,7 +653,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
             case CONNECTED:
                 Log.i(TAG, "Host channel state is connected.");
             	// as soon as the channel is advertised, join it
-            	if (mApp.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
+            	if (mApp.useGetChannelState() == ConnectivityService.UseChannelState.IDLE) {
             		// Join the service as a user 
                     Log.i(TAG, "Use channel state is IDLE.");
             		

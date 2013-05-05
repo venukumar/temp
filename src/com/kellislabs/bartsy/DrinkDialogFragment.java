@@ -55,15 +55,15 @@ public class DrinkDialogFragment extends DialogFragment  {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
    
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-	    // Get the layout inflater
+		// Create dialog and set animation styles
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());//, R.style.DrinkDialog);
+		
+		
+		// Get the layout inflater
 	    LayoutInflater inflater = getActivity().getLayoutInflater();
 
 	    // Inflate and set the layout for the dialog
 	    // Pass null as the parent view because its going in the dialog layout
-	    
-	    
-	    
 	    View view = inflater.inflate(R.layout.dialog_drink_order, null);
 	    
 	    // Customize dialog for this drink
@@ -83,6 +83,8 @@ public class DrinkDialogFragment extends DialogFragment  {
                     mListener.onDialogPositiveClick(DrinkDialogFragment.this);
 	            }
         });      
+	    
+	    // Create dialog and set up animation
 	    return builder.create();
 	}
 }

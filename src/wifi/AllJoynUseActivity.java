@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.kellislabs.bartsy;
+package wifi;
 
 
 import android.os.Handler;
@@ -39,7 +39,20 @@ import android.util.Log;
 
 import java.util.List;
 
-public class AllJoynUseActivity extends Activity implements AllJoynObserver {
+import com.kellislabs.bartsy.AppObservable;
+import com.kellislabs.bartsy.AppObserver;
+import com.kellislabs.bartsy.BartsyApplication;
+import com.kellislabs.bartsy.ConnectivityService;
+import com.kellislabs.bartsy.InitActivity;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.VenueActivity;
+import com.kellislabs.bartsy.BartsyApplication.Module;
+import com.kellislabs.bartsy.ConnectivityService.UseChannelState;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
+
+
+public class AllJoynUseActivity extends Activity implements AppObserver {
     private static final String TAG = "Bartsy";
     
     @Override
@@ -169,7 +182,7 @@ public class AllJoynUseActivity extends Activity implements AllJoynObserver {
     }
     
     @Override
-	public synchronized void update(AllJoynObservable o, Object arg) {
+	public synchronized void update(AppObservable o, Object arg) {
         Log.i(TAG, "update(" + arg + ")");
         String qualifier = (String)arg;
         
@@ -206,7 +219,7 @@ public class AllJoynUseActivity extends Activity implements AllJoynObserver {
     
     private void updateChannelState() {
         Log.i(TAG, "updateChannelState()");
-    	AllJoynService.UseChannelState channelState = mBartsyApplication.useGetChannelState();
+    	ConnectivityService.UseChannelState channelState = mBartsyApplication.useGetChannelState();
     	String name = mBartsyApplication.useGetChannelName();
     	if (name == null) {
     		name = "Not set";

@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
-public class BarOrder  {
+public class Order  {
 
 	// Each order has an ID that is unique within a session number
 	public long clientID, serverID;

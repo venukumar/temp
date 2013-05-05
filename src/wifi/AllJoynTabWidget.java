@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.kellislabs.bartsy;
+package wifi;
 
 import android.os.Bundle;
 import android.app.TabActivity;
@@ -25,6 +25,10 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
 import com.kellislabs.bartsy.*;
+import com.kellislabs.bartsy.R.bool;
+import com.kellislabs.bartsy.R.drawable;
+import com.kellislabs.bartsy.R.layout;
+import com.kellislabs.bartsy.R.string;
 import com.kellislabs.bartsy.db.DatabaseManager;
 
 public class AllJoynTabWidget extends TabActivity {

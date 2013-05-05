@@ -38,9 +38,9 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import com.kellislabs.bartsy.AllJoynService.BusAttachmentState;
-import com.kellislabs.bartsy.AllJoynService.HostChannelState;
-import com.kellislabs.bartsy.AllJoynService.UseChannelState;
+import com.kellislabs.bartsy.ConnectivityService.BusAttachmentState;
+import com.kellislabs.bartsy.ConnectivityService.HostChannelState;
+import com.kellislabs.bartsy.ConnectivityService.UseChannelState;
 import com.kellislabs.bartsy.db.DatabaseManager;
 
 /**
@@ -84,7 +84,7 @@ import com.kellislabs.bartsy.db.DatabaseManager;
  * state that is required to correctly display Activities when they are
  * recreated.
  */
-public class BartsyApplication extends Application implements AllJoynObservable {
+public class BartsyApplication extends Application implements AppObservable {
     private static final String TAG = "Bartsy";
     public static String PACKAGE_NAME;
 	/**
@@ -95,7 +95,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
     public void onCreate() {
         Log.i(TAG, "onCreate()");
         PACKAGE_NAME = getApplicationContext().getPackageName();
-        Intent intent = new Intent(this, AllJoynService.class);
+        Intent intent = new Intent(this, ConnectivityService.class);
         mRunningService = startService(intent);
         if (mRunningService == null) {
             Log.i(TAG, "onCreate(): failed to startService()");
@@ -185,7 +185,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
   	 * 
   	 */
   
-	ArrayList<BarOrder> mOrders = new ArrayList<BarOrder>();
+	ArrayList<Order> mOrders = new ArrayList<Order>();
   
   
   
@@ -226,7 +226,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
         Log.i(TAG, "checkin()");
     	if (mRunningService == null) {
             Log.i(TAG, "checkin():  Starting the AllJoynService");
-            Intent intent = new Intent(this, AllJoynService.class);
+            Intent intent = new Intent(this, ConnectivityService.class);
             mRunningService = startService(intent);
             if (mRunningService == null) {
                 Log.i(TAG, "checkin(): failed to startService()");
@@ -373,14 +373,14 @@ public class BartsyApplication extends Application implements AllJoynObservable 
      * it automatically connects and starts discovering other instances of the
      * application, so this isn't terribly interesting.
 	 */
-	public AllJoynService.BusAttachmentState mBusAttachmentState = AllJoynService.BusAttachmentState.DISCONNECTED;
+	public ConnectivityService.BusAttachmentState mBusAttachmentState = ConnectivityService.BusAttachmentState.DISCONNECTED;
 
 	/**
 	 * Set the status of the "host" channel.  The AllJoyn Service part of the
 	 * Application is expected to make this call to set the status to reflect
 	 * the status of the underlying AllJoyn session.  
 	 */
-	public synchronized void hostSetChannelState(AllJoynService.HostChannelState state) {
+	public synchronized void hostSetChannelState(ConnectivityService.HostChannelState state) {
 		mHostChannelState = state;
 		notifyObservers(HOST_CHANNEL_STATE_CHANGED_EVENT);
 	}
@@ -388,7 +388,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	/**
 	 * Get the state of the "use" channel. 
 	 */
-	public synchronized AllJoynService.HostChannelState hostGetChannelState() {
+	public synchronized ConnectivityService.HostChannelState hostGetChannelState() {
 		return mHostChannelState;
 	}
 	/** 
@@ -397,7 +397,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
      * of detail probably isn't appropriate, but we want to do so for this
      * sample.
 	 */
-	private AllJoynService.HostChannelState mHostChannelState = AllJoynService.HostChannelState.IDLE;
+	private ConnectivityService.HostChannelState mHostChannelState = ConnectivityService.HostChannelState.IDLE;
 	
 	/**
 	 * Set the name part of the "host" channel.  Since we are going to "use" a
@@ -438,7 +438,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 * appliciation is expected to make this call to set the status to reflect
 	 * the status of the underlying AllJoyn session.  
 	 */
-	public synchronized void useSetChannelState(AllJoynService.UseChannelState state) {
+	public synchronized void useSetChannelState(ConnectivityService.UseChannelState state) {
 		mUseChannelState = state;
 		notifyObservers(USE_CHANNEL_STATE_CHANGED_EVENT);
 	}
@@ -446,7 +446,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	/**
 	 * Get the state of the "use" channel. 
 	 */
-	public synchronized AllJoynService.UseChannelState useGetChannelState() {
+	public synchronized ConnectivityService.UseChannelState useGetChannelState() {
 		return mUseChannelState;
 	}
 	
@@ -456,7 +456,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
      * this kind of detail probably isn't appropriate, but we want to do so for
      * this sample.
 	 */
-	private AllJoynService.UseChannelState mUseChannelState = AllJoynService.UseChannelState.IDLE;
+	private ConnectivityService.UseChannelState mUseChannelState = ConnectivityService.UseChannelState.IDLE;
 	
 	/** 
      * The name of the "use" channel which the user has selected.
@@ -584,7 +584,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 */
 	public synchronized void newLocalUserMessage(String message) {
 		addInboundItem("Me", message);
-		if (useGetChannelState() == AllJoynService.UseChannelState.JOINED) {
+		if (useGetChannelState() == ConnectivityService.UseChannelState.JOINED) {
 			addOutboundItem(message);
 		}
 	}
@@ -749,7 +749,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 * When an observer wants to register for change notifications, it calls
 	 * here. 
 	 */
-	public synchronized void addObserver(AllJoynObserver obs) {
+	public synchronized void addObserver(AppObserver obs) {
         Log.i(TAG, "addObserver(" + obs + ")");
 		if (mObservers.indexOf(obs) < 0) {
 			mObservers.add(obs);
@@ -760,7 +760,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 * When an observer wants to unregister to stop receiving change 
 	 * notifications, it calls here. 
 	 */
-	public synchronized void deleteObserver(AllJoynObserver obs) {
+	public synchronized void deleteObserver(AppObserver obs) {
         Log.i(TAG, "deleteObserver(" + obs + ")");
 		mObservers.remove(obs);
 	}
@@ -780,7 +780,7 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 */
 	private void notifyObservers(Object arg) {
         Log.i(TAG, "notifyObservers(" + arg + ")");
-        for (AllJoynObserver obs : mObservers) {
+        for (AppObserver obs : mObservers) {
             Log.i(TAG, "notify observer = " + obs);
             obs.update(this, arg);
         }
@@ -790,5 +790,5 @@ public class BartsyApplication extends Application implements AllJoynObservable 
 	 * The observers list is the list of all objects that have registered with
 	 * us as observers in order to get notifications of interesting events.
 	 */
-	private List<AllJoynObserver> mObservers = new ArrayList<AllJoynObserver>();
+	private List<AppObserver> mObservers = new ArrayList<AppObserver>();
 }

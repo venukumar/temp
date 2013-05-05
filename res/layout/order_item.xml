@@ -177,7 +177,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="1/3 oz Dry Vermouth"
-                                    android:textSize="10sp" />
+                                    android:textSize="11sp" />
                             </LinearLayout>
 
                             <LinearLayout

@@ -41,7 +41,7 @@
         android:name=".BartsyApplication"> 
         
         <activity
-            android:name=".AllJoynTabWidget"
+            android:name="wifi.AllJoynTabWidget"
             android:label="@string/app_name">
            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,13 +50,13 @@
         </activity>
 
         <activity 
-            android:name=".AllJoynHostActivity" 
+            android:name="wifi.AllJoynHostActivity" 
             android:windowSoftInputMode="adjustResize"
             android:label="AllJoyn Chat Channel Hosting">
         </activity>
 
         <activity 
-            android:name=".AllJoynUseActivity"
+            android:name="wifi.AllJoynUseActivity"
             android:windowSoftInputMode="adjustResize"
             android:label="AllJoyn Chat Channel Usage">
         </activity>

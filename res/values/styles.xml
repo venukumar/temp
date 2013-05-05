@@ -15,6 +15,15 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        
     </style>
    
+ 	<style name="DrinkDialog" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:windowAnimationStyle">@style/DrinkDialogAnimation</item>
+    </style>
+
+    <style name="DrinkDialogAnimation">
+        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
+    </style>    
+    
 </resources>

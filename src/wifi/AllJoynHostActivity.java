@@ -14,11 +14,14 @@
  *    limitations under the License.
  */
 
-package com.kellislabs.bartsy;
+package wifi;
 
-import com.kellislabs.bartsy.AllJoynObservable;
-import com.kellislabs.bartsy.AllJoynObserver;
-import com.kellislabs.bartsy.AllJoynDialogBuilder;
+
+import com.kellislabs.bartsy.AppObservable;
+import com.kellislabs.bartsy.AppObserver;
+import com.kellislabs.bartsy.ConnectivityService;
+import com.kellislabs.bartsy.BartsyApplication;
+import com.kellislabs.bartsy.R;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,8 +37,12 @@ import android.widget.TextView;
 
 import android.util.Log;
 import com.kellislabs.bartsy.*;
+import com.kellislabs.bartsy.ConnectivityService.HostChannelState;
+import com.kellislabs.bartsy.BartsyApplication.Module;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 
-public class AllJoynHostActivity extends Activity implements AllJoynObserver {
+public class AllJoynHostActivity extends Activity implements AppObserver {
     private static final String TAG = "Bartsy";
      
     public void onCreate(Bundle savedInstanceState) {
@@ -151,7 +158,7 @@ public class AllJoynHostActivity extends Activity implements AllJoynObserver {
         return result;
     }
     
-    public synchronized void update(AllJoynObservable o, Object arg) {
+    public synchronized void update(AppObservable o, Object arg) {
         Log.i(TAG, "update(" + arg + ")");
         String qualifier = (String)arg;
         
@@ -172,7 +179,7 @@ public class AllJoynHostActivity extends Activity implements AllJoynObserver {
     }
     
     private void updateChannelState() {
-    	AllJoynService.HostChannelState channelState = mBartsyApplication.hostGetChannelState();
+    	ConnectivityService.HostChannelState channelState = mBartsyApplication.hostGetChannelState();
     	String name = mBartsyApplication.hostGetChannelName();
     	boolean haveName = true;
     	if (name == null) {
@@ -201,7 +208,7 @@ public class AllJoynHostActivity extends Activity implements AllJoynObserver {
             break;
         }
         
-        if (channelState == AllJoynService.HostChannelState.IDLE) {
+        if (channelState == ConnectivityService.HostChannelState.IDLE) {
             mSetNameButton.setEnabled(true);
             if (haveName) {
             	mStartButton.setEnabled(true);
