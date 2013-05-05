@@ -92,7 +92,8 @@
         
         <activity 
             android:name="com.kellislabs.bartsy.MapActivity"
-            android:label="People at nearby Bartsy points" >
+            android:theme="@style/AppTheme"
+            android:label="Bartsy points" >
         </activity>
         
         <activity 
