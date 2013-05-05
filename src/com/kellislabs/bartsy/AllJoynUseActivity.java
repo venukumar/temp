@@ -86,7 +86,7 @@ public class AllJoynUseActivity extends Activity implements AllJoynObserver {
         	.setOnClickListener(new View.OnClickListener() {
         		@Override
 				public void onClick(View v) {
-        	        Intent intent = new Intent(getApplication(), BartsyActivity.class);
+        	        Intent intent = new Intent(getApplication(), VenueActivity.class);
         	        startActivity(intent);
         		}
         });

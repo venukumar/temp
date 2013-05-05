@@ -95,7 +95,7 @@ public class MainActivity extends FragmentActivity implements  OnClickListener {
 		
 		switch (v.getId()) {
 		case R.id.button_active_venue:
-			intent = new Intent().setClass(this, BartsyActivity.class);
+			intent = new Intent().setClass(this, VenueActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;

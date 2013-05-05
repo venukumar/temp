@@ -150,7 +150,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 			// Update the order status locally and send the update to the remote
 			order.nextPositiveState();
-			((BartsyActivity) getActivity()).sendOrderStatusChanged(order);
+			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
 			
 			if (order.status == BarOrder.ORDER_STATUS_COMPLETE) {
 				// Trash the order for now (later save it to log of past orders)

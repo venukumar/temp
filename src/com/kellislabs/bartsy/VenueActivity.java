@@ -53,7 +53,7 @@ import com.kellislabs.bartsy.CommandParser.BartsyCommand;
 import com.kellislabs.bartsy.model.MenuDrink;
 
 
-public class BartsyActivity extends FragmentActivity implements
+public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener, PeopleDialogFragment.UserDialogListener,
 		AllJoynObserver {
 
@@ -61,7 +61,7 @@ public class BartsyActivity extends FragmentActivity implements
 	/****************
 	 * 
 	 * 
-	 * 
+	 * TODO - global variables
 	 *  
 	 */
        
@@ -462,7 +462,7 @@ public class BartsyActivity extends FragmentActivity implements
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages. 
 	 */
-	BartsyActivity main_activity = this;
+	VenueActivity main_activity = this;
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -538,7 +538,7 @@ public class BartsyActivity extends FragmentActivity implements
 		        .setContentTitle(title)
 		        .setContentText(text);
 		// Creates an explicit intent for an Activity in your app
-		Intent resultIntent = new Intent(this, BartsyActivity.class);
+		Intent resultIntent = new Intent(this, VenueActivity.class);
 
 		
 		// The stack builder object will contain an artificial back stack for the
@@ -547,7 +547,7 @@ public class BartsyActivity extends FragmentActivity implements
 		// your application to the Home screen.
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 		// Adds the back stack for the Intent (but not the Intent itself)
-		stackBuilder.addParentStack(BartsyActivity.class);
+		stackBuilder.addParentStack(VenueActivity.class);
 		// Adds the Intent that starts the Activity to the top of the stack
 		stackBuilder.addNextIntent(resultIntent);
 		PendingIntent resultPendingIntent =

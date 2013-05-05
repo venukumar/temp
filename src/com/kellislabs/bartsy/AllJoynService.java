@@ -84,7 +84,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         
         CharSequence title = "Bartsy";
         CharSequence message = "Connectivity Service.";
-        Intent intent = new Intent(this, BartsyActivity.class);
+        Intent intent = new Intent(this, VenueActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         Notification notification = new Notification(R.drawable.ic_launcher, null, System.currentTimeMillis());
         notification.setLatestEventInfo(this, title, message, pendingIntent);

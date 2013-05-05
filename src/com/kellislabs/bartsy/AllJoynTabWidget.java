@@ -77,7 +77,7 @@ public class AllJoynTabWidget extends TabActivity {
 		// Start the right activity depending on whether we're a tablet or a
 		// phone
 		if (getResources().getBoolean(R.bool.isTablet)) {
-			intent = new Intent().setClass(this, BartsyActivity.class);
+			intent = new Intent().setClass(this, VenueActivity.class);
 		} else {
 			// If the user profile has no been set, start the init, if it has,
 			// start Bartsy

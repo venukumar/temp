@@ -176,7 +176,7 @@ public class MapActivity extends Activity implements LocationListener, OnClickLi
 	@Override
 	public void onClick(View arg0) {
 		// Just start the bartsy activity regardless of where the use clicks for now
-		this.startActivity(new Intent().setClass(this, BartsyActivity.class));
+		this.startActivity(new Intent().setClass(this, VenueActivity.class));
 	}
 	
 }
