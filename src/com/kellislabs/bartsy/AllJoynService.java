@@ -46,6 +46,7 @@ import android.app.Service;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import android.util.Base64;
 import android.util.Log;
@@ -78,8 +79,8 @@ public class AllJoynService extends Service implements AllJoynObserver {
 	public void onCreate() {
         Log.i(TAG, "onCreate()");
         startBusThread();
-        mApplication = (BartsyApplication)getApplication();
-        mApplication.addObserver(this);
+        mApp = (BartsyApplication)getApplication();
+        mApp.addObserver(this);
         
         CharSequence title = "Bartsy";
         CharSequence message = "Connectivity Service.";
@@ -140,7 +141,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         mBackgroundHandler.cancelDiscovery();
         mBackgroundHandler.disconnect();
         stopBusThread();
-        mApplication.deleteObserver(this);
+        mApp.deleteObserver(this);
  	}
     
 	/**
@@ -166,7 +167,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
      * A reference to a descendent of the Android Application class that is
      * acting as the Model of our MVC-based application.
      */
-     private BartsyApplication mApplication = null;
+     private BartsyApplication mApp = null;
 	
     /**
      * This is the event handler for the Observable/Observed design pattern.
@@ -602,9 +603,9 @@ public class AllJoynService extends Service implements AllJoynObserver {
         }
         
         public void useAutoConnect() {
-            if (mApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
+            if (mApp.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
             	// We haven't yet connected to any channels, connect to the first one found
-                List<String> channels = mApplication.getFoundChannels(); 
+                List<String> channels = mApp.getFoundChannels(); 
                 String channel = null;
                 for (String c : channels) {
                 	int lastDot = c.lastIndexOf('.');
@@ -620,35 +621,41 @@ public class AllJoynService extends Service implements AllJoynObserver {
                 }
                 
                 Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): setting use channel name to: " + channels.get(0));
-                mApplication.useSetChannelName(channel);
-                mApplication.useJoinChannel();
+                mApp.useSetChannelName(channel);
+                mApp.useJoinChannel();
             }
-        	String name = mApplication.useGetChannelName();
+        	String name = mApp.useGetChannelName();
 //        	if (name == null) {
 //        		name = "Not set";
 //        	}
+        	
+        	// For now just check in the venue with this channel, ignoring the fact we may already be checking in
+        	mApp.activeVenue = new VenueProfile("locu_venue_id",
+        			name, "Santa Monica, CA", 
+        			"Cool venue", "very cool venue",
+        			BitmapFactory.decodeResource(getResources(), R.drawable.finnmccools));
         }
         
         public void hostAutoConnect() {
         	// Host channel started, join the channel as a user in order to be able to start receiving messages
             
-            switch ( mApplication.hostGetChannelState()) {
+            switch ( mApp.hostGetChannelState()) {
             case IDLE:
             	// wait for the channel to be named
                 Log.i(TAG, "Host channel state is idle. Naming it: " + getResources().getString(R.string.config_venue_channel_name));
-                mApplication.hostSetChannelName(getResources().getString(R.string.config_venue_channel_name));
-                mApplication.hostStartChannel();
+                mApp.hostSetChannelName(getResources().getString(R.string.config_venue_channel_name));
+                mApp.hostStartChannel();
             	break; 
             case ADVERTISED:
                 Log.i(TAG, "Host channel state is advertised.");
             case CONNECTED:
                 Log.i(TAG, "Host channel state is connected.");
             	// as soon as the channel is advertised, join it
-            	if (mApplication.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
+            	if (mApp.useGetChannelState() == AllJoynService.UseChannelState.IDLE) {
             		// Join the service as a user 
                     Log.i(TAG, "Use channel state is IDLE.");
             		
-            		String host_name = mApplication.hostGetChannelName();
+            		String host_name = mApp.hostGetChannelName();
             		
                 	int lastDot = host_name.lastIndexOf('.');
                 	if (lastDot < 0) {
@@ -658,8 +665,8 @@ public class AllJoynService extends Service implements AllJoynObserver {
             		String channel = host_name.substring(lastDot + 1);
                     Log.i(TAG, "Joining use channel: " + channel);
 
-	                mApplication.useSetChannelName(channel);
-	                mApplication.useJoinChannel();
+	                mApp.useSetChannelName(channel);
+	                mApp.useJoinChannel();
             	}
             	break;
 			case BOUND:
@@ -679,13 +686,13 @@ public class AllJoynService extends Service implements AllJoynObserver {
 
         	
         	// Skip if there is no profile
-        	if (mApplication.mProfile == null || mApplication.mProfile.image == null) {
+        	if (mApp.mProfile == null || mApp.mProfile.image == null) {
         		Log.d(TAG, "Profile not found, skipping commmand...");
         		return;
         	}
         	
         	// Encode image into a compressed JPEG stream
-        	Bitmap bm = mApplication.mProfile.image;
+        	Bitmap bm = mApp.mProfile.image;
         	ByteArrayOutputStream baos = new ByteArrayOutputStream();  
         	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object   
         	byte[] b = baos.toByteArray();
@@ -704,14 +711,14 @@ public class AllJoynService extends Service implements AllJoynObserver {
     		}
         	*/
         	
-        	Log.d(TAG, "Sending user profile for: " + mApplication.mProfile.username);
-            mApplication.newLocalUserMessage(
+        	Log.d(TAG, "Sending user profile for: " + mApp.mProfile.username);
+            mApp.newLocalUserMessage(
         			"<command><opcode>profile</opcode>" +
-        			"<argument>" + mApplication.mProfile.userID + "</argument>" +		// arg(0) - userID
-        			"<argument>" + mApplication.mProfile.username + "</argument>" +		// arg(1) - username
-        			"<argument>" + mApplication.mProfile.location + "</argument>" +		// arg(2) - location
-        			"<argument>" + mApplication.mProfile.info + "</argument>" +			// arg(3) - info
-        			"<argument>" + mApplication.mProfile.description + "</argument>" +	// arg(4) - description
+        			"<argument>" + mApp.mProfile.userID + "</argument>" +		// arg(0) - userID
+        			"<argument>" + mApp.mProfile.username + "</argument>" +		// arg(1) - username
+        			"<argument>" + mApp.mProfile.location + "</argument>" +		// arg(2) - location
+        			"<argument>" + mApp.mProfile.info + "</argument>" +			// arg(3) - info
+        			"<argument>" + mApp.mProfile.description + "</argument>" +	// arg(4) - description
         			"<argument>" + image_string + "</argument>" +			// arg(5) - image
         			"</command>"
             );
@@ -928,19 +935,19 @@ public class AllJoynService extends Service implements AllJoynObserver {
          */
         Status status = mBus.registerBusObject(mChatService, OBJECT_PATH);
         if (Status.OK != status) {
-    		mApplication.alljoynError(BartsyApplication.Module.HOST, "Unable to register the chat bus object: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.HOST, "Unable to register the chat bus object: (" + status + ")");
         	return;
         }
     	
     	status = mBus.connect();
     	if (status != Status.OK) {
-    		mApplication.alljoynError(BartsyApplication.Module.GENERAL, "Unable to connect to the bus: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.GENERAL, "Unable to connect to the bus: (" + status + ")");
         	return;
     	}
     	
         status = mBus.registerSignalHandlers(this);
     	if (status != Status.OK) {
-    		mApplication.alljoynError(BartsyApplication.Module.GENERAL, "Unable to register signal handlers: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.GENERAL, "Unable to register signal handlers: (" + status + ")");
         	return;
     	}
         
@@ -978,7 +985,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         	mBusAttachmentState = BusAttachmentState.DISCOVERING;
         	return;
     	} else {
-    		mApplication.alljoynError(BartsyApplication.Module.USE, "Unable to start finding advertised names: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.USE, "Unable to start finding advertised names: (" + status + ")");
         	return;
     	}
     }
@@ -1012,13 +1019,13 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 * We depend on the user interface and model to work together to not
     	 * get this process started until a valid name is set in the channel name.
     	 */
-    	String wellKnownName = NAME_PREFIX + "." + mApplication.hostGetChannelName();
+    	String wellKnownName = NAME_PREFIX + "." + mApp.hostGetChannelName();
         Status status = mBus.requestName(wellKnownName, BusAttachment.ALLJOYN_REQUESTNAME_FLAG_DO_NOT_QUEUE);
         if (status == Status.OK) {
           	mHostChannelState = HostChannelState.NAMED;
-          	mApplication.hostSetChannelState(mHostChannelState);
+          	mApp.hostSetChannelState(mHostChannelState);
         } else {
-    		mApplication.alljoynError(BartsyApplication.Module.USE, "Unable to acquire well-known name: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.USE, "Unable to acquire well-known name: (" + status + ")");
         }
     }
     
@@ -1047,7 +1054,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 * We depend on the user interface and model to work together to not
     	 * change the name out from under us while we are running.
     	 */
-    	String wellKnownName = NAME_PREFIX + "." + mApplication.hostGetChannelName();
+    	String wellKnownName = NAME_PREFIX + "." + mApp.hostGetChannelName();
 
     	/*
     	 * There's not a lot we can do if the bus attachment refuses to release
@@ -1056,7 +1063,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 */
     	mBus.releaseName(wellKnownName);
     	mHostChannelState = HostChannelState.IDLE;
-      	mApplication.hostSetChannelState(mHostChannelState);
+      	mApp.hostSetChannelState(mHostChannelState);
     }
     
     /**
@@ -1130,9 +1137,9 @@ public class AllJoynService extends Service implements AllJoynObserver {
         
         if (status == Status.OK) {
         	mHostChannelState = HostChannelState.BOUND;
-          	mApplication.hostSetChannelState(mHostChannelState);
+          	mApp.hostSetChannelState(mHostChannelState);
         } else {
-    		mApplication.alljoynError(BartsyApplication.Module.HOST, "Unable to bind session contact port: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.HOST, "Unable to bind session contact port: (" + status + ")");
         	return;
         }
     }
@@ -1151,7 +1158,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
      	mBus.unbindSessionPort(CONTACT_PORT);
         mHostChatInterface = null;
      	mHostChannelState = HostChannelState.NAMED;
-      	mApplication.hostSetChannelState(mHostChannelState);
+      	mApp.hostSetChannelState(mHostChannelState);
     }
     
     /**
@@ -1186,14 +1193,14 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 * We depend on the user interface and model to work together to not
     	 * change the name out from under us while we are running.
     	 */
-    	String wellKnownName = NAME_PREFIX + "." + mApplication.hostGetChannelName();        
+    	String wellKnownName = NAME_PREFIX + "." + mApp.hostGetChannelName();        
         Status status = mBus.advertiseName(wellKnownName, SessionOpts.TRANSPORT_ANY);
         
         if (status == Status.OK) {
         	mHostChannelState = HostChannelState.ADVERTISED;
-          	mApplication.hostSetChannelState(mHostChannelState);
+          	mApp.hostSetChannelState(mHostChannelState);
         } else {
-    		mApplication.alljoynError(BartsyApplication.Module.HOST, "Unable to advertise well-known name: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.HOST, "Unable to advertise well-known name: (" + status + ")");
         	return;
         }
     }
@@ -1209,11 +1216,11 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 * We depend on the user interface and model to work together to not
     	 * change the name out from under us while we are running.
     	 */
-    	String wellKnownName = NAME_PREFIX + "." + mApplication.hostGetChannelName();        
+    	String wellKnownName = NAME_PREFIX + "." + mApp.hostGetChannelName();        
         Status status = mBus.cancelAdvertiseName(wellKnownName, SessionOpts.TRANSPORT_ANY);
         
         if (status != Status.OK) {
-    		mApplication.alljoynError(BartsyApplication.Module.HOST, "Unable to cancel advertisement of well-known name: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.HOST, "Unable to cancel advertisement of well-known name: (" + status + ")");
         	return;
         }
         
@@ -1222,7 +1229,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
          * our advertisement, so we don't bother to even get the status.
          */
      	mHostChannelState = HostChannelState.BOUND;
-      	mApplication.hostSetChannelState(mHostChannelState);
+      	mApp.hostSetChannelState(mHostChannelState);
     }
     
     /**
@@ -1296,9 +1303,9 @@ public class AllJoynService extends Service implements AllJoynObserver {
          * messages.
          */
         if (mHostChannelState != HostChannelState.IDLE) {
-        	if (mApplication.useGetChannelName().equals(mApplication.hostGetChannelName())) {              
+        	if (mApp.useGetChannelName().equals(mApp.hostGetChannelName())) {              
              	mUseChannelState = UseChannelState.JOINED;
-              	mApplication.useSetChannelState(mUseChannelState);
+              	mApp.useSetChannelState(mUseChannelState);
         		mJoinedToSelf = true;
                 return;
         	}
@@ -1307,7 +1314,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
     	 * We depend on the user interface and model to work together to provide
     	 * a reasonable name.
     	 */
-    	String wellKnownName = NAME_PREFIX + "." + mApplication.useGetChannelName();
+    	String wellKnownName = NAME_PREFIX + "." + mApp.useGetChannelName();
         
         /*
          * Since we can act as the host of a channel, we know what the other
@@ -1332,9 +1339,9 @@ public class AllJoynService extends Service implements AllJoynObserver {
             @Override
 			public void sessionLost(int sessionId) {
                 Log.i(TAG, "BusListener.sessionLost(" + sessionId + ")");
-        		mApplication.alljoynError(BartsyApplication.Module.USE, "The chat session has been lost");
+        		mApp.alljoynError(BartsyApplication.Module.USE, "The chat session has been lost");
              	mUseChannelState = UseChannelState.IDLE;
-              	mApplication.useSetChannelState(mUseChannelState);
+              	mApp.useSetChannelState(mUseChannelState);
             }
         });
         
@@ -1342,7 +1349,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
             Log.i(TAG, "doJoinSession(): use sessionId is " + mUseSessionId);
         	mUseSessionId = sessionId.value;
         } else {
-    		mApplication.alljoynError(BartsyApplication.Module.USE, "Unable to join chat session: (" + status + ")");
+    		mApp.alljoynError(BartsyApplication.Module.USE, "Unable to join chat session: (" + status + ")");
         	return;
         }
         
@@ -1350,7 +1357,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         mChatInterface = emitter.getInterface(AllJoynChatInterface.class);
         
      	mUseChannelState = UseChannelState.JOINED;
-      	mApplication.useSetChannelState(mUseChannelState);
+      	mApp.useSetChannelState(mUseChannelState);
     }
     
     /**
@@ -1370,7 +1377,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         mUseSessionId = -1;
         mJoinedToSelf = false;
      	mUseChannelState = UseChannelState.IDLE;
-      	mApplication.useSetChannelState(mUseChannelState);
+      	mApp.useSetChannelState(mUseChannelState);
     }
     
     /**
@@ -1389,7 +1396,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         Log.i(TAG, "doSendMessages()");
 
         String message;
-        while ((message = mApplication.getOutboundItem()) != null) {
+        while ((message = mApp.getOutboundItem()) != null) {
             Log.i(TAG, "doSendMessages(): sending message \"" + message + "\"");
             /*
              * If we are joined to a remote session, we send the message over
@@ -1408,7 +1415,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
 					mChatInterface.Chat(message);
 				}
 			} catch (BusException ex) {
-	    		mApplication.alljoynError(BartsyApplication.Module.USE, "Bus exception while sending message: (" + ex + ")");
+	    		mApp.alljoynError(BartsyApplication.Module.USE, "Bus exception while sending message: (" + ex + ")");
 			}
     	}
     }
@@ -1512,7 +1519,7 @@ public class AllJoynService extends Service implements AllJoynObserver {
         nickname = nickname.substring(nickname.length()-10, nickname.length());
         
         Log.i(TAG, "Chat(): signal " + string + " received from nickname " + nickname);
-        mApplication.newRemoteUserMessage(nickname, string);
+        mApp.newRemoteUserMessage(nickname, string);
     }
     
     /*

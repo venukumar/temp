@@ -20,7 +20,7 @@
 	    android:id="@+id/map"
 	    android:name="com.google.android.gms.maps.MapFragment"
 	    android:layout_width="match_parent"
-	    android:layout_height="158dp" />
+	    android:layout_height="188dp" />
 
 	
 <ScrollView 
@@ -115,6 +115,34 @@
                     android:text="2435 Main St, Santa Monica, CA 90405"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:id="@+id/ImageView27"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/wifi" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/TextView27"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:text="WiFi available"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout
@@ -134,19 +162,12 @@
                     android:orientation="vertical" >
 
                     <TextView
-                        android:id="@+id/TextView24"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="0.1"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                    <TextView
                         android:id="@+id/TextView21"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="miles"
+                        android:gravity="center_horizontal"
+                        android:text="Within check in distance"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                 </LinearLayout>

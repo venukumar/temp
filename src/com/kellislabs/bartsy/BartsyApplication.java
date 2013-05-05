@@ -112,6 +112,15 @@ public class BartsyApplication extends Application implements AllJoynObservable 
     // Database manager is a global variable
     DatabaseManager MDBM = null;
     
+    /** 
+     * 
+     * The active venue is the venue where the user is checked in or null if the user is not checked in
+     * 
+     */
+    
+    VenueProfile activeVenue = null;
+    
+    
     /*** 
      * 
      * The user profile is saved in the application state. It's small

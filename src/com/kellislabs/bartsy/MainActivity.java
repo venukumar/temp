@@ -53,10 +53,23 @@ public class MainActivity extends FragmentActivity implements  OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        
+		if (((BartsyApplication)getApplication()).activeVenue == null) {
+			// No active venue - hide active menue UI
+			findViewById(R.id.button_active_venue).setVisibility(View.GONE);
+		} else {
+			// Active venue exists - set up the active venue view
+			// For now just show it
+			findViewById(R.id.button_active_venue).setVisibility(View.VISIBLE);
+		}
+			
+
         
         // Set up button listeners
 		((Button) findViewById(R.id.button_checkin)).setOnClickListener(this);
 		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
+		((View) findViewById(R.id.button_active_venue)).setOnClickListener(this);
         
         // Hide action bar
         getActionBar().hide();
@@ -77,12 +90,24 @@ public class MainActivity extends FragmentActivity implements  OnClickListener {
 	public void onClick(View v) {
 		Log.d("Bartsy", "Clicked on a button");
 		
+		Intent intent;
+		
+		
 		switch (v.getId()) {
+		case R.id.button_active_venue:
+			intent = new Intent().setClass(this, BartsyActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
+			break;
 		case R.id.button_checkin:
-			this.startActivity(new Intent().setClass(this, MapActivity.class));
+			intent = new Intent().setClass(this, MapActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
 			break;
 		case R.id.button_settings:
-			this.startActivity(new Intent().setClass(this, SettingsActivity.class));
+			intent = new Intent().setClass(this, SettingsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
 			break;
 		}
 	}

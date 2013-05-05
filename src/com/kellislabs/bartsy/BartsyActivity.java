@@ -345,7 +345,7 @@ public class BartsyActivity extends FragmentActivity implements
 	            if (mIsHost)
 	            	intent = new Intent(this, AllJoynTabWidget.class);
 	            else
-	            	intent = new Intent(this, MapActivity.class);
+	            	intent = new Intent(this, MainActivity.class);
 	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	            startActivity(intent);
 	            return true; 
