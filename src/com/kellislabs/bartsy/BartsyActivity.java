@@ -727,8 +727,8 @@ public class BartsyActivity extends FragmentActivity implements
     	// Send order to server
         mApp.newLocalUserMessage(
         			"<command><opcode>order</opcode>" +
-        			"<argument>" + mOrderIDs + "</argument>"+					// client order ID
-        			"<argument>" + mOrderIDs + "</argument>"+					// server order ID        			
+        			"<argument>" + mApp.mOrderIDs + "</argument>"+					// client order ID
+        			"<argument>" + mApp.mOrderIDs + "</argument>"+					// server order ID        			
         			"<argument>" + drink.getTitle() + "</argument>" +
             		"<argument>" + drink.getDescription() + "</argument>" +
             		"<argument>" + drink.getPrice() + "</argument>" +
@@ -739,23 +739,21 @@ public class BartsyActivity extends FragmentActivity implements
     	appendStatus("Placed drink order");
     	
     	BarOrder barOrder = new BarOrder();
-    	barOrder.initialize(mOrderIDs,							// arg(0) - Client order ID
-    					mOrderIDs,								// arg(1) - Server order ID - use client ID for now
+    	barOrder.initialize(mApp.mOrderIDs,						// arg(0) - Client order ID
+    					mApp.mOrderIDs,							// arg(1) - Server order ID - use client ID for now
     					drink.getTitle(),							// arg(2) - Title
     					drink.getDescription(),						// arg(3) - Description
     					drink.getPrice(),							// arg(4) - Price
-    					drink.getImage(),	// arg(5) - Image resource for the order
+    					Integer.toString(R.drawable.drinks), // for now always use the same picture for the drink
+//    					drink.getImage(),	// arg(5) - Image resource for the order
     					mApp.mProfile);							// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
     	mOrdersFragment.addOrder(barOrder);
     	
     	// Increment the local order count
-    	mOrderIDs++;
+    	mApp.mOrderIDs++;
     }
 
-    
-    int mOrderIDs = 0 ;
-    int mSessionID = 0;
-    
+       
     void processCommandOrder(BartsyCommand command) { 
 
     	appendStatus("Processing command for order:" + command.arguments.get(0));
@@ -781,7 +779,7 @@ public class BartsyActivity extends FragmentActivity implements
     	// Create a new order
     	BarOrder barOrder = new BarOrder();
     	barOrder.initialize(Integer.parseInt(command.arguments.get(0)),		// client order ID
-    					mSessionID++,										// server order ID
+    					mApp.mSessionID++,									// server order ID
     					command.arguments.get(2),							// Title
     					command.arguments.get(3),							// Description
     					command.arguments.get(4),							// Price

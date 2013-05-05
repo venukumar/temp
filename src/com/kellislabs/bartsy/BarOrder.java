@@ -66,7 +66,8 @@ public class BarOrder  {
 		this.title = title;
 		this.description = description;
 		this.price = Float.parseFloat(price);
-		this.image_resource = Integer.parseInt(image_resource); 
+		this.image_resource = R.drawable.drinks; // for now always use the same picture for drinks 
+//		this.image_resource = Integer.parseInt(image_resource); 
 		this.orderSender = order_sender;
 
 		// Orders starts in the "NEW" status
@@ -99,12 +100,11 @@ public class BarOrder  {
 		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
 		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
 		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
-		((TextView) view.findViewById(R.id.view_order_price)).setText("" + this.price);
+		((TextView) view.findViewById(R.id.view_order_price)).setText("" + (int) this.price); // use int for now
 		((ImageView)view.findViewById(R.id.view_order_image_resource)).setImageResource(this.image_resource);
 		
 		// Update sender profile section
 		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);
-		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setScaleType(ScaleType.FIT_XY);
 		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(this.orderSender.username);
 
 

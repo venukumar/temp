@@ -41,6 +41,7 @@ import java.text.SimpleDateFormat;
 import com.kellislabs.bartsy.AllJoynService.BusAttachmentState;
 import com.kellislabs.bartsy.AllJoynService.HostChannelState;
 import com.kellislabs.bartsy.AllJoynService.UseChannelState;
+import com.kellislabs.bartsy.db.DatabaseManager;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common
@@ -102,7 +103,14 @@ public class BartsyApplication extends Application implements AllJoynObservable 
         
         // load user profile if it exists. this is an application-wide variable.
         loadUserProfile();
+        
+		// DataBase initialization - First activity should call this method
+		MDBM = DatabaseManager.getNewInstance(this);
+
 	}
+    
+    // Database manager is a global variable
+    DatabaseManager MDBM = null;
     
     /*** 
      * 
@@ -148,7 +156,17 @@ public class BartsyApplication extends Application implements AllJoynObservable 
   
 	ArrayList<Profile> mPeople = new ArrayList<Profile>();
 
+	/*** 
+	 * 
+	 * This is the global order id, incremented for each order. This should actually be managed by the host as it should be unique
+	 * across sessions
+	 * 
+	 */
   
+    long mOrderIDs = 0 ;
+    long mSessionID = 0;
+
+	
   
   	/**********
   	 * 

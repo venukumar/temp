@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.j256.ormlite.field.DatabaseField;
+import com.kellislabs.bartsy.R;
 
 /**
  * @author Seenu
@@ -52,6 +53,9 @@ public class MenuDrink {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		// For now always use the same image for the drink
+		this.image = Integer.toString(R.drawable.drinks);
 
 	}
 

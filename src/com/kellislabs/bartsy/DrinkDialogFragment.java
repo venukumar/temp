@@ -69,8 +69,8 @@ public class DrinkDialogFragment extends DialogFragment  {
 	    // Customize dialog for this drink
 	    ((TextView)view.findViewById(R.id.view_dialog_drink_title)).setText(drink.getTitle());
 	    ((TextView)view.findViewById(R.id.view_dialog_drink_description)).setText(drink.getDescription());
-	    ((TextView)view.findViewById(R.id.view_dialog_drink_price)).setText(drink.getPrice());
-//	    ((ImageView)view.findViewById(R.id.view_dialog_drink_image_resource)).setImageResource(drink.image_resource);
+	    ((TextView)view.findViewById(R.id.view_dialog_drink_price)).setText(""+ drink.getPrice());
+//	    ((ImageView)view.findViewById(R.id.view_dialog_drink_image_resource)).setImageResource(drink.image_resource); // don't show image for now
 	    view.findViewById(R.id.view_dialog_drink_title).setTag(this.drink);
 	    
 	    builder.setView(view)

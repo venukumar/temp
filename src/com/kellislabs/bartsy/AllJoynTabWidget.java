@@ -73,8 +73,6 @@ public class AllJoynTabWidget extends TabActivity {
 
 		tabHost.setCurrentTab(0);
 
-		// DataBase initialization - First activity should call this method
-		DatabaseManager.getNewInstance(this);
 
 		// Start the right activity depending on whether we're a tablet or a
 		// phone
