@@ -108,13 +108,13 @@
                     android:layout_height="80dp" >
 
                     <ImageView
-                		android:id="@+id/view_dialog_drink_image_resource"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:id="@+id/view_dialog_drink_image_resource"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
                         android:layout_marginRight="3dp"
                         android:padding="5dp"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/sambuca" />
+                        android:src="@drawable/drinks" />
 
                     <ImageView
                         android:id="@+id/ImageView03"
@@ -168,14 +168,6 @@
                     android:textColor="#995555"
                     android:textSize="28sp"
                     android:textStyle="bold" />
-
-                <TextView
-                	android:id="@+id/view_dialog_drink_price_special"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:text="($2 off)"
-                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
 

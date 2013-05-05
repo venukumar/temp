@@ -186,16 +186,15 @@
                             android:background="@drawable/rounded_corner" >
 
                             <RelativeLayout
-                                android:layout_width="80dp"
-                                android:layout_height="80dp"
+                                android:layout_width="100dp"
+                                android:layout_height="100dp"
                                 android:layout_margin="@dimen/activity_vertical_margin" >
 
                                 <ImageView
                                     android:id="@+id/view_order_image_resource"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="fill_parent"
                                     android:layout_marginRight="3dp"
-                                    android:padding="5dp"
                                     android:scaleType="fitCenter"
                                     android:src="@drawable/sambuca" />
 
