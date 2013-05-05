@@ -192,11 +192,11 @@ public class VenueActivity extends FragmentActivity implements
 		// Set up the action bar custom view
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-	    actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+//	    actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 //	    getActionBar().setCustomView(View.inflate(getApplicationContext(), R.layout.actionbar_indeterminate_progress, null));		
 		actionBar.setDisplayShowHomeEnabled(true);
-		View homeIcon = findViewById(android.R.id.home);
-		((View) homeIcon.getParent()).setVisibility(View.GONE);
+//		View homeIcon = findViewById(android.R.id.home);
+//		((View) homeIcon.getParent()).setVisibility(View.GONE);
 	    actionBar.setDisplayHomeAsUpEnabled(true);
 		
 		// Create the adapter that will return a fragment for each of the 
@@ -263,6 +263,7 @@ public class VenueActivity extends FragmentActivity implements
        */
       updateActionBarStatus();
       
+      updateOrdersCount();
 
     }
 
@@ -298,11 +299,25 @@ public class VenueActivity extends FragmentActivity implements
         /*
          * Set up Action buttons
          */
-        
+/*             
         MenuItem item ;
         View menuItem;
         LayoutInflater inflater = (LayoutInflater) 
         		getActionBar().getThemedContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+   
+        // Setup tab button 
+        item = menu.findItem(R.id.action_tab);
+//    	((TextView )mConnectedView.findViewById(R.id.actionBarConnectedText)).setText("(1 customer)");
+        item.setActionView(inflater.inflate(R.layout.actionbar_tab, null));
+        menuItem = item.getActionView().findViewById(R.id.button_tab);
+        menuItem.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				 Intent activity = new Intent(getBaseContext(), NotificationsActivity.class);
+				 startActivity(activity);	 
+			}});
+        item.expandActionView();
         
         // Set requests action 
         item = menu.findItem(R.id.action_requests);
@@ -329,6 +344,8 @@ public class VenueActivity extends FragmentActivity implements
 				 startActivity(activity);	 
 			}});
         item.expandActionView();
+
+*/        
         
         return retValue;
  	}
@@ -350,10 +367,11 @@ public class VenueActivity extends FragmentActivity implements
 	            startActivity(intent);
 	            return true; 
 	            
+/*	            
 	        case R.id.action_messages:
 	        	item.getActionView().findViewById(R.id.view_action_bar_messages).setBackgroundColor(0xaaaaee);
 	        	break;
-/*
+
 	            <item android:id="@+id/menu_refresh"
 	                    android:title="@string/menu_refresh"
 	                    android:icon="@android:drawable/ic_popup_sync"
@@ -389,14 +407,15 @@ public class VenueActivity extends FragmentActivity implements
         AllJoynService.UseChannelState channelState = mApp.useGetChannelState();
     	String name = mApp.useGetChannelName();
     	if (name == null) {
-    		name = "Not set";
+    		name = "Not Checked in";
     	}
-        
-		View view = null;
+	    getActionBar().setTitle(name);
+	    
+//		View view = null;
         
         switch (channelState) {
         case IDLE:
-    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_indeterminate_progress, null);
+//    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_indeterminate_progress, null);
             appendStatus("Channel iddle");
 
             // For now simply delete any open orders from the list
@@ -408,26 +427,38 @@ public class VenueActivity extends FragmentActivity implements
             mApp.mPeople.clear();
             if (mPeopleFragment != null && mPeopleFragment.mPeopleListView != null)
             	mPeopleFragment.mPeopleListView.removeAllViews();
-             
+
             break;
-        case JOINED: // There are only two states so this switch statement is complete
+        case JOINED: 
+        	// There are only two states so this switch statement is complete
             // Set action bar item to the connected machine's name
-    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_connected, null); 
-    	    ((TextView )view.findViewById(R.id.actionBarConnectedText)).setText(name);
+//    	    view = View.inflate(getApplicationContext(), R.layout.actionbar_connected, null); 
+//    	    ((TextView )view.findViewById(R.id.actionBarConnectedText)).setText(name);
             appendStatus("Joined a channel");
-            break;	
+            break;
         }
     
         // Set up the map button with a click listener that starts the map activity
-    	view.findViewById(R.id.view_action_bar_map).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent mapActivity = new Intent(getBaseContext(), MapActivity.class);
-                startActivity(mapActivity);	 
-			}
-    	});
-    	
-    	getActionBar().setCustomView(view);		
+//    	view.findViewById(R.id.view_action_bar_map).setOnClickListener(new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				Intent mapActivity = new Intent(getBaseContext(), MapActivity.class);
+//                startActivity(mapActivity);	 
+//			}
+//    	});
+    }
+    
+    
+    /**
+     * Updates the action bar tab with the number of open orders
+     */
+    
+    void updateOrdersCount() {
+    	// Update tab title with the number of orders - for now hardcode the tab at the right position
+    	if (mIsHost)
+    		getActionBar().getTabAt(0).setText("Orders (" + mApp.mOrders.size() + ")");
+    	else
+    		getActionBar().getTabAt(2).setText("Orders (" + mApp.mOrders.size() + ")");
     }
     
 	
@@ -525,7 +556,7 @@ public class VenueActivity extends FragmentActivity implements
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 			
-			return getString(mTabs[position]).toUpperCase(l);
+			return getString(mTabs[position]);
 		}
 	}
 	
@@ -751,6 +782,10 @@ public class VenueActivity extends FragmentActivity implements
     	
     	// Increment the local order count
     	mApp.mOrderIDs++;
+    	
+    	// Update tab title with the number of open orders
+    	updateOrdersCount();
+
     }
 
        
@@ -786,9 +821,10 @@ public class VenueActivity extends FragmentActivity implements
     					command.arguments.get(5),							// Image resource
     					person);											// Order sender ID
     	mOrdersFragment.addOrder(barOrder);
+    	
+    	updateOrdersCount();
     }
-    
-    
+
     
     /* 
      * 
@@ -809,6 +845,10 @@ public class VenueActivity extends FragmentActivity implements
         			"<argument>" + order.orderSender.userID + "</argument>" +	// arg(3)
         			"</command>"
             		);
+        
+    	// Update tab title with the number of open orders
+    	updateOrdersCount();
+
     }
 
     
@@ -880,6 +920,10 @@ public class VenueActivity extends FragmentActivity implements
 
 			break;
      	}
+    	
+    	// Update tab title with the number of open orders
+    	updateOrdersCount();
+
     	return false;
     }
      

@@ -134,6 +134,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 //			((Bartsy)getActivity()).appendStatus("Added new order to order list view");
 		}
 		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
+		
 	}
 
 
@@ -150,7 +151,6 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 			// Update the order status locally and send the update to the remote
 			order.nextPositiveState();
-			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
 			
 			if (order.status == BarOrder.ORDER_STATUS_COMPLETE) {
 				// Trash the order for now (later save it to log of past orders)
@@ -158,6 +158,11 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			} else {
 				order.updateView();
 			}
+
+			// Send order update status to the remote
+			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
+
+			
 			break;
 		}
 	}
