@@ -185,27 +185,6 @@
                             android:layout_weight="10"
                             android:background="@drawable/rounded_corner" >
 
-                            <RelativeLayout
-                                android:layout_width="100dp"
-                                android:layout_height="100dp"
-                                android:layout_margin="@dimen/activity_vertical_margin" >
-
-                                <ImageView
-                                    android:id="@+id/view_order_image_resource"
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="fill_parent"
-                                    android:layout_marginRight="3dp"
-                                    android:scaleType="fitCenter"
-                                    android:src="@drawable/sambuca" />
-
-                                <ImageView
-                                    android:id="@+id/ImageView01"
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="fill_parent"
-                                    android:scaleType="fitXY"
-                                    android:src="@drawable/frame" />
-                            </RelativeLayout>
-
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
