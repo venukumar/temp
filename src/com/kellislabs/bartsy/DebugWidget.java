@@ -14,8 +14,10 @@
  *    limitations under the License.
  */
 
-package wifi;
+package com.kellislabs.bartsy;
 
+import wifi.AllJoynHostActivity;
+import wifi.AllJoynUseActivity;
 import android.os.Bundle;
 import android.app.TabActivity;
 import android.widget.TabHost;
@@ -31,7 +33,7 @@ import com.kellislabs.bartsy.R.layout;
 import com.kellislabs.bartsy.R.string;
 import com.kellislabs.bartsy.db.DatabaseManager;
 
-public class AllJoynTabWidget extends TabActivity {
+public class DebugWidget extends TabActivity {
 	private static final String TAG = "Bartsy";
 
 	@Override

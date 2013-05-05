@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Locale;
 import org.xmlpull.v1.XmlPullParserException;
 
-import wifi.AllJoynTabWidget;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
@@ -362,7 +361,7 @@ public class VenueActivity extends FragmentActivity implements
 	            // app icon in action bar clicked; go home
 	            Intent intent;
 	            if (mIsHost)
-	            	intent = new Intent(this, AllJoynTabWidget.class);
+	            	intent = new Intent(this, DebugWidget.class);
 	            else
 	            	intent = new Intent(this, MainActivity.class);
 	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
