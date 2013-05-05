@@ -101,7 +101,7 @@ public class BarOrder  {
 		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
 		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
 		((TextView) view.findViewById(R.id.view_order_price)).setText("" + (int) this.price); // use int for now
-		((ImageView)view.findViewById(R.id.view_order_image_resource)).setImageResource(this.image_resource);
+//		((ImageView)view.findViewById(R.id.view_order_image_resource)).setImageResource(this.image_resource);
 		
 		// Update sender profile section
 		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);

@@ -8,12 +8,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
         android:orientation="horizontal"
-        android:padding="@dimen/activity_vertical_margin" >
+        android:padding="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin" >
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
             android:layout_weight="2"
             android:orientation="vertical"
             android:paddingLeft="@dimen/activity_horizontal_margin" >
@@ -24,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:text="Drink title"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="14sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/view_drink_description"
@@ -52,7 +54,7 @@
                 android:text="$0"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="#995555"
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
 <!--  
