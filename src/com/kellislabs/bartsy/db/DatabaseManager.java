@@ -101,7 +101,7 @@ public class DatabaseManager {
 		try {
 			QueryBuilder<MenuDrink, Integer> surveyQb = dbHelper
 					.getDrinkDao().queryBuilder();
-			surveyQb.where().isNotNull("section_id");
+			surveyQb.where().isNull("section_id");
 			PreparedQuery<MenuDrink> query = surveyQb.prepare();
 			return dbHelper.getDrinkDao().query(query);
 		} catch (SQLException e) {
