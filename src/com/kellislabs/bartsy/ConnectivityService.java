@@ -75,7 +75,7 @@ public class ConnectivityService extends Service implements AppObserver {
 	 * get event notifications. 
 	 */
 	
-    private WifiDirectAutoAccept mWfdAutoAccept;
+//    private WifiDirectAutoAccept mWfdAutoAccept;
 
 	@Override
 	public void onCreate() {
@@ -98,7 +98,7 @@ public class ConnectivityService extends Service implements AppObserver {
         /* Prepare the auto-accept object.  It will not automatically
          * accept any connections until its intercept() method is called.
          */
-        mWfdAutoAccept = new WifiDirectAutoAccept(getApplicationContext());
+//        mWfdAutoAccept = new WifiDirectAutoAccept(getApplicationContext());
 
         /* The auto-accept handler is automatically unregistered
          * when the application goes in to the background, so
@@ -110,7 +110,7 @@ public class ConnectivityService extends Service implements AppObserver {
          * expecting incoming connections.  Call intercept(false) as soon
          * as incoming connections are not expected.
          */
-        mWfdAutoAccept.intercept(true);
+//        mWfdAutoAccept.intercept(true);
         
         /*
          * We have an AllJoyn handler thread running at this time, so take
@@ -137,7 +137,7 @@ public class ConnectivityService extends Service implements AppObserver {
 	public void onDestroy() {
         Log.i(TAG, "onDestroy()");
         
-        mWfdAutoAccept.intercept(false);
+//        mWfdAutoAccept.intercept(false);
 
         
         mBackgroundHandler.cancelDiscovery();
