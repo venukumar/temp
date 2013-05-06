@@ -49,18 +49,18 @@
         android:showDividers="middle" >
 
         <Button
-            android:id="@+id/button_payments"
+            android:id="@+id/button_profile"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="2"
-            android:drawableLeft="@drawable/alert"
+            android:drawableLeft="@drawable/profile"
             android:gravity="left|center_vertical"
-            android:text="Set up your credit card to be able to order drinks..."
+            android:text="Setup your account..."
             android:textSize="14sp" />
 
         <Button
-            android:id="@+id/button_payments_dismiss"
+            android:id="@+id/button_profile_dismiss"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="45dp"
             android:layout_height="fill_parent"
@@ -80,25 +80,24 @@
         android:showDividers="middle" >
 
         <Button
-            android:id="@+id/button_profile"
+            android:id="@+id/button_payments"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="2"
-            android:drawableLeft="@drawable/alert"
+            android:drawableLeft="@drawable/credit_card"
             android:gravity="left|center_vertical"
-            android:text="Set up your profile to be able to see other profiles at bars"
+            android:text="Setup your credit card..."
             android:textSize="14sp" />
 
         <Button
-            android:id="@+id/button_profile_dismiss"
+            android:id="@+id/button_payments_dismiss"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="45dp"
             android:layout_height="fill_parent"
             android:drawableRight="@drawable/closewindow"
             android:gravity="left|center_vertical"
             android:textSize="14sp" />
-
     </LinearLayout>
 
     <GridLayout
@@ -140,7 +139,7 @@
                 android:layout_height="84dp"
                 android:drawableTop="@drawable/icon_favorites"
                 android:padding="@dimen/activity_vertical_margin"
-                android:text="My Venues"
+                android:text="My Rewards"
                 android:textSize="14sp" />
         </FrameLayout>
 
