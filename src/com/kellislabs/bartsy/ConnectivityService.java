@@ -57,7 +57,7 @@ public class ConnectivityService extends Service implements AppObserver {
 	private static final String TAG = "Bartsy";
 
 	/**
-	 * We don't use the bindery to communiate between any client and this
+	 * We don't use the bindery to communicate between any client and this
 	 * service so we return null.
 	 */
 	@Override
