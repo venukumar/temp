@@ -12,6 +12,7 @@
     <string name="config_user_location">user_location</string>
     <string name="config_user_description">user_description</string>
     <string name="config_venue_channel_name">Venue</string>
+    <string name="config_cardio_token">0f13c2616ead46e7a000674d20743cfe</string>
     
     
     <!-- Action bar items -->
