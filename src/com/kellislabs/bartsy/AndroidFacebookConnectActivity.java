@@ -8,8 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -191,6 +193,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		System.out.println("on activity result ****************************");
 		super.onActivityResult(requestCode, resultCode, data);
 		facebook.authorizeCallback(requestCode, resultCode, data);
 	}
@@ -290,16 +293,33 @@ public class AndroidFacebookConnectActivity extends Activity {
 						Constants.URL_Post_Profile_Data, json,
 						getApplicationContext());
 				System.out.println("responses   " + responses);
+				if (response != null) {
+					String bartsyUserId = null;
+					JSONObject resultJson = new JSONObject(responses);
+					String errorCode = resultJson.getString("errorCode");
+					String errorMessage = resultJson.getString("errorMessage");
+					if (resultJson.has("bartsyUserId"))
+						bartsyUserId = (String) resultJson.get("bartsyUserId");
+					if (bartsyUserId != null) {
+
+						SharedPreferences sharedPref = getSharedPreferences(
+								getResources()
+										.getString(
+												R.string.config_shared_preferences_name),
+								Context.MODE_PRIVATE);
+						Resources r = getResources();
+
+						SharedPreferences.Editor editor = sharedPref.edit();
+						editor.putString(r.getString(R.string.bartsyUserId),
+								bartsyUserId);
+						
+					}
+
+				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			System.out.println("name " + name);
-			System.out.println("email " + email);
-			System.out.println("id " + fbProfileId);
-			System.out.println("username " + userName);
-			System.out.println("gender " + gender);
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

@@ -16,9 +16,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
 import com.kellislabs.bartsy.model.Section;
@@ -135,6 +139,38 @@ public class WebServices {
 		return result;
 	}
 
+	public static void postOrderTOServer(Context context, MenuDrink drink) {
+		Resources r = context.getResources();
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
+				"");
+		String totalPrice = calculateTotalPrice();
+		String tripPercentage = "";
+
+		JSONObject orderData = new JSONObject();
+		try {
+			orderData.put("bartsyId", bartsyId);
+			orderData.put("venueId", "100001");
+			orderData.put("basePrice", drink.getPrice());
+			orderData.put("itemId", drink.getDrinkId());
+			orderData.put("itemName", drink.getTitle());
+			orderData.put("tipPercentage", tripPercentage);
+			orderData.put("totalPrice", totalPrice);
+			orderData.put("orderStatus", "New");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private static String calculateTotalPrice() {
+		// TODO Auto-generated method stub
+
+		return null;
+	}
+
 	public static void getMenuList(Context context) {
 
 		System.out.println("get menu list");
@@ -152,7 +188,13 @@ public class WebServices {
 
 		} else {
 			try {
-				JSONArray jsonArray = new JSONArray(response);
+
+				JSONObject result = new JSONObject(response);
+				String errorCode = result.getString("errorCode");
+				String errorMessage = result.getString("errorMessage");
+				String menus = result.getString("menu");
+
+				JSONArray jsonArray = new JSONArray(menus);
 				System.out.println("json arrya " + jsonArray.length());
 
 				for (int section = 0; section < jsonArray.length(); section++) {

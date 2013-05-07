@@ -1,6 +1,5 @@
 package com.kellislabs.bartsy.model;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,6 +26,17 @@ public class MenuDrink {
 	@DatabaseField
 	private String price_special;
 
+	public String getDrinkId() {
+		return drinkId;
+	}
+
+	public void setDrinkId(String drinkId) {
+		this.drinkId = drinkId;
+	}
+
+	@DatabaseField
+	private String drinkId;
+
 	@DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnName = "section_id")
 	private Section section;
 
@@ -47,6 +57,9 @@ public class MenuDrink {
 			}
 			if (object.has("price")) {
 				this.price = object.getString("price");
+			}
+			if (object.has("id")) {
+				this.drinkId = object.getString("id");
 			}
 
 		} catch (JSONException e) {
