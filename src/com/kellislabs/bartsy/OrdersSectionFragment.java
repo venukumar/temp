@@ -65,14 +65,14 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		Log.d("Bartsy", "About to add orders list to the View");
 		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
 
-		for (Order order : mApp.mOrders) {
+		for (Order barOrder : mApp.mOrders) {
 			Log.d("Bartsy", "Adding an item to the layout");
-			order.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
-			order.updateView();
-			order.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
-			order.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
+			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
+			barOrder.updateView();
+			barOrder.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
+			barOrder.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
 
-			mOrderListView.addView(order.view);
+			mOrderListView.addView(barOrder.view);
 //			((Bartsy)getActivity()).appendStatus("Added new view");
 		}
 		
@@ -103,27 +103,27 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 	}
 		
 		
-	public void addOrder(Order order) {
+	public void addOrder(Order barOrder) {
 //		String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 		
-		Log.d("Bartsy", "Adding new order to orders list: " + order.title);
+		Log.d("Bartsy", "Adding new order to orders list: " + barOrder.title);
 		
 		if (mOrderListView == null) {
 			
 			Log.d("Bartsy", "The orders view in null. Adding to the orders list only");
 			
-			mApp.mOrders.add(order);
+			mApp.mOrders.add(barOrder);
 		} else {
 
 			Log.d("Bartsy", "The orders view in not null. Adding to the orders list and the view");
 
-			mApp.mOrders.add(order);
-			order.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
-			order.updateView();
+			mApp.mOrders.add(barOrder);
+			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
+			barOrder.updateView();
 
-			order.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
-			order.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
-			mOrderListView.addView(order.view);
+			barOrder.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
+			barOrder.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
+			mOrderListView.addView(barOrder.view);
 			
 			// Update header buttons
 			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
@@ -134,7 +134,6 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 //			((Bartsy)getActivity()).appendStatus("Added new order to order list view");
 		}
 		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
-		
 	}
 
 
@@ -151,6 +150,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 			// Update the order status locally and send the update to the remote
 			order.nextPositiveState();
+			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
 			
 			if (order.status == Order.ORDER_STATUS_COMPLETE) {
 				// Trash the order for now (later save it to log of past orders)
@@ -158,11 +158,6 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			} else {
 				order.updateView();
 			}
-
-			// Send order update status to the remote
-			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
-
-			
 			break;
 		}
 	}

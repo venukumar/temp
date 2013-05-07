@@ -71,6 +71,7 @@ public class VenueActivity extends FragmentActivity implements
     public static final String TAG = "Bartsy";
     private DebugSectionFragment mDebugFragment = null;
     private OrdersSectionFragment mOrdersFragment = null;
+    private BartenderSectionFragment mBartenderFragment = null;
     private DrinksSectionFragment mDrinksFragment = null;
     private PeopleSectionFragment mPeopleFragment = null;
 
@@ -178,6 +179,12 @@ public class VenueActivity extends FragmentActivity implements
 		if (mOrdersFragment == null) {
 			mOrdersFragment = new OrdersSectionFragment();
 			mOrdersFragment.mApp = mApp;
+		}
+
+		// Initialize bartender view
+		if (mBartenderFragment == null) {
+			mBartenderFragment = new BartenderSectionFragment();
+			mBartenderFragment.mApp = mApp;
 		}
 		
 		// Initialize people view 
@@ -506,7 +513,7 @@ public class VenueActivity extends FragmentActivity implements
 		private final int tabsDebugTablet[] = {R.string.title_debug, R.string.title_drink_orders, R.string.title_people, R.string.title_inventory};
 		private final int tabsDebugPhone[] = {R.string.title_debug, R.string.title_drinks, 
 				R.string.title_people, R.string.title_drink_orders};
-		private final int tabsTablet[] = {R.string.title_drink_orders, R.string.title_people, R.string.title_inventory};
+		private final int tabsTablet[] = {R.string.title_bartender, R.string.title_people, R.string.title_inventory};
 		private final int tabsPhone[] = {R.string.title_drinks, R.string.title_people, 
 				R.string.title_drink_orders};
 		
@@ -535,6 +542,8 @@ public class VenueActivity extends FragmentActivity implements
 				return(mDebugFragment);	
 			case R.string.title_drink_orders: // The order tab (for bar owners)
 				return (mOrdersFragment);
+			case R.string.title_bartender: // The order tab (for bar owners)
+				return (mBartenderFragment);
 			case R.string.title_inventory: // The customers tab (for bar owners)
 				return (new CustomersSectionFragment());
 			case R.string.title_drinks: // The drinks  tab allows to order drinks from previous orders, favorites, menu items, drink guides or completely custom.
@@ -821,7 +830,7 @@ public class VenueActivity extends FragmentActivity implements
     					command.arguments.get(4),							// Price
     					command.arguments.get(5),							// Image resource
     					person);											// Order sender ID
-    	mOrdersFragment.addOrder(order);
+    	mBartenderFragment.addOrder(order);
     	
     	updateOrdersCount();
     }
@@ -915,10 +924,6 @@ public class VenueActivity extends FragmentActivity implements
     		if (localOrder.status != Order.ORDER_STATUS_READY)
     			return true;
     		localOrder.nextPositiveState();
-    		
-			// Trash the order for now (later save it to log of past orders)
-			mOrdersFragment.removeOrder(localOrder);
-
 			break;
      	}
     	

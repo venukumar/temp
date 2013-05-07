@@ -107,29 +107,25 @@ public class Order  {
 		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);
 		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(this.orderSender.username);
 
-
-		String s="", positive="", negative="";
+		String positive="", negative="";
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
-			s = "NEW";
 			positive = "ACCEPT";
 			negative = "REJECT";
-			((TextView) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_red);
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_red);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
-			s = "IN PROGRESS";
 			positive = "COMPLETED";
 			negative = "FAILED";
-			((TextView) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_orange);
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_orange);
 			break;
 		case ORDER_STATUS_READY:
-			s = "READY";
 			positive = "PICKED UP";
 			negative = "NO SHOW";
-			((TextView) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_green);
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_green);
 			break;
 		}
-		((TextView) view.findViewById(R.id.view_order_header)).setText("Order " + this.serverID + " (" + s + ")");
+		((TextView) view.findViewById(R.id.view_order_number)).setText("Order " + this.serverID);
 		((Button) view.findViewById(R.id.view_order_button_positive)).setText(positive);
 		((Button) view.findViewById(R.id.view_order_button_positive)).setTag(this);
 		((Button) view.findViewById(R.id.view_order_button_negative)).setText(negative);
