@@ -22,13 +22,14 @@ import com.kellislabs.bartsy.facebook.DialogError;
 import com.kellislabs.bartsy.facebook.Facebook;
 import com.kellislabs.bartsy.facebook.Facebook.DialogListener;
 import com.kellislabs.bartsy.facebook.FacebookError;
-
-
+import com.kellislabs.bartsy.utils.Constants;
+import com.kellislabs.bartsy.utils.WebServices;
 
 public class AndroidFacebookConnectActivity extends Activity {
 
 	// Your Facebook APP ID
-	private static String APP_ID = "596602043683290"; // Replace with your App ID
+	private static String APP_ID = "596602043683290"; // Replace with your App
+	// ID
 
 	// Instance of Facebook Class
 	private Facebook facebook = new Facebook(APP_ID);
@@ -38,7 +39,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 
 	// Buttons
 	Button btnFbLogin;
-	//Button btnFbGetProfile;
+	// Button btnFbGetProfile;
 	Button btnPostToWall;
 	Button btnShowAccessTokens;
 
@@ -48,7 +49,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 		setContentView(R.layout.facebook_layout);
 
 		btnFbLogin = (Button) findViewById(R.id.btn_fblogin);
-		//btnFbGetProfile = (Button) findViewById(R.id.btn_get_profile);
+		// btnFbGetProfile = (Button) findViewById(R.id.btn_get_profile);
 		btnPostToWall = (Button) findViewById(R.id.btn_fb_post_to_wall);
 		btnShowAccessTokens = (Button) findViewById(R.id.btn_show_access_tokens);
 		mAsyncRunner = new AsyncFacebookRunner(facebook);
@@ -66,16 +67,16 @@ public class AndroidFacebookConnectActivity extends Activity {
 		});
 		btnFbLogin.performClick();
 
-//		/**
-//		 * Getting facebook Profile info
-//		 * */
-//		btnFbGetProfile.setOnClickListener(new View.OnClickListener() {
-//
-//			@Override
-//			public void onClick(View v) {
-//				getProfileInformation();
-//			}
-//		});
+		// /**
+		// * Getting facebook Profile info
+		// * */
+		// btnFbGetProfile.setOnClickListener(new View.OnClickListener() {
+		//
+		// @Override
+		// public void onClick(View v) {
+		// getProfileInformation();
+		// }
+		// });
 
 		/**
 		 * Posting to Facebook Wall
@@ -114,19 +115,18 @@ public class AndroidFacebookConnectActivity extends Activity {
 			System.out.println("access token not null");
 			getProfileInformation();
 			facebook.setAccessToken(access_token);
-			
-			
+
 			btnFbLogin.setVisibility(View.INVISIBLE);
-			
+
 			// Making get profile button visible
-		//	btnFbGetProfile.setVisibility(View.VISIBLE);
+			// btnFbGetProfile.setVisibility(View.VISIBLE);
 
 			// Making post to wall visible
-			btnPostToWall.setVisibility(View.VISIBLE);
+			btnPostToWall.setVisibility(View.GONE);
 
 			// Making show access tokens button visible
-			
-			btnShowAccessTokens.setVisibility(View.VISIBLE);
+
+			btnShowAccessTokens.setVisibility(View.GONE);
 
 			Log.d("FB Sessions", "" + facebook.isSessionValid());
 		}
@@ -137,7 +137,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 
 		if (!facebook.isSessionValid()) {
 			System.out.println("!facebook.isSessionValid()");
-			getProfileInformation();
+			// getProfileInformation();
 			facebook.authorize(this,
 					new String[] { "email", "publish_stream" },
 					new DialogListener() {
@@ -163,13 +163,14 @@ public class AndroidFacebookConnectActivity extends Activity {
 							btnFbLogin.setVisibility(View.INVISIBLE);
 
 							// Making logout Button visible
-						//	btnFbGetProfile.setVisibility(View.VISIBLE);
+							// btnFbGetProfile.setVisibility(View.VISIBLE);
 
 							// Making post to wall visible
-							btnPostToWall.setVisibility(View.VISIBLE);
+							btnPostToWall.setVisibility(View.GONE);
 
 							// Making show access tokens button visible
-							btnShowAccessTokens.setVisibility(View.VISIBLE);
+							btnShowAccessTokens.setVisibility(View.GONE);
+
 						}
 
 						@Override
@@ -194,7 +195,6 @@ public class AndroidFacebookConnectActivity extends Activity {
 		facebook.authorizeCallback(requestCode, resultCode, data);
 	}
 
-
 	/**
 	 * Get Profile information by making request to Facebook Graph API
 	 * */
@@ -204,28 +204,31 @@ public class AndroidFacebookConnectActivity extends Activity {
 			@Override
 			public void onComplete(String response, Object state) {
 				Log.d("Profile", response);
-				System.out.println("the response from json is :::"+response);
+				System.out.println("the response from json is :::" + response);
 				String json = response;
+				toSaveFBData(json);
 				try {
 					// Facebook Profile JSON data
 					JSONObject profile = new JSONObject(json);
-					
+
 					// getting name of the user
 					final String name = profile.getString("name");
-					
+
 					// getting email of the user
 					final String email = profile.getString("email");
-					
+
 					runOnUiThread(new Runnable() {
 
 						@Override
 						public void run() {
-							Toast.makeText(getApplicationContext(), "Name: " + name + "\nEmail: " + email, Toast.LENGTH_LONG).show();
+							Toast.makeText(getApplicationContext(),
+									"Name: " + name + "\nEmail: " + email,
+									Toast.LENGTH_LONG).show();
 						}
 
 					});
+					finish();
 
-					
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -249,6 +252,60 @@ public class AndroidFacebookConnectActivity extends Activity {
 			public void onFacebookError(FacebookError e, Object state) {
 			}
 		});
+	}
+
+	/**
+* 
+* */
+	public void toSaveFBData(String response) {
+
+		try {
+			JSONObject fbProfileData = new JSONObject(response);
+			// getting name of the user
+			String name = fbProfileData.getString("name");
+
+			// getting email of the user
+			String email = fbProfileData.getString("email");
+			// getting accessToken of the user
+			String fbProfileId = fbProfileData.getString("id");
+			// getting username of the user
+			String userName = fbProfileData.getString("username");
+			// getting gender of the user
+			String gender = fbProfileData.getString("gender");
+
+			String deviceToken = "0000000000000000000";
+			String loginType = "facebook";
+			int deviceType = Constants.DEVICE_Type;
+			JSONObject json = new JSONObject();
+			json.put("userName", userName);
+			json.put("name", name);
+			json.put("loginId", fbProfileId);
+			json.put("loginType", loginType);
+			json.put("gender", gender);
+			json.put("deviceType", deviceType);
+			json.put("deviceToken", deviceToken);
+
+			try {
+				String responses = WebServices.postRequest(
+						Constants.URL_Post_Profile_Data, json,
+						getApplicationContext());
+				System.out.println("responses   " + responses);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			System.out.println("name " + name);
+			System.out.println("email " + email);
+			System.out.println("id " + fbProfileId);
+			System.out.println("username " + userName);
+			System.out.println("gender " + gender);
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
@@ -286,7 +343,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 		Toast.makeText(getApplicationContext(),
 				"Access Token: " + access_token, Toast.LENGTH_LONG).show();
 	}
-	
+
 	/**
 	 * Function to Logout user from Facebook
 	 * */
@@ -304,7 +361,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 							btnFbLogin.setVisibility(View.VISIBLE);
 
 							// making all remaining buttons invisible
-						//	btnFbGetProfile.setVisibility(View.INVISIBLE);
+							// btnFbGetProfile.setVisibility(View.INVISIBLE);
 							btnPostToWall.setVisibility(View.INVISIBLE);
 							btnShowAccessTokens.setVisibility(View.INVISIBLE);
 						}
