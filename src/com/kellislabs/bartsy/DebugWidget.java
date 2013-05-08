@@ -81,20 +81,6 @@ public class DebugWidget extends TabActivity {
 				.setContent(intent);
 		tabHost.addTab(spec);
 
-		intent = new Intent().setClass(this, ContactsClient.class);
-		spec = tabHost
-				.newTabSpec("People client")
-				.setIndicator("People Client",
-						res.getDrawable(R.drawable.friend)).setContent(intent);
-		tabHost.addTab(spec);
-
-		intent = new Intent().setClass(this, ContactsService.class);
-		spec = tabHost
-				.newTabSpec("people receive")
-				.setIndicator("People Host", res.getDrawable(R.drawable.friend))
-				.setContent(intent);
-		tabHost.addTab(spec);
-
 		tabHost.setCurrentTab(0);
 		
 		//	GCM registration code
