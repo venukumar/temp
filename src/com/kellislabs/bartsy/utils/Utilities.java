@@ -32,7 +32,7 @@ public final class Utilities {
 	/**
 	 * Google API project id registered to use GCM.
 	 */
-	public static final String SENDER_ID = "439730190110";
+	public static final String SENDER_ID = "84381847947";
 
 	/**
 	 * Tag used on log messages.
@@ -43,7 +43,7 @@ public final class Utilities {
 	/**
 	 * Intent used to display a message in the screen.
 	 */
-	public static final String DISPLAY_MESSAGE_ACTION = "com.google.android.c2dm.intent.REGISTRATION";
+	public static final String DISPLAY_MESSAGE_ACTION = "com.kellislabs.bartsy.DISPLAY_MESSAGE";
 
 	/**
 	 * Intent's extra that contains the message to be displayed.
