@@ -21,20 +21,38 @@ import wifi.AllJoynUseActivity;
 import android.os.Bundle;
 import android.app.TabActivity;
 import android.widget.TabHost;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
+
+import com.google.android.gcm.GCMRegistrar;
 import com.kellislabs.bartsy.*;
 import com.kellislabs.bartsy.R.bool;
 import com.kellislabs.bartsy.R.drawable;
 import com.kellislabs.bartsy.R.layout;
 import com.kellislabs.bartsy.R.string;
 import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.utils.Utilities;
 
 public class DebugWidget extends TabActivity {
 	private static final String TAG = "Bartsy";
+	
+	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			System.out.println("in broadcast receiver:::::::");
+			String newMessage = intent.getExtras().getString(
+					Utilities.EXTRA_MESSAGE);
+			System.out.println("the message is ::::" + newMessage);
+			// mDisplay.append(newMessage + "\n");
+
+		}
+
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +96,20 @@ public class DebugWidget extends TabActivity {
 		tabHost.addTab(spec);
 
 		tabHost.setCurrentTab(0);
+		
+		//	GCM registration code
+		GCMRegistrar.checkDevice(this);
+		GCMRegistrar.checkManifest(this);
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		if (regId.equals("")) {
+		  GCMRegistrar.register(this, Utilities.SENDER_ID);
+		} else {
+		  Log.v(TAG, "Already registered");
+		}
+		System.out.println("the registration id is:::::" + regId);
+
+		 registerReceiver(mHandleMessageReceiver, new IntentFilter(
+		 Utilities.DISPLAY_MESSAGE_ACTION));
 
 
 		// Start the right activity depending on whether we're a tablet or a

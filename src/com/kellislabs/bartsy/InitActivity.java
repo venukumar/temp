@@ -7,23 +7,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
-import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
-import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.plus.PlusClient;
-import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
-import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
-import com.google.android.gms.plus.model.people.Person;
-import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
-import com.kellislabs.bartsy.R;
-import com.kellislabs.bartsy.PeopleDialogFragment.UserDialogListener;
-
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -40,11 +28,21 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.android.gcm.GCMRegistrar;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.plus.PlusClient;
+import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
+import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
+import com.google.android.gms.plus.model.people.Person;
+import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
+import com.kellislabs.bartsy.utils.Utilities;
 
 public class InitActivity extends FragmentActivity implements
 		ConnectionCallbacks, OnConnectionFailedListener,
@@ -65,6 +63,7 @@ public class InitActivity extends FragmentActivity implements
 	InitActivity mActivity = this;
 	Person mPerson = null;
 	String mAccountName = null;
+	
 
 	/** Called when the activity is first created. */
 	@Override
@@ -91,6 +90,8 @@ public class InitActivity extends FragmentActivity implements
 		// resolved.
 		mConnectionProgressDialog = new ProgressDialog(this);
 		mConnectionProgressDialog.setMessage("Connecting");
+		
+
 	}
 
 	@Override
