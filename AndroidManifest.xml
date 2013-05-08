@@ -107,14 +107,19 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".AndroidFacebookConnectActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:label="Contacts Client"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".ContactsClient"
             android:configChanges="keyboardHidden|orientation"
             android:label="Contacts Client"
             android:screenOrientation="portrait" >
         </activity>
 
-        <service
-            android:name="ConnectivityService">
+        <service android:name="ConnectivityService" >
         </service>
 
         <activity
