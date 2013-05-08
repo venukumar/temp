@@ -290,7 +290,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 
 			try {
 				String responses = WebServices.postRequest(
-						Constants.URL_Post_Profile_Data, json,
+						Constants.URL_POST_PROFILE_DATA, json,
 						getApplicationContext());
 				System.out.println("responses   " + responses);
 				if (response != null) {

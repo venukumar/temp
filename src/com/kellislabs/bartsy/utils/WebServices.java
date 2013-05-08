@@ -139,23 +139,27 @@ public class WebServices {
 		return result;
 	}
 
-	public static void postOrderTOServer(Context context, MenuDrink drink) {
+	public static void postOrderTOServer(final Context context,
+			MenuDrink drink, String tip) {
+		final JSONObject orderData = new JSONObject();
 		Resources r = context.getResources();
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
-				"");
-		String totalPrice = calculateTotalPrice();
-		String tripPercentage = "";
+				"100002");
+		String[] tipPercentage = tip.split("%");
+		String tipPercentageValue = tipPercentage[0];
+		float totalPrice = calculateTotalPrice(
+				Float.valueOf(tipPercentageValue),
+				Float.valueOf(drink.getPrice()));
 
-		JSONObject orderData = new JSONObject();
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", "100001");
 			orderData.put("basePrice", drink.getPrice());
 			orderData.put("itemId", drink.getDrinkId());
 			orderData.put("itemName", drink.getTitle());
-			orderData.put("tipPercentage", tripPercentage);
+			orderData.put("tipPercentage", String.valueOf(tipPercentageValue));
 			orderData.put("totalPrice", totalPrice);
 			orderData.put("orderStatus", "New");
 		} catch (JSONException e) {
@@ -163,12 +167,34 @@ public class WebServices {
 			e.printStackTrace();
 		}
 
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					String response;
+					response = postRequest(Constants.URL_PLACE_ORDER,
+							orderData, context);
+					System.out.println("response :: " + response);
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
 	}
 
-	private static String calculateTotalPrice() {
+	private static float calculateTotalPrice(float tip, float actualPrice) {
 		// TODO Auto-generated method stub
 
-		return null;
+		float subTotal = actualPrice * ((tip + 8) / 100);
+
+		float totalPrice = actualPrice + subTotal;
+		return totalPrice;
+
 	}
 
 	public static void getMenuList(Context context) {

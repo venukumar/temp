@@ -10,8 +10,10 @@ public class Constants {
 	public static final String URL_GET_BAR_LIST = DOMAIN_NAME
 			+ "/Bartsy/venue/getMenu";
 	// This is the url for posting the Profiles Data to server
-	public static final String URL_Post_Profile_Data = DOMAIN_NAME
+	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
 			+ "/Bartsy/user/saveUserProfile";
+	//This is the url for place the order
+	public static final String URL_PLACE_ORDER=DOMAIN_NAME+"/Bartsy/order/placeOrder";
 
 	// Android Device Type
 	public static final int DEVICE_Type = 0;

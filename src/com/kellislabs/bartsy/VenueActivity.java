@@ -810,11 +810,10 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Update tab title with the number of open orders
 		updateOrdersCount();
-		
-		
 
 		// Web service call
-		// WebServices.postRequest(url, postData, context);
+		WebServices.postOrderTOServer(VenueActivity.this, drink,
+				((DrinkDialogFragment) dialog).tipPercentageValue);
 
 	}
 

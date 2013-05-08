@@ -99,6 +99,9 @@ public class DrinkDialogFragment extends DialogFragment {
 
 								// Returns an integer which represents the
 								// selected radio button's ID
+								
+								System.out.println("clicked on order!!!!!!!");
+								
 								int selected = tipPercentage
 										.getCheckedRadioButtonId();
 
