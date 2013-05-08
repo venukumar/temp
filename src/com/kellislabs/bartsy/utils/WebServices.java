@@ -101,6 +101,41 @@ public class WebServices {
 
 	}
 
+	public static void userCheckIn(final Context context, String venueId) {
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		Resources r = context.getResources();
+		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
+				"100002");
+		final JSONObject json = new JSONObject();
+		try {
+			json.put("bartsyId", bartsyId);
+			json.put("venueId", venueId);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					String response;
+					response = postRequest(Constants.URL_USER_CHECK_IN, json,
+							context);
+					System.out.println("response :: " + response);
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
+	}
+
 	/*
 	 * This Method i am using for each and every request which is going through
 	 * get() method.
@@ -195,6 +230,14 @@ public class WebServices {
 		float totalPrice = actualPrice + subTotal;
 		return totalPrice;
 
+	}
+
+	public static String getVenueList(final Context context) {
+		String response = null;
+
+		response = WebServices.getRequest(Constants.URL_GET_VENU_LIST, context);
+		System.out.println("response venu " + response);
+		return response;
 	}
 
 	public static void getMenuList(Context context) {
