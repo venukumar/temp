@@ -176,9 +176,27 @@
             android:enabled="true" >
         </service>
 
+        <!-- ZooZ Activity -->
+        <activity
+            android:name="com.zooz.android.lib.CheckoutActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@android:style/Theme.Translucent" />
+
+        <!-- Pay Pal -->
+        <activity
+            android:name="com.paypal.android.MEP.PayPalActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+ 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDzwY-G76VRggOFcM9wWIm8jo9FBMvOuEI" />
+          
+        <!-- 
+         <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />
+         -->
     </application>
 
 </manifest>
