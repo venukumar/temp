@@ -10,14 +10,14 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.kellislabs.bartsy.R;
-import com.kellislabs.bartsy.model.VenueItem;
+import com.kellislabs.bartsy.model.Venue;
 
-public class VenueListViewAdapter extends ArrayAdapter<VenueItem> {
+public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 
-	private List<VenueItem> items;
+	private List<Venue> items;
 
 	public VenueListViewAdapter(Context context, int resource,
-			List<VenueItem> items) {
+			List<Venue> items) {
 
 		super(context, resource, items);
 
@@ -38,7 +38,7 @@ public class VenueListViewAdapter extends ArrayAdapter<VenueItem> {
 
 		}
 
-		VenueItem p = items.get(position);
+		Venue p = items.get(position);
 
 		if (p != null) {
 

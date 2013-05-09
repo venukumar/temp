@@ -1,6 +1,6 @@
 package com.kellislabs.bartsy.model;
 
-public class VenueItem {
+public class Venue {
 
 	private String id;
 	private String name;

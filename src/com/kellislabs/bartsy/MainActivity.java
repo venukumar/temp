@@ -27,7 +27,7 @@ import com.google.android.gms.plus.model.people.Person;
 import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.PeopleDialogFragment.UserDialogListener;
-import com.kellislabs.bartsy.model.VenueItem;
+import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
@@ -74,7 +74,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 		mApp = (BartsyApplication) getApplication();
 
-		VenueProfile venue = ((BartsyApplication) getApplication()).activeVenue;
+		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 
 		if (venue == null) {
 			// No active venue - hide active menu UI
@@ -89,12 +89,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			// Set up button
 			Button b = (Button) findViewById(R.id.button_active_venue);
 			if (mApp.mOrders.size() == 0) {
-				System.out.println("venue.name  " + venue.name + " ifff");
-				b.setText("Checked in at: " + venue.name
+				System.out.println("venue.name  " + venue.getName() + " ifff");
+				b.setText("Checked in at: " + venue.getName()
 						+ "\nClick to order drinks and see who's here...");
 			} else {
-				System.out.println("venue.name  " + venue.name + " elseee");
-				b.setText("Checked in at: " + venue.name + "\n"
+				System.out.println("venue.name  " + venue.getName() + " elseee");
+				b.setText("Checked in at: " + venue.getName() + "\n"
 						+ mApp.mOrders.size()
 						+ " open orders. Click for more...");
 			}

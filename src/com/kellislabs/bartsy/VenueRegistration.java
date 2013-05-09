@@ -7,15 +7,18 @@ import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
-public class VenueRegistration extends Activity {
+public class VenueRegistration extends Activity implements OnClickListener {
 
 	private EditText locuId, bankname, bankAccountNo, wifiName, wifiPassword;
 	private RadioGroup typeOfAuthentication, wifiPresent;
@@ -33,8 +36,18 @@ public class VenueRegistration extends Activity {
 		typeOfAuthentication = (RadioGroup) findViewById(R.id.authentication);
 		wifiPresent = (RadioGroup) findViewById(R.id.wifiPresent);
 
+		// Setup a listener for the submit button
+		findViewById(R.id.button_venue_registration_submit).setOnClickListener(this);
 	}
 
+	@Override
+	public void onClick(View arg0) {
+		Intent intent = new Intent(this, VenueActivity.class);
+
+		// Perform registration - for now assume all will go well
+		registration(arg0);
+	}
+	
 	public void registration(View v) {
 
 		int selectedWifiPresent = wifiPresent.getCheckedRadioButtonId();
@@ -87,18 +100,24 @@ public class VenueRegistration extends Activity {
 
 					if (response != null) {
 						JSONObject json = new JSONObject(response);
-						String errorCode = json.getString("errorCode");
+						int errorCode = Integer.parseInt(json.getString("errorCode"));
 						String errorMessage = json.getString("errorMessage");
-						if (errorCode.equals("0")) {
+
+						switch(errorCode) {
+						case 2: 
+							// venue already exists - still save the profile locally for now
+						case 0: 
+							// Save the venue id in shared preferences
 							String venueId = json.getString("venueId");
-							SharedPreferences mPrefs = getPreferences(MODE_PRIVATE);
-							SharedPreferences.Editor editor = mPrefs.edit();
-							editor.putString("RegisterVenueId", venueId);
+						    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+							SharedPreferences.Editor editor = sharedPref.edit();
+							editor.putString("RegisteredVenueId", venueId);
 
 							editor.commit();
 
 							Intent intent = new Intent(VenueRegistration.this,
 									VenueActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							startActivity(intent);
 							finish();
 						}
@@ -111,6 +130,5 @@ public class VenueRegistration extends Activity {
 
 			}
 		}.start();
-
 	}
 }

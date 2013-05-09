@@ -43,6 +43,7 @@ import com.kellislabs.bartsy.ConnectivityService.HostChannelState;
 import com.kellislabs.bartsy.ConnectivityService.UseChannelState;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.Profile;
+import com.kellislabs.bartsy.model.Venue;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common
@@ -120,7 +121,7 @@ public class BartsyApplication extends Application implements AppObservable {
      * 
      */
     
-    VenueProfile activeVenue = null;
+    Venue activeVenue = null;
     
     
     /*** 

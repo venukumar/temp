@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.kellislabs.bartsy.model.VenueItem;
+import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.WebServices;
 
 import android.app.Dialog;
@@ -23,7 +23,7 @@ import android.widget.TextView;
 public class VenueListDialog extends Dialog {
 	
 	private Handler handler = new Handler();
-	private List<VenueItem> venues;
+	private List<Venue> venues;
 	
 	public VenueListDialog(final Context context) {
 		super(context);
@@ -81,11 +81,11 @@ public class VenueListDialog extends Dialog {
 		
 	}
 	
-	protected void venueSelected(VenueItem venueItem) {
+	protected void venueSelected(Venue venue) {
 		
 	}
 
-	private void updateVenueListView(List<VenueItem> venues,
+	private void updateVenueListView(List<Venue> venues,
 			ArrayAdapter<String> channelListAdapter)
 
 	{
@@ -93,7 +93,7 @@ public class VenueListDialog extends Dialog {
 
 			for (int i = 0; i < venues.size(); i++) {
 
-				VenueItem venue = venues.get(i);
+				Venue venue = venues.get(i);
 				channelListAdapter.add(venue.getName());
 
 			}
@@ -102,8 +102,8 @@ public class VenueListDialog extends Dialog {
 		channelListAdapter.notifyDataSetChanged();
 	}
 
-	private List<VenueItem> getVenueListResponse(String response) {
-		List<VenueItem> list = new ArrayList<VenueItem>();
+	private List<Venue> getVenueListResponse(String response) {
+		List<Venue> list = new ArrayList<Venue>();
 		try {
 			JSONArray array = new JSONArray(response);
 			for (int i = 0; i < array.length(); i++) {
@@ -113,7 +113,7 @@ public class VenueListDialog extends Dialog {
 				String latitude = venueObject.getString("latitude");
 				String longitude = venueObject.getString("longitude");
 
-				VenueItem venueProfile = new VenueItem();
+				Venue venueProfile = new Venue();
 				venueProfile.setId(venueId);
 				venueProfile.setName(venueName);
 				venueProfile.setLatitude(latitude);

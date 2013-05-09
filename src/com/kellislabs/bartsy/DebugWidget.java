@@ -98,24 +98,23 @@ public class DebugWidget extends TabActivity {
 		registerReceiver(mHandleMessageReceiver, new IntentFilter(
 				Utilities.DISPLAY_MESSAGE_ACTION));
 
+		SharedPreferences sharedPref = getSharedPreferences(getResources()
+				.getString(R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+
 		// Start the right activity depending on whether we're a tablet or a
 		// phone
 		if (getResources().getBoolean(R.bool.isTablet)) {
 
-			SharedPreferences prefs = PreferenceManager
-					.getDefaultSharedPreferences(DebugWidget.this);
-			String venueId = prefs.getString("RegisterVenueId", "");
+			String venueId = sharedPref.getString("RegisteredVenueId", null);
 
-			if (venueId.trim().length() == 0)
+			if (venueId == null)
 				intent = new Intent().setClass(this, VenueRegistration.class);
 			else
 				intent = new Intent().setClass(this, VenueActivity.class);
 		} else {
 			// If the user profile has no been set, start the init, if it has,
 			// start Bartsy
-			SharedPreferences sharedPref = getSharedPreferences(getResources()
-					.getString(R.string.config_shared_preferences_name),
-					Context.MODE_PRIVATE);
 			if (sharedPref
 					.getString(
 							getResources().getString(
@@ -131,6 +130,7 @@ public class DebugWidget extends TabActivity {
 				intent = new Intent().setClass(this, MainActivity.class);
 			}
 		}
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		this.startActivity(intent);
 	}
 }

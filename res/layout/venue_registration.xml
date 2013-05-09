@@ -45,7 +45,7 @@
                     android:id="@+id/locuId"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10" >
+                    android:ems="14" >
                 </EditText>
             </LinearLayout>
 
@@ -66,7 +66,7 @@
                     android:id="@+id/bankNameEdit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10" >
+                    android:ems="14" >
                 </EditText>
             </LinearLayout>
 
@@ -87,7 +87,7 @@
                     android:id="@+id/bankAccount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10" >
+                    android:ems="14" >
                 </EditText>
             </LinearLayout>
 
@@ -141,7 +141,7 @@
                     android:id="@+id/wifiName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10"
+                    android:ems="12"
                     android:textSize="14dp" >
                 </EditText>
             </LinearLayout>
@@ -163,7 +163,7 @@
                     android:id="@+id/wifiPassword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10"
+                    android:ems="14"
                     android:inputType="textPassword" >
                 </EditText>
             </LinearLayout>
@@ -212,6 +212,7 @@
         android:orientation="horizontal" >
 
         <Button
+			android:id="@+id/button_venue_registration_submit"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

@@ -33,6 +33,9 @@ import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
 import org.alljoyn.bus.p2p.WifiDirectAutoAccept;
 
+import com.kellislabs.bartsy.model.Venue;
+import com.kellislabs.bartsy.utils.Constants;
+
 import wifi.AllJoynChatInterface;
 
 
@@ -631,11 +634,14 @@ public class ConnectivityService extends Service implements AppObserver {
 //        		name = "Not set";
 //        	}
         	
+
         	// For now just check in the venue with this channel, ignoring the fact we may already be checked in
-        	mApp.activeVenue = new VenueProfile("locu_venue_id",
-        			name, "Santa Monica, CA", 
-        			"Cool venue", "very cool venue",
-        			BitmapFactory.decodeResource(getResources(), R.drawable.finnmccools));
+        	if (Constants.USE_ALLJOYN) {
+        		mApp.activeVenue = new Venue();
+        		mApp.activeVenue.setId("locu_venue_id");
+        		mApp.activeVenue.setName(name);
+        		mApp.activeVenue.setAddress("Santa Monica, CA"); 
+        	}
         }
         
         public void hostAutoConnect() {

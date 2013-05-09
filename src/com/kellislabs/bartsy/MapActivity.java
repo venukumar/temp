@@ -54,7 +54,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.adapters.VenueListViewAdapter;
-import com.kellislabs.bartsy.model.VenueItem;
+import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.WebServices;
 
 /**
@@ -64,12 +64,15 @@ import com.kellislabs.bartsy.utils.WebServices;
  */
 public class MapActivity extends Activity implements LocationListener,
 		OnClickListener {
-	private List<VenueItem> venues;
+	private List<Venue> venues;
 	private GoogleMap mMap = null;
 	private LocationManager locationManager;
 	private static final long MIN_TIME = 400;
 	private static final float MIN_DISTANCE = 1000;
 	private Handler handler = new Handler();
+	BartsyApplication mApp = null;
+	
+	Activity activity = this;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +82,9 @@ public class MapActivity extends Activity implements LocationListener,
 		// Set the action bar to enable back navigation
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
+		// Set up the pointer to the main application
+		mApp = (BartsyApplication) getApplication();
+		
 		if (mMap == null) {
 			// Try to obtain the map from the SupportMapFragment.
 
@@ -147,7 +153,13 @@ public class MapActivity extends Activity implements LocationListener,
 				System.out.println("sizeee "+venues.size());
 				String selectedItem = venues.get(arg2).getName();
 				System.out.println("selectedItem " + selectedItem);
-
+				
+				mApp.activeVenue = venues.get(arg2);
+				
+				Intent intent = new Intent(activity, VenueActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+				finish();
 			}
 		});
 		new Thread() {
@@ -170,7 +182,7 @@ public class MapActivity extends Activity implements LocationListener,
 
 							for (int i = 0; i < venues.size(); i++) {
 
-								VenueItem venue = venues.get(i);
+								Venue venue = venues.get(i);
 
 								LatLng AREAL = new LatLng(Float.valueOf(venue
 										.getLatitude()), Float.valueOf(venue
@@ -189,8 +201,8 @@ public class MapActivity extends Activity implements LocationListener,
 
 	}
 
-	private List<VenueItem> getVenueListResponse(String response) {
-		List<VenueItem> list = new ArrayList<VenueItem>();
+	private List<Venue> getVenueListResponse(String response) {
+		List<Venue> list = new ArrayList<Venue>();
 		try {
 			JSONArray array = new JSONArray(response);
 			for (int i = 0; i < array.length(); i++) {
@@ -200,7 +212,7 @@ public class MapActivity extends Activity implements LocationListener,
 				String latitude = venueObject.getString("latitude");
 				String longitude = venueObject.getString("longitude");
 				String address = venueObject.getString("address");
-				VenueItem venueProfile = new VenueItem();
+				Venue venueProfile = new Venue();
 				venueProfile.setId(venueId);
 				venueProfile.setName(venueName);
 				venueProfile.setLatitude(latitude);
