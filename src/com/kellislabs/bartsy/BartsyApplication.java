@@ -113,6 +113,7 @@ public class BartsyApplication extends Application implements AppObservable {
     // Database manager is a global variable
     DatabaseManager MDBM = null;
     
+    public int selectedVenueId = 0;
     /** 
      * 
      * The active venue is the venue where the user is checked in or null if the user is not checked in
