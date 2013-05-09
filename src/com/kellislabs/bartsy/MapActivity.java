@@ -36,6 +36,9 @@ import android.support.v4.app.FragmentActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -101,36 +104,52 @@ public class MapActivity extends Activity implements LocationListener,
 		// Bartsy server with the current location of the user and a radius.
 		// The server returns Bartsy points within this radius along with number
 		// of people in each.
-		LatLng AREAL = new LatLng(33.999786, -118.481364);
-		mMap.addMarker(new MarkerOptions().position(AREAL).title("Areal")
-				.snippet("People checked in: 6"));
-
-		LatLng CHAYA = new LatLng(33.997031, -118.47932);
-		mMap.addMarker(new MarkerOptions().position(CHAYA)
-				.title("Chaya Venice").snippet("People checked in: 8"));
-
-		LatLng BRICK = new LatLng(34.003544, -118.484955);
-		mMap.addMarker(new MarkerOptions().position(BRICK)
-				.title("Brick & Mortar").snippet("People checked in: 17"));
-
-		LatLng CIRCLE = new LatLng(33.998872, -118.480602);
-		mMap.addMarker(new MarkerOptions().position(CIRCLE).title("Circle Bar")
-				.snippet("People checked in: 14"));
-
-		LatLng THREEONETEN = new LatLng(33.999203, -118.48059);
-		mMap.addMarker(new MarkerOptions().position(THREEONETEN).title("31Ten")
-				.snippet("People checked in: 23"));
-
-		LatLng BASESEMENT = new LatLng(33.999203, -118.48059);
-		mMap.addMarker(new MarkerOptions().position(BASESEMENT)
-				.title("Basement Tavern").snippet("People checked in: 18"));
-
-		LatLng MAIN = new LatLng(33.99895, -118.48052);
-		mMap.addMarker(new MarkerOptions().position(MAIN).title("Main on Main")
-				.snippet("People checked in: 14"));
+		// LatLng AREAL = new LatLng(33.999786, -118.481364);
+		// mMap.addMarker(new MarkerOptions().position(AREAL).title("Areal")
+		// .snippet("People checked in: 6"));
+		//
+		// LatLng CHAYA = new LatLng(33.997031, -118.47932);
+		// mMap.addMarker(new MarkerOptions().position(CHAYA)
+		// .title("Chaya Venice").snippet("People checked in: 8"));
+		//
+		// LatLng BRICK = new LatLng(34.003544, -118.484955);
+		// mMap.addMarker(new MarkerOptions().position(BRICK)
+		// .title("Brick & Mortar").snippet("People checked in: 17"));
+		//
+		// LatLng CIRCLE = new LatLng(33.998872, -118.480602);
+		// mMap.addMarker(new
+		// MarkerOptions().position(CIRCLE).title("Circle Bar")
+		// .snippet("People checked in: 14"));
+		//
+		// LatLng THREEONETEN = new LatLng(33.999203, -118.48059);
+		// mMap.addMarker(new
+		// MarkerOptions().position(THREEONETEN).title("31Ten")
+		// .snippet("People checked in: 23"));
+		//
+		// LatLng BASESEMENT = new LatLng(33.999203, -118.48059);
+		// mMap.addMarker(new MarkerOptions().position(BASESEMENT)
+		// .title("Basement Tavern").snippet("People checked in: 18"));
+		//
+		// LatLng MAIN = new LatLng(33.99895, -118.48052);
+		// mMap.addMarker(new
+		// MarkerOptions().position(MAIN).title("Main on Main")
+		// .snippet("People checked in: 14"));
 
 		// findViewById(R.id.view_venues_list).setOnClickListener(this);
 		final ListView venueList = (ListView) findViewById(R.id.checkInListView);
+		venueList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				// TODO Auto-generated method stub
+
+				System.out.println("sizeee "+venues.size());
+				String selectedItem = venues.get(arg2).getName();
+				System.out.println("selectedItem " + selectedItem);
+
+			}
+		});
 		new Thread() {
 
 			public void run() {
@@ -148,6 +167,19 @@ public class MapActivity extends Activity implements LocationListener,
 									venues);
 
 							venueList.setAdapter(customAdapter);
+
+							for (int i = 0; i < venues.size(); i++) {
+
+								VenueItem venue = venues.get(i);
+
+								LatLng AREAL = new LatLng(Float.valueOf(venue
+										.getLatitude()), Float.valueOf(venue
+										.getLongitude()));
+								mMap.addMarker(new MarkerOptions()
+										.position(AREAL).title(venue.getName())
+										.snippet("People checked in: 6"));
+							}
+
 						}
 					});
 				}
@@ -167,12 +199,13 @@ public class MapActivity extends Activity implements LocationListener,
 				String venueId = venueObject.getString("venueId");
 				String latitude = venueObject.getString("latitude");
 				String longitude = venueObject.getString("longitude");
-
+				String address = venueObject.getString("address");
 				VenueItem venueProfile = new VenueItem();
 				venueProfile.setId(venueId);
 				venueProfile.setName(venueName);
 				venueProfile.setLatitude(latitude);
 				venueProfile.setLongitude(longitude);
+				venueProfile.setAddress(address);
 				list.add(venueProfile);
 			}
 
