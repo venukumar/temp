@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.util.Currency;
 import java.util.Date;
 
+import com.kellislabs.bartsy.model.Profile;
+
 import android.content.Context;
 import android.text.format.Time;
 import android.view.LayoutInflater;

@@ -6,6 +6,7 @@ package com.kellislabs.bartsy;
 import java.util.ArrayList;
 
 import com.google.android.gms.plus.model.people.Person;
+import com.kellislabs.bartsy.model.Profile;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;

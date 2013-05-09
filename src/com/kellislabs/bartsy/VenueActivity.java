@@ -55,6 +55,8 @@ import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.kellislabs.bartsy.CommandParser.BartsyCommand;
 import com.kellislabs.bartsy.model.MenuDrink;
+import com.kellislabs.bartsy.model.Profile;
+import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
 public class VenueActivity extends FragmentActivity implements
@@ -764,45 +766,75 @@ public class VenueActivity extends FragmentActivity implements
 		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
-
-		// Send order to server
-		mApp.newLocalUserMessage("<command><opcode>order</opcode>"
-				+ "<argument>"
-				+ mApp.mOrderIDs
-				+ "</argument>"
-				+ // client order ID
-				"<argument>"
-				+ mApp.mOrderIDs
-				+ "</argument>"
-				+ // server order ID
-				"<argument>" + drink.getTitle() + "</argument>" + "<argument>"
-				+ drink.getDescription() + "</argument>" + "<argument>"
-				+ drink.getPrice() + "</argument>" + "<argument>"
-				+ drink.getImage() + "</argument>" + "<argument>"
-				+ mApp.mProfile.userID + "</argument>" + // Each order contains
-															// the profile of
-															// the sender (and
-															// later the profile
-															// of the person
-															// that should pick
-															// it up)
-				"</command>");
-		appendStatus("Placed drink order");
+		
 
 		Order order = new Order();
 		order.initialize(mApp.mOrderIDs, // arg(0) - Client order ID
-				mApp.mOrderIDs, // arg(1) - Server order ID - use client ID for
+				mApp.mOrderIDs, // arg(1) - Server order ID - use client ID
+								// for
 								// now
 				drink.getTitle(), // arg(2) - Title
 				drink.getDescription(), // arg(3) - Description
 				drink.getPrice(), // arg(4) - Price
-				Integer.toString(R.drawable.drinks), // for now always use the
-														// same picture for the
+				Integer.toString(R.drawable.drinks), // for now always use
+														// the
+														// same picture for
+														// the
 														// drink
-				// drink.getImage(), // arg(5) - Image resource for the order
-				mApp.mProfile); // arg(6) - Each order contains the profile of
+				// drink.getImage(), // arg(5) - Image resource for the
+				// order
+				mApp.mProfile); // arg(6) - Each order contains the profile
+								// of
 								// the sender (and later the profile of the
 								// person that should pick it up)
+		
+
+		if (Constants.USE_ALLJOYN) {
+
+			// Send order to server
+			mApp.newLocalUserMessage("<command><opcode>order</opcode>"
+					+ "<argument>"
+					+ mApp.mOrderIDs
+					+ "</argument>"
+					+ // client order ID
+					"<argument>"
+					+ mApp.mOrderIDs
+					+ "</argument>"
+					+ // server order ID
+					"<argument>" + drink.getTitle() + "</argument>"
+					+ "<argument>" + drink.getDescription() + "</argument>"
+					+ "<argument>" + drink.getPrice() + "</argument>"
+					+ "<argument>" + drink.getImage() + "</argument>"
+					+ "<argument>" + mApp.mProfile.userID + "</argument>" + // Each
+																			// order
+																			// contains
+																			// the
+																			// profile
+																			// of
+																			// the
+																			// sender
+																			// (and
+																			// later
+																			// the
+																			// profile
+																			// of
+																			// the
+																			// person
+																			// that
+																			// should
+																			// pick
+																			// it
+																			// up)
+					"</command>");
+			appendStatus("Placed drink order");
+
+
+		} else {
+			// Web service call
+			WebServices.postOrderTOServer(VenueActivity.this, drink,
+					((DrinkDialogFragment) dialog).tipPercentageValue);
+		}
+		
 		mOrdersFragment.addOrder(order);
 
 		// Increment the local order count
@@ -810,11 +842,6 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Update tab title with the number of open orders
 		updateOrdersCount();
-
-		// Web service call
-		WebServices.postOrderTOServer(VenueActivity.this, drink,
-				((DrinkDialogFragment) dialog).tipPercentageValue);
-
 	}
 
 	void processCommandOrder(BartsyCommand command) {

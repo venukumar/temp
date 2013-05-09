@@ -42,6 +42,7 @@ import com.kellislabs.bartsy.ConnectivityService.BusAttachmentState;
 import com.kellislabs.bartsy.ConnectivityService.HostChannelState;
 import com.kellislabs.bartsy.ConnectivityService.UseChannelState;
 import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.model.Profile;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common

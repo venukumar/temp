@@ -42,7 +42,9 @@ import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
 import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
+import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.utils.Utilities;
+import com.kellislabs.bartsy.utils.WebServices;
 
 public class InitActivity extends FragmentActivity implements
 		ConnectionCallbacks, OnConnectionFailedListener,
@@ -254,6 +256,19 @@ public class InitActivity extends FragmentActivity implements
 			editor.putString(r.getString(R.string.config_user_description),
 					mPerson.getAboutMe());
 			editor.commit();
+			
+			// Save Profile web service call
+			final Profile bartsyProfile = new Profile();
+			bartsyProfile.setUsername(mPerson.getId());
+			bartsyProfile.setName(mPerson.getDisplayName());
+			bartsyProfile.setType("google");
+			bartsyProfile.setSocialNetworkId(mPerson.getId());
+			bartsyProfile.setGender(String.valueOf(mPerson.getGender()));
+			new Thread(){
+				public void run() {
+					WebServices.saveProfileData(bartsyProfile, getApplicationContext());
+				}
+			}.start();
 
 			// Show dialog and on exit start Bartsy (there should be an option
 			// to change the profile)

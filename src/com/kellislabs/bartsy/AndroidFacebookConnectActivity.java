@@ -24,6 +24,7 @@ import com.kellislabs.bartsy.facebook.DialogError;
 import com.kellislabs.bartsy.facebook.Facebook;
 import com.kellislabs.bartsy.facebook.Facebook.DialogListener;
 import com.kellislabs.bartsy.facebook.FacebookError;
+import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
@@ -208,33 +209,36 @@ public class AndroidFacebookConnectActivity extends Activity {
 			public void onComplete(String response, Object state) {
 				Log.d("Profile", response);
 				System.out.println("the response from json is :::" + response);
-				String json = response;
-				toSaveFBData(json);
 				try {
-					// Facebook Profile JSON data
-					JSONObject profile = new JSONObject(json);
-
+					JSONObject fbProfileData = new JSONObject(response);
+					
+					final Profile bartsyProfile = new Profile();
 					// getting name of the user
-					final String name = profile.getString("name");
-
+					bartsyProfile.setName(fbProfileData.getString("name"));
 					// getting email of the user
-					final String email = profile.getString("email");
-
-					runOnUiThread(new Runnable() {
-
-						@Override
+					bartsyProfile.setEmail(fbProfileData.getString("email"));
+					// getting accessToken of the user
+					
+					bartsyProfile.setSocialNetworkId(fbProfileData.getString("id"));
+					
+					// getting username of the user
+					bartsyProfile.setUsername(fbProfileData.getString("username"));
+					// getting gender of the user
+					bartsyProfile.setGender(fbProfileData.getString("gender"));
+					bartsyProfile.setType("facebook");
+					
+					new Thread(){
 						public void run() {
-							Toast.makeText(getApplicationContext(),
-									"Name: " + name + "\nEmail: " + email,
-									Toast.LENGTH_LONG).show();
+							WebServices.saveProfileData(bartsyProfile, getApplicationContext());
 						}
-
-					});
-					finish();
-
-				} catch (JSONException e) {
-					e.printStackTrace();
+					}.start();
+					
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
+				finish();
+				
 			}
 
 			@Override
@@ -257,77 +261,6 @@ public class AndroidFacebookConnectActivity extends Activity {
 		});
 	}
 
-	/**
-* 
-* */
-	public void toSaveFBData(String response) {
-
-		try {
-			JSONObject fbProfileData = new JSONObject(response);
-			// getting name of the user
-			String name = fbProfileData.getString("name");
-
-			// getting email of the user
-			String email = fbProfileData.getString("email");
-			// getting accessToken of the user
-			String fbProfileId = fbProfileData.getString("id");
-			// getting username of the user
-			String userName = fbProfileData.getString("username");
-			// getting gender of the user
-			String gender = fbProfileData.getString("gender");
-
-			String deviceToken = "0000000000000000000";
-			String loginType = "facebook";
-			int deviceType = Constants.DEVICE_Type;
-			JSONObject json = new JSONObject();
-			json.put("userName", userName);
-			json.put("name", name);
-			json.put("loginId", fbProfileId);
-			json.put("loginType", loginType);
-			json.put("gender", gender);
-			json.put("deviceType", deviceType);
-			json.put("deviceToken", deviceToken);
-
-			try {
-				String responses = WebServices.postRequest(
-						Constants.URL_POST_PROFILE_DATA, json,
-						getApplicationContext());
-				System.out.println("responses   " + responses);
-				if (response != null) {
-					int bartsyUserId;
-					JSONObject resultJson = new JSONObject(responses);
-					String errorCode = resultJson.getString("errorCode");
-					String errorMessage = resultJson.getString("errorMessage");
-					if (resultJson.has("bartsyUserId")) {
-						bartsyUserId = resultJson.getInt("bartsyUserId");
-						System.out.println("bartsyUserId  "+bartsyUserId);
-						
-
-						SharedPreferences sharedPref = getSharedPreferences(
-								getResources()
-										.getString(
-												R.string.config_shared_preferences_name),
-								Context.MODE_PRIVATE);
-						Resources r = getResources();
-
-						SharedPreferences.Editor editor = sharedPref.edit();
-						editor.putString(r.getString(R.string.bartsyUserId),
-								bartsyUserId+"");
-
-					}
-
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 
 	/**
 	 * Function to post to facebook wall

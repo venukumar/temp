@@ -22,9 +22,11 @@ import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.kellislabs.bartsy.GCMIntentService;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
+import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.model.Section;
 
 public class WebServices {
@@ -215,6 +217,63 @@ public class WebServices {
 				}
 			}
 		}.start();
+
+	}
+	
+	public static void saveProfileData(Profile bartsyProfile, Context context) {
+		try {
+			// To get GCM reg ID from the Shared Preference
+			SharedPreferences settings = context.getSharedPreferences(GCMIntentService.REG_ID, 0);
+			String deviceToken = settings.getString("RegId", "");
+			
+			int deviceType = Constants.DEVICE_Type;
+			JSONObject json = new JSONObject();
+			json.put("userName", bartsyProfile.getUsername());
+			json.put("name", bartsyProfile.getName());
+			json.put("loginId", bartsyProfile.getSocialNetworkId());
+			json.put("loginType", bartsyProfile.getType());
+			json.put("gender", bartsyProfile.getGender());
+			json.put("deviceType", deviceType);
+			json.put("deviceToken", deviceToken);
+
+			try {
+				String responses = WebServices.postRequest(
+						Constants.URL_POST_PROFILE_DATA, json,
+						context.getApplicationContext());
+				System.out.println("responses   " + responses);
+				if (bartsyProfile != null) {
+					String bartsyUserId = null;
+					JSONObject resultJson = new JSONObject(responses);
+					String errorCode = resultJson.getString("errorCode");
+					String errorMessage = resultJson.getString("errorMessage");
+					if (resultJson.has("bartsyUserId"))
+						bartsyUserId = (String) resultJson.get("bartsyUserId");
+					if (bartsyUserId != null) {
+
+						SharedPreferences sharedPref = context.getSharedPreferences(
+								context.getResources()
+										.getString(
+												R.string.config_shared_preferences_name),
+								Context.MODE_PRIVATE);
+						Resources r = context.getResources();
+
+						SharedPreferences.Editor editor = sharedPref.edit();
+						editor.putString(r.getString(R.string.bartsyUserId),
+								bartsyUserId);
+						editor.commit();
+						
+					}
+
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
