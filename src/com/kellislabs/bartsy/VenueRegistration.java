@@ -91,8 +91,11 @@ public class VenueRegistration extends Activity {
 						String errorMessage = json.getString("errorMessage");
 						if (errorCode.equals("0")) {
 							String venueId = json.getString("venueId");
-							((BartsyApplication) getApplication()).selectedVenueId = Integer
-									.valueOf(venueId);
+							SharedPreferences mPrefs = getPreferences(MODE_PRIVATE);
+							SharedPreferences.Editor editor = mPrefs.edit();
+							editor.putString("RegisterVenueId", venueId);
+
+							editor.commit();
 
 							Intent intent = new Intent(VenueRegistration.this,
 									VenueActivity.class);
