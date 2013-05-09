@@ -3,7 +3,12 @@ package com.kellislabs.bartsy;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.kellislabs.bartsy.utils.Constants;
+import com.kellislabs.bartsy.utils.WebServices;
+
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -41,13 +46,16 @@ public class VenueRegistration extends Activity {
 				.getCheckedRadioButtonId();
 
 		// Gets a reference to our "selected" radio button
-		RadioButton typeOfAuthentication = (RadioButton) findViewById(selectedWifiPresent);
+		RadioButton typeOfAuthentication = (RadioButton) findViewById(selectedTypeOfAuthentication);
+		SharedPreferences settings = getSharedPreferences(
+				GCMIntentService.REG_ID, 0);
+		String deviceToken = settings.getString("RegId", "");
 
 		System.out.println("sumbit");
-		JSONObject postData = new JSONObject();
+		final JSONObject postData = new JSONObject();
 		try {
 			postData.put("locuId", locuId.getText().toString());
-			//postData.put("deviceToken", value);
+			postData.put("deviceToken", deviceToken);
 			postData.put("wifiName", wifiName.getText().toString());
 			postData.put("wifiPassword", wifiPassword.getText().toString());
 			postData.put("typeOfAuthentication", typeOfAuthentication.getText()
@@ -55,13 +63,51 @@ public class VenueRegistration extends Activity {
 			postData.put("bankName", bankname.getText().toString());
 			postData.put("accountNumber", bankAccountNo.getText().toString());
 			postData.put("deviceType", "0");
-			postData.put("wifiPresent", wifi.getText().toString());
+
+			if (wifi.getText().toString().equalsIgnoreCase("Yes"))
+
+				postData.put("wifiPresent", "1");
+			else
+				postData.put("wifiPresent", "0");
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-	}
+		new Thread() {
+			public void run() {
 
+				try {
+					String response = WebServices.postRequest(
+							Constants.URL_SAVE_VENUEDETAILS, postData,
+							VenueRegistration.this);
+
+					System.out.println("response :: " + response);
+
+					if (response != null) {
+						JSONObject json = new JSONObject(response);
+						String errorCode = json.getString("errorCode");
+						String errorMessage = json.getString("errorMessage");
+						if (errorCode.equals("0")) {
+							String venueId = json.getString("venueId");
+							((BartsyApplication) getApplication()).selectedVenueId = Integer
+									.valueOf(venueId);
+
+							Intent intent = new Intent(VenueRegistration.this,
+									VenueActivity.class);
+							startActivity(intent);
+							finish();
+						}
+					}
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+		}.start();
+
+	}
 }
