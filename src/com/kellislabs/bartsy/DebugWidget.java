@@ -19,6 +19,7 @@ package com.kellislabs.bartsy;
 import wifi.AllJoynHostActivity;
 import wifi.AllJoynUseActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.TabActivity;
 import android.widget.TabHost;
 import android.content.BroadcastReceiver;
@@ -40,7 +41,7 @@ import com.kellislabs.bartsy.utils.Utilities;
 
 public class DebugWidget extends TabActivity {
 	private static final String TAG = "Bartsy";
-	
+
 	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -82,26 +83,33 @@ public class DebugWidget extends TabActivity {
 		tabHost.addTab(spec);
 
 		tabHost.setCurrentTab(0);
-		
-		//	GCM registration code
+
+		// GCM registration code
 		GCMRegistrar.checkDevice(this);
 		GCMRegistrar.checkManifest(this);
 		final String regId = GCMRegistrar.getRegistrationId(this);
 		if (regId.equals("")) {
-		  GCMRegistrar.register(this, Utilities.SENDER_ID);
+			GCMRegistrar.register(this, Utilities.SENDER_ID);
 		} else {
-		  Log.v(TAG, "Already registered");
+			Log.v(TAG, "Already registered");
 		}
 		System.out.println("the registration id is:::::" + regId);
 
-		 registerReceiver(mHandleMessageReceiver, new IntentFilter(
-		 Utilities.DISPLAY_MESSAGE_ACTION));
-
+		registerReceiver(mHandleMessageReceiver, new IntentFilter(
+				Utilities.DISPLAY_MESSAGE_ACTION));
 
 		// Start the right activity depending on whether we're a tablet or a
 		// phone
 		if (getResources().getBoolean(R.bool.isTablet)) {
-			intent = new Intent().setClass(this, VenueActivity.class);
+
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(DebugWidget.this);
+			String venueId = prefs.getString("RegisterVenueId", "");
+
+			if (venueId.trim().length() == 0)
+				intent = new Intent().setClass(this, VenueRegistration.class);
+			else
+				intent = new Intent().setClass(this, VenueActivity.class);
 		} else {
 			// If the user profile has no been set, start the init, if it has,
 			// start Bartsy
