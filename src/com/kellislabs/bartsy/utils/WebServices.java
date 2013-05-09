@@ -101,12 +101,15 @@ public class WebServices {
 
 	}
 
-	public static void userCheckIn(final Context context, String venueId) {
+	public static String userCheckIn(final Context context, String venueId) {
+		String response = null;
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		Resources r = context.getResources();
 		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
 				"100002");
+		
+		System.out.println("bartsyId ::: "+bartsyId);
 		final JSONObject json = new JSONObject();
 		try {
 			json.put("bartsyId", bartsyId);
@@ -116,24 +119,17 @@ public class WebServices {
 			e.printStackTrace();
 		}
 
-		new Thread(new Runnable() {
+		try {
+			
 
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				try {
-					String response;
-					response = postRequest(Constants.URL_USER_CHECK_IN, json,
-							context);
-					System.out.println("response :: " + response);
+			response = postRequest(Constants.URL_USER_CHECK_IN, json, context);
+			System.out.println("response :: " + response);
 
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}).start();
-
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return response;
 	}
 
 	/*
@@ -202,7 +198,7 @@ public class WebServices {
 			e.printStackTrace();
 		}
 
-		new Thread(new Runnable() {
+		new Thread() {
 
 			@Override
 			public void run() {
@@ -218,7 +214,7 @@ public class WebServices {
 					e.printStackTrace();
 				}
 			}
-		}).start();
+		}.start();
 
 	}
 

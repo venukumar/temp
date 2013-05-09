@@ -294,13 +294,14 @@ public class AndroidFacebookConnectActivity extends Activity {
 						getApplicationContext());
 				System.out.println("responses   " + responses);
 				if (response != null) {
-					String bartsyUserId = null;
+					int bartsyUserId;
 					JSONObject resultJson = new JSONObject(responses);
 					String errorCode = resultJson.getString("errorCode");
 					String errorMessage = resultJson.getString("errorMessage");
-					if (resultJson.has("bartsyUserId"))
-						bartsyUserId = (String) resultJson.get("bartsyUserId");
-					if (bartsyUserId != null) {
+					if (resultJson.has("bartsyUserId")) {
+						bartsyUserId = resultJson.getInt("bartsyUserId");
+						System.out.println("bartsyUserId  "+bartsyUserId);
+						
 
 						SharedPreferences sharedPref = getSharedPreferences(
 								getResources()
@@ -311,8 +312,8 @@ public class AndroidFacebookConnectActivity extends Activity {
 
 						SharedPreferences.Editor editor = sharedPref.edit();
 						editor.putString(r.getString(R.string.bartsyUserId),
-								bartsyUserId);
-						
+								bartsyUserId+"");
+
 					}
 
 				}

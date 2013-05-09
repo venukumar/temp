@@ -6,6 +6,15 @@ public class VenueItem {
 	private String name;
 	private String latitude;
 	private String longitude;
+	private String address;
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
 
 	public String getId() {
 		return id;

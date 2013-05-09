@@ -10,6 +10,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import wifi.AllJoynDialogBuilder;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,6 +43,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -57,6 +61,7 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
 
+	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
 	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some
 													// random unique number
@@ -72,14 +77,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		VenueProfile venue = ((BartsyApplication) getApplication()).activeVenue;
 
 		if (venue == null) {
-			System.out.println("no venue if !!!! ");
 			// No active venue - hide active menu UI
-			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
-			Button b = (Button) findViewById(R.id.button_active_venue);
-			b.setText("Please select the Venue");
+			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
+			
 
 		} else {
-			System.out.println("no venue else !!!! ");
 			// Active venue exists - set up the active venue view
 			// For now just show it
 			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
@@ -152,22 +154,38 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.button_active_venue:
 
-			VenueListDialog dialog = new VenueListDialog(MainActivity.this) {
-				@Override
-				protected void venueSelected(VenueItem venueItem) {
-					// TODO Auto-generated method stub
-					super.venueSelected(venueItem);
+//			VenueListDialog dialog = new VenueListDialog(MainActivity.this) {
+//				@Override
+//				protected void venueSelected(final VenueItem venueItem) {
+//					// TODO Auto-generated method stub
+//					super.venueSelected(venueItem);
+//
+//					new Thread() {
+//
+//						@Override
+//						public void run() {
+//							// TODO Auto-generated method stub
+//							final String response = WebServices.userCheckIn(
+//									MainActivity.this, venueItem.getId());
+//							handler.post(new Runnable() {
+//
+//								@Override
+//								public void run() {
+//									updateCheckInView(response,
+//											venueItem.getName());
+//								}
+//
+//							});
+//						}
+//					}.start();
+//
+//				}
+//			};
+//			dialog.show();
 
-					WebServices.userCheckIn(MainActivity.this,
-							venueItem.getId());
-
-				}
-			};
-			dialog.show();
-
-			// intent = new Intent().setClass(this, VenueActivity.class);
-			// intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			// this.startActivity(intent);
+			 intent = new Intent().setClass(this, VenueActivity.class);
+			 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			 this.startActivity(intent);
 			break;
 		case R.id.button_payments:
 			// For now directly call card.io. This should be separate activity
@@ -220,6 +238,37 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			this.startActivity(intent);
 			break;
 		}
+	}
+
+	private void updateCheckInView(String response, String checkInName) {
+		// TODO Auto-generated method stub
+		if (response != null) {
+			try {
+				JSONObject checkInObject = new JSONObject(response);
+				if (checkInObject.has("errorCode")) {
+					String errorCode = checkInObject.getString("errorCode");
+					System.out.println("error code "+errorCode);
+					if (Integer.valueOf(errorCode) == 1) {
+						
+						mApp.useSetChannelName(checkInName);
+						
+						Intent intent = new Intent().setClass(this,
+								VenueActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						this.startActivity(intent);
+						finish();
+					}
+				}
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} else {
+
+		}
+
 	}
 
 	@Override
