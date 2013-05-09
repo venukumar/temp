@@ -2,24 +2,26 @@ package com.kellislabs.bartsy;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
-import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -28,28 +30,10 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.ViewPager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
-import android.view.ActionProvider;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.TextView;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
@@ -58,6 +42,7 @@ import com.kellislabs.bartsy.model.MenuDrink;
 import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
+import com.zooz.android.lib.CheckoutActivity;
 
 public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
@@ -682,6 +667,7 @@ public class VenueActivity extends FragmentActivity implements
 			}
 		}
 	};
+	private Order order;
 
 	private void alljoynError() {
 		if (mApp.getErrorModule() == BartsyApplication.Module.GENERAL
@@ -767,8 +753,11 @@ public class VenueActivity extends FragmentActivity implements
 
 		appendStatus("Placing order for: " + drink.getTitle());
 		
-
-		Order order = new Order();
+		order = new Order();
+		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
+		String tipPercentageValue = tip.replace("%", "");
+		order.tipAmount = Float.valueOf(tipPercentageValue);
+		
 		order.initialize(mApp.mOrderIDs, // arg(0) - Client order ID
 				mApp.mOrderIDs, // arg(1) - Server order ID - use client ID
 								// for
@@ -787,7 +776,73 @@ public class VenueActivity extends FragmentActivity implements
 								// of
 								// the sender (and later the profile of the
 								// person that should pick it up)
+		order.itemId = drink.getDrinkId();
 		
+		System.out.println("order button is clicked");
+
+		Intent intent = new Intent(this,
+				CheckoutActivity.class);
+		System.out.println("drink price:::"
+				+ drink.getPrice());
+
+		// send merchant credential, app_key as given in
+		// the registration
+		intent.putExtra(CheckoutActivity.ZOOZ_APP_KEY,
+				"06717d2d-095e-4849-9d93-ab29beba3b7d");
+		intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT,
+				0.99);
+		intent.putExtra(
+				CheckoutActivity.ZOOZ_CURRENCY_CODE,
+				"USD");
+		intent.putExtra(
+				CheckoutActivity.ZOOZ_IS_SANDBOX, true);
+
+		// start ZooZCheckoutActivity and wait to the
+		// activity result.
+		startActivityForResult(intent, ZooZ_Activity_ID);
+		
+		
+	}
+	
+	private static final int ZooZ_Activity_ID = 1;
+	
+	/**
+	 * Parses the result returning from the ZooZ CheckoutActivity
+	 */
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		if (requestCode == ZooZ_Activity_ID) {
+
+			switch (resultCode) {
+			case Activity.RESULT_OK:
+				Log.i(TAG,
+						"Successfully paid. Your transaction id is: "
+								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_ID)
+								+ "\nDisplay ID: "
+								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_DISPLAY_ID));
+				processOrderData();
+				
+				break;
+			case Activity.RESULT_CANCELED:
+
+				if (data != null)
+					Log.e(TAG,
+							"Error, cannot complete payment with ZooZ. "
+									+ "Error code: "
+									+ data.getIntExtra(
+											CheckoutActivity.ZOOZ_ERROR_CODE, 0)
+									+ "; Error Message: "
+									+ data.getStringExtra(CheckoutActivity.ZOOZ_ERROR_MSG));
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	private void processOrderData() {
 
 		if (Constants.USE_ALLJOYN) {
 
@@ -801,10 +856,11 @@ public class VenueActivity extends FragmentActivity implements
 					+ mApp.mOrderIDs
 					+ "</argument>"
 					+ // server order ID
-					"<argument>" + drink.getTitle() + "</argument>"
-					+ "<argument>" + drink.getDescription() + "</argument>"
-					+ "<argument>" + drink.getPrice() + "</argument>"
-					+ "<argument>" + drink.getImage() + "</argument>"
+					"<argument>" + order.title + "</argument>"
+					+ "<argument>" + order.description + "</argument>"
+					+ "<argument>" + order.total + "</argument>"
+					+ "<argument>" // Image + 
+					+ "</argument>"
 					+ "<argument>" + mApp.mProfile.userID + "</argument>" + // Each
 																			// order
 																			// contains
@@ -830,9 +886,15 @@ public class VenueActivity extends FragmentActivity implements
 
 
 		} else {
+			
+			final BartsyApplication app = (BartsyApplication) getApplication();
+			order.serverID = app.selectedVenueId;
+			SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name),Context.MODE_PRIVATE);
+			Resources r = getResources();
+			order.clientID = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
+			
 			// Web service call
-			WebServices.postOrderTOServer(VenueActivity.this, drink,
-					((DrinkDialogFragment) dialog).tipPercentageValue);
+			WebServices.postOrderTOServer(VenueActivity.this, order);
 		}
 		
 		mOrdersFragment.addOrder(order);
@@ -842,6 +904,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Update tab title with the number of open orders
 		updateOrdersCount();
+		
 	}
 
 	void processCommandOrder(BartsyCommand command) {

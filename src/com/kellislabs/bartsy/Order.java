@@ -23,20 +23,23 @@ public class Order  {
 
 	// Title and description are arbitrary strings
 	public String title, description;
+	public String itemId;
 	
 	// The total price is in the local denomination and is the sum of price * quantity, fee and tax
-	float price, fee, tax;
-	int quantity;
-	int image_resource;
+	public float price, fee, tax;
+	public int quantity = 1;
+	public int image_resource;
+	public float tipAmount;
+	public double total;
 	
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
-	Profile orderSender;
-	Profile orderReceiver;
+	public Profile orderSender;
+	public Profile orderReceiver;
 	
 	// The view displaying this order or null. The view is the display of the order in a list. 
 	// The list could be either on the client or the server and it looks different in both cases
 	// but the code manages the differences. 
-	View view = null;
+	public View view = null;
 	
 	// Each order has exactly one associated profile. The order is invalid without one.
 //	Profile profile;
@@ -75,6 +78,8 @@ public class Order  {
 		// Orders starts in the "NEW" status
 		this.status = ORDER_STATUS_NEW;
 		this.state_transitions[this.status] = new Date();
+		
+		calculateTotalPrice();
 	}
 
 	
@@ -92,7 +97,13 @@ public class Order  {
 		}
 	}
 	
-	
+	public void calculateTotalPrice() {
+		float actualPrice = (price * quantity);
+		float subTotal =  actualPrice * ((tipAmount + 8) / 100);
+		
+		total = actualPrice + subTotal;
+
+	}
 	
 	void updateView () {
 		

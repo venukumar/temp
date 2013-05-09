@@ -23,6 +23,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.kellislabs.bartsy.GCMIntentService;
+import com.kellislabs.bartsy.Order;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
@@ -173,27 +174,21 @@ public class WebServices {
 	}
 
 	public static void postOrderTOServer(final Context context,
-			MenuDrink drink, String tip) {
+			Order order) {
 		final JSONObject orderData = new JSONObject();
 		Resources r = context.getResources();
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
-				"100002");
-		String[] tipPercentage = tip.split("%");
-		String tipPercentageValue = tipPercentage[0];
-		float totalPrice = calculateTotalPrice(
-				Float.valueOf(tipPercentageValue),
-				Float.valueOf(drink.getPrice()));
+		int bartsyId = prefs.getInt(r.getString(R.string.bartsyUserId),100002);
 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", "100001");
-			orderData.put("basePrice", drink.getPrice());
-			orderData.put("itemId", drink.getDrinkId());
-			orderData.put("itemName", drink.getTitle());
-			orderData.put("tipPercentage", String.valueOf(tipPercentageValue));
-			orderData.put("totalPrice", totalPrice);
+			orderData.put("basePrice", order.price);
+			orderData.put("itemId", order.itemId);
+			orderData.put("itemName", order.title);
+			orderData.put("tipPercentage", String.valueOf(order.tipAmount));
+			orderData.put("totalPrice", order.total);
 			orderData.put("orderStatus", "New");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -242,14 +237,13 @@ public class WebServices {
 						context.getApplicationContext());
 				System.out.println("responses   " + responses);
 				if (bartsyProfile != null) {
-					String bartsyUserId = null;
+					int bartsyUserId = 0;
 					JSONObject resultJson = new JSONObject(responses);
 					String errorCode = resultJson.getString("errorCode");
 					String errorMessage = resultJson.getString("errorMessage");
 					if (resultJson.has("bartsyUserId"))
-						bartsyUserId = (String) resultJson.get("bartsyUserId");
-					if (bartsyUserId != null) {
-
+						bartsyUserId = resultJson.getInt("bartsyUserId");
+					if (bartsyUserId>0) {
 						SharedPreferences sharedPref = context.getSharedPreferences(
 								context.getResources()
 										.getString(
@@ -258,32 +252,17 @@ public class WebServices {
 						Resources r = context.getResources();
 
 						SharedPreferences.Editor editor = sharedPref.edit();
-						editor.putString(r.getString(R.string.bartsyUserId),
+						editor.putInt(r.getString(R.string.bartsyUserId),
 								bartsyUserId);
 						editor.commit();
-						
 					}
-
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-
-	private static float calculateTotalPrice(float tip, float actualPrice) {
-		// TODO Auto-generated method stub
-
-		float subTotal = actualPrice * ((tip + 8) / 100);
-
-		float totalPrice = actualPrice + subTotal;
-		return totalPrice;
 
 	}
 

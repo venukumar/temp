@@ -92,7 +92,9 @@ public class DrinksSectionFragment extends Fragment {
 			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
 			menuDrinks.add(menu);
 		}
-
+		
+		final BartsyApplication app = (BartsyApplication) getActivity().getApplication();
+		
 		mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
 				groupNames, menuDrinks));
 		mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
@@ -100,6 +102,10 @@ public class DrinksSectionFragment extends Fragment {
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
+				if(app.selectedVenueId==0){
+					return false;
+				}
+				
 				MenuDrink menuDrink = menuDrinks.get(groupPosition).get(
 						childPosition);
 
