@@ -178,18 +178,22 @@ public class WebServices {
 			String venueID) {
 		final JSONObject orderData = new JSONObject();
 		Resources r = context.getResources();
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		int bartsyId = prefs.getInt(r.getString(R.string.bartsyUserId), 100002);
+		SharedPreferences sharedPref = context
+				.getSharedPreferences(
+						context.getResources()
+								.getString(
+										R.string.config_shared_preferences_name),
+						Context.MODE_PRIVATE);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 100002);
 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			orderData.put("basePrice", order.price);
+			orderData.put("basePrice", String.valueOf(order.price));
 			orderData.put("itemId", order.itemId);
 			orderData.put("itemName", order.title);
 			orderData.put("tipPercentage", String.valueOf(order.tipAmount));
-			orderData.put("totalPrice", order.total);
+			orderData.put("totalPrice", String.valueOf(order.total));
 			orderData.put("orderStatus", "New");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

@@ -7,18 +7,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.kellislabs.bartsy.model.MenuDrink;
-import com.zooz.android.lib.CheckoutActivity;
 
 /**
  * @author peterkellis
@@ -28,10 +26,6 @@ public class DrinkDialogFragment extends DialogFragment {
 
 	public MenuDrink drink;
 	public String tipPercentageValue;
-
-	// Identifier for the ZooZ CheckoutActivity
-	private static final String TAG = DrinkDialogFragment.class.getSimpleName();
-	private static final int ZooZ_Activity_ID = 1;
 
 	/*
 	 * The activity that creates an instance of this dialog fragment must
@@ -101,74 +95,33 @@ public class DrinkDialogFragment extends DialogFragment {
 							@Override
 							public void onClick(DialogInterface dialog, int id) {
 								
-								
-								System.out.println("order button is clicked");
-								
+//								
+								// Send the positive button event back to the
+								// host activity
 
-								Intent intent = new Intent(getActivity(),
-										CheckoutActivity.class);
-								System.out.println("drink price:::"
-										+ drink.getPrice());
+								// Returns an integer which represents the
+								// selected radio button's ID
+								int selected = tipPercentage
+										.getCheckedRadioButtonId();
 
-								// send merchant credential, app_key as given in
-								// the registration
-								intent.putExtra(CheckoutActivity.ZOOZ_APP_KEY,
-										"06717d2d-095e-4849-9d93-ab29beba3b7d");
-								intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT,
-										0.99);
-								intent.putExtra(
-										CheckoutActivity.ZOOZ_CURRENCY_CODE,
-										"USD");
-								intent.putExtra(
-										CheckoutActivity.ZOOZ_IS_SANDBOX, true);
-
-								// start ZooZCheckoutActivity and wait to the
-								// activity result.
-								startActivityForResult(intent, ZooZ_Activity_ID);
+								// Gets a reference to our "selected" radio
+								// button
+								RadioButton b = (RadioButton) tipPercentage
+										.findViewById(selected);
+								if (b.getText().toString().trim().length() == 0) {
+									tipPercentageValue = percentage.getText()
+											.toString();
+								} else {
+									tipPercentageValue = b.getText().toString();
+								}
 								
+								mListener
+								.onDialogPositiveClick(DrinkDialogFragment.this);
+
 							}
-
 						});
 
 		// Create dialog and set up animation
 		return builder.create();
-	}
-
-	/**
-	 * Parses the result returning from the ZooZ CheckoutActivity
-	 */
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-		if (requestCode == ZooZ_Activity_ID) {
-
-			switch (resultCode) {
-			case Activity.RESULT_OK:
-				Log.i(TAG,
-						"Successfully paid. Your transaction id is: "
-								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_ID)
-								+ "\nDisplay ID: "
-								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_DISPLAY_ID));
-
-				// Send the positive button event back to the host activity
-				 mListener.onDialogPositiveClick(DrinkDialogFragment.this);
-				
-				break;
-			case Activity.RESULT_CANCELED:
-
-				if (data != null)
-					Log.e(TAG,
-							"Error, cannot complete payment with ZooZ. "
-									+ "Error code: "
-									+ data.getIntExtra(
-											CheckoutActivity.ZOOZ_ERROR_CODE, 0)
-									+ "; Error Message: "
-									+ data.getStringExtra(CheckoutActivity.ZOOZ_ERROR_MSG));
-				break;
-
-			default:
-				break;
-			}
-		}
 	}
 }

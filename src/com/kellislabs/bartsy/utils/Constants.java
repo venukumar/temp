@@ -3,7 +3,6 @@ package com.kellislabs.bartsy.utils;
 import java.security.PublicKey;
 
 public class Constants {
-
 	//public static final String DOMAIN_NAME = "http://192.168.0.109:8080";
 
 	 public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
@@ -32,7 +31,7 @@ public class Constants {
 
 	// This is the url for saveVenueDetails for bartender
 	public static final String URL_SAVE_VENUEDETAILS = DOMAIN_NAME
-			+ "/Bartsy/venue/saveVenueDetailsTest";
+			+ "/Bartsy/venue/saveVenueDetails";
 	// Android Device Type
 	public static final int DEVICE_Type = 0;
 	// This is the url for download the facebook picture

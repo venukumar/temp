@@ -73,7 +73,7 @@ public class DrinksSectionFragment extends Fragment {
 		List<MenuDrink> defaultList = DatabaseManager.getInstance()
 				.getMenuDrinks();
 		if (defaultList != null && defaultList.size() > 0) {
-			groupNames.add("Drinks");
+			groupNames.add("Various items");
 		}
 
 		for (int i = 0; i < sectionsList.size(); i++) {

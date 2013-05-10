@@ -227,11 +227,9 @@ public class AndroidFacebookConnectActivity extends Activity {
 					bartsyProfile.setGender(fbProfileData.getString("gender"));
 					bartsyProfile.setType("facebook");
 					
-					new Thread(){
-						public void run() {
-							WebServices.saveProfileData(bartsyProfile, getApplicationContext());
-						}
-					}.start();
+					
+					WebServices.saveProfileData(bartsyProfile, getApplicationContext());
+					
 					
 				} catch (JSONException e1) {
 					// TODO Auto-generated catch block

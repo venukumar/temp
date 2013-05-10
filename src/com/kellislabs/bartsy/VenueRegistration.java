@@ -10,7 +10,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,6 +25,8 @@ public class VenueRegistration extends Activity implements OnClickListener {
 
 	private EditText locuId, bankname, bankAccountNo, wifiName, wifiPassword;
 	private RadioGroup typeOfAuthentication, wifiPresent;
+	
+	private Handler handler = new Handler();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -101,32 +105,56 @@ public class VenueRegistration extends Activity implements OnClickListener {
 					Log.d("Bartsy", "response :: " + response);
 
 					if (response != null) {
-						JSONObject json = new JSONObject(response);
-						int errorCode = Integer.parseInt(json.getString("errorCode"));
-						String errorMessage = json.getString("errorMessage");
-						String venueName = null;
+						final JSONObject json = new JSONObject(response);
 						
-						switch(errorCode) {
-						case 2: 
-							// venue already exists - still save the profile locally for now
-							venueName = "Chaya Venice";
-						case 0: 
-							// Save the venue id in shared preferences
-							String venueId = json.getString("venueId");
-							venueName = venueName == null? json.getString("venueName") : venueName;
-						    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-							SharedPreferences.Editor editor = sharedPref.edit();
-							editor.putString("RegisteredVenueId", venueId);
-							editor.putString("RegisteredVenueName", venueName);
+						handler.post(new Runnable() {
+							
+							@Override
+							public void run() {
+								try {
+									int errorCode = Integer.parseInt(json.getString("errorCode"));
+									String errorMessage = json.getString("errorMessage");
+									String venueName = null;
+									Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
+									BartsyApplication app;
+									switch(errorCode) {
+									case 2: 
+										// venue already exists - still save the profile locally for now
+										venueName = "Chaya Venice";
+									case 0: 
+										// Save the venue id in shared preferences
+										String venueId = json.getString("venueId");
+										venueName = venueName == null? json.getString("venueName") : venueName;
+									    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+										SharedPreferences.Editor editor = sharedPref.edit();
+										editor.putString("RegisteredVenueId", venueId);
+										editor.putString("RegisteredVenueName", venueName);
+										app = (BartsyApplication)getApplication();
+										app.venueProfileID = venueId;
+										app.venueProfileName = venueName;
+										
+										editor.commit();
 
-							editor.commit();
-
-							Intent intent = new Intent(VenueRegistration.this,
-									VenueActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-							startActivity(intent);
-							finish();
-						}
+										Intent intent = new Intent(VenueRegistration.this,
+												VenueActivity.class);
+										intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+										startActivity(intent);
+										finish();
+									}
+								} catch (NumberFormatException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (NotFoundException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								
+							}
+						});
+					
 					}
 
 				} catch (Exception e) {

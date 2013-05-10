@@ -784,7 +784,7 @@ public class VenueActivity extends FragmentActivity implements
 		intent.putExtra(CheckoutActivity.ZOOZ_APP_KEY,
 				"06717d2d-095e-4849-9d93-ab29beba3b7d");
 		intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT,
-				0.99);
+				order.total);
 		intent.putExtra(
 				CheckoutActivity.ZOOZ_CURRENCY_CODE,
 				"USD");

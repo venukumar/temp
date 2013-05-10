@@ -4,6 +4,9 @@ import java.text.DateFormat;
 import java.util.Currency;
 import java.util.Date;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.kellislabs.bartsy.model.Profile;
 
 import android.content.Context;
@@ -19,7 +22,9 @@ import android.widget.TextView;
 public class Order  {
 
 	// Each order has an ID that is unique within a session number
-	public long clientID, serverID;
+	public long clientID, serverID; 
+	
+	public long id;
 
 	// Title and description are arbitrary strings
 	public String title, description;
@@ -31,6 +36,8 @@ public class Order  {
 	public int image_resource;
 	public float tipAmount;
 	public double total;
+	public String updatedDate;
+	
 	
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public Profile orderSender;
@@ -81,7 +88,29 @@ public class Order  {
 		
 		calculateTotalPrice();
 	}
-
+	
+	public Order() {
+	}
+	
+	public Order(JSONObject json) {
+		
+		try {
+			status = Integer.valueOf(json.getString("orderStatus"));
+			title = json.getString("itemName");
+			updatedDate = json.getString("orderTime");
+			price = Float.valueOf(json.getString("basePrice"));
+			id = Long.valueOf(json.getString("orderId"));
+			tipAmount = Float.valueOf(json.getString("tipPercentage"));
+			total = Double.valueOf(json.getString("totalPrice"));
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	
 	public void nextPositiveState() {
 		switch (this.status) {
