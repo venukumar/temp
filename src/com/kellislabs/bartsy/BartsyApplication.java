@@ -124,10 +124,12 @@ public class BartsyApplication extends Application implements AppObservable {
      */
 
     String venueProfileID = null;
+    String venueProfileName = null;
     
     void loadVenueProfile() {
 	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 	    venueProfileID = sharedPref.getString("RegisteredVenueId", null);
+	    venueProfileName = sharedPref.getString("RegisteredVenueName", null);
     }
     
     /** 

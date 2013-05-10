@@ -385,21 +385,26 @@ public class VenueActivity extends FragmentActivity implements
 	private void updateActionBarStatus() {
 
 		Log.i(TAG, "updateChannelState()");
-
-		ConnectivityService.UseChannelState channelState = mApp
-				.useGetChannelState();
-		String name = mApp.useGetChannelName();
-		if (name == null) {
-			name = "Not Checked in";
+		
+		
+		// Handle tablet case
+		
+		if (mIsHost) {
+			if (mApp.venueProfileID == null || mApp.venueProfileName == null)
+				getActionBar().setTitle("Invalid venue configuration. Please uninstall then reinstall Bartsy.");
+			else
+				getActionBar().setTitle(mApp.venueProfileName);
+			return;
 		}
-		getActionBar().setTitle(name);
+		
+		
+		// Handle phone case
 
-		// View view = null;
+		String name;
+		
+		if (mApp.activeVenue == null) {
+			// Not checked in
 
-		switch (channelState) {
-		case IDLE:
-			// view = View.inflate(getApplicationContext(),
-			// R.layout.actionbar_indeterminate_progress, null);
 			appendStatus("Channel iddle");
 
 			// For now simply delete any open orders from the list
@@ -413,29 +418,18 @@ public class VenueActivity extends FragmentActivity implements
 			if (mPeopleFragment != null
 					&& mPeopleFragment.mPeopleListView != null)
 				mPeopleFragment.mPeopleListView.removeAllViews();
-
-			break;
-		case JOINED:
-			// There are only two states so this switch statement is complete
-			// Set action bar item to the connected machine's name
-			// view = View.inflate(getApplicationContext(),
-			// R.layout.actionbar_connected, null);
-			// ((TextView
-			// )view.findViewById(R.id.actionBarConnectedText)).setText(name);
-			appendStatus("Joined a channel");
-			break;
+			
+			// Set app title as not checked in for now. In the future this should be an illegal state
+			name = "Not checked in!";
+			
+		} else {
+			// Checked-in
+			
+			name = mApp.activeVenue.getName();
+			
 		}
-
-		// Set up the map button with a click listener that starts the map
-		// activity
-		// view.findViewById(R.id.view_action_bar_map).setOnClickListener(new
-		// OnClickListener() {
-		// @Override
-		// public void onClick(View v) {
-		// Intent mapActivity = new Intent(getBaseContext(), MapActivity.class);
-		// startActivity(mapActivity);
-		// }
-		// });
+	
+		getActionBar().setTitle(name);
 	}
 
 	/**

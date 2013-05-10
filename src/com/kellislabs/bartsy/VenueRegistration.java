@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -46,6 +47,8 @@ public class VenueRegistration extends Activity implements OnClickListener {
 
 		// Perform registration - for now assume all will go well
 		registration(arg0);
+		
+		Log.d("Bartsy", "Clicked on submit button");
 	}
 	
 	public void registration(View v) {
@@ -71,14 +74,13 @@ public class VenueRegistration extends Activity implements OnClickListener {
 			postData.put("deviceToken", deviceToken);
 			postData.put("wifiName", wifiName.getText().toString());
 			postData.put("wifiPassword", wifiPassword.getText().toString());
-			postData.put("typeOfAuthentication", typeOfAuthentication.getText()
-					.toString());
+			postData.put("typeOfAuthentication", typeOfAuthentication == null ? "" :
+				typeOfAuthentication.getText().toString());
 			postData.put("bankName", bankname.getText().toString());
 			postData.put("accountNumber", bankAccountNo.getText().toString());
 			postData.put("deviceType", "0");
 
-			if (wifi.getText().toString().equalsIgnoreCase("Yes"))
-
+			if (wifi == null? false : wifi.getText().toString().equalsIgnoreCase("Yes"))
 				postData.put("wifiPresent", "1");
 			else
 				postData.put("wifiPresent", "0");
@@ -96,22 +98,26 @@ public class VenueRegistration extends Activity implements OnClickListener {
 							Constants.URL_SAVE_VENUEDETAILS, postData,
 							VenueRegistration.this);
 
-					System.out.println("response :: " + response);
+					Log.d("Bartsy", "response :: " + response);
 
 					if (response != null) {
 						JSONObject json = new JSONObject(response);
 						int errorCode = Integer.parseInt(json.getString("errorCode"));
 						String errorMessage = json.getString("errorMessage");
-
+						String venueName = null;
+						
 						switch(errorCode) {
 						case 2: 
 							// venue already exists - still save the profile locally for now
+							venueName = "Chaya Venice";
 						case 0: 
 							// Save the venue id in shared preferences
 							String venueId = json.getString("venueId");
+							venueName = venueName == null? json.getString("venueName") : venueName;
 						    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 							SharedPreferences.Editor editor = sharedPref.edit();
 							editor.putString("RegisteredVenueId", venueId);
+							editor.putString("RegisteredVenueName", venueName);
 
 							editor.commit();
 
