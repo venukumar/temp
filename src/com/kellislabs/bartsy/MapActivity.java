@@ -24,23 +24,16 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceActivity;
-import android.support.v4.app.FragmentActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -48,11 +41,8 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.adapters.VenueListViewAdapter;
 import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.WebServices;
@@ -71,7 +61,7 @@ public class MapActivity extends Activity implements LocationListener,
 	private static final float MIN_DISTANCE = 1000;
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
-	
+
 	Activity activity = this;
 
 	@Override
@@ -84,7 +74,7 @@ public class MapActivity extends Activity implements LocationListener,
 
 		// Set up the pointer to the main application
 		mApp = (BartsyApplication) getApplication();
-		
+
 		if (mMap == null) {
 			// Try to obtain the map from the SupportMapFragment.
 
@@ -150,16 +140,52 @@ public class MapActivity extends Activity implements LocationListener,
 					long arg3) {
 				// TODO Auto-generated method stub
 
-				System.out.println("size "+venues.size());
+				final Venue venue = venues.get(arg2);
+				System.out.println("sizeee " + venues.size());
+
+				System.out.println("size " + venues.size());
+
 				String selectedItem = venues.get(arg2).getName();
 				System.out.println("selectedItem " + selectedItem);
-				
+
 				mApp.activeVenue = venues.get(arg2);
-				
-				Intent intent = new Intent(activity, VenueActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				finish();
+
+				new Thread() {
+					public void run() {
+						String response = WebServices.userCheckIn(
+								MapActivity.this, venue.getId());
+
+						if (response != null) {
+
+							try {
+								JSONObject json = new JSONObject(response);
+								String errorCode = json.getString("errorCode");
+								String errorMessage = json.has("errorMessage") ? json
+										.getString("errorMessage") : "";
+
+								if (Integer.valueOf(errorCode) == 0) {
+									handler.post(new Runnable() {
+										public void run() {
+											Intent intent = new Intent(
+													activity,
+													VenueActivity.class);
+											intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+											startActivity(intent);
+											finish();
+										}
+									});
+								}
+
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						}
+
+					};
+				}.start();
+
 			}
 		});
 		new Thread() {
@@ -207,7 +233,8 @@ public class MapActivity extends Activity implements LocationListener,
 			JSONArray array = new JSONArray(response);
 			for (int i = 0; i < array.length(); i++) {
 				JSONObject venueObject = array.getJSONObject(i);
-				String venueName = venueObject.getString("venueName");
+				String venueName = venueObject.has("venueName") ? venueObject
+						.getString("venueName") : "";
 				String venueId = venueObject.getString("venueId");
 				String latitude = venueObject.getString("latitude");
 				String longitude = venueObject.getString("longitude");

@@ -106,13 +106,14 @@ public class WebServices {
 
 	public static String userCheckIn(final Context context, String venueId) {
 		String response = null;
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				context.getResources().getString(
+						R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
 		Resources r = context.getResources();
-		String bartsyId = prefs.getString(r.getString(R.string.bartsyUserId),
-				"100002");
-		
-		System.out.println("bartsyId ::: "+bartsyId);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
+
+		System.out.println("bartsyId ::: " + bartsyId);
 		final JSONObject json = new JSONObject();
 		try {
 			json.put("bartsyId", bartsyId);
@@ -123,7 +124,6 @@ public class WebServices {
 		}
 
 		try {
-			
 
 			response = postRequest(Constants.URL_USER_CHECK_IN, json, context);
 			System.out.println("response :: " + response);
@@ -173,13 +173,13 @@ public class WebServices {
 		return result;
 	}
 
-	public static void postOrderTOServer(final Context context,
-			Order order, String venueID) {
+	public static void postOrderTOServer(final Context context, Order order,
+			String venueID) {
 		final JSONObject orderData = new JSONObject();
 		Resources r = context.getResources();
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		int bartsyId = prefs.getInt(r.getString(R.string.bartsyUserId),100002);
+		int bartsyId = prefs.getInt(r.getString(R.string.bartsyUserId), 100002);
 
 		try {
 			orderData.put("bartsyId", bartsyId);
@@ -214,13 +214,14 @@ public class WebServices {
 		}.start();
 
 	}
-	
+
 	public static void saveProfileData(Profile bartsyProfile, Context context) {
 		try {
 			// To get GCM reg ID from the Shared Preference
-			SharedPreferences settings = context.getSharedPreferences(GCMIntentService.REG_ID, 0);
+			SharedPreferences settings = context.getSharedPreferences(
+					GCMIntentService.REG_ID, 0);
 			String deviceToken = settings.getString("RegId", "");
-			
+
 			int deviceType = Constants.DEVICE_Type;
 			JSONObject json = new JSONObject();
 			json.put("userName", bartsyProfile.getUsername());
@@ -243,12 +244,16 @@ public class WebServices {
 					String errorMessage = resultJson.getString("errorMessage");
 					if (resultJson.has("bartsyUserId"))
 						bartsyUserId = resultJson.getInt("bartsyUserId");
-					if (bartsyUserId>0) {
-						SharedPreferences sharedPref = context.getSharedPreferences(
-								context.getResources()
-										.getString(
-												R.string.config_shared_preferences_name),
-								Context.MODE_PRIVATE);
+
+					System.out.println("bartsyUserId " + bartsyUserId);
+
+					if (bartsyUserId > 0) {
+						SharedPreferences sharedPref = context
+								.getSharedPreferences(
+										context.getResources()
+												.getString(
+														R.string.config_shared_preferences_name),
+										Context.MODE_PRIVATE);
 						Resources r = context.getResources();
 
 						SharedPreferences.Editor editor = sharedPref.edit();
