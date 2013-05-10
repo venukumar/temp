@@ -104,7 +104,8 @@ public class WebServices {
 
 	}
 
-	public static String userCheckIn(final Context context, String venueId) {
+	public static String userCheckInOrOut(final Context context, String venueId,
+			String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
@@ -125,7 +126,7 @@ public class WebServices {
 
 		try {
 
-			response = postRequest(Constants.URL_USER_CHECK_IN, json, context);
+			response = postRequest(url, json, context);
 			System.out.println("response :: " + response);
 
 		} catch (Exception e) {

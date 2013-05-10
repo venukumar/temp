@@ -22,7 +22,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
@@ -45,6 +47,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.kellislabs.bartsy.adapters.VenueListViewAdapter;
 import com.kellislabs.bartsy.model.Venue;
+import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
 
 /**
@@ -148,43 +151,47 @@ public class MapActivity extends Activity implements LocationListener,
 				String selectedItem = venues.get(arg2).getName();
 				System.out.println("selectedItem " + selectedItem);
 
-				mApp.activeVenue = venues.get(arg2);
+				if (mApp.activeVenue != null) {
+					System.out.println("venues.get(arg2).getId() "
+							+ venues.get(arg2).getId());
+					System.out.println(mApp.activeVenue.getId()
+							+ "  mApp.activeVenue.getId()");
 
-				new Thread() {
-					public void run() {
-						String response = WebServices.userCheckIn(
-								MapActivity.this, venue.getId());
+					if (venues.get(arg2).getId().trim()
+							.equalsIgnoreCase(mApp.activeVenue.getId().trim())) {
 
-						if (response != null) {
+						Intent intent = new Intent(activity,
+								VenueActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(intent);
+						finish();
 
-							try {
-								JSONObject json = new JSONObject(response);
-								String errorCode = json.getString("errorCode");
-								String errorMessage = json.has("errorMessage") ? json
-										.getString("errorMessage") : "";
+					} else {
 
-								if (Integer.valueOf(errorCode) == 0) {
-									handler.post(new Runnable() {
-										public void run() {
-											Intent intent = new Intent(
-													activity,
-													VenueActivity.class);
-											intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-											startActivity(intent);
-											finish();
-										}
-									});
-								}
-
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
+						if (mApp.activeVenue != null && mApp.mOrders.size() > 0) {
+							alertBox(
+									"You are already checked-in to "
+											+ mApp.activeVenue.getName()
+											+ ".You have open orders placed at"
+											+ mApp.activeVenue.getName()
+											+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from"
+											+ mApp.activeVenue.getName() + "?",
+									venue);
+						} else if (mApp.activeVenue != null) {
+							alertBox("You are already checked-in to "
+									+ mApp.activeVenue.getName()
+									+ ".Do you want to checkout from "
+									+ mApp.activeVenue.getName() + "?", venue);
 						}
 
-					};
-				}.start();
+					}
+				} else {
+					mApp.activeVenue = venues.get(arg2);
+					Intent intent = new Intent(activity, VenueActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
+					finish();
+				}
 
 			}
 		});
@@ -302,4 +309,68 @@ public class MapActivity extends Activity implements LocationListener,
 		this.startActivity(new Intent().setClass(this, VenueActivity.class));
 	}
 
+	private void alertBox(String message, final Venue venue) {
+		// TODO Auto-generated method stub
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+		builder.setCancelable(true);
+		builder.setTitle("Please Conform !");
+		builder.setInverseBackgroundForced(true);
+		builder.setMessage(message);
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				dialog.dismiss();
+
+				new Thread() {
+					public void run() {
+						mApp.activeVenue = venue;
+						String response = WebServices.userCheckInOrOut(
+								MapActivity.this, venue.getId(),
+								Constants.URL_USER_CHECK_IN);
+
+						if (response != null) {
+
+							try {
+								JSONObject json = new JSONObject(response);
+								String errorCode = json.getString("errorCode");
+								String errorMessage = json.has("errorMessage") ? json
+										.getString("errorMessage") : "";
+
+								if (errorCode.equalsIgnoreCase("0")) {
+									handler.post(new Runnable() {
+										public void run() {
+											Intent intent = new Intent(
+													activity,
+													VenueActivity.class);
+											intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+											startActivity(intent);
+											finish();
+										}
+									});
+								}
+
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						}
+
+					};
+				}.start();
+
+			}
+		});
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+
+	}
 }

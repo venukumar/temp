@@ -35,6 +35,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
@@ -79,21 +80,22 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		if (venue == null) {
 			// No active venue - hide active menu UI
 			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
-			
 
 		} else {
 			// Active venue exists - set up the active venue view
 			// For now just show it
 			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
-
+			findViewById(R.id.check_out).setVisibility(View.VISIBLE);
 			// Set up button
 			Button b = (Button) findViewById(R.id.button_active_venue);
+			Button checkOut = (Button) findViewById(R.id.check_out);
+
+			checkOut.setOnClickListener(this);
+
 			if (mApp.mOrders.size() == 0) {
-				System.out.println("venue.name  " + venue.getName() + " ifff");
 				b.setText("Checked in at: " + venue.getName()
 						+ "\nClick to order drinks and see who's here...");
 			} else {
-				System.out.println("venue.name  " + venue.getName() + " elseee");
 				b.setText("Checked in at: " + venue.getName() + "\n"
 						+ mApp.mOrders.size()
 						+ " open orders. Click for more...");
@@ -105,6 +107,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
 		((View) findViewById(R.id.button_active_venue))
 				.setOnClickListener(this);
+
 		((View) findViewById(R.id.button_notifications))
 				.setOnClickListener(this);
 		((View) findViewById(R.id.button_payments)).setOnClickListener(this);
@@ -152,40 +155,47 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		Intent intent;
 
 		switch (v.getId()) {
+
+		case R.id.check_out:
+
+			checkOutUser();
+
+			break;
+
 		case R.id.button_active_venue:
 
-//			VenueListDialog dialog = new VenueListDialog(MainActivity.this) {
-//				@Override
-//				protected void venueSelected(final VenueItem venueItem) {
-//					// TODO Auto-generated method stub
-//					super.venueSelected(venueItem);
-//
-//					new Thread() {
-//
-//						@Override
-//						public void run() {
-//							// TODO Auto-generated method stub
-//							final String response = WebServices.userCheckIn(
-//									MainActivity.this, venueItem.getId());
-//							handler.post(new Runnable() {
-//
-//								@Override
-//								public void run() {
-//									updateCheckInView(response,
-//											venueItem.getName());
-//								}
-//
-//							});
-//						}
-//					}.start();
-//
-//				}
-//			};
-//			dialog.show();
+			// VenueListDialog dialog = new VenueListDialog(MainActivity.this) {
+			// @Override
+			// protected void venueSelected(final VenueItem venueItem) {
+			// // TODO Auto-generated method stub
+			// super.venueSelected(venueItem);
+			//
+			// new Thread() {
+			//
+			// @Override
+			// public void run() {
+			// // TODO Auto-generated method stub
+			// final String response = WebServices.userCheckIn(
+			// MainActivity.this, venueItem.getId());
+			// handler.post(new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			// updateCheckInView(response,
+			// venueItem.getName());
+			// }
+			//
+			// });
+			// }
+			// }.start();
+			//
+			// }
+			// };
+			// dialog.show();
 
-			 intent = new Intent().setClass(this, VenueActivity.class);
-			 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			 this.startActivity(intent);
+			intent = new Intent().setClass(this, VenueActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
 			break;
 		case R.id.button_payments:
 			// For now directly call card.io. This should be separate activity
@@ -240,34 +250,121 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		}
 	}
 
-	private void updateCheckInView(String response, String checkInName) {
+	private void checkOutUser() {
 		// TODO Auto-generated method stub
-		if (response != null) {
-			try {
-				JSONObject checkInObject = new JSONObject(response);
-				if (checkInObject.has("errorCode")) {
-					String errorCode = checkInObject.getString("errorCode");
-					System.out.println("error code "+errorCode);
-					if (Integer.valueOf(errorCode) == 1) {
-						
-						mApp.useSetChannelName(checkInName);
-						
-						Intent intent = new Intent().setClass(this,
-								VenueActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						this.startActivity(intent);
-						finish();
-					}
-				}
 
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		if (mApp.activeVenue != null && mApp.mOrders.size() > 0) {
+			alertBox("You have open orders placed at "
+					+ mApp.activeVenue.getName()
+					+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from "
+					+ mApp.activeVenue.getName() + "?");
+		} else if (mApp.activeVenue != null) {
 
-		} else {
+			alertBox("Do you want to checkout from "
+					+ mApp.activeVenue.getName() + "?");
 
 		}
+
+	}
+
+	//
+	// private void updateCheckInView(String response, String checkInName) {
+	// // TODO Auto-generated method stub
+	// if (response != null) {
+	// try {
+	// JSONObject checkInObject = new JSONObject(response);
+	// if (checkInObject.has("errorCode")) {
+	// String errorCode = checkInObject.getString("errorCode");
+	// System.out.println("error code " + errorCode);
+	// if (Integer.valueOf(errorCode) == 1) {
+	//
+	// mApp.useSetChannelName(checkInName);
+	//
+	// Intent intent = new Intent().setClass(this,
+	// VenueActivity.class);
+	// intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	// this.startActivity(intent);
+	// finish();
+	// }
+	// }
+	//
+	// } catch (JSONException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//
+	// } else {
+	//
+	// }
+	//
+	// }
+
+	private void alertBox(String message) {
+		// TODO Auto-generated method stub
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+		builder.setCancelable(true);
+		builder.setTitle("Please Conform !");
+		builder.setInverseBackgroundForced(true);
+		builder.setMessage(message);
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+
+				if (mApp.activeVenue != null) {
+					new Thread() {
+						public void run() {
+
+							String response = WebServices.userCheckInOrOut(
+									MainActivity.this,
+									mApp.activeVenue.getId(),
+									Constants.URL_USER_CHECK_OUT);
+							if (response != null) {
+								System.out.println("response  ::: " + response);
+								try {
+									JSONObject result = new JSONObject(response);
+									String errorCode = result
+											.getString("errorCode");
+									if (errorCode.equalsIgnoreCase("0")) {
+
+										handler.post(new Runnable() {
+
+											@Override
+											public void run() {
+												// TODO Auto-generated method
+												// stub
+
+												findViewById(
+														R.id.view_active_venue)
+														.setVisibility(
+																View.GONE);
+												mApp.activeVenue = null;
+											}
+										});
+
+									}
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+							}
+						};
+					}.start();
+
+				}
+
+			}
+		});
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
 
 	}
 
