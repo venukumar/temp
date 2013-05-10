@@ -150,7 +150,7 @@ public class MapActivity extends Activity implements LocationListener,
 					long arg3) {
 				// TODO Auto-generated method stub
 
-				System.out.println("sizeee "+venues.size());
+				System.out.println("size "+venues.size());
 				String selectedItem = venues.get(arg2).getName();
 				System.out.println("selectedItem " + selectedItem);
 				
@@ -184,11 +184,11 @@ public class MapActivity extends Activity implements LocationListener,
 
 								Venue venue = venues.get(i);
 
-								LatLng AREAL = new LatLng(Float.valueOf(venue
+								LatLng coord = new LatLng(Float.valueOf(venue
 										.getLatitude()), Float.valueOf(venue
 										.getLongitude()));
 								mMap.addMarker(new MarkerOptions()
-										.position(AREAL).title(venue.getName())
+										.position(coord).title(venue.getName())
 										.snippet("People checked in: 6"));
 							}
 
