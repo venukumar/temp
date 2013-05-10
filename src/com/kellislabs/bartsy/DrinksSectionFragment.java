@@ -102,7 +102,9 @@ public class DrinksSectionFragment extends Fragment {
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
-				if(app.selectedVenueId==0){
+				
+				if(app.activeVenue == null){
+					// for now don't post an error message, but this should be fixed ASAP
 					return false;
 				}
 				

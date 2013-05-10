@@ -106,6 +106,9 @@ public class BartsyApplication extends Application implements AppObservable {
         // load user profile if it exists. this is an application-wide variable.
         loadUserProfile();
         
+        // load venue profile if it exists. this is an application-wide variable.
+        loadVenueProfile();
+        
 		// DataBase initialization - First activity should call this method
 		MDBM = DatabaseManager.getNewInstance(this);
 
@@ -113,8 +116,20 @@ public class BartsyApplication extends Application implements AppObservable {
     
     // Database manager is a global variable
     DatabaseManager MDBM = null;
+
+    /** 
+     * 
+     * This venue ID represents the venue in which this tablet is setup. This is used only on the tablet.
+     * 
+     */
+
+    String venueProfileID = null;
     
-    public int selectedVenueId = 0;
+    void loadVenueProfile() {
+	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+	    venueProfileID = sharedPref.getString("RegisteredVenueId", null);
+    }
+    
     /** 
      * 
      * The active venue is the venue where the user is checked in or null if the user is not checked in

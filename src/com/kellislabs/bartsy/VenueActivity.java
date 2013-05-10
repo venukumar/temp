@@ -848,53 +848,30 @@ public class VenueActivity extends FragmentActivity implements
 
 			// Send order to server
 			mApp.newLocalUserMessage("<command><opcode>order</opcode>"
-					+ "<argument>"
-					+ mApp.mOrderIDs
-					+ "</argument>"
+					+ "<argument>" + mApp.mOrderIDs + "</argument>"
 					+ // client order ID
-					"<argument>"
-					+ mApp.mOrderIDs
-					+ "</argument>"
+					"<argument>" + mApp.mOrderIDs + "</argument>"
 					+ // server order ID
 					"<argument>" + order.title + "</argument>"
 					+ "<argument>" + order.description + "</argument>"
 					+ "<argument>" + order.total + "</argument>"
 					+ "<argument>" // Image + 
 					+ "</argument>"
-					+ "<argument>" + mApp.mProfile.userID + "</argument>" + // Each
-																			// order
-																			// contains
-																			// the
-																			// profile
-																			// of
-																			// the
-																			// sender
-																			// (and
-																			// later
-																			// the
-																			// profile
-																			// of
-																			// the
-																			// person
-																			// that
-																			// should
-																			// pick
-																			// it
-																			// up)
+					+ "<argument>" + mApp.mProfile.userID + "</argument>" + 
+					// Each order contains the profile of the sender (and
+					// later the profile of the person that should pick it up)
 					"</command>");
 			appendStatus("Placed drink order");
 
 
 		} else {
-			
-			final BartsyApplication app = (BartsyApplication) getApplication();
-			order.serverID = app.selectedVenueId;
+			order.serverID = mApp.mOrderIDs;
 			SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name),Context.MODE_PRIVATE);
 			Resources r = getResources();
 			order.clientID = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 			
 			// Web service call
-			WebServices.postOrderTOServer(VenueActivity.this, order);
+			WebServices.postOrderTOServer(VenueActivity.this, order, mApp.activeVenue.getId());
 		}
 		
 		mOrdersFragment.addOrder(order);

@@ -174,7 +174,7 @@ public class WebServices {
 	}
 
 	public static void postOrderTOServer(final Context context,
-			Order order) {
+			Order order, String venueID) {
 		final JSONObject orderData = new JSONObject();
 		Resources r = context.getResources();
 		SharedPreferences prefs = PreferenceManager
@@ -183,7 +183,7 @@ public class WebServices {
 
 		try {
 			orderData.put("bartsyId", bartsyId);
-			orderData.put("venueId", "100001");
+			orderData.put("venueId", venueID);
 			orderData.put("basePrice", order.price);
 			orderData.put("itemId", order.itemId);
 			orderData.put("itemName", order.title);
