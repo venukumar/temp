@@ -40,12 +40,9 @@
     
     <!--  Tabs -->
     
-    <string name="title_debug">Debug</string>
     <string name="title_people">People</string>
     <string name="title_drinks">Drinks</string>
-    <string name="title_bartender">Orders (0)</string>
     <string name="title_drink_orders">Orders (0)</string>
-    <string name="title_inventory">Inventory</string>
     
     <!--  P2P -->
     

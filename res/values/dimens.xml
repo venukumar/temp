@@ -8,6 +8,4 @@
     <dimen name="actionbar_compat_button_width">48dp</dimen>
     <dimen name="actionbar_compat_button_home_width">56dp</dimen>
     
-    <bool name="isTablet">false</bool>
-    
 </resources>
