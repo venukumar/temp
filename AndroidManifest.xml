@@ -81,18 +81,9 @@
         <activity
             android:name="io.card.payment.DataEntryActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".DebugWidget"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         
         <activity
-            android:name=".AndroidFacebookConnectActivity"
+            android:name="com.kellislabs.bartsy.facebook.AndroidFacebookConnectActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="Contacts Client"
             android:screenOrientation="portrait" >
@@ -101,41 +92,44 @@
         <service android:name="ConnectivityService" >
         </service>
         
-         <activity
-            android:name=".VenueRegistration"
-            android:label="@string/app_name"
-            android:launchMode="singleTop"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppTheme" >
-        </activity>
-        
         <activity
             android:name=".VenueActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme" >
         </activity>
+        
         <activity
             android:name="com.kellislabs.bartsy.SettingsActivity"
             android:label="SettingsActivity" >
         </activity>
+        
         <activity
             android:name="com.kellislabs.bartsy.MapActivity"
             android:label="Bartsy Service Stations"
             android:theme="@style/AppTheme" >
         </activity>
+        
         <activity
             android:name="com.kellislabs.bartsy.NotificationsActivity"
             android:label="Bartsy notifications" >
         </activity>
+        
         <activity
             android:name="com.kellislabs.bartsy.InitActivity"
             android:label="Your one stop to nightlife!"
             android:theme="@android:style/Theme.Holo" >
         </activity>
+
         <activity
             android:name="com.kellislabs.bartsy.MainActivity"
+            android:icon="@drawable/ic_launcher"
+        	android:label="@string/app_name" 
             android:theme="@style/AppTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <receiver
@@ -150,7 +144,7 @@
         </receiver>
 
         <service
-            android:name="com.kellislabs.bartsy.GCMIntentService"
+            android:name="com.kellislabs.bartsy.service.GCMIntentService"
             android:enabled="true" >
         </service>
 
