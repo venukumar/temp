@@ -176,7 +176,7 @@ public class WebServices {
 
 	public static void postOrderTOServer(final Context context, Order order,
 			String venueID) {
-		final JSONObject orderData = new JSONObject();
+		final JSONObject orderData =order.getPlaceOrderJSON();
 		Resources r = context.getResources();
 		SharedPreferences sharedPref = context
 				.getSharedPreferences(
@@ -189,14 +189,7 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			orderData.put("basePrice", String.valueOf(order.price));
-			orderData.put("itemId", order.itemId);
-			orderData.put("itemName", order.title);
-			orderData.put("tipPercentage", String.valueOf(order.tipAmount));
-			orderData.put("totalPrice", String.valueOf(order.total));
-			orderData.put("orderStatus", "New");
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

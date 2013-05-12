@@ -32,6 +32,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.MainActivity;
+import com.vendsy.bartsy.VenueActivity;
 
 /**
  * IntentService responsible for handling GCM messages.
@@ -145,7 +146,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         	title+="("+count+")";
         }
        
-        Intent notificationIntent = new Intent(context, MainActivity.class);
+        Intent notificationIntent = new Intent(context, VenueActivity.class);
         // set intent so it does not start a new activity
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);

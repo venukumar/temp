@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.ActionBar;
@@ -13,8 +15,10 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -34,6 +38,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
@@ -46,6 +51,7 @@ import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.view.AppObserver;
@@ -57,6 +63,21 @@ import com.zooz.android.lib.CheckoutActivity;
 public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
 		PeopleDialogFragment.UserDialogListener, AppObserver {
+
+	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			System.out.println("in broadcast receiver:::::::");
+			String newMessage = intent.getExtras().getString(
+					Utilities.EXTRA_MESSAGE);
+			System.out.println("the message is ::::" + newMessage);
+			// mDisplay.append(newMessage + "\n");
+
+			processPushNotification(newMessage);
+
+		}
+
+	};
 
 	/****************
 	 * 
@@ -146,18 +167,11 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
+		
+		initializeFragments();
 
-		// Initialize orders view
-		if (mOrdersFragment == null) {
-			mOrdersFragment = new OrdersSectionFragment();
-			mOrdersFragment.mApp = mApp;
-		}
-
-		// Initialize people view
-		if (mPeopleFragment == null) {
-			mPeopleFragment = new PeopleSectionFragment();
-			mPeopleFragment.mApp = mApp;
-		}
+		registerReceiver(mHandleMessageReceiver, new IntentFilter(
+				Utilities.DISPLAY_MESSAGE_ACTION));
 
 		// Log function call
 		appendStatus(this.toString() + "onCreate()");
@@ -203,6 +217,21 @@ public class VenueActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+	}
+
+	private void initializeFragments() {
+		// Initialize orders view
+		if (mOrdersFragment == null) {
+			mOrdersFragment = new OrdersSectionFragment();
+			mOrdersFragment.mApp = mApp;
+		}
+
+		// Initialize people view
+		if (mPeopleFragment == null) {
+			mPeopleFragment = new PeopleSectionFragment();
+			mPeopleFragment.mApp = mApp;
+		}
+
 	}
 
 	@Override
@@ -360,9 +389,9 @@ public class VenueActivity extends FragmentActivity implements
 	private void updateActionBarStatus() {
 
 		Log.i(TAG, "updateChannelState()");
-		
+
 		String name;
-		
+
 		if (mApp.activeVenue == null) {
 			// Not checked in
 
@@ -379,16 +408,17 @@ public class VenueActivity extends FragmentActivity implements
 			if (mPeopleFragment != null
 					&& mPeopleFragment.mPeopleListView != null)
 				mPeopleFragment.mPeopleListView.removeAllViews();
-			
-			// Set app title as not checked in for now. In the future this should be an illegal state
+
+			// Set app title as not checked in for now. In the future this
+			// should be an illegal state
 			name = "Not checked in!";
-			
+
 		} else {
 			// Checked-in
-			
+
 			name = mApp.activeVenue.getName();
 		}
-	
+
 		getActionBar().setTitle(name);
 	}
 
@@ -399,7 +429,8 @@ public class VenueActivity extends FragmentActivity implements
 	void updateOrdersCount() {
 		// Update tab title with the number of orders - for now hardcode the tab
 		// at the right position
-		getActionBar().getTabAt(2).setText("Orders (" + mApp.mOrders.size() + ")");
+		getActionBar().getTabAt(2).setText(
+				"Orders (" + mApp.mOrders.size() + ")");
 	}
 
 	/***********
@@ -434,8 +465,8 @@ public class VenueActivity extends FragmentActivity implements
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		private int mTabs[] = { R.string.title_drinks,
-				R.string.title_people, R.string.title_drink_orders };
+		private int mTabs[] = { R.string.title_drinks, R.string.title_people,
+				R.string.title_drink_orders };
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -663,12 +694,12 @@ public class VenueActivity extends FragmentActivity implements
 		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
-		
+
 		order = new Order();
 		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
 		String tipPercentageValue = tip.replace("%", "");
 		order.tipAmount = Float.valueOf(tipPercentageValue);
-		
+
 		order.initialize(mApp.mOrderIDs, // arg(0) - Client order ID
 				mApp.mOrderIDs, // arg(1) - Server order ID - use client ID
 								// for
@@ -688,35 +719,28 @@ public class VenueActivity extends FragmentActivity implements
 								// the sender (and later the profile of the
 								// person that should pick it up)
 		order.itemId = drink.getDrinkId();
-		
+
 		System.out.println("order button is clicked");
 
-		Intent intent = new Intent(this,
-				CheckoutActivity.class);
-		System.out.println("drink price:::"
-				+ drink.getPrice());
+		Intent intent = new Intent(this, CheckoutActivity.class);
+		System.out.println("drink price:::" + drink.getPrice());
 
 		// send merchant credential, app_key as given in
 		// the registration
 		intent.putExtra(CheckoutActivity.ZOOZ_APP_KEY,
 				"ac66b517-664e-4ff3-afe9-86c2ca1e1629");
-		intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT,
-				order.total);
-		intent.putExtra(
-				CheckoutActivity.ZOOZ_CURRENCY_CODE,
-				"USD");
-		intent.putExtra(
-				CheckoutActivity.ZOOZ_IS_SANDBOX, true);
+		intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT, order.total);
+		intent.putExtra(CheckoutActivity.ZOOZ_CURRENCY_CODE, "USD");
+		intent.putExtra(CheckoutActivity.ZOOZ_IS_SANDBOX, true);
 
 		// start ZooZCheckoutActivity and wait to the
 		// activity result.
 		startActivityForResult(intent, ZooZ_Activity_ID);
-		
-		
+
 	}
-	
+
 	private static final int ZooZ_Activity_ID = 1;
-	
+
 	/**
 	 * Parses the result returning from the ZooZ CheckoutActivity
 	 */
@@ -733,7 +757,7 @@ public class VenueActivity extends FragmentActivity implements
 								+ "\nDisplay ID: "
 								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_DISPLAY_ID));
 				processOrderData();
-				
+
 				break;
 			case Activity.RESULT_CANCELED:
 
@@ -759,32 +783,39 @@ public class VenueActivity extends FragmentActivity implements
 
 			// Send order to server
 			mApp.newLocalUserMessage("<command><opcode>order</opcode>"
-					+ "<argument>" + mApp.mOrderIDs + "</argument>"
-					+ // client order ID
-					"<argument>" + mApp.mOrderIDs + "</argument>"
-					+ // server order ID
-					"<argument>" + order.title + "</argument>"
-					+ "<argument>" + order.description + "</argument>"
-					+ "<argument>" + order.total + "</argument>"
-					+ "<argument>" // Image + 
+					+ "<argument>"
+					+ mApp.mOrderIDs
 					+ "</argument>"
-					+ "<argument>" + mApp.mProfile.userID + "</argument>" + 
+					+ // client order ID
+					"<argument>"
+					+ mApp.mOrderIDs
+					+ "</argument>"
+					+ // server order ID
+					"<argument>" + order.title + "</argument>" + "<argument>"
+					+ order.description + "</argument>" + "<argument>"
+					+ order.total + "</argument>"
+					+ "<argument>" // Image +
+					+ "</argument>" + "<argument>" + mApp.mProfile.userID
+					+ "</argument>" +
 					// Each order contains the profile of the sender (and
 					// later the profile of the person that should pick it up)
 					"</command>");
 			appendStatus("Placed drink order");
 
-
 		} else {
 			order.serverID = mApp.mOrderIDs;
-			SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name),Context.MODE_PRIVATE);
+			SharedPreferences sharedPref = getSharedPreferences(getResources()
+					.getString(R.string.config_shared_preferences_name),
+					Context.MODE_PRIVATE);
 			Resources r = getResources();
-			order.clientID = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
-			
+			order.clientID = sharedPref.getInt(
+					r.getString(R.string.bartsyUserId), 0);
+
 			// Web service call
-			WebServices.postOrderTOServer(VenueActivity.this, order, mApp.activeVenue.getId());
+			WebServices.postOrderTOServer(VenueActivity.this, order,
+					mApp.activeVenue.getId());
 		}
-		
+
 		mOrdersFragment.addOrder(order);
 
 		// Increment the local order count
@@ -792,7 +823,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Update tab title with the number of open orders
 		updateOrdersCount();
-		
+
 	}
 
 	/*
@@ -821,6 +852,26 @@ public class VenueActivity extends FragmentActivity implements
 
 	}
 
+	private void processPushNotification(String message) {
+		initializeFragments();
+
+		try {
+			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+			JSONObject json = new JSONObject(message);
+			if (json.has("messageType")) {
+				if (json.getString("messageType").equals("updateOrderStatus")) {
+					long id = Long.valueOf(json.getString("orderId"));
+					int status = Integer.valueOf(json.getString("orderStatus"));
+					processRemoteOrderStatusChanged(id, status);
+				}
+			}
+			json.getString("");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public Boolean processRemoteOrderStatusChanged(BartsyCommand command) {
 		// Return false if everything went well, true if we need to perform
 		// recovery
@@ -837,7 +888,6 @@ public class VenueActivity extends FragmentActivity implements
 		// sure this command is for us
 		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
 			return true;
-
 		// Make sure the order exists only once on this side and some other
 		// conditions are met.
 		Order localOrder = null;
@@ -852,7 +902,6 @@ public class VenueActivity extends FragmentActivity implements
 			}
 			i++;
 		}
-		;
 
 		if (order_index == -1) {
 			appendStatus("ERROR - ORDER MISMATCH");
@@ -900,6 +949,55 @@ public class VenueActivity extends FragmentActivity implements
 		updateOrdersCount();
 
 		return false;
+	}
+
+	private void processRemoteOrderStatusChanged(long orderId,
+			int remote_status) {
+		Order localOrder = null;
+		for (Order order : mApp.mOrders) {
+			if (order.id == orderId) {
+				localOrder = order;
+			}
+		}
+		
+		if(localOrder==null){
+			return;
+		}
+
+		// Update the status of the local order based on that of the remote
+		// order and return on error
+		switch (remote_status) {
+		case Order.ORDER_STATUS_IN_PROGRESS:
+			// The order has been accepted remotely. Set the server_id on this
+			// order and update status and view
+			if (localOrder.status != Order.ORDER_STATUS_NEW)
+				return;
+			localOrder.nextPositiveState();
+			localOrder.updateView();
+			break;
+		case Order.ORDER_STATUS_READY:
+			// Remote order ready. Notify client with a notification and update
+			// status/view
+			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
+				return;
+			localOrder.nextPositiveState();
+			localOrder.updateView();
+			this.createNotification("Your " + localOrder.title
+					+ " order is ready",
+					"Please go to the Bartsy Point to pick it up");
+			break;
+		case Order.ORDER_STATUS_COMPLETE:
+			// Remote order ready. Notify client with a notification and update
+			// status/view
+			if (localOrder.status != Order.ORDER_STATUS_READY)
+				return;
+			localOrder.nextPositiveState();
+			break;
+		}
+
+		// Update tab title with the number of open orders
+		updateOrdersCount();
+
 	}
 
 	/*

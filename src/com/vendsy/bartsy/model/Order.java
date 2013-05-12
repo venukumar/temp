@@ -112,6 +112,22 @@ public class Order  {
 		
 	}
 	
+	public JSONObject getPlaceOrderJSON(){
+		final JSONObject orderData = new JSONObject();
+		try {
+			orderData.put("basePrice", String.valueOf(price));
+			orderData.put("itemId", itemId);
+			orderData.put("itemName", title);
+			orderData.put("tipPercentage", String.valueOf(tipAmount));
+			orderData.put("totalPrice", String.valueOf(total));
+			orderData.put("orderStatus", ORDER_STATUS_NEW);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return orderData;
+	}
+	
 	public void nextPositiveState() {
 		switch (this.status) {
 		case ORDER_STATUS_NEW:

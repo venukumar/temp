@@ -3,62 +3,26 @@ package com.vendsy.bartsy;
 import io.card.payment.CardIOActivity;
 import io.card.payment.CreditCard;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
-import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
-import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.plus.PlusClient;
-import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
-import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
-import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.dialog.PeopleDialogFragment.UserDialogListener;
-import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
-import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.WebServices;
-import com.vendsy.bartsy.wifi.AllJoynDialogBuilder;
-
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
 
@@ -72,7 +36,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		
+
 		// If the user profile is not set, start the init activity
 	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "")
@@ -88,6 +52,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		setContentView(R.layout.main);
 
 		mApp = (BartsyApplication) getApplication();
+		
+		
 
 		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 
