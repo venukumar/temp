@@ -1,7 +1,14 @@
 /**
  * 
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.view;
+
+import com.kellislabs.bartsy.BartsyApplication;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.VenueActivity;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
+import com.kellislabs.bartsy.model.Order;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,10 +27,10 @@ import android.widget.ToggleButton;
 public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	private View mRootView = null;
-	LinearLayout mOrderListView = null;
+	public LinearLayout mOrderListView = null;
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
-	BartsyApplication mApp = null;
+	public BartsyApplication mApp = null;
 	
 //	private String mDBText = "";
 

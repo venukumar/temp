@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.utils;
 
 import android.util.Xml;
 

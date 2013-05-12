@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.dialog;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +12,9 @@ import java.net.URL;
 import com.google.android.gms.plus.model.people.Person;
 import com.google.android.gms.plus.model.people.Person.Image;
 import com.google.android.gms.plus.model.people.Person.Name;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -39,7 +42,7 @@ import android.widget.TextView;
  * @author peterkellis
  *
  */
-public class PeopleDialogFragment extends DialogFragment  {
+public class ProfileDialogFragment extends DialogFragment  {
 
 	public Person mUser = null;
 	
@@ -47,13 +50,13 @@ public class PeopleDialogFragment extends DialogFragment  {
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface UserDialogListener {
+    public interface ProfileDialogListener {
         public void onUserDialogPositiveClick(DialogFragment dialog);
         public void onUserDialogNegativeClick(DialogFragment dialog);
     }
     
     // Use this instance of the interface to deliver action events
-    UserDialogListener mListener;
+    ProfileDialogListener mListener;
     
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -62,11 +65,11 @@ public class PeopleDialogFragment extends DialogFragment  {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (UserDialogListener) activity;
+            mListener = (ProfileDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
-                    + " must implement NoticeDialogListener");
+                    + " must implement ProfileDialogListener");
         }
     }	
 	
@@ -100,19 +103,19 @@ public class PeopleDialogFragment extends DialogFragment  {
 	    
 	    builder.setView(view)
 	    // Add action buttons
-	        .setPositiveButton("Send drink", new DialogInterface.OnClickListener() {
+	        .setPositiveButton("Accept profile", new DialogInterface.OnClickListener() {
 	        	
 	            @Override
 	            public void onClick(DialogInterface dialog, int id) {
                     // Send the positive button event back to the host activity
-                    mListener.onUserDialogPositiveClick(PeopleDialogFragment.this);
+                    mListener.onUserDialogPositiveClick(ProfileDialogFragment.this);
 	            }})
-	        .setNegativeButton("Send message", new DialogInterface.OnClickListener() {
+	        .setNegativeButton("Edit profile", new DialogInterface.OnClickListener() {
 	        	
 	            @Override
 	            public void onClick(DialogInterface dialog, int id) {
                     // Send the positive button event back to the host activity
-                    mListener.onUserDialogNegativeClick(PeopleDialogFragment.this);
+                    mListener.onUserDialogNegativeClick(ProfileDialogFragment.this);
 	            }});
 	    return builder.create();
 	}

@@ -22,13 +22,13 @@ import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.kellislabs.bartsy.GCMIntentService;
-import com.kellislabs.bartsy.Order;
 import com.kellislabs.bartsy.R;
 import com.kellislabs.bartsy.db.DatabaseManager;
 import com.kellislabs.bartsy.model.MenuDrink;
+import com.kellislabs.bartsy.model.Order;
 import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.model.Section;
+import com.kellislabs.bartsy.service.GCMIntentService;
 
 public class WebServices {
 

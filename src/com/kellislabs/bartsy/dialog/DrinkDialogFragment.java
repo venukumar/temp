@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +16,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 import com.kellislabs.bartsy.model.MenuDrink;
 
 /**

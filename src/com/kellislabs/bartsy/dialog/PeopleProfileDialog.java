@@ -1,7 +1,10 @@
 /**
  * 
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.dialog;
+
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.layout;
 
 import android.support.v4.app.Fragment;
 import android.app.AlertDialog;

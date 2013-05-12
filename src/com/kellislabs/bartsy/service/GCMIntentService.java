@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.service;
 
 import static com.kellislabs.bartsy.utils.Utilities.SENDER_ID;
 import static com.kellislabs.bartsy.utils.Utilities.displayMessage;
@@ -32,6 +32,8 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.kellislabs.bartsy.MainActivity;
 import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.drawable;
+import com.kellislabs.bartsy.R.string;
 
 /**
  * IntentService responsible for handling GCM messages.
@@ -134,7 +136,7 @@ public class GCMIntentService extends GCMBaseIntentService {
      * @param count 
      */
     private static void generateNotification(Context context, String message) {
-        int icon = R.drawable.icon;
+        int icon = R.drawable.ic_launcher;
         long when = System.currentTimeMillis();
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);

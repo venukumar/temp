@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.model;
 
-import com.kellislabs.bartsy.AppObserver;
+import com.kellislabs.bartsy.view.AppObserver;
 
 public interface AppObservable {
 	public void addObserver(AppObserver obs);

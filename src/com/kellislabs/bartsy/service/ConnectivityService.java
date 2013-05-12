@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.service;
 
 
 import java.io.ByteArrayOutputStream;
@@ -33,8 +33,16 @@ import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
 import org.alljoyn.bus.p2p.WifiDirectAutoAccept;
 
+import com.kellislabs.bartsy.BartsyApplication;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.VenueActivity;
+import com.kellislabs.bartsy.BartsyApplication.Module;
+import com.kellislabs.bartsy.R.drawable;
+import com.kellislabs.bartsy.R.string;
+import com.kellislabs.bartsy.model.AppObservable;
 import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.Constants;
+import com.kellislabs.bartsy.view.AppObserver;
 
 import wifi.AllJoynChatInterface;
 

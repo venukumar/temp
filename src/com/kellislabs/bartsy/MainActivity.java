@@ -24,9 +24,9 @@ import com.google.android.gms.plus.PlusClient;
 import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
-import com.kellislabs.bartsy.ProfileDialogFragment.ProfileDialogListener;
 import com.kellislabs.bartsy.R;
-import com.kellislabs.bartsy.PeopleDialogFragment.UserDialogListener;
+import com.kellislabs.bartsy.dialog.PeopleDialogFragment.UserDialogListener;
+import com.kellislabs.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.kellislabs.bartsy.model.Venue;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
@@ -71,6 +71,20 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		
+		// If the user profile is not set, start the init activity
+	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "")
+				.equalsIgnoreCase("")) {
+			Intent intent = new Intent().setClass(this, InitActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			return;
+		}
+		
+		
+		
 		setContentView(R.layout.main);
 
 		mApp = (BartsyApplication) getApplication();
@@ -238,9 +252,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		case R.id.button_my_venues:
 			break;
 		case R.id.button_notifications:
-			intent = new Intent().setClass(this, NotificationsActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			this.startActivity(intent);
+			// For now don't do anything
 			break;
 		case R.id.button_settings:
 			intent = new Intent().setClass(this, SettingsActivity.class);
@@ -304,7 +316,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 		builder.setCancelable(true);
-		builder.setTitle("Please Conform !");
+		builder.setTitle("Please Confirm !");
 		builder.setInverseBackgroundForced(true);
 		builder.setMessage(message);
 		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {

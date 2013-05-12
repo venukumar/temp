@@ -1,4 +1,4 @@
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.model;
 
 import java.text.DateFormat;
 import java.util.Currency;
@@ -7,7 +7,9 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.kellislabs.bartsy.model.Profile;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.drawable;
+import com.kellislabs.bartsy.R.id;
 
 import android.content.Context;
 import android.text.format.Time;
@@ -134,7 +136,7 @@ public class Order  {
 
 	}
 	
-	void updateView () {
+	public void updateView () {
 		
 		if (view == null) return;
 
@@ -143,11 +145,6 @@ public class Order  {
 		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
 		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[ORDER_STATUS_NEW]));
 		((TextView) view.findViewById(R.id.view_order_price)).setText("" + (int) this.price); // use int for now
-//		((ImageView)view.findViewById(R.id.view_order_image_resource)).setImageResource(this.image_resource);
-		
-		// Update sender profile section
-		((ImageView)view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(this.orderSender.image);
-		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(this.orderSender.username);
 
 		String positive="", negative="";
 		switch (this.status) {

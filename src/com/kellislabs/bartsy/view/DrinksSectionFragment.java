@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.view;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,13 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 
+import com.kellislabs.bartsy.BartsyApplication;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 import com.kellislabs.bartsy.adapters.ExpandableListAdapter;
 import com.kellislabs.bartsy.db.DatabaseManager;
+import com.kellislabs.bartsy.dialog.DrinkDialogFragment;
 import com.kellislabs.bartsy.model.MenuDrink;
 import com.kellislabs.bartsy.model.Section;
 import com.kellislabs.bartsy.utils.WebServices;

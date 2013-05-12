@@ -37,11 +37,20 @@ import android.view.MenuItem;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
-import com.kellislabs.bartsy.CommandParser.BartsyCommand;
+import com.kellislabs.bartsy.dialog.DrinkDialogFragment;
+import com.kellislabs.bartsy.dialog.PeopleDialogFragment;
+import com.kellislabs.bartsy.model.AppObservable;
 import com.kellislabs.bartsy.model.MenuDrink;
+import com.kellislabs.bartsy.model.Order;
 import com.kellislabs.bartsy.model.Profile;
+import com.kellislabs.bartsy.utils.CommandParser;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
+import com.kellislabs.bartsy.utils.CommandParser.BartsyCommand;
+import com.kellislabs.bartsy.view.AppObserver;
+import com.kellislabs.bartsy.view.DrinksSectionFragment;
+import com.kellislabs.bartsy.view.OrdersSectionFragment;
+import com.kellislabs.bartsy.view.PeopleSectionFragment;
 import com.zooz.android.lib.CheckoutActivity;
 
 public class VenueActivity extends FragmentActivity implements
@@ -55,13 +64,8 @@ public class VenueActivity extends FragmentActivity implements
 	 * 
 	 */
 
-	public boolean mIsHost = false; // the app switches personalities for now
-									// depending on this (tablet = bar, phone =
-									// user)
-	public boolean mDebug = false; // set up for extra debugging tabs
 	public static final String TAG = "Bartsy";
 	private OrdersSectionFragment mOrdersFragment = null;
-	private BartenderSectionFragment mBartenderFragment = null;
 	private DrinksSectionFragment mDrinksFragment = null;
 	private PeopleSectionFragment mPeopleFragment = null;
 
@@ -136,13 +140,6 @@ public class VenueActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		/*
-		 * Init, debug and views setup
-		 */
-
-		// Make sure global settings get set first
-		mIsHost = getResources().getBoolean(R.bool.isTablet);
-
 		// Set base view for the activity
 		setContentView(R.layout.activity_main);
 
@@ -153,12 +150,6 @@ public class VenueActivity extends FragmentActivity implements
 		if (mOrdersFragment == null) {
 			mOrdersFragment = new OrdersSectionFragment();
 			mOrdersFragment.mApp = mApp;
-		}
-
-		// Initialize bartender view
-		if (mBartenderFragment == null) {
-			mBartenderFragment = new BartenderSectionFragment();
-			mBartenderFragment.mApp = mApp;
 		}
 
 		// Initialize people view
@@ -235,11 +226,6 @@ public class VenueActivity extends FragmentActivity implements
 		 * from other components.
 		 */
 		mApp.addObserver(this);
-		if (mIsHost) {
-			// This initiates a series of events from the application, handled
-			// by the hander
-			mApp.hostInitChannel();
-		}
 
 		/*
 		 * update the state of the action bar depending on our connection state.
@@ -334,11 +320,7 @@ public class VenueActivity extends FragmentActivity implements
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
-			Intent intent;
-			if (mIsHost)
-				intent = new Intent(this, MainActivity.class);
-			else
-				intent = new Intent(this, MainActivity.class);
+			Intent intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return true;
@@ -378,20 +360,6 @@ public class VenueActivity extends FragmentActivity implements
 
 		Log.i(TAG, "updateChannelState()");
 		
-		
-		// Handle tablet case
-		
-		if (mIsHost) {
-			if (mApp.venueProfileID == null || mApp.venueProfileName == null)
-				getActionBar().setTitle("Invalid venue configuration. Please uninstall then reinstall Bartsy.");
-			else
-				getActionBar().setTitle(mApp.venueProfileName);
-			return;
-		}
-		
-		
-		// Handle phone case
-
 		String name;
 		
 		if (mApp.activeVenue == null) {
@@ -418,7 +386,6 @@ public class VenueActivity extends FragmentActivity implements
 			// Checked-in
 			
 			name = mApp.activeVenue.getName();
-			
 		}
 	
 		getActionBar().setTitle(name);
@@ -431,12 +398,7 @@ public class VenueActivity extends FragmentActivity implements
 	void updateOrdersCount() {
 		// Update tab title with the number of orders - for now hardcode the tab
 		// at the right position
-		if (mIsHost)
-			getActionBar().getTabAt(0).setText(
-					"Orders (" + mApp.mOrders.size() + ")");
-		else
-			getActionBar().getTabAt(2).setText(
-					"Orders (" + mApp.mOrders.size() + ")");
+		getActionBar().getTabAt(2).setText("Orders (" + mApp.mOrders.size() + ")");
 	}
 
 	/***********
@@ -471,21 +433,11 @@ public class VenueActivity extends FragmentActivity implements
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		private final int tabsTablet[] = { R.string.title_bartender,
-				R.string.title_people, R.string.title_inventory };
-		private final int tabsPhone[] = { R.string.title_drinks,
+		private int mTabs[] = { R.string.title_drinks,
 				R.string.title_people, R.string.title_drink_orders };
-
-		private int mTabs[];
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
-
-			if (mIsHost) {
-				mTabs = tabsTablet;
-			} else {
-				mTabs = tabsPhone;
-			}
 		}
 
 		@Override
@@ -493,10 +445,6 @@ public class VenueActivity extends FragmentActivity implements
 			switch (mTabs[position]) {
 			case R.string.title_drink_orders: // The order tab (for bar owners)
 				return (mOrdersFragment);
-			case R.string.title_bartender: // The order tab (for bar owners)
-				return (mBartenderFragment);
-			case R.string.title_inventory: // The customers tab (for bar owners)
-				return (new CustomersSectionFragment());
 			case R.string.title_drinks: // The drinks tab allows to order drinks
 										// from previous orders, favorites, menu
 										// items, drink guides or completely
@@ -690,10 +638,7 @@ public class VenueActivity extends FragmentActivity implements
 	}
 
 	void processCommand(BartsyCommand command) {
-		if (command.opcode.equalsIgnoreCase("order")) {
-			appendStatus("Opcode: " + command.opcode + "");
-			processCommandOrder(command);
-		} else if (command.opcode.equalsIgnoreCase("order_status_changed")) {
+		if (command.opcode.equalsIgnoreCase("order_status_changed")) {
 			if (processRemoteOrderStatusChanged(command))
 				// An error occurred - for now log it
 				appendStatus("ERROR PROCESSING ORDER STATUS CHANGED COMMAND");
@@ -847,45 +792,6 @@ public class VenueActivity extends FragmentActivity implements
 		// Update tab title with the number of open orders
 		updateOrdersCount();
 		
-	}
-
-	void processCommandOrder(BartsyCommand command) {
-
-		appendStatus("Processing command for order:" + command.arguments.get(0));
-
-		// Ignore order commands if not the host
-		if (!mIsHost)
-			return;
-
-		// Find the person who placed the order in the list of people in this
-		// bar. If not found, don't accept the order
-		Profile person = null;
-		for (Profile p : mApp.mPeople) {
-			if (p.userID.equalsIgnoreCase(command.arguments.get(6))) {
-				// User found
-				person = p;
-				break;
-			}
-		}
-		if (person == null) {
-			appendStatus("Error processing command. Profile placing order is missing from the list");
-			return;
-		}
-
-		// Create a new order
-		Order order = new Order();
-		order.initialize(Integer.parseInt(command.arguments.get(0)), // client
-																		// order
-																		// ID
-				mApp.mSessionID++, // server order ID
-				command.arguments.get(2), // Title
-				command.arguments.get(3), // Description
-				command.arguments.get(4), // Price
-				command.arguments.get(5), // Image resource
-				person); // Order sender ID
-		mBartenderFragment.addOrder(order);
-
-		updateOrdersCount();
 	}
 
 	/*

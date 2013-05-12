@@ -1,4 +1,4 @@
-package com.kellislabs.bartsy;
+package com.kellislabs.bartsy.facebook;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,12 +18,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.kellislabs.bartsy.facebook.AsyncFacebookRunner;
+import com.kellislabs.bartsy.R;
+import com.kellislabs.bartsy.R.id;
+import com.kellislabs.bartsy.R.layout;
 import com.kellislabs.bartsy.facebook.AsyncFacebookRunner.RequestListener;
-import com.kellislabs.bartsy.facebook.DialogError;
-import com.kellislabs.bartsy.facebook.Facebook;
 import com.kellislabs.bartsy.facebook.Facebook.DialogListener;
-import com.kellislabs.bartsy.facebook.FacebookError;
 import com.kellislabs.bartsy.model.Profile;
 import com.kellislabs.bartsy.utils.Constants;
 import com.kellislabs.bartsy.utils.WebServices;
@@ -137,7 +136,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 		if (expires != 0) {
 			facebook.setAccessExpires(expires);
 		}
-
+ 
 		if (!facebook.isSessionValid()) {
 			System.out.println("!facebook.isSessionValid()");
 			// getProfileInformation();
