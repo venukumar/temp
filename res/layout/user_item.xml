@@ -19,8 +19,7 @@
                 android:id="@+id/view_user_list_image_resource"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:scaleType="fitXY"
-                android:src="@drawable/christina" />
+                android:scaleType="fitXY" />
 
             <ImageView
                 android:id="@+id/ImageView16"
@@ -40,36 +39,8 @@
                 android:id="@+id/view_user_list_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Christina Tylar"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="1dp" >
-
-                    <ImageView
-                        android:id="@+id/ImageView12"
-                        android:layout_width="17dp"
-                        android:layout_height="17dp"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/facebook" />
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/TextView12"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="You&apos;re friends on Facebook"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

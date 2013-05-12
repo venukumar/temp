@@ -47,8 +47,7 @@
                         android:id="@+id/view_user_dialog_image_resource"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/emily" />
+                        android:scaleType="fitXY" />
 
                     <ImageView
                         android:id="@+id/ImageView03"
