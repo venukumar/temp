@@ -90,30 +90,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="wifi.AllJoynHostActivity"
-            android:label="AllJoyn Chat Channel Hosting"
-            android:windowSoftInputMode="adjustResize" >
-        </activity>
-        <activity
-            android:name="wifi.AllJoynUseActivity"
-            android:label="AllJoyn Chat Channel Usage"
-            android:windowSoftInputMode="adjustResize" >
-        </activity>
-        <activity
-            android:name=".ContactsService"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="Contacts Service"
-            android:screenOrientation="portrait" >
-        </activity>
+        
         <activity
             android:name=".AndroidFacebookConnectActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="Contacts Client"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".ContactsClient"
             android:configChanges="keyboardHidden|orientation"
             android:label="Contacts Client"
             android:screenOrientation="portrait" >
@@ -121,7 +100,6 @@
 
         <service android:name="ConnectivityService" >
         </service>
-
         
          <activity
             android:name=".VenueRegistration"

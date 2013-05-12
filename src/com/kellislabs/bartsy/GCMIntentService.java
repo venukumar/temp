@@ -145,7 +145,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         	title+="("+count+")";
         }
        
-        Intent notificationIntent = new Intent(context, DebugWidget.class);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
         // set intent so it does not start a new activity
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);

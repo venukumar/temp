@@ -60,7 +60,6 @@ public class VenueActivity extends FragmentActivity implements
 									// user)
 	public boolean mDebug = false; // set up for extra debugging tabs
 	public static final String TAG = "Bartsy";
-	private DebugSectionFragment mDebugFragment = null;
 	private OrdersSectionFragment mOrdersFragment = null;
 	private BartenderSectionFragment mBartenderFragment = null;
 	private DrinksSectionFragment mDrinksFragment = null;
@@ -68,8 +67,6 @@ public class VenueActivity extends FragmentActivity implements
 
 	public void appendStatus(String status) {
 		Log.d(TAG, status);
-		if (mDebug)
-			mDebugFragment.appendLine(status);
 	}
 
 	// A pointer to the parent application. In the MVC model, the parent
@@ -151,11 +148,6 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
-
-		// Initialize debug view for logging purposes
-		if (mDebugFragment == null) {
-			mDebugFragment = new DebugSectionFragment();
-		}
 
 		// Initialize orders view
 		if (mOrdersFragment == null) {
@@ -344,7 +336,7 @@ public class VenueActivity extends FragmentActivity implements
 			// app icon in action bar clicked; go home
 			Intent intent;
 			if (mIsHost)
-				intent = new Intent(this, DebugWidget.class);
+				intent = new Intent(this, MainActivity.class);
 			else
 				intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -479,21 +471,6 @@ public class VenueActivity extends FragmentActivity implements
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		// Define tabs here
-		// private final int tabsDebugTablet[] = {R.string.title_debug,
-		// R.string.title_drink_orders, R.string.title_customers,
-		// R.string.title_drinks, R.string.title_people, R.string.title_map,
-		// R.string.title_notifications};
-		// private final int tabsDebugPhone[] = {R.string.title_debug,
-		// R.string.title_notifications, R.string.title_drinks,
-		// R.string.title_people, R.string.title_map,
-		// R.string.title_drink_orders, R.string.title_customers};
-		private final int tabsDebugTablet[] = { R.string.title_debug,
-				R.string.title_drink_orders, R.string.title_people,
-				R.string.title_inventory };
-		private final int tabsDebugPhone[] = { R.string.title_debug,
-				R.string.title_drinks, R.string.title_people,
-				R.string.title_drink_orders };
 		private final int tabsTablet[] = { R.string.title_bartender,
 				R.string.title_people, R.string.title_inventory };
 		private final int tabsPhone[] = { R.string.title_drinks,
@@ -504,11 +481,7 @@ public class VenueActivity extends FragmentActivity implements
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
 
-			if (mDebug && mIsHost) {
-				mTabs = tabsDebugTablet;
-			} else if (mDebug && !mIsHost) {
-				mTabs = tabsDebugPhone;
-			} else if (mIsHost) {
+			if (mIsHost) {
 				mTabs = tabsTablet;
 			} else {
 				mTabs = tabsPhone;
@@ -518,8 +491,6 @@ public class VenueActivity extends FragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			switch (mTabs[position]) {
-			case R.string.title_debug: // Debug window
-				return (mDebugFragment);
 			case R.string.title_drink_orders: // The order tab (for bar owners)
 				return (mOrdersFragment);
 			case R.string.title_bartender: // The order tab (for bar owners)
