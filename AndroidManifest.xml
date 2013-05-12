@@ -139,7 +139,7 @@
         </receiver>
 
         <service
-            android:name="com.vendsy.bartsy.service.GCMIntentServiceentService"
+            android:name="com.vendsy.bartsy.service.GCMIntentService"
             android:enabled="true" >
         </service>
 

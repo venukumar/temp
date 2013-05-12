@@ -17,7 +17,7 @@ import android.widget.ExpandableListView.OnChildClickListener;
 
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.adapters.ExpandableListAdapter;
+import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.MenuDrink;
