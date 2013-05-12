@@ -20,8 +20,10 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
@@ -35,25 +37,38 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 
 		// If the user profile is not set, start the init activity
-	    SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		if (sharedPref.getString(getResources().getString(R.string.config_user_account_name), "")
+		SharedPreferences sharedPref = getSharedPreferences(getResources()
+				.getString(R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		if (sharedPref
+				.getString(
+						getResources().getString(
+								R.string.config_user_account_name), "")
 				.equalsIgnoreCase("")) {
 			Intent intent = new Intent().setClass(this, InitActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return;
 		}
-		
-		
-		
+
 		setContentView(R.layout.main);
 
 		mApp = (BartsyApplication) getApplication();
-		
-		
+
+		// GCM registration
+		// --------------------------------------------------
+		GCMRegistrar.checkDevice(this);
+		GCMRegistrar.checkManifest(this);
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		if (regId.equals("")) {
+			GCMRegistrar.register(this, Utilities.SENDER_ID);
+		} else {
+		}
+		System.out.println("the registration id is:::::" + regId);
+
+		// --------------------------------------------
 
 		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 

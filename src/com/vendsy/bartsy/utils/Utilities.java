@@ -45,7 +45,7 @@ public final class Utilities {
 	/**
 	 * Intent used to display a message in the screen.
 	 */
-	public static final String DISPLAY_MESSAGE_ACTION = "com.kellislabs.bartsy.DISPLAY_MESSAGE";
+	public static final String DISPLAY_MESSAGE_ACTION = "com.vendsy.bartsy.DISPLAY_MESSAGE";
 
 	/**
 	 * Intent's extra that contains the message to be displayed.
