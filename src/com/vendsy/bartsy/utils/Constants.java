@@ -3,9 +3,9 @@ package com.vendsy.bartsy.utils;
 import java.security.PublicKey;
 
 public class Constants {
-	//public static final String DOMAIN_NAME = "http://192.168.0.109:8080";
+	public static final String DOMAIN_NAME = "http://192.168.0.172:8080";
 
-	 public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
+//	 public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
 
 	public static final boolean USE_ALLJOYN = false;
 

@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vendsy.bartsy.service;
+package com.vendsy.bartsy;
 
 import static com.vendsy.bartsy.utils.Utilities.SENDER_ID;
-import static com.vendsy.bartsy.utils.Utilities.displayMessage;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -30,15 +33,14 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.MainActivity;
-import com.vendsy.bartsy.VenueActivity;
+import com.google.android.gms.internal.ap;
+import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.Utilities;
 
 /**
  * IntentService responsible for handling GCM messages.
  */
 public class GCMIntentService extends GCMBaseIntentService {
-	public static int count = 0;
 	public static final String REG_ID = "RegId";
 
     @SuppressWarnings("hiding")
@@ -64,16 +66,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 		
 		editor.commit();
 
-        
-    //    DukesDonorUtil.getInstance().setDeviceId(registrationId);
-        displayMessage(context, getString(R.string.gcm_registered));
-//        ServerUtilities.register(context, registrationId);
     }
 
     @Override
     protected void onUnregistered(Context context, String registrationId) {
         Log.i(TAG, "Device unregistered");
-        displayMessage(context, getString(R.string.gcm_unregistered));
+//        displayMessage(context, getString(R.string.gcm_unregistered));
         if (GCMRegistrar.isRegisteredOnServer( getApplicationContext())) {
 //            ServerUtilities.unregister(context, registrationId);
         } else {
@@ -85,26 +83,45 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     @Override
     protected void onMessage(Context context, Intent intent) {
-        Log.i(TAG, "Received message");
-//        String message = getString(R.string.gcm_message);
-        String message = (String) intent.getExtras().get("message");
-//        String count=(String) intent.getExtras().get("badgeCount");
-        Uri notification = RingtoneManager
-				.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone ringtone = RingtoneManager.getRingtone(
-				context, notification);
-		if (ringtone != null) {
-			ringtone.play();
-		}
-        
-        if(message==null){
-        	message = "";
-        }
-        
-        displayMessage(context, message);
-        // notifies user
-        generateNotification(context, message);
+    	 String message = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
+         String count=(String) intent.getExtras().get("badgeCount");
+         Uri notification = RingtoneManager
+ 				.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+ 		Ringtone ringtone = RingtoneManager.getRingtone(
+ 				context, notification);
+ 		if (ringtone != null) {
+ 			ringtone.play();
+ 		}
+ 		Log.i(TAG, "message: "+message);
+ 		String notifyMSG = "Received..";
+         if(message==null){
+         	message = "";
+         }else{
+        	 notifyMSG = processPushNotification(message);
+         }
+         
+//         displayMessage(context, message);
+         // notifies user
+         generateNotification(context, notifyMSG, count);
     }
+    
+    private String processPushNotification(String message) {
+    	BartsyApplication app = (BartsyApplication)getApplication();
+    	String messageTypeMSG = "";
+		try {
+			System.out.println(message);
+			JSONObject json = new JSONObject(message);
+			if (json.has("messageType")) {
+				if (json.getString("messageType").equals("updateOrderStatus")) {
+					app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));
+					messageTypeMSG = "Your order status changed";
+				}
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return messageTypeMSG;
+	}
 
 //    @Override
 //    protected void onDeletedMessages(Context context, int total) {
@@ -118,35 +135,29 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     public void onError(Context context, String errorId) {
         Log.i(TAG, "Received error: " + errorId);
-        displayMessage(context, getString(R.string.gcm_error, errorId));
     }
 
     @Override
     protected boolean onRecoverableError(Context context, String errorId) {
         // log message
         Log.i(TAG, "Received recoverable error: " + errorId);
-        displayMessage(context, getString(R.string.gcm_recoverable_error,
-                errorId));
         return super.onRecoverableError(context, errorId);
     }
 
     /**
      * Issues a notification to inform the user that server has sent a message.
      * @param count 
+     * @param count 
      */
-    private static void generateNotification(Context context, String message) {
+    private static void generateNotification(Context context, String message, String count) {
         int icon = R.drawable.ic_launcher;
         long when = System.currentTimeMillis();
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification(icon, message, when);
         String title = context.getString(R.string.app_name);
-        count++;
-        if(count!=0){
-        	title+="("+count+")";
-        }
        
-        Intent notificationIntent = new Intent(context, VenueActivity.class);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
         // set intent so it does not start a new activity
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -154,7 +165,12 @@ public class GCMIntentService extends GCMBaseIntentService {
                 PendingIntent.getActivity(context, 0, notificationIntent, 0);
         notification.setLatestEventInfo(context, title, message, intent);
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
-        notification.number = count;
+        try {
+			int countValue = Integer.parseInt(count);
+			notification.number = countValue;
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
         notificationManager.notify(0, notification);
         
         notification.defaults = Notification.DEFAULT_ALL;

@@ -22,13 +22,13 @@ import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.model.Section;
-import com.vendsy.bartsy.service.GCMIntentService;
 
 public class WebServices {
 

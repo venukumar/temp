@@ -932,6 +932,10 @@ public class VenueActivity extends FragmentActivity implements
 		// User touched the dialog's positive button
 
 		Person user = ((PeopleDialogFragment) dialog).mUser;
+        
+    //    DukesDonorUtil.getInstance().setDeviceId(registrationId);
+//        displayMessage(context, getString(R.string.gcm_registered));
+//        ServerUtilities.register(context, registrationId);
 
 		appendStatus("Sending drink to: " + user.getNickname());
 
