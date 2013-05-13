@@ -139,7 +139,7 @@
         </receiver>
 
         <service
-            android:name="com.vendsy.bartsy.service.GCMIntentService"
+            android:name="com.vendsy.bartsy.GCMIntentService"
             android:enabled="true" >
         </service>
 
@@ -154,11 +154,15 @@
             android:name="com.paypal.android.MEP.PayPalActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
- 
+
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCgZRYaiDOrJp9hNO6xu1UracE_dOhgmRI" />
-
+        <!-- 
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />
+		 -->
     </application>
 
 </manifest>
