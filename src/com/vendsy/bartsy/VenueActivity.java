@@ -41,6 +41,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
+import com.google.android.gcm.GCMRegistrar;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
@@ -54,6 +55,7 @@ import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
 import com.vendsy.bartsy.view.OrdersSectionFragment;
@@ -64,20 +66,6 @@ public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
 		PeopleDialogFragment.UserDialogListener, AppObserver {
 
-	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			System.out.println("in broadcast receiver:::::::");
-			String newMessage = intent.getExtras().getString(
-					Utilities.EXTRA_MESSAGE);
-			System.out.println("the message is ::::" + newMessage);
-			// mDisplay.append(newMessage + "\n");
-
-			processPushNotification(newMessage);
-
-		}
-
-	};
 
 	/****************
 	 * 
@@ -120,6 +108,8 @@ public class VenueActivity extends FragmentActivity implements
 	private static final int HANDLE_HISTORY_CHANGED_EVENT = 1;
 	private static final int HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT = 2;
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
+	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
+	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
 
 	/**************************************
 	 * 
@@ -169,9 +159,6 @@ public class VenueActivity extends FragmentActivity implements
 		mApp = (BartsyApplication) getApplication();
 		
 		initializeFragments();
-
-		registerReceiver(mHandleMessageReceiver, new IntentFilter(
-				Utilities.DISPLAY_MESSAGE_ACTION));
 
 		// Log function call
 		appendStatus(this.toString() + "onCreate()");
@@ -433,6 +420,17 @@ public class VenueActivity extends FragmentActivity implements
 				"Orders (" + mApp.mOrders.size() + ")");
 	}
 
+	/*
+	 * Updates the action bar tab with the number of open orders
+	 */
+
+	void updatePeopleCount() {
+		// Update tab title with the number of orders - for now hardcode the tab
+		// at the right position
+		getActionBar().getTabAt(1).setText(
+				"People (" + mApp.mPeople.size() + ")");
+	}
+
 	/***********
 	 * 
 	 * TODO - Views management
@@ -566,8 +564,16 @@ public class VenueActivity extends FragmentActivity implements
 			Message message = mHandler
 					.obtainMessage(HANDLE_ALLJOYN_ERROR_EVENT);
 			mHandler.sendMessage(message);
+		} else if (qualifier.equals(BartsyApplication.ORDERS_UPDATED)) {
+			Message message = mHandler
+					.obtainMessage(HANDLE_ORDERS_UPDATED_EVENT);
+			mHandler.sendMessage(message);
+		} else if (qualifier.equals(BartsyApplication.PEOPLE_UPDATED)) {
+			Message message = mHandler
+					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
+			mHandler.sendMessage(message);
 		}
-	}
+	} 
 
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -606,6 +612,20 @@ public class VenueActivity extends FragmentActivity implements
 						"BartsyActivity.mhandler.handleMessage(): HANDLE_ALLJOYN_ERROR_EVENT");
 				alljoynError();
 			}
+				break;
+			case HANDLE_ORDERS_UPDATED_EVENT: 
+				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
+				if (mOrdersFragment != null) {
+					mOrdersFragment.updateOrdersView();
+					updateOrdersCount();
+				}
+				break;
+			case HANDLE_PEOPLE_UPDATED_EVENT: 
+				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
+				if (mPeopleFragment != null) {
+					mPeopleFragment.updatePeopleView();
+					updatePeopleCount();
+				}
 				break;
 			default:
 				break;
@@ -735,7 +755,8 @@ public class VenueActivity extends FragmentActivity implements
 
 		// start ZooZCheckoutActivity and wait to the
 		// activity result.
-		startActivityForResult(intent, ZooZ_Activity_ID);
+//		startActivityForResult(intent, ZooZ_Activity_ID);
+		processOrderData(); // bypass zooz for now for testing
 
 	}
 
@@ -852,26 +873,6 @@ public class VenueActivity extends FragmentActivity implements
 
 	}
 
-	private void processPushNotification(String message) {
-		initializeFragments();
-
-		try {
-			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
-			JSONObject json = new JSONObject(message);
-			if (json.has("messageType")) {
-				if (json.getString("messageType").equals("updateOrderStatus")) {
-					long id = Long.valueOf(json.getString("orderId"));
-					int status = Integer.valueOf(json.getString("orderStatus"));
-					processRemoteOrderStatusChanged(id, status);
-				}
-			}
-			json.getString("");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public Boolean processRemoteOrderStatusChanged(BartsyCommand command) {
 		// Return false if everything went well, true if we need to perform
 		// recovery
@@ -888,6 +889,8 @@ public class VenueActivity extends FragmentActivity implements
 		// sure this command is for us
 		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
 			return true;
+		
+		
 		// Make sure the order exists only once on this side and some other
 		// conditions are met.
 		Order localOrder = null;
@@ -913,92 +916,11 @@ public class VenueActivity extends FragmentActivity implements
 			return true;
 		}
 
-		// Update the status of the local order based on that of the remote
-		// order and return on error
-		switch (remote_status) {
-		case Order.ORDER_STATUS_IN_PROGRESS:
-			// The order has been accepted remotely. Set the server_id on this
-			// order and update status and view
-			if (localOrder.status != Order.ORDER_STATUS_NEW)
-				return true;
-			localOrder.serverID = server_id;
-			localOrder.nextPositiveState();
-			localOrder.updateView();
-			break;
-		case Order.ORDER_STATUS_READY:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
-			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
-				return true;
-			localOrder.nextPositiveState();
-			localOrder.updateView();
-			this.createNotification("Your " + localOrder.title
-					+ " order is ready",
-					"Please go to the Bartsy Point to pick it up");
-			break;
-		case Order.ORDER_STATUS_COMPLETE:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
-			if (localOrder.status != Order.ORDER_STATUS_READY)
-				return true;
-			localOrder.nextPositiveState();
-			break;
-		}
-
-		// Update tab title with the number of open orders
-		updateOrdersCount();
+		mApp.updateOrder(command.arguments.get(2), command.arguments.get(0));
 
 		return false;
 	}
 
-	private void processRemoteOrderStatusChanged(long orderId,
-			int remote_status) {
-		Order localOrder = null;
-		for (Order order : mApp.mOrders) {
-			if (order.id == orderId) {
-				localOrder = order;
-			}
-		}
-		
-		if(localOrder==null){
-			return;
-		}
-
-		// Update the status of the local order based on that of the remote
-		// order and return on error
-		switch (remote_status) {
-		case Order.ORDER_STATUS_IN_PROGRESS:
-			// The order has been accepted remotely. Set the server_id on this
-			// order and update status and view
-			if (localOrder.status != Order.ORDER_STATUS_NEW)
-				return;
-			localOrder.nextPositiveState();
-			localOrder.updateView();
-			break;
-		case Order.ORDER_STATUS_READY:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
-			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
-				return;
-			localOrder.nextPositiveState();
-			localOrder.updateView();
-			this.createNotification("Your " + localOrder.title
-					+ " order is ready",
-					"Please go to the Bartsy Point to pick it up");
-			break;
-		case Order.ORDER_STATUS_COMPLETE:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
-			if (localOrder.status != Order.ORDER_STATUS_READY)
-				return;
-			localOrder.nextPositiveState();
-			break;
-		}
-
-		// Update tab title with the number of open orders
-		updateOrdersCount();
-
-	}
 
 	/*
 	 * 
@@ -1039,35 +961,12 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 
 	void processProfile(BartsyCommand command) {
-
 		appendStatus("Process command: " + command.opcode);
-
-		// Decode the user image and create a new incoming profile
-		byte[] decodedString = Base64.decode(command.arguments.get(5),
-				Base64.DEFAULT);
-		Bitmap image = BitmapFactory.decodeByteArray(decodedString, 0,
-				decodedString.length);
-		Profile profile = new Profile(command.arguments.get(0), // userid
-				command.arguments.get(1), // username
-				command.arguments.get(2), // location
-				command.arguments.get(3), // info
-				command.arguments.get(4), // description
-				image // image
-		);
-
-		// Add the person to the list of people in the bar (this method doesn't
-		// add duplicates)
-		mPeopleFragment.addPerson(profile);
+		mApp.addPerson(command.arguments.get(0), 
+				command.arguments.get(1), 
+				command.arguments.get(2), 
+				command.arguments.get(3), 
+				command.arguments.get(4), 
+				command.arguments.get(5));
 	}
-
-	public static String readFileAsString(String filePath)
-			throws java.io.IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(filePath));
-		String line, results = "";
-		while ((line = reader.readLine()) != null)
-			results += line;
-		reader.close();
-		return results;
-	}
-
 }

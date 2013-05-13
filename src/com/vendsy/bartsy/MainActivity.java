@@ -57,19 +57,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 		mApp = (BartsyApplication) getApplication();
 
-		// GCM registration
-		// --------------------------------------------------
-		GCMRegistrar.checkDevice(this);
-		GCMRegistrar.checkManifest(this);
-		final String regId = GCMRegistrar.getRegistrationId(this);
-		if (regId.equals("")) {
-			GCMRegistrar.register(this, Utilities.SENDER_ID);
-		} else {
-		}
-		System.out.println("the registration id is:::::" + regId);
-
-		// --------------------------------------------
-
 		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 
 		if (venue == null) {

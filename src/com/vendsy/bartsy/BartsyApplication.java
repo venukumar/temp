@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -190,13 +191,48 @@ public class BartsyApplication extends Application implements AppObservable {
 	    		image);
   	}    
 
-  	/*****
-  	 * 
-  	 *  The list of people present (when checked in) is also saved here, in the global state
-  	 *  
-  	 */
-  
-	public ArrayList<Profile> mPeople = new ArrayList<Profile>();
+	/*****
+	 * 
+	 *  The list of people present (when checked in) is also saved here, in the global state. 
+	 *  We have all handling code here because the application always runs in the background.
+	 *  If there is an activity that displays a view of that list listening, we will send an
+	 *  update message, but this code will always correctly change the model so that we never 
+	 *  lose orders even if hte phone (or tablet) is in sleep mode, etc.
+	 *  
+	 */
+
+  	 public ArrayList<Profile> mPeople = new ArrayList<Profile>();
+	 public static final String PEOPLE_UPDATED = "PEOPLE_UPDATED";
+	
+	 /*
+	  * Called when we have a new person check in a venue
+	  */
+	  
+	  void addPerson(String userid,
+	  		String name,
+	  		String location,
+	  		String info,
+	  		String description,
+	  		String image			// base64 encoded image
+	  		) {
+			Log.i(TAG, "New user checked in: " + name + " (" + userid + ")");
+	
+			// Decode the user image and create a new incoming profile
+			byte[] decodedString = Base64.decode(image,
+					Base64.DEFAULT);
+			Bitmap img = BitmapFactory.decodeByteArray(decodedString, 0,
+					decodedString.length);
+			Profile profile = new Profile(userid,
+					name,
+					location,
+					info,
+					description,
+					img );
+	  	
+	  	mPeople.add(profile);
+	  	notifyObservers(PEOPLE_UPDATED);
+	  }
+
 
 	/*** 
 	 * 
@@ -220,6 +256,84 @@ public class BartsyApplication extends Application implements AppObservable {
   
 	public ArrayList<Order> mOrders = new ArrayList<Order>();
   
+    public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
+
+    /*
+     * This updates the status of the order locally based on the status changed
+     * reported from the server 
+     */
+    
+    void updateOrder(
+    		String order_id,
+    		String remote_order_status) {
+    	
+    	Log.i(TAG, "Update for oder " + order_id);
+
+    	long orderId = Long.parseLong(order_id);
+    	int remote_status = Integer.parseInt(remote_order_status);
+    	
+		Order localOrder = null;
+		for (Order order : mOrders) {
+			if (order.id == orderId) {
+				localOrder = order;
+			}
+		}
+		
+		if(localOrder==null){
+			return;
+		}
+
+		// Update the status of the local order based on that of the remote
+		// order and return on error
+		switch (remote_status) {
+		case Order.ORDER_STATUS_IN_PROGRESS:
+			// The order has been accepted remotely. Set the server_id on this
+			// order and update status and view
+			if (localOrder.status != Order.ORDER_STATUS_NEW)
+				return;
+			localOrder.nextPositiveState();
+			localOrder.updateView();
+			break;
+		case Order.ORDER_STATUS_READY:
+			// Remote order ready. Notify client with a notification and update
+			// status/view
+			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
+				return;
+			localOrder.nextPositiveState();
+			localOrder.updateView();
+//			this.createNotification("Your " + localOrder.title
+//					+ " order is ready",
+//					"Please go to the Bartsy Point to pick it up");
+			break;
+		case Order.ORDER_STATUS_COMPLETE:
+			// Remote order ready. Notify client with a notification and update
+			// status/view
+			if (localOrder.status != Order.ORDER_STATUS_READY)
+				return;
+			localOrder.nextPositiveState();
+			break;
+		}
+
+		// Update tab title with the number of open orders
+
+    	notifyObservers(ORDERS_UPDATED);
+    }
+
+	
+    
+    
+    
+    
+    /************************************************************************
+     * 
+     * 
+     * 
+     * TODO - This is the AllJoyn code
+     * 
+     * 
+     * 
+     */
+	
     
     ComponentName mRunningService = null;
     
