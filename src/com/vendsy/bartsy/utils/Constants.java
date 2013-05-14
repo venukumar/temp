@@ -14,7 +14,7 @@ public class Constants {
 			+ "/Bartsy/venue/getMenu";
 	// This is the url for posting the Profiles Data to server
 	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
-			+ "/Bartsy/user/saveUserProfile";
+			+ "/Bartsy/user/saveUserProfileTest";
 	// This is the url for place the order
 	public static final String URL_PLACE_ORDER = DOMAIN_NAME
 			+ "/Bartsy/order/placeOrder";
