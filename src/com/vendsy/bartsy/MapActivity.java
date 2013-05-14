@@ -188,6 +188,7 @@ public class MapActivity extends Activity implements LocationListener,
 					}
 				} else {
 					mApp.activeVenue = venues.get(arg2);
+					userCheckinAction();
 					Intent intent = new Intent(activity, VenueActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					startActivity(intent);
@@ -323,44 +324,8 @@ public class MapActivity extends Activity implements LocationListener,
 			public void onClick(DialogInterface dialog, int which) {
 
 				dialog.dismiss();
-
-				new Thread() {
-					public void run() {
-						mApp.activeVenue = venue;
-						String response = WebServices.userCheckInOrOut(
-								MapActivity.this, venue.getId(),
-								Constants.URL_USER_CHECK_IN);
-
-						if (response != null) {
-
-							try {
-								JSONObject json = new JSONObject(response);
-								String errorCode = json.getString("errorCode");
-								String errorMessage = json.has("errorMessage") ? json
-										.getString("errorMessage") : "";
-
-								if (errorCode.equalsIgnoreCase("0")) {
-									handler.post(new Runnable() {
-										public void run() {
-											Intent intent = new Intent(
-													activity,
-													VenueActivity.class);
-											intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-											startActivity(intent);
-											finish();
-										}
-									});
-								}
-
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-						}
-
-					};
-				}.start();
+				mApp.activeVenue = venue;
+				userCheckinAction();
 
 			}
 		});
@@ -373,5 +338,42 @@ public class MapActivity extends Activity implements LocationListener,
 		AlertDialog alert = builder.create();
 		alert.show();
 
+	}
+
+	protected void userCheckinAction() {
+		new Thread() {
+			public void run() {
+				Venue venue = mApp.activeVenue;
+				String response = WebServices.userCheckInOrOut(
+						MapActivity.this, venue.getId(),
+						Constants.URL_USER_CHECK_IN);
+
+				if (response != null) {
+
+					try {
+						JSONObject json = new JSONObject(response);
+						String errorCode = json.getString("errorCode");
+						String errorMessage = json.has("errorMessage") ? json
+								.getString("errorMessage") : "";
+
+						if (errorCode.equalsIgnoreCase("0")) {
+							handler.post(new Runnable() {
+								public void run() {
+									Intent intent = new Intent(
+											activity,
+											VenueActivity.class);
+									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									startActivity(intent);
+									finish();
+								}
+							});
+						}
+
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+		}.start();
 	}
 }

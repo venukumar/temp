@@ -244,7 +244,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 					+ mApp.activeVenue.getName() + "?");
 
 		}
-
+		
 	}
 
 	//

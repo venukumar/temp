@@ -1,11 +1,10 @@
 package com.vendsy.bartsy.utils;
 
-import java.security.PublicKey;
 
 public class Constants {
-	public static final String DOMAIN_NAME = "http://192.168.0.172:8080";
+//	public static final String DOMAIN_NAME = "http://192.168.0.109:8080";
 
-//	 public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
 
 	public static final boolean USE_ALLJOYN = false;
 
@@ -14,7 +13,7 @@ public class Constants {
 			+ "/Bartsy/venue/getMenu";
 	// This is the url for posting the Profiles Data to server
 	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
-			+ "/Bartsy/user/saveUserProfileTest";
+			+ "/Bartsy/user/saveUserProfile";
 	// This is the url for place the order
 	public static final String URL_PLACE_ORDER = DOMAIN_NAME
 			+ "/Bartsy/order/placeOrder";
@@ -29,11 +28,12 @@ public class Constants {
 	public static final String URL_USER_CHECK_OUT = DOMAIN_NAME
 			+ "/Bartsy/user/userCheckOut";
 
-	// This is the url for saveVenueDetails for bartender
-	public static final String URL_SAVE_VENUEDETAILS = DOMAIN_NAME
-			+ "/Bartsy/venue/saveVenueDetails";
 	// Android Device Type
 	public static final int DEVICE_Type = 0;
+	
+	// Paypal Key
+	public static final String PAYPAL_KEY = "APP-80W284485P519543T";
+	
 	// This is the url for download the facebook picture
 	public static final String FB_PICTURE="https://graph.facebook.com/";
 }

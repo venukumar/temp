@@ -7,6 +7,7 @@ public class Venue {
 	private String latitude;
 	private String longitude;
 	private String address;
+	private String payPalId;
 
 	public String getAddress() {
 		return address;
@@ -46,6 +47,14 @@ public class Venue {
 
 	public void setLongitude(String longitude) {
 		this.longitude = longitude;
+	}
+
+	public String getPayPalId() {
+		return payPalId;
+	}
+
+	public void setPayPalId(String payPalId) {
+		this.payPalId = payPalId;
 	}
 
 }

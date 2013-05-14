@@ -225,7 +225,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 					bartsyProfile.setType("facebook");
 					
 					
-					WebServices.saveProfileData(bartsyProfile, getApplicationContext());
+				//	WebServices.saveProfileData(bartsyProfile, getApplicationContext());
 					
 					
 				} catch (JSONException e1) {

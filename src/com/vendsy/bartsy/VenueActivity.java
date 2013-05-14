@@ -1,13 +1,10 @@
 package com.vendsy.bartsy;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Locale;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.ActionBar;
@@ -15,14 +12,10 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,38 +27,32 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.ViewPager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
-import com.google.android.gcm.GCMRegistrar;
 import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.R;
+import com.paypal.android.MEP.PayPal;
+import com.paypal.android.MEP.PayPalActivity;
+import com.paypal.android.MEP.PayPalPayment;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.utils.CommandParser;
-import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
-import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
-import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
 import com.vendsy.bartsy.view.OrdersSectionFragment;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
-import com.zooz.android.lib.CheckoutActivity;
 
 public class VenueActivity extends FragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
 		PeopleDialogFragment.UserDialogListener, AppObserver {
-
 
 	/****************
 	 * 
@@ -157,7 +144,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
-		
+
 		initializeFragments();
 
 		// Log function call
@@ -573,7 +560,7 @@ public class VenueActivity extends FragmentActivity implements
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
 			mHandler.sendMessage(message);
 		}
-	} 
+	}
 
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -613,15 +600,17 @@ public class VenueActivity extends FragmentActivity implements
 				alljoynError();
 			}
 				break;
-			case HANDLE_ORDERS_UPDATED_EVENT: 
-				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
+			case HANDLE_ORDERS_UPDATED_EVENT:
+				Log.i(TAG,
+						"BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
 				if (mOrdersFragment != null) {
 					mOrdersFragment.updateOrdersView();
 					updateOrdersCount();
 				}
 				break;
-			case HANDLE_PEOPLE_UPDATED_EVENT: 
-				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
+			case HANDLE_PEOPLE_UPDATED_EVENT:
+				Log.i(TAG,
+						"BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
 				if (mPeopleFragment != null) {
 					mPeopleFragment.updatePeopleView();
 					updatePeopleCount();
@@ -710,11 +699,12 @@ public class VenueActivity extends FragmentActivity implements
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {
 		// User touched the dialog's positive button
-
 		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
-
+		if(mApp.activeVenue==null){
+			return;
+		}
 		order = new Order();
 		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
 		String tipPercentageValue = tip.replace("%", "");
@@ -740,61 +730,73 @@ public class VenueActivity extends FragmentActivity implements
 								// person that should pick it up)
 		order.itemId = drink.getDrinkId();
 
-		System.out.println("order button is clicked");
+//		invokePaypalPayment();
 
-		Intent intent = new Intent(this, CheckoutActivity.class);
-		System.out.println("drink price:::" + drink.getPrice());
-
-		// send merchant credential, app_key as given in
-		// the registration
-		intent.putExtra(CheckoutActivity.ZOOZ_APP_KEY,
-				"ac66b517-664e-4ff3-afe9-86c2ca1e1629");
-		intent.putExtra(CheckoutActivity.ZOOZ_AMOUNT, order.total);
-		intent.putExtra(CheckoutActivity.ZOOZ_CURRENCY_CODE, "USD");
-		intent.putExtra(CheckoutActivity.ZOOZ_IS_SANDBOX, true);
-
-		// start ZooZCheckoutActivity and wait to the
-		// activity result.
-//		startActivityForResult(intent, ZooZ_Activity_ID);
 		processOrderData(); // bypass zooz for now for testing
 
 	}
 
-	private static final int ZooZ_Activity_ID = 1;
+	private void invokePaypalPayment() {
+		try {
 
-	/**
-	 * Parses the result returning from the ZooZ CheckoutActivity
-	 */
-	@Override
+			PayPalPayment newPayment = new PayPalPayment();
+			newPayment.setSubtotal(BigDecimal.valueOf(order.total));
+			newPayment.setCurrencyType("USD");
+			// .setCurrency("USD");
+			newPayment.setRecipient("example@paypal.com");
+			newPayment.setMerchantName("Bartsy");
+
+			PayPal pp = PayPal.getInstance();
+			if (pp == null)
+				pp = PayPal.initWithAppID(this, Constants.PAYPAL_KEY,
+						PayPal.ENV_SANDBOX);
+
+			Intent paypalIntent = pp.checkout(newPayment, this);
+			this.startActivityForResult(paypalIntent, 1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode != 1)
+			return;
 
-		if (requestCode == ZooZ_Activity_ID) {
-
-			switch (resultCode) {
-			case Activity.RESULT_OK:
-				Log.i(TAG,
-						"Successfully paid. Your transaction id is: "
-								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_ID)
-								+ "\nDisplay ID: "
-								+ data.getStringExtra(CheckoutActivity.ZOOZ_TRANSACTION_DISPLAY_ID));
-				processOrderData();
-
-				break;
-			case Activity.RESULT_CANCELED:
-
-				if (data != null)
-					Log.e(TAG,
-							"Error, cannot complete payment with ZooZ. "
-									+ "Error code: "
-									+ data.getIntExtra(
-											CheckoutActivity.ZOOZ_ERROR_CODE, 0)
-									+ "; Error Message: "
-									+ data.getStringExtra(CheckoutActivity.ZOOZ_ERROR_MSG));
-				break;
-
-			default:
-				break;
-			}
+		/**
+		 * If you choose not to implement the PayPalResultDelegate, then you
+		 * will receive the transaction results here. Below is a section of code
+		 * that is commented out. This is an example of how to get result
+		 * information for the transaction. The resultCode will tell you how the
+		 * transaction ended and other information can be pulled from the Intent
+		 * using getStringExtra.
+		 */
+		switch (resultCode) {
+		case Activity.RESULT_OK:
+			String resultTitle = "SUCCESS";
+			String resultInfo = "You have successfully completed this ";
+			System.out.println(resultInfo);
+			
+//			processOrderData();
+			
+			
+			// + (isPreapproval ? "preapproval." : "payment.");
+			// resultExtra = "Transaction ID: " +
+			// data.getStringExtra(PayPalActivity.EXTRA_PAY_KEY);
+			break;
+		case Activity.RESULT_CANCELED:
+			resultTitle = "CANCELED";
+			resultInfo = "The transaction has been cancelled.";
+			System.out.println(resultInfo);
+			String resultExtra = "";
+			break;
+		case PayPalActivity.RESULT_FAILURE:
+			resultTitle = "FAILURE";
+			resultInfo = data
+					.getStringExtra(PayPalActivity.EXTRA_ERROR_MESSAGE);
+			resultExtra = "Error ID: "
+					+ data.getStringExtra(PayPalActivity.EXTRA_ERROR_ID);
 		}
 	}
 
@@ -889,8 +891,7 @@ public class VenueActivity extends FragmentActivity implements
 		// sure this command is for us
 		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
 			return true;
-		
-		
+
 		// Make sure the order exists only once on this side and some other
 		// conditions are met.
 		Order localOrder = null;
@@ -921,7 +922,6 @@ public class VenueActivity extends FragmentActivity implements
 		return false;
 	}
 
-
 	/*
 	 * 
 	 * TODO - User interaction commands
@@ -932,10 +932,10 @@ public class VenueActivity extends FragmentActivity implements
 		// User touched the dialog's positive button
 
 		Person user = ((PeopleDialogFragment) dialog).mUser;
-        
-    //    DukesDonorUtil.getInstance().setDeviceId(registrationId);
-//        displayMessage(context, getString(R.string.gcm_registered));
-//        ServerUtilities.register(context, registrationId);
+
+		// DukesDonorUtil.getInstance().setDeviceId(registrationId);
+		// displayMessage(context, getString(R.string.gcm_registered));
+		// ServerUtilities.register(context, registrationId);
 
 		appendStatus("Sending drink to: " + user.getNickname());
 
@@ -966,11 +966,8 @@ public class VenueActivity extends FragmentActivity implements
 
 	void processProfile(BartsyCommand command) {
 		appendStatus("Process command: " + command.opcode);
-		mApp.addPerson(command.arguments.get(0), 
-				command.arguments.get(1), 
-				command.arguments.get(2), 
-				command.arguments.get(3), 
-				command.arguments.get(4), 
-				command.arguments.get(5));
+		mApp.addPerson(command.arguments.get(0), command.arguments.get(1),
+				command.arguments.get(2), command.arguments.get(3),
+				command.arguments.get(4), command.arguments.get(5));
 	}
 }
