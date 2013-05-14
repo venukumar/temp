@@ -1,15 +1,24 @@
 package com.vendsy.bartsy.utils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.Charset;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +27,8 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.vendsy.bartsy.GCMIntentService;
@@ -104,8 +113,8 @@ public class WebServices {
 
 	}
 
-	public static String userCheckInOrOut(final Context context, String venueId,
-			String url) {
+	public static String userCheckInOrOut(final Context context,
+			String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
@@ -176,15 +185,14 @@ public class WebServices {
 
 	public static void postOrderTOServer(final Context context, Order order,
 			String venueID) {
-		final JSONObject orderData =order.getPlaceOrderJSON();
+		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
-		SharedPreferences sharedPref = context
-				.getSharedPreferences(
-						context.getResources()
-								.getString(
-										R.string.config_shared_preferences_name),
-						Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 100002);
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				context.getResources().getString(
+						R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId),
+				100002);
 
 		try {
 			orderData.put("bartsyId", bartsyId);
@@ -221,6 +229,7 @@ public class WebServices {
 			String deviceToken = settings.getString("RegId", "");
 
 			int deviceType = Constants.DEVICE_Type;
+
 			JSONObject json = new JSONObject();
 			json.put("userName", bartsyProfile.getUsername());
 			json.put("name", bartsyProfile.getName());
@@ -266,6 +275,120 @@ public class WebServices {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	public static String postProfile(Profile bartsyProfile,
+			Bitmap profileImage, String path, Context context) {
+
+		String url = path;
+
+		byte[] dataFirst = null;
+
+		String status = null;
+
+		int TIMEOUT_MILLISEC = 180000; // =180sec
+		HttpParams my_httpParams = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(my_httpParams,
+				TIMEOUT_MILLISEC); // set conn time out
+		HttpConnectionParams.setSoTimeout(my_httpParams, TIMEOUT_MILLISEC); // set
+		// socket
+		// time
+		// out
+
+		SharedPreferences settings = context.getSharedPreferences(
+				GCMIntentService.REG_ID, 0);
+		String deviceToken = settings.getString("RegId", "");
+
+		int deviceType = Constants.DEVICE_Type;
+
+		JSONObject json = new JSONObject();
+		try {
+			json.put("userName", bartsyProfile.getUsername());
+			json.put("name", bartsyProfile.getName());
+			json.put("loginId", bartsyProfile.getSocialNetworkId());
+			json.put("loginType", bartsyProfile.getType());
+			json.put("gender", bartsyProfile.getGender());
+			json.put("deviceType", deviceType);
+			json.put("deviceToken", deviceToken);
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		try {
+
+			if (profileImage != null) {
+
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				profileImage.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+				dataFirst = baos.toByteArray();
+
+			}
+
+			try {
+				// String details = URLEncoder.encode(json.toString(), "UTF-8");
+				// url = url + details;
+				// System.out.println("details:"+details);
+				HttpPost postRequest = new HttpPost(url);
+
+				HttpClient client = new DefaultHttpClient();
+
+				ByteArrayBody babFirst = null;
+
+				if (dataFirst != null)
+					babFirst = new ByteArrayBody(dataFirst, "base64String1"
+							+ ".jpg");
+
+				MultipartEntity reqEntity = new MultipartEntity(
+						HttpMultipartMode.BROWSER_COMPATIBLE);
+
+				if (dataFirst != null)
+					reqEntity.addPart("userImage", babFirst);
+
+				System.out.println("json::" + json.toString());
+				if (json != null)
+					reqEntity.addPart("details", new StringBody(
+							json.toString(), Charset.forName("UTF-8")));
+
+				postRequest.setEntity(reqEntity);
+				HttpResponse responses = client.execute(postRequest);
+
+				/* Checking response */
+
+				System.out.println("********** RESPONSE **********");
+				System.out.println("********** RESPONSE **********");
+				System.out.println("********** RESPONSE **********");
+
+				System.out.println(responses);
+
+				if (responses != null) {
+					System.out.println("response not null");
+					String responseofmain = EntityUtils.toString(responses
+							.getEntity());
+
+					System.out.println(responseofmain + " response :::: ");
+
+					System.out.println(responseofmain);
+
+					JSONObject jsonResponse = new JSONObject(responseofmain);
+
+					if (jsonResponse.has("Result"))
+						status = jsonResponse.getString("Result");
+					else
+						System.out.println("not has result");
+					System.out.println("status :: " + status);
+
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return status;
 
 	}
 

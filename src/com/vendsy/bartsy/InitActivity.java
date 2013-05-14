@@ -68,7 +68,6 @@ public class InitActivity extends FragmentActivity implements
 	InitActivity mActivity = this;
 	Person mPerson = null;
 	String mAccountName = null;
-	
 
 	/** Called when the activity is first created. */
 	@Override
@@ -95,7 +94,6 @@ public class InitActivity extends FragmentActivity implements
 		// resolved.
 		mConnectionProgressDialog = new ProgressDialog(this);
 		mConnectionProgressDialog.setMessage("Connecting");
-		
 
 	}
 
@@ -259,7 +257,7 @@ public class InitActivity extends FragmentActivity implements
 			editor.putString(r.getString(R.string.config_user_description),
 					mPerson.getAboutMe());
 			editor.commit();
-			
+
 			// Save Profile web service call
 			final Profile bartsyProfile = new Profile();
 			bartsyProfile.setUsername(mPerson.getId());
@@ -267,16 +265,14 @@ public class InitActivity extends FragmentActivity implements
 			bartsyProfile.setType("google");
 			bartsyProfile.setSocialNetworkId(mPerson.getId());
 			bartsyProfile.setGender(String.valueOf(mPerson.getGender()));
-			new Thread(){
-				public void run() {
-					WebServices.saveProfileData(bartsyProfile, getApplicationContext());
-				}
-			}.start();
+			
 
 			// Show dialog and on exit start Bartsy (there should be an option
 			// to change the profile)
 			ProfileDialogFragment dialog = new ProfileDialogFragment();
 			dialog.mUser = arg1;
+			dialog.mProfile = bartsyProfile;
+			dialog.mcontext = getApplicationContext();
 			dialog.show(getSupportFragmentManager(), "Your profile");
 
 		} else {
