@@ -221,62 +221,71 @@ public class WebServices {
 
 	}
 
-	public static void saveProfileData(Profile bartsyProfile, Context context) {
-		try {
-			// To get GCM reg ID from the Shared Preference
-			SharedPreferences settings = context.getSharedPreferences(
-					GCMIntentService.REG_ID, 0);
-			String deviceToken = settings.getString("RegId", "");
-
-			int deviceType = Constants.DEVICE_Type;
-
-			JSONObject json = new JSONObject();
-			json.put("userName", bartsyProfile.getUsername());
-			json.put("name", bartsyProfile.getName());
-			json.put("loginId", bartsyProfile.getSocialNetworkId());
-			json.put("loginType", bartsyProfile.getType());
-			json.put("gender", bartsyProfile.getGender());
-			json.put("deviceType", deviceType);
-			json.put("deviceToken", deviceToken);
-
-			try {
-				String responses = WebServices.postRequest(
-						Constants.URL_POST_PROFILE_DATA, json,
-						context.getApplicationContext());
-				System.out.println("responses   " + responses);
-				if (bartsyProfile != null) {
-					int bartsyUserId = 0;
-					JSONObject resultJson = new JSONObject(responses);
-					String errorCode = resultJson.getString("errorCode");
-					String errorMessage = resultJson.getString("errorMessage");
-					if (resultJson.has("bartsyUserId"))
-						bartsyUserId = resultJson.getInt("bartsyUserId");
-
-					System.out.println("bartsyUserId " + bartsyUserId);
-
-					if (bartsyUserId > 0) {
-						SharedPreferences sharedPref = context
-								.getSharedPreferences(
-										context.getResources()
-												.getString(
-														R.string.config_shared_preferences_name),
-										Context.MODE_PRIVATE);
-						Resources r = context.getResources();
-
-						SharedPreferences.Editor editor = sharedPref.edit();
-						editor.putInt(r.getString(R.string.bartsyUserId),
-								bartsyUserId);
-						editor.commit();
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-	}
+	// public static void saveProfileData(Profile bartsyProfile, Context
+	// context) {
+	// try {
+	// // To get GCM reg ID from the Shared Preference
+	// SharedPreferences settings = context.getSharedPreferences(
+	// GCMIntentService.REG_ID, 0);
+	// String deviceToken = settings.getString("RegId", "");
+	//
+	// int deviceType = Constants.DEVICE_Type;
+	//
+	// JSONObject json = new JSONObject();
+	// json.put("userName", bartsyProfile.getUsername());
+	// json.put("name", bartsyProfile.getName());
+	// json.put("loginId", bartsyProfile.getSocialNetworkId());
+	// json.put("loginType", bartsyProfile.getType());
+	// json.put("gender", bartsyProfile.getGender());
+	// json.put("deviceType", deviceType);
+	// json.put("deviceToken", deviceToken);
+	//
+	// try {
+	// String responses = WebServices.postRequest(
+	// Constants.URL_POST_PROFILE_DATA, json,
+	// context.getApplicationContext());
+	// System.out.println("responses   " + responses);
+	// if (responses != null) {
+	// int bartsyUserId = 0;
+	// JSONObject resultJson = new JSONObject(responses);
+	// String errorCode = resultJson.getString("errorCode");
+	// String errorMessage = resultJson.getString("errorMessage");
+	//
+	// System.out.println("error message " + errorMessage);
+	// System.out.println("errorCode " + errorCode);
+	//
+	// if (resultJson.has("bartsyUserId")) {
+	// bartsyUserId = resultJson.getInt("bartsyUserId");
+	//
+	// System.out.println("bartsyUserId " + bartsyUserId);
+	// }
+	// else
+	// {
+	// System.out.println("bartsyUserIdnot found");
+	// }
+	// if (bartsyUserId > 0) {
+	// SharedPreferences sharedPref = context
+	// .getSharedPreferences(
+	// context.getResources()
+	// .getString(
+	// R.string.config_shared_preferences_name),
+	// Context.MODE_PRIVATE);
+	// Resources r = context.getResources();
+	//
+	// SharedPreferences.Editor editor = sharedPref.edit();
+	// editor.putInt(r.getString(R.string.bartsyUserId),
+	// bartsyUserId);
+	// editor.commit();
+	// }
+	// }
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// }
 
 	public static String postProfile(Profile bartsyProfile,
 			Bitmap profileImage, String path, Context context) {
@@ -337,13 +346,13 @@ public class WebServices {
 				ByteArrayBody babFirst = null;
 
 				if (dataFirst != null)
-					babFirst = new ByteArrayBody(dataFirst, "base64String1"
+					babFirst = new ByteArrayBody(dataFirst, "userImage"
 							+ ".jpg");
 
 				MultipartEntity reqEntity = new MultipartEntity(
 						HttpMultipartMode.BROWSER_COMPATIBLE);
 
-				if (dataFirst != null)
+				if (babFirst != null)
 					reqEntity.addPart("userImage", babFirst);
 
 				System.out.println("json::" + json.toString());
@@ -363,23 +372,58 @@ public class WebServices {
 				System.out.println(responses);
 
 				if (responses != null) {
-					System.out.println("response not null");
 					String responseofmain = EntityUtils.toString(responses
 							.getEntity());
 
-					System.out.println(responseofmain + " response :::: ");
+					int bartsyUserId = 0;
+					JSONObject resultJson = new JSONObject(responseofmain);
+					String errorCode = resultJson.getString("errorCode");
+					String errorMessage = resultJson.getString("errorMessage");
 
-					System.out.println(responseofmain);
+					System.out.println("error message " + errorMessage);
+					System.out.println("errorCode " + errorCode);
 
-					JSONObject jsonResponse = new JSONObject(responseofmain);
+					if (resultJson.has("bartsyUserId")) {
+						bartsyUserId = resultJson.getInt("bartsyUserId");
 
-					if (jsonResponse.has("Result"))
-						status = jsonResponse.getString("Result");
-					else
-						System.out.println("not has result");
-					System.out.println("status :: " + status);
+						System.out.println("bartsyUserId " + bartsyUserId);
+					} else {
+						System.out.println("bartsyUserIdnot found");
+					}
+					if (bartsyUserId > 0) {
+						SharedPreferences sharedPref = context
+								.getSharedPreferences(
+										context.getResources()
+												.getString(
+														R.string.config_shared_preferences_name),
+										Context.MODE_PRIVATE);
+						Resources r = context.getResources();
 
+						SharedPreferences.Editor editor = sharedPref.edit();
+						editor.putInt(r.getString(R.string.bartsyUserId),
+								bartsyUserId);
+						editor.commit();
+					}
 				}
+
+				// if (responses != null) {
+				// System.out.println("response not null");
+				// String responseofmain = EntityUtils.toString(responses
+				// .getEntity());
+				//
+				// System.out.println(responseofmain + " response :::: ");
+				//
+				// System.out.println(responseofmain);
+				//
+				// JSONObject jsonResponse = new JSONObject(responseofmain);
+				//
+				// if (jsonResponse.has("Result"))
+				// status = jsonResponse.getString("Result");
+				// else
+				// System.out.println("not has result");
+				// System.out.println("status :: " + status);
+				//
+				// }
 
 			} catch (Exception e) {
 				e.printStackTrace();
