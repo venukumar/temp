@@ -110,8 +110,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * overall architecture.
 	 */
     public void onCreate() {
-        Log.i(TAG, "onCreate()");
         PACKAGE_NAME = getApplicationContext().getPackageName();
+        Log.i(TAG, PACKAGE_NAME + ".onCreate()");
         
         if (Constants.USE_ALLJOYN) {
 		    Intent intent = new Intent(this, ConnectivityService.class);
@@ -138,6 +138,17 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.v(TAG, "Already registered");
 		}
 		System.out.println("the registration id is:::::" + regId);
+		
+		Log.i(TAG, "People list size: " + mPeople.size());
+		Log.i(TAG, "Orders list size: " + mOrders.size());
+		String venue;
+		if (activeVenue == null)
+			venue = "not checked in";
+		else
+			venue = activeVenue.getName();
+				
+		Log.i(TAG, "Venue: " + venue);
+		
 
 	}
 	
