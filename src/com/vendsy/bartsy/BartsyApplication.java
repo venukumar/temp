@@ -286,9 +286,9 @@ public class BartsyApplication extends Application implements AppObservable {
     	
 		Order localOrder = null;
 		for (Order order : mOrders) {
-			if (order.clientID.equalsIgnoreCase(order_client_id)) {
+			if (order.serverID.equalsIgnoreCase(order_server_id)) {
 				localOrder = order;
-				localOrder.serverID = order_server_id; // set the id of this order to the server-provided one
+//				localOrder.serverID = order_server_id; // set the id of this order to the server-provided one
 			}
 		}
 		
