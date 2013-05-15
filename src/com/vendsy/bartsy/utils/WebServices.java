@@ -183,7 +183,7 @@ public class WebServices {
 		return result;
 	}
 
-	public static void postOrderTOServer(final Context context, Order order,
+	public static void postOrderTOServer(final Context context, final Order order,
 			String venueID) {
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
@@ -206,15 +206,15 @@ public class WebServices {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				try {
 					String response;
 					response = postRequest(Constants.URL_PLACE_ORDER,
 							orderData, context);
 					System.out.println("response :: " + response);
+					JSONObject json = new JSONObject(response);
+					order.serverID = json.getString("orderId");
 
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
