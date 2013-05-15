@@ -710,13 +710,11 @@ public class VenueActivity extends FragmentActivity implements
 		String tipPercentageValue = tip.replace("%", "");
 		order.tipAmount = Float.valueOf(tipPercentageValue);
 
-		order.initialize(mApp.mOrderIDs, // arg(0) - Client order ID
-				mApp.mOrderIDs, // arg(1) - Server order ID - use client ID
-								// for
-								// now
-				drink.getTitle(), // arg(2) - Title
-				drink.getDescription(), // arg(3) - Description
-				drink.getPrice(), // arg(4) - Price
+		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order ID
+				null, 									// arg(1) - This order stil doesn't have a server-assigned ID
+				drink.getTitle(), 						// arg(2) - Title
+				drink.getDescription(), 				// arg(3) - Description
+				drink.getPrice(), 						// arg(4) - Price
 				Integer.toString(R.drawable.drinks), // for now always use
 														// the
 														// same picture for
@@ -778,7 +776,7 @@ public class VenueActivity extends FragmentActivity implements
 			String resultInfo = "You have successfully completed this ";
 			System.out.println(resultInfo);
 			
-//			processOrderData();
+			processOrderData();
 			
 			
 			// + (isPreapproval ? "preapproval." : "payment.");
@@ -826,14 +824,6 @@ public class VenueActivity extends FragmentActivity implements
 			appendStatus("Placed drink order");
 
 		} else {
-			order.serverID = mApp.mOrderIDs;
-			SharedPreferences sharedPref = getSharedPreferences(getResources()
-					.getString(R.string.config_shared_preferences_name),
-					Context.MODE_PRIVATE);
-			Resources r = getResources();
-			order.clientID = sharedPref.getInt(
-					r.getString(R.string.bartsyUserId), 0);
-
 			// Web service call
 			WebServices.postOrderTOServer(VenueActivity.this, order,
 					mApp.activeVenue.getId());
@@ -882,9 +872,6 @@ public class VenueActivity extends FragmentActivity implements
 		appendStatus("Received new remote order status: "
 				+ command.arguments.get(1));
 
-		int remote_status = Integer.parseInt(command.arguments.get(0));
-		long server_id = Long.parseLong(command.arguments.get(1));
-		long client_id = Long.parseLong(command.arguments.get(2));
 		String orderSenderID = command.arguments.get(3);
 
 		// Because with Alljoyn every connected client gets a command, we make
@@ -892,32 +879,7 @@ public class VenueActivity extends FragmentActivity implements
 		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
 			return true;
 
-		// Make sure the order exists only once on this side and some other
-		// conditions are met.
-		Order localOrder = null;
-		int order_index = -1, i = 0;
-		for (Order order : mApp.mOrders) {
-			appendStatus("Looking at order " + order.clientID + " in position "
-					+ i);
-			if (order.clientID == client_id) {
-				appendStatus("ORDER FOUND at position " + i);
-				localOrder = mApp.mOrders.get(i);
-				order_index = i;
-			}
-			i++;
-		}
-
-		if (order_index == -1) {
-			appendStatus("ERROR - ORDER MISMATCH");
-			return true;
-		}
-		if (remote_status != Order.ORDER_STATUS_IN_PROGRESS
-				&& localOrder.serverID != server_id) {
-			appendStatus("ERROR - ORDER ID MISMATCH");
-			return true;
-		}
-
-		mApp.updateOrder(command.arguments.get(2), command.arguments.get(0));
+		mApp.updateOrder(command.arguments.get(1), command.arguments.get(2), command.arguments.get(0));
 
 		return false;
 	}

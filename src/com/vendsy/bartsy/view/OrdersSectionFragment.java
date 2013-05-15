@@ -56,13 +56,13 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	public void updateOrdersView() {
 		
-		// Make sure the list view is empty
+		// Make sure the list view exists and is empty
+		if (mOrderListView == null ) return;
 		mOrderListView.removeAllViews();
-		
 
 		// Add any existing orders in the layout, one by one
-		Log.d("Bartsy", "About to add orders list to the View");
-		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
+		Log.i("Bartsy", "About to add orders list to the View");
+		Log.i("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
 
 		for (Order barOrder : mApp.mOrders) {
 			Log.d("Bartsy", "Adding an item to the layout");
@@ -72,13 +72,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 			barOrder.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
 
 			mOrderListView.addView(barOrder.view);
-//			((Bartsy)getActivity()).appendStatus("Added new view");
 		}
-		
-		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
-		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
-		((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
-		
 	}
 	
 	

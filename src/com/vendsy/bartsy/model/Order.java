@@ -22,10 +22,10 @@ import android.widget.TextView;
 public class Order  {
 
 	// Each order has an ID that is unique within a session number
-	public long clientID, serverID; 
+	public String clientID; // this is the client-side managed ID used to identify an order when status is received
+	public String serverID; // this is the server-side manager ID used to identify the order on the server and tablet 
+			// and also to let the user know what order the shoudl be asking for when they get to the bartender
 	
-	public long id;
-
 	// Title and description are arbitrary strings
 	public String title, description;
 	public String itemId;
@@ -71,10 +71,10 @@ public class Order  {
 	 * When an order is initialized the state transition times are undefined except for the 
 	 * first state, which is when the order is received
 	 */
-	public void initialize (long client_id, long server_id, String title, String description, 
+	public void initialize (String clientOrderID, String serverOrderID, String title, String description, 
 			String price, String image_resource, Profile order_sender) {
-		this.clientID = client_id;
-		this.serverID = server_id;
+		this.clientID = clientOrderID;
+		this.serverID = serverOrderID;
 		this.title = title;
 		this.description = description;
 		this.price = Float.parseFloat(price);
@@ -90,26 +90,6 @@ public class Order  {
 	}
 	
 	public Order() {
-	}
-	
-	public Order(JSONObject json) {
-		
-		try {
-			status = Integer.valueOf(json.getString("orderStatus"));
-			title = json.getString("itemName");
-			updatedDate = json.getString("orderTime");
-			price = Float.valueOf(json.getString("basePrice"));
-			id = Long.valueOf(json.getString("orderId"));
-			tipAmount = Float.valueOf(json.getString("tipPercentage"));
-			total = Double.valueOf(json.getString("totalPrice"));
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 	}
 	
 	public JSONObject getPlaceOrderJSON(){
@@ -165,20 +145,23 @@ public class Order  {
 		case ORDER_STATUS_NEW:
 			positive = "ACCEPT";
 			negative = "REJECT";
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Waiting for bartender to accept (" + this.clientID + ")");
 			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_red);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
 			positive = "COMPLETED";
 			negative = "FAILED";
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Accepted with number " + this.serverID);
 			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_orange);
 			break;
 		case ORDER_STATUS_READY:
 			positive = "PICKED UP";
 			negative = "NO SHOW";
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Ready for pickup with number " + this.serverID);
 			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_green);
 			break;
 		}
-		((TextView) view.findViewById(R.id.view_order_number)).setText("Order " + this.serverID);
+	
 		((Button) view.findViewById(R.id.view_order_button_positive)).setText(positive);
 		((Button) view.findViewById(R.id.view_order_button_positive)).setTag(this);
 		((Button) view.findViewById(R.id.view_order_button_negative)).setText(negative);

@@ -197,6 +197,7 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
+//			orderData.put("clientOrderId", order.clientID);   - USE THIS LINE WHEN THE SERVER CODE IS READY
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

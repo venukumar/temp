@@ -113,7 +113,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")) {
 				if (json.getString("messageType").equals("updateOrderStatus")) {
-					app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));
+					app.updateOrder(
+							json.getString("orderId"),  // HACK - replace with the code below when the API is udpated
+//							json.getString("orderServerId"), // HACK - replace teh above line with this
+							Long.toString(app.mOrderIDs-1), // hack to get this to work without the API update for now
+//							json.getString("orderClientId"), // Use this line instead of the one below when the API is updated
+							json.getString("orderStatus"));
 					messageTypeMSG = "Your order status changed";
 				}
 			}

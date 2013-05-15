@@ -153,7 +153,17 @@ public class BartsyApplication extends Application implements AppObservable {
      */
     
     public Venue activeVenue = null;
+
+    /*
+     * Set the active venue to null and remove orders and people from the global data structures.
+     * Assumes the views will be updated from elsewhere
+     */
     
+    void userCheckOut() {
+    	activeVenue = null;
+    	mOrders.clear();
+    	mPeople.clear(); 
+    }
     
     /*** 
      * 
@@ -236,13 +246,15 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	/*** 
 	 * 
-	 * This is the global order id, incremented for each order. This should actually be managed by the host as it should be unique
-	 * across sessions
+	 * This is the local order id counter, incremented for each order and unique within the context of the
+	 * application. The server will have a different number to describe the same order and there should be
+	 * a mapping between the client and server numbers on the server. The server should then send the server
+	 * side number along with the client side number to be able to match the order that's present on the phone
+	 * with the one present at the server and the tablet.
 	 * 
 	 */
   
     long mOrderIDs = 0 ;
-    long mSessionID = 0;
 
 	
   
@@ -264,18 +276,19 @@ public class BartsyApplication extends Application implements AppObservable {
      */
     
     void updateOrder(
-    		String order_id,
+    		String order_server_id,
+    		String order_client_id,
     		String remote_order_status) {
     	
-    	Log.i(TAG, "Update for oder " + order_id);
+    	Log.i(TAG, "Update for local order " + order_client_id + " with remote code " + order_server_id);
 
-    	long orderId = Long.parseLong(order_id);
     	int remote_status = Integer.parseInt(remote_order_status);
     	
 		Order localOrder = null;
 		for (Order order : mOrders) {
-			if (order.id == orderId) {
+			if (order.clientID.equalsIgnoreCase(order_client_id)) {
 				localOrder = order;
+				localOrder.serverID = order_server_id; // set the id of this order to the server-provided one
 			}
 		}
 		
@@ -292,7 +305,6 @@ public class BartsyApplication extends Application implements AppObservable {
 			if (localOrder.status != Order.ORDER_STATUS_NEW)
 				return;
 			localOrder.nextPositiveState();
-			localOrder.updateView();
 			break;
 		case Order.ORDER_STATUS_READY:
 			// Remote order ready. Notify client with a notification and update
@@ -300,21 +312,17 @@ public class BartsyApplication extends Application implements AppObservable {
 			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
 				return;
 			localOrder.nextPositiveState();
-			localOrder.updateView();
-//			this.createNotification("Your " + localOrder.title
-//					+ " order is ready",
-//					"Please go to the Bartsy Point to pick it up");
 			break;
 		case Order.ORDER_STATUS_COMPLETE:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
+			// Order completed. Remove from the order list for now.
 			if (localOrder.status != Order.ORDER_STATUS_READY)
 				return;
 			localOrder.nextPositiveState();
+			mOrders.remove(localOrder);
 			break;
 		}
 
-		// Update tab title with the number of open orders
+		// Update the orders tab view and title
 
     	notifyObservers(ORDERS_UPDATED);
     }
