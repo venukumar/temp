@@ -8,6 +8,7 @@ import android.content.Context;
 
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.table.TableUtils;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Section;
 
@@ -108,6 +109,15 @@ public class DatabaseManager {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public void deleteDrinks(){
+		try {
+			TableUtils.clearTable(dbHelper.getConnectionSource(),Section.class);
+			TableUtils.clearTable(dbHelper.getConnectionSource(),MenuDrink.class);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

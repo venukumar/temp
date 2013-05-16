@@ -32,6 +32,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// the DAO object we use to access the SimpleData table
 	private Dao<MenuDrink, Integer> drinkDao = null;
 	private Dao<Section, Integer> sectionDao;
+	private ConnectionSource mConnectionSource;
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -46,6 +47,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
 		try {
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
+			mConnectionSource = connectionSource;
 			TableUtils.createTable(connectionSource,
 					Section.class);
 			TableUtils.createTable(connectionSource,
