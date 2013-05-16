@@ -144,7 +144,7 @@ public class DrinksSectionFragment extends Fragment {
 
 			@Override
 			public void run() {
-				WebServices.getMenuList(getActivity());
+				WebServices.getMenuList(getActivity(), ((BartsyApplication) getActivity().getApplication()).activeVenue.getId());
 				final List<Section> sectionsList = DatabaseManager
 						.getInstance().getMenuSections();
 				handler.post(new Runnable() {

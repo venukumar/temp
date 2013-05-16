@@ -445,13 +445,13 @@ public class WebServices {
 		return response;
 	}
 
-	public static void getMenuList(Context context) {
+	public static void getMenuList(Context context, String venueID) {
 
 		System.out.println("get menu list");
 		String response = null;
 		JSONObject json = new JSONObject();
 		try {
-			json.put("venueId", "100001");
+			json.put("venueId", venueID);
 			response = postRequest(Constants.URL_GET_BAR_LIST, json, context);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
