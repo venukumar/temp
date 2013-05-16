@@ -2,31 +2,34 @@ package com.vendsy.bartsy.utils;
 
 
 public class Constants {
-//	public static final String DOMAIN_NAME = "http://192.168.0.109:8080";
+	
+	//public static final String DOMAIN_NAME="http://54.235.76.180:8080/Bartsy_Sprint1/";
+	
+	//public static final String DOMAIN_NAME = "http://192.168.0.109:8080/Bartsy/";
 
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080";
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/Bartsy/";
 
 	public static final boolean USE_ALLJOYN = false;
 
 	// This is the url for getting the bars list from server
 	public static final String URL_GET_BAR_LIST = DOMAIN_NAME
-			+ "/Bartsy/venue/getMenu";
+			+ "venue/getMenu";
 	// This is the url for posting the Profiles Data to server
 	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
-			+ "/Bartsy/user/saveUserProfile";
+			+ "user/saveUserProfile";
 	// This is the url for place the order
 	public static final String URL_PLACE_ORDER = DOMAIN_NAME
-			+ "/Bartsy/order/placeOrder";
+			+ "order/placeOrder";
 	// This is the url for getting the venu list from server
 	public static final String URL_GET_VENU_LIST = DOMAIN_NAME
-			+ "/Bartsy/venue/getVenueList";
+			+ "venue/getVenueList";
 	// This is the url for User Check In
 	public static final String URL_USER_CHECK_IN = DOMAIN_NAME
-			+ "/Bartsy/user/userCheckIn";
+			+ "user/userCheckIn";
 
 	// This is the url for User Check Out
 	public static final String URL_USER_CHECK_OUT = DOMAIN_NAME
-			+ "/Bartsy/user/userCheckOut";
+			+ "user/userCheckOut";
 
 	// Android Device Type
 	public static final int DEVICE_Type = 0;
