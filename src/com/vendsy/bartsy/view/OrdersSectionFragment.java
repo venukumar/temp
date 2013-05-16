@@ -58,12 +58,13 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	public void updateOrdersView() {
 		
+		Log.i("Bartsy", "About to add orders list to the View");
+
 		// Make sure the list view exists and is empty
 		if (mOrderListView == null ) return;
 		mOrderListView.removeAllViews();
 
 		// Add any existing orders in the layout, one by one
-		Log.i("Bartsy", "About to add orders list to the View");
 		Log.i("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
 
 		for (Order barOrder : mApp.mOrders) {
@@ -100,41 +101,6 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		Log.d("Bartsy", "OrdersSectionFragment.onDestroy()");
 	}
 		
-		
-	public void addOrder(Order barOrder) {
-//		String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-		
-		Log.d("Bartsy", "Adding new order to orders list: " + barOrder.title);
-		
-		if (mOrderListView == null) {
-			
-			Log.d("Bartsy", "The orders view in null. Adding to the orders list only");
-			
-			mApp.mOrders.add(barOrder);
-		} else {
-
-			Log.d("Bartsy", "The orders view in not null. Adding to the orders list and the view");
-
-			mApp.mOrders.add(barOrder);
-			barOrder.view = (View) mInflater.inflate(R.layout.order_item, mContainer, false);
-			barOrder.updateView();
-
-			barOrder.view.findViewById(R.id.view_order_button_positive).setOnClickListener(this);
-			barOrder.view.findViewById(R.id.view_order_button_negative).setOnClickListener(this);
-			mOrderListView.addView(barOrder.view);
-			
-			// Update header buttons
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setText("NEW (" + mApp.mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOn("NEW (" + mApp.mOrders.size() + ")");
-			((ToggleButton) mRootView.findViewById(R.id.button_orders_new)).setTextOff("NEW (" + mApp.mOrders.size() + ")");
-
-			Log.d("Bartsy", "Adding new order to orders list View");
-//			((Bartsy)getActivity()).appendStatus("Added new order to order list view");
-		}
-		Log.d("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
-	}
-
-
 	
 	@Override
 	public void onClick(View v) {

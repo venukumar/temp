@@ -825,7 +825,8 @@ public class VenueActivity extends FragmentActivity implements
 					mApp.activeVenue.getId());
 		}
 
-		mOrdersFragment.addOrder(order);
+		// Add order to the list and update views
+		mApp.addOrder(order);
 
 		// Increment the local order count
 		mApp.mOrderIDs++;
@@ -875,7 +876,7 @@ public class VenueActivity extends FragmentActivity implements
 		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
 			return true;
 
-		mApp.updateOrder(command.arguments.get(1), command.arguments.get(2), command.arguments.get(0));
+		mApp.updateOrder(command.arguments.get(1), command.arguments.get(0));
 
 		return false;
 	}

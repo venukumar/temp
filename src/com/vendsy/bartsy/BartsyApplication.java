@@ -267,7 +267,17 @@ public class BartsyApplication extends Application implements AppObservable {
   
     long mOrderIDs = 0 ;
 
-	
+	/*
+	 * This adds a new order after verifying the person placing it is currently
+	 * checked in this venue
+	 */
+
+	public void addOrder(Order order) {
+		// Add the order to the list of orders
+		mOrders.add(order);
+		notifyObservers(ORDERS_UPDATED);
+	}
+
   
   	/**********
   	 * 
@@ -288,10 +298,9 @@ public class BartsyApplication extends Application implements AppObservable {
     
     void updateOrder(
     		String order_server_id,
-    		String order_client_id,
     		String remote_order_status) {
     	
-    	Log.i(TAG, "Update for local order " + order_client_id + " with remote code " + order_server_id);
+    	Log.i(TAG, "Update for remote code " + order_server_id);
 
     	int remote_status = Integer.parseInt(remote_order_status);
     	
@@ -299,7 +308,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		for (Order order : mOrders) {
 			if (order.serverID.equalsIgnoreCase(order_server_id)) {
 				localOrder = order;
-//				localOrder.serverID = order_server_id; // set the id of this order to the server-provided one
 			}
 		}
 		

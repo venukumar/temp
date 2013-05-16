@@ -83,6 +83,9 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	@Override 
 	public void onDestroyView() {
 		super.onDestroyView();
+		
+		Log.d("Bartsy", "PeopleSectionFragment.onDestroyView()");
+
 		mRootView = null;
 		mPeopleListView = null;
 		mInflater = null;
