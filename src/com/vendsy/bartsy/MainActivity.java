@@ -306,35 +306,30 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 									JSONObject result = new JSONObject(response);
 									String errorCode = result
 											.getString("errorCode");
+									
+									// For now don't handle exceptions locally...
 									if (errorCode.equalsIgnoreCase("0")) {
-
-										handler.post(new Runnable() {
-
-											@Override
-											public void run() {
-												// TODO Auto-generated method
-												// stub
-
-												findViewById(
-														R.id.view_active_venue)
-														.setVisibility(
-																View.GONE);
-												mApp.activeVenue = null;
-											}
-										});
-
+										// No errors
+									} else {
+										// Errors
 									}
+									
+									// Check out user locally regardless of server status
+									handler.post(new Runnable() {
+										@Override
+										public void run() {
+											mApp.userCheckOut();
+											findViewById(R.id.view_active_venue).setVisibility(View.GONE);
+										}
+									});
 								} catch (JSONException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
-
 							}
 						};
 					}.start();
-
 				}
-
 			}
 		});
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
