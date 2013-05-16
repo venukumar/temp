@@ -94,33 +94,43 @@ public class DrinksSectionFragment extends Fragment {
 			menuDrinks.add(menu);
 		}
 		
-		final BartsyApplication app = (BartsyApplication) getActivity().getApplication();
-		
-		mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
-				groupNames, menuDrinks));
-		mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
+		try {
+			if(getActivity() ==null ||  mDrinksListView==null){
+				return;
+			}
+			
+			final BartsyApplication app = (BartsyApplication) getActivity().getApplication();
+			
+			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
+					groupNames, menuDrinks));
+			mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
 
-			@Override
-			public boolean onChildClick(ExpandableListView parent, View v,
-					int groupPosition, int childPosition, long id) {
-				
-				if(app.activeVenue == null){
-					// for now don't post an error message, but this should be fixed ASAP
+				@Override
+				public boolean onChildClick(ExpandableListView parent, View v,
+						int groupPosition, int childPosition, long id) {
+					
+					if(app.activeVenue == null){
+						// for now don't post an error message, but this should be fixed ASAP
+						return false;
+					}
+					
+					MenuDrink menuDrink = menuDrinks.get(groupPosition).get(
+							childPosition);
+
+					// Create an instance of the dialog fragment and show it
+					DrinkDialogFragment dialog = new DrinkDialogFragment();
+					dialog.drink = menuDrink;
+					dialog.show(getActivity().getSupportFragmentManager(),
+							"Order drink");
+
 					return false;
 				}
-				
-				MenuDrink menuDrink = menuDrinks.get(groupPosition).get(
-						childPosition);
-
-				// Create an instance of the dialog fragment and show it
-				DrinkDialogFragment dialog = new DrinkDialogFragment();
-				dialog.drink = menuDrink;
-				dialog.show(getActivity().getSupportFragmentManager(),
-						"Order drink");
-
-				return false;
-			}
-		});
+			});
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+			return;
+		}
 
 	}
 
