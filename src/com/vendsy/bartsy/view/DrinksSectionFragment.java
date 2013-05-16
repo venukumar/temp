@@ -51,9 +51,12 @@ public class DrinksSectionFragment extends Fragment {
 			mInflater = inflater;
 			mContainer = container;
 
-			loadMenuSections();
 		}
-
+		
+		final List<Section> sectionsList = DatabaseManager
+				.getInstance().getMenuSections();
+		updateListView(sectionsList);
+		
 		return mRootView;
 	}
 
@@ -63,7 +66,9 @@ public class DrinksSectionFragment extends Fragment {
 	 * @param sectionsList
 	 */
 	public void updateListView(List<Section> sectionsList) {
-
+		if(sectionsList==null){
+			return;
+		}
 		ArrayList<String> groupNames = new ArrayList<String>();
 		// Default group name for individual drinks
 		List<MenuDrink> defaultList = DatabaseManager.getInstance()
@@ -126,38 +131,6 @@ public class DrinksSectionFragment extends Fragment {
 		mDrinksListView = null;
 		mInflater = null;
 		mContainer = null;
-	}
-
-	/**
-	 * To get Sections and Drinks from the server
-	 */
-	public void loadMenuSections() {
-		
-		new Thread() {
-
-			@Override
-			public void run() {
-				// To delete existing menu items
-				DatabaseManager.getInstance().deleteDrinks();
-				
-				BartsyApplication app = (BartsyApplication)(getActivity().getApplication());
-				if(app.activeVenue==null){
-					return;
-				}
-				WebServices.getMenuList(getActivity(), app.activeVenue.getId());
-
-				final List<Section> sectionsList = DatabaseManager
-						.getInstance().getMenuSections();
-				handler.post(new Runnable() {
-
-					@Override
-					public void run() {
-						updateListView(sectionsList);
-					}
-				});
-
-			}
-		}.start();
 	}
 
 }

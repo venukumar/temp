@@ -3,6 +3,7 @@ package com.vendsy.bartsy;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -14,8 +15,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,11 +35,13 @@ import com.google.android.gms.plus.model.people.Person;
 import com.paypal.android.MEP.PayPal;
 import com.paypal.android.MEP.PayPalActivity;
 import com.paypal.android.MEP.PayPalPayment;
+import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
@@ -65,6 +66,7 @@ public class VenueActivity extends FragmentActivity implements
 	public DrinksSectionFragment mDrinksFragment = null;
 	public OrdersSectionFragment mOrdersFragment = null;  	// make sure the set this to null when fragment is destroyed
 	public PeopleSectionFragment mPeopleFragment = null; 	// make sure the set this to null when fragment is destroyed
+	private Handler handler = new Handler();
 
 	public void appendStatus(String status) {
 		Log.d(TAG, status);
@@ -201,6 +203,40 @@ public class VenueActivity extends FragmentActivity implements
 		// Initialize people view
 		if (mPeopleFragment == null)
 			mPeopleFragment = new PeopleSectionFragment();
+		
+		loadMenuSections();
+	}
+	
+	/**
+	 * To get Sections and Drinks from the server
+	 */
+	private void loadMenuSections() {
+		
+		new Thread() {
+
+			@Override
+			public void run() {
+				// To delete existing menu items
+				DatabaseManager.getInstance().deleteDrinks();
+				
+				BartsyApplication app = (BartsyApplication)(getApplication());
+				if(app.activeVenue==null){
+					return;
+				}
+				WebServices.getMenuList(getApplicationContext(), app.activeVenue.getId());
+				if(mDrinksFragment!=null){
+					final List<Section> sectionsList = DatabaseManager
+							.getInstance().getMenuSections();
+					handler.post(new Runnable() {
+	
+						@Override
+						public void run() {
+							mDrinksFragment.updateListView(sectionsList);
+						}
+					});
+				}
+			}
+		}.start();
 	}
 
 	@Override
