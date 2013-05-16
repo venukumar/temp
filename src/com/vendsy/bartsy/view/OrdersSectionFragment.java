@@ -48,6 +48,8 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		mRootView = mInflater.inflate(R.layout.orders_main, mContainer, false);
 		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 		
+		mApp = (BartsyApplication) getActivity().getApplication();
+		
 		updateOrdersView();
 		
 		return mRootView;
@@ -86,6 +88,9 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		mOrderListView = null;
 		mInflater = null;
 		mContainer = null;
+
+		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
+		((VenueActivity) getActivity()).mOrdersFragment = null;
 	}
 	
 	@Override 

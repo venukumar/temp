@@ -62,9 +62,9 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 
 	public static final String TAG = "Bartsy";
-	private OrdersSectionFragment mOrdersFragment = null;
-	private DrinksSectionFragment mDrinksFragment = null;
-	private PeopleSectionFragment mPeopleFragment = null;
+	public DrinksSectionFragment mDrinksFragment = null;
+	public OrdersSectionFragment mOrdersFragment = null;  	// make sure the set this to null when fragment is destroyed
+	public PeopleSectionFragment mPeopleFragment = null; 	// make sure the set this to null when fragment is destroyed
 
 	public void appendStatus(String status) {
 		Log.d(TAG, status);
@@ -195,17 +195,12 @@ public class VenueActivity extends FragmentActivity implements
 
 	private void initializeFragments() {
 		// Initialize orders view
-		if (mOrdersFragment == null) {
+		if (mOrdersFragment == null)
 			mOrdersFragment = new OrdersSectionFragment();
-			mOrdersFragment.mApp = mApp;
-		}
 
 		// Initialize people view
-		if (mPeopleFragment == null) {
+		if (mPeopleFragment == null)
 			mPeopleFragment = new PeopleSectionFragment();
-			mPeopleFragment.mApp = mApp;
-		}
-
 	}
 
 	@Override
@@ -246,6 +241,7 @@ public class VenueActivity extends FragmentActivity implements
 		mApp = (BartsyApplication) getApplication();
 		mApp.deleteObserver(this);
 	}
+	
 
 	/******
 	 * 
