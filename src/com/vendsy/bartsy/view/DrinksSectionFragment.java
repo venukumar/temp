@@ -51,14 +51,7 @@ public class DrinksSectionFragment extends Fragment {
 			mInflater = inflater;
 			mContainer = container;
 
-			List<Section> sections = DatabaseManager.getInstance()
-					.getMenuSections();
-
-			if (sections != null && sections.size() > 0) {
-				updateListView(sections);
-			} else {
-				loadMenuSections();
-			}
+			loadMenuSections();
 		}
 
 		return mRootView;
@@ -138,13 +131,21 @@ public class DrinksSectionFragment extends Fragment {
 	/**
 	 * To get Sections and Drinks from the server
 	 */
-	private void loadMenuSections() {
-
+	public void loadMenuSections() {
+		
 		new Thread() {
 
 			@Override
 			public void run() {
-				WebServices.getMenuList(getActivity(), ((BartsyApplication) getActivity().getApplication()).activeVenue.getId());
+				// To delete existing menu items
+				DatabaseManager.getInstance().deleteDrinks();
+				
+				BartsyApplication app = (BartsyApplication)(getActivity().getApplication());
+				if(app.activeVenue==null){
+					return;
+				}
+				WebServices.getMenuList(getActivity(), app.activeVenue.getId());
+
 				final List<Section> sectionsList = DatabaseManager
 						.getInstance().getMenuSections();
 				handler.post(new Runnable() {
