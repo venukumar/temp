@@ -90,15 +90,16 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		mInflater = null;
 		mContainer = null;
 
-		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
-		((VenueActivity) getActivity()).mOrdersFragment = null;
 	}
 	
 	@Override 
 	public void onDestroy() {
 		super.onDestroy();
 
-		Log.d("Bartsy", "OrdersSectionFragment.onDestroy()");
+		Log.i("Bartsy", "OrdersSectionFragment.onDestroy()");
+
+		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
+		((VenueActivity) getActivity()).mOrdersFragment = null;
 	}
 		
 	

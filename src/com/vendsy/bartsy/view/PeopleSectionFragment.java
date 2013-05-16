@@ -80,6 +80,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		}
 	}
 
+	
 	@Override 
 	public void onDestroyView() {
 		super.onDestroyView();
@@ -90,7 +91,15 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		mPeopleListView = null;
 		mInflater = null;
 		mContainer = null;
-		
+	}
+	
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		Log.i("Bartsy", "PeopleSectionFragment.onDestroy()");
+
 		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
 		((VenueActivity) getActivity()).mPeopleFragment = null;
 	}
