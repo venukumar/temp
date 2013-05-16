@@ -12,6 +12,7 @@ import java.net.URL;
 import com.google.android.gms.plus.model.people.Person;
 import com.google.android.gms.plus.model.people.Person.Image;
 import com.google.android.gms.plus.model.people.Person.Name;
+import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.utils.Constants;
@@ -25,6 +26,7 @@ import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -39,6 +41,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author peterkellis
@@ -125,20 +128,32 @@ public class ProfileDialogFragment extends DialogFragment {
 							public void onClick(DialogInterface dialog, int id) {
 								// Send the positive button event back to the
 								// host activity
-								mListener
-										.onUserDialogPositiveClick(ProfileDialogFragment.this);
 
-								new Thread() {
-									public void run() {
-										WebServices
-												.postProfile(
-														mProfile,
-														mProfileImage,
-														Constants.URL_POST_PROFILE_DATA,
-														mcontext);
-									}
-								}.start();
+								SharedPreferences settings = mcontext
+										.getSharedPreferences(
+												GCMIntentService.REG_ID, 0);
+								String deviceToken = settings.getString(
+										"RegId", "");
+								if (deviceToken.trim().length() > 0) {
+									mListener
+											.onUserDialogPositiveClick(ProfileDialogFragment.this);
+									new Thread() {
+										public void run() {
 
+											WebServices
+													.postProfile(
+															mProfile,
+															mProfileImage,
+															Constants.URL_POST_PROFILE_DATA,
+															mcontext);
+										}
+									}.start();
+
+								} else {
+									Toast.makeText(mcontext,
+											"Please try again....",
+											Toast.LENGTH_LONG).show();
+								}
 							}
 						})
 				.setNegativeButton("Edit profile",
