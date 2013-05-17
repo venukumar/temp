@@ -135,9 +135,9 @@ public class InitActivity extends FragmentActivity implements
 						Toast.LENGTH_SHORT).show();
 			break;
 		case R.id.button_disconnect:
-			Intent intent = new Intent(InitActivity.this,
-					AndroidFacebookConnectActivity.class);
-			startActivity(intent);
+//			Intent intent = new Intent(InitActivity.this,
+//					AndroidFacebookConnectActivity.class);
+//			startActivity(intent);
 			if (mPlusClient.isConnected()) {
 				mPlusClient.clearDefaultAccount();
 				mPlusClient.disconnect();
