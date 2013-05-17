@@ -101,6 +101,7 @@ public class Order  {
 			orderData.put("tipPercentage", String.valueOf(tipAmount));
 			orderData.put("totalPrice", String.valueOf(total));
 			orderData.put("orderStatus", ORDER_STATUS_NEW);
+			orderData.put("description", description);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
