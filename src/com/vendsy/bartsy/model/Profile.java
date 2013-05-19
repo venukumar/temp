@@ -29,10 +29,22 @@ public class Profile  {
 //	ArrayList<Message> messages = new ArrayList<Message>();
 	
 	public View view = null;		// the view of a particular user in a list, expect a layout type of user_item.xml
-	
+	/**
+	 * Default constructor
+	 */
 	public Profile (){
-		
 	}
+	
+	/**
+	 * Constructor to set all profile information
+	 * 
+	 * @param userid
+	 * @param username
+	 * @param location
+	 * @param info
+	 * @param description
+	 * @param image
+	 */
 	public Profile (String userid, String username, String location, 
 			String info, String description, Bitmap image) {
 		this.image = image;
