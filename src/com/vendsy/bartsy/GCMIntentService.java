@@ -104,7 +104,12 @@ public class GCMIntentService extends GCMBaseIntentService {
          // notifies user
          generateNotification(context, notifyMSG, count);
     }
-    
+    /**
+     * To process push notification message
+     * 
+     * @param message
+     * @return
+     */
     private String processPushNotification(String message) {
     	BartsyApplication app = (BartsyApplication)getApplication();
     	String messageTypeMSG = "";

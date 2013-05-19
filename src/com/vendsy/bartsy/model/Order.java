@@ -1,23 +1,16 @@
 package com.vendsy.bartsy.model;
 
 import java.text.DateFormat;
-import java.util.Currency;
 import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.vendsy.bartsy.R;
-
-import android.content.Context;
-import android.text.format.Time;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
+
+import com.vendsy.bartsy.R;
 
 public class Order  {
 
@@ -67,7 +60,7 @@ public class Order  {
 	public Date[] state_transitions = new Date[ORDER_STATUS_COUNT];
 	
 	
-	/* 
+	/** 
 	 * When an order is initialized the state transition times are undefined except for the 
 	 * first state, which is when the order is received
 	 */
@@ -92,6 +85,9 @@ public class Order  {
 	public Order() {
 	}
 	
+	/**
+	 * It will returns JSON format to place order
+	 */
 	public JSONObject getPlaceOrderJSON(){
 		final JSONObject orderData = new JSONObject();
 		try {
@@ -109,6 +105,9 @@ public class Order  {
 		return orderData;
 	}
 	
+	/**
+	 * To process next positive state for the 0rder
+	 */
 	public void nextPositiveState() {
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
@@ -123,6 +122,10 @@ public class Order  {
 		}
 	}
 	
+	/**
+	 * It will calculates the total price based on price, quantity and tipAmount
+	 * 
+	 */
 	public void calculateTotalPrice() {
 		float actualPrice = (price * quantity);
 		float subTotal =  actualPrice * ((tipAmount + 8) / 100);

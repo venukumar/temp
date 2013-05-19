@@ -194,7 +194,10 @@ public class VenueActivity extends FragmentActivity implements
 					.setTabListener(this));
 		}
 	}
-
+	
+	/**
+	 * To initialize the fragments
+	 */
 	private void initializeFragments() {
 		// Initialize orders view
 		if (mOrdersFragment == null)
@@ -216,8 +219,6 @@ public class VenueActivity extends FragmentActivity implements
 
 			@Override
 			public void run() {
-				// To delete existing menu items
-				DatabaseManager.getInstance().deleteDrinks();
 				
 				BartsyApplication app = (BartsyApplication)(getApplication());
 				if(app.activeVenue==null){
@@ -759,16 +760,18 @@ public class VenueActivity extends FragmentActivity implements
 								// the sender (and later the profile of the
 								// person that should pick it up)
 		order.itemId = drink.getDrinkId();
+		
+//		invokePaypalPayment(); // To enable paypal payment
 
-//		invokePaypalPayment();
-
-		processOrderData(); // bypass zooz for now for testing
+		processOrderData(); // bypass PayPal for now for testing
 
 	}
-
+	/**
+	 * To invoke PayPal payment 
+	 */
 	private void invokePaypalPayment() {
 		try {
-
+			// Configure Paypal
 			PayPalPayment newPayment = new PayPalPayment();
 			newPayment.setSubtotal(BigDecimal.valueOf(order.total));
 			newPayment.setCurrencyType("USD");
@@ -779,8 +782,9 @@ public class VenueActivity extends FragmentActivity implements
 			PayPal pp = PayPal.getInstance();
 			if (pp == null)
 				pp = PayPal.initWithAppID(this, Constants.PAYPAL_KEY,
-						PayPal.ENV_SANDBOX);
-
+						PayPal.ENV_SANDBOX); // For now, Paypal sandbox is enable
+			
+			// To check out the paypal payment
 			Intent paypalIntent = pp.checkout(newPayment, this);
 			this.startActivityForResult(paypalIntent, 1);
 
@@ -789,7 +793,9 @@ public class VenueActivity extends FragmentActivity implements
 		}
 
 	}
-
+	/**
+	 * Invokes when the payment process is completed. Success/Failure cases has to be handle in this method
+	 */
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode != 1)
 			return;

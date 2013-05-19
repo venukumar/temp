@@ -41,7 +41,12 @@ import com.vendsy.bartsy.model.Section;
 
 public class WebServices {
 
-	// checking internet connection
+	/**
+	 *  To check internet connection
+	 * @param context
+	 * @return
+	 * @throws Exception
+	 */
 	public static boolean isNetworkAvailable(Context context) throws Exception {
 
 		ConnectivityManager cm = (ConnectivityManager) context
@@ -112,7 +117,13 @@ public class WebServices {
 		return response;
 
 	}
-
+	/**
+	 * Service call for user check in and check out
+	 * 
+	 * @param url
+	 * @param context
+	 * @return
+	 */
 	public static String userCheckInOrOut(final Context context,
 			String venueId, String url) {
 		String response = null;
@@ -182,7 +193,13 @@ public class WebServices {
 
 		return result;
 	}
-
+	/**
+	 * Service call for post order
+	 * 
+	 * @param context
+	 * @param order
+	 * @param venueID
+	 */
 	public static void postOrderTOServer(final Context context, final Order order,
 			String venueID) {
 		final JSONObject orderData = order.getPlaceOrderJSON();
@@ -221,73 +238,15 @@ public class WebServices {
 		}.start();
 
 	}
-
-	// public static void saveProfileData(Profile bartsyProfile, Context
-	// context) {
-	// try {
-	// // To get GCM reg ID from the Shared Preference
-	// SharedPreferences settings = context.getSharedPreferences(
-	// GCMIntentService.REG_ID, 0);
-	// String deviceToken = settings.getString("RegId", "");
-	//
-	// int deviceType = Constants.DEVICE_Type;
-	//
-	// JSONObject json = new JSONObject();
-	// json.put("userName", bartsyProfile.getUsername());
-	// json.put("name", bartsyProfile.getName());
-	// json.put("loginId", bartsyProfile.getSocialNetworkId());
-	// json.put("loginType", bartsyProfile.getType());
-	// json.put("gender", bartsyProfile.getGender());
-	// json.put("deviceType", deviceType);
-	// json.put("deviceToken", deviceToken);
-	//
-	// try {
-	// String responses = WebServices.postRequest(
-	// Constants.URL_POST_PROFILE_DATA, json,
-	// context.getApplicationContext());
-	// System.out.println("responses   " + responses);
-	// if (responses != null) {
-	// int bartsyUserId = 0;
-	// JSONObject resultJson = new JSONObject(responses);
-	// String errorCode = resultJson.getString("errorCode");
-	// String errorMessage = resultJson.getString("errorMessage");
-	//
-	// System.out.println("error message " + errorMessage);
-	// System.out.println("errorCode " + errorCode);
-	//
-	// if (resultJson.has("bartsyUserId")) {
-	// bartsyUserId = resultJson.getInt("bartsyUserId");
-	//
-	// System.out.println("bartsyUserId " + bartsyUserId);
-	// }
-	// else
-	// {
-	// System.out.println("bartsyUserIdnot found");
-	// }
-	// if (bartsyUserId > 0) {
-	// SharedPreferences sharedPref = context
-	// .getSharedPreferences(
-	// context.getResources()
-	// .getString(
-	// R.string.config_shared_preferences_name),
-	// Context.MODE_PRIVATE);
-	// Resources r = context.getResources();
-	//
-	// SharedPreferences.Editor editor = sharedPref.edit();
-	// editor.putInt(r.getString(R.string.bartsyUserId),
-	// bartsyUserId);
-	// editor.commit();
-	// }
-	// }
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// } catch (JSONException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// }
-
+	/**
+	 * Service call for profile information
+	 * 
+	 * @param bartsyProfile
+	 * @param profileImage
+	 * @param path
+	 * @param context
+	 * @return
+	 */
 	public static String postProfile(Profile bartsyProfile,
 			Bitmap profileImage, String path, Context context) {
 
@@ -462,7 +421,9 @@ public class WebServices {
 
 		} else {
 			try {
-
+				// To delete existing menu items
+				DatabaseManager.getInstance().deleteDrinks();
+				
 				JSONObject result = new JSONObject(response);
 				String errorCode = result.getString("errorCode");
 				String errorMessage = result.getString("errorMessage");
@@ -518,15 +479,11 @@ public class WebServices {
 							}
 						}
 					}
-
 				}
 
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 }

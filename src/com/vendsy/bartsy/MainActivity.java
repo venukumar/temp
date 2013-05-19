@@ -229,10 +229,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			break;
 		}
 	}
-
+	/**
+	 * To checkout user from the active venue
+	 * 
+	 */
 	private void checkOutUser() {
-		// TODO Auto-generated method stub
-
+		// For now it will ask confirmation dialog
 		if (mApp.activeVenue != null && mApp.mOrders.size() > 0) {
 			alertBox("You have open orders placed at "
 					+ mApp.activeVenue.getName()
@@ -278,9 +280,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	// }
 	//
 	// }
-
+	
+	
+	/**
+	 * To display alert box when the user check out from the active venue
+	 */
 	private void alertBox(String message) {
-		// TODO Auto-generated method stub
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 		builder.setCancelable(true);
@@ -291,17 +296,19 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
-
+				// To check null condition (Error handling)
 				if (mApp.activeVenue != null) {
+					// Service call in the background
 					new Thread() {
 						public void run() {
-
+							// Check out web service call
 							String response = WebServices.userCheckInOrOut(
 									MainActivity.this,
 									mApp.activeVenue.getId(),
 									Constants.URL_USER_CHECK_OUT);
 							if (response != null) {
 								System.out.println("response  ::: " + response);
+								// To parse check out web service response 
 								try {
 									JSONObject result = new JSONObject(response);
 									String errorCode = result
@@ -335,9 +342,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+				// To close the alert dialog 
 				dialog.dismiss();
 			}
 		});
+		// To display alert dialog
 		AlertDialog alert = builder.create();
 		alert.show();
 
