@@ -403,7 +403,12 @@ public class WebServices {
 		System.out.println("response venu " + response);
 		return response;
 	}
-
+	/**
+	 * To get list of menu list
+	 * 
+	 * @param context
+	 * @param venueID
+	 */
 	public static void getMenuList(Context context, String venueID) {
 
 		System.out.println("get menu list");
@@ -422,7 +427,7 @@ public class WebServices {
 		} else {
 			try {
 				// To delete existing menu items
-				DatabaseManager.getInstance().deleteDrinks();
+				DatabaseManager.getInstance().deleteDrinks(venueID);
 				
 				JSONObject result = new JSONObject(response);
 				String errorCode = result.getString("errorCode");
@@ -440,19 +445,21 @@ public class WebServices {
 							&& jsonObject.has("subsections")) {
 
 						String name = jsonObject.getString("section_name");
-
+						// To save sections in the database
 						JSONArray subsections = jsonObject
 								.getJSONArray("subsections");
 						if (subsections != null && subsections.length() > 0) {
 							if (name.trim().length() > 0
 									&& subsections.length() == 1) {
 								menuSection = new Section();
+								menuSection.setVenueId(venueID);
+								
 								if (name.length() > 0)
 									menuSection.setName(name);
 								DatabaseManager.getInstance().saveSection(
 										menuSection);
 							}
-
+							// To save sub sections as sections in the database
 							for (int i = 0; i < subsections.length(); i++) {
 								JSONObject subSection = subsections
 										.getJSONObject(i);
@@ -463,16 +470,18 @@ public class WebServices {
 									String newName = name + " - " + subName;
 									menuSection = new Section();
 									menuSection.setName(newName);
+									menuSection.setVenueId(venueID);
 									DatabaseManager.getInstance().saveSection(
 											menuSection);
 								}
-
+								// To save the drinks as per the section in the database
 								JSONArray contents = subSection
 										.getJSONArray("contents");
 								for (int k = 0; k < contents.length(); k++) {
 									MenuDrink menuDrink = new MenuDrink(
 											contents.getJSONObject(k));
 									menuDrink.setSection(menuSection);
+									menuDrink.setVenueId(venueID);
 									DatabaseManager.getInstance().saveDrink(
 											menuDrink);
 								}

@@ -25,6 +25,16 @@ public class MenuDrink {
 	private String price;
 	@DatabaseField
 	private String price_special;
+	@DatabaseField
+	private String venueId;
+
+	@DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnName = "section_id")
+	private Section section;
+	
+
+	public MenuDrink() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public String getDrinkId() {
 		return drinkId;
@@ -33,15 +43,7 @@ public class MenuDrink {
 	public void setDrinkId(String drinkId) {
 		this.drinkId = drinkId;
 	}
-
 	
-	@DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnName = "section_id")
-	private Section section;
-
-	public MenuDrink() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public MenuDrink(JSONObject object) {
 		// TODO Auto-generated constructor stub
 
@@ -68,6 +70,20 @@ public class MenuDrink {
 		// For now always use the same image for the drink
 		this.image = Integer.toString(R.drawable.drinks);
 
+	}
+
+	/**
+	 * @return the venueId
+	 */
+	public String getVenueId() {
+		return venueId;
+	}
+
+	/**
+	 * @param venueId the venueId to set
+	 */
+	public void setVenueId(String venueId) {
+		this.venueId = venueId;
 	}
 
 	/**

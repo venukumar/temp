@@ -3,10 +3,6 @@ package com.vendsy.bartsy.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.j256.ormlite.field.DatabaseField;
 
 /**
@@ -20,6 +16,8 @@ public class Section {
 	private int id;
 	@DatabaseField
 	private String name;
+	@DatabaseField
+	private String venueId;
 
 	// data will not save in db
 	private List<MenuDrink> drinks = new ArrayList<MenuDrink>();
@@ -34,6 +32,20 @@ public class Section {
 
 	public Section() {
 		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @return the venueId
+	 */
+	public String getVenueId() {
+		return venueId;
+	}
+
+	/**
+	 * @param venueId the venueId to set
+	 */
+	public void setVenueId(String venueId) {
+		this.venueId = venueId;
 	}
 
 	/**
