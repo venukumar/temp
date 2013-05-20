@@ -72,7 +72,7 @@ public class DrinksSectionFragment extends Fragment {
 	 * @param sectionsList
 	 */
 	public void updateListView(List<Section> sectionsList) {
-		if(sectionsList==null){
+		if(sectionsList==null || activeVenueId==null){
 			return;
 		}
 		ArrayList<String> groupNames = new ArrayList<String>();
