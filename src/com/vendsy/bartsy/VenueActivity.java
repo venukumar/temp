@@ -207,6 +207,10 @@ public class VenueActivity extends FragmentActivity implements
 		if (mPeopleFragment == null)
 			mPeopleFragment = new PeopleSectionFragment();
 		
+		// Initialize drinks view
+		if (mDrinksFragment == null)
+			mDrinksFragment = new DrinksSectionFragment();
+		
 		loadMenuSections();
 	}
 	
@@ -220,14 +224,13 @@ public class VenueActivity extends FragmentActivity implements
 			@Override
 			public void run() {
 				
-				BartsyApplication app = (BartsyApplication)(getApplication());
-				if(app.activeVenue==null){
+				if(mApp==null || mApp.activeVenue==null){
 					return;
 				}
-				WebServices.getMenuList(getApplicationContext(), app.activeVenue.getId());
+				WebServices.getMenuList(getApplicationContext(), mApp.activeVenue.getId());
 				if(mDrinksFragment!=null){
 					final List<Section> sectionsList = DatabaseManager
-							.getInstance().getMenuSections();
+							.getInstance().getMenuSections(mApp.activeVenue.getId());
 					handler.post(new Runnable() {
 	
 						@Override

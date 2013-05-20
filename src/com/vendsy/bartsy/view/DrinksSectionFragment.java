@@ -34,6 +34,7 @@ public class DrinksSectionFragment extends Fragment {
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
 	private Handler handler = new Handler();
+	private String activeVenueId;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,10 +53,15 @@ public class DrinksSectionFragment extends Fragment {
 			mContainer = container;
 
 		}
+		// To update the list view with menu drinks from the db
+		BartsyApplication app = (BartsyApplication)getActivity().getApplication();
 		
-		final List<Section> sectionsList = DatabaseManager
-				.getInstance().getMenuSections();
-		updateListView(sectionsList);
+		if(app.activeVenue!=null && app.activeVenue.getId()!=null){
+			activeVenueId = app.activeVenue.getId();
+			List<Section> sectionsList = DatabaseManager
+					.getInstance().getMenuSections(app.activeVenue.getId());
+			updateListView(sectionsList);
+		}
 		
 		return mRootView;
 	}
@@ -72,7 +78,7 @@ public class DrinksSectionFragment extends Fragment {
 		ArrayList<String> groupNames = new ArrayList<String>();
 		// Default group name for individual drinks
 		List<MenuDrink> defaultList = DatabaseManager.getInstance()
-				.getMenuDrinks();
+				.getMenuDrinks(activeVenueId);
 		if (defaultList != null && defaultList.size() > 0) {
 			groupNames.add("Various items");
 		}
@@ -89,7 +95,7 @@ public class DrinksSectionFragment extends Fragment {
 		}
 		for (int j = 0; j < sectionsList.size(); j++) {
 			List<MenuDrink> list = DatabaseManager.getInstance().getMenuDrinks(
-					sectionsList.get(j));
+					sectionsList.get(j), activeVenueId);
 			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
 			menuDrinks.add(menu);
 		}
