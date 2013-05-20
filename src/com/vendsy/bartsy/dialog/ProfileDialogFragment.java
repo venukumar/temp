@@ -135,17 +135,20 @@ public class ProfileDialogFragment extends DialogFragment {
 								String deviceToken = settings.getString(
 										"RegId", "");
 								if (deviceToken.trim().length() > 0) {
-									mListener
-											.onUserDialogPositiveClick(ProfileDialogFragment.this);
+
 									new Thread() {
 										public void run() {
 
-											WebServices
+											String status = WebServices
 													.postProfile(
 															mProfile,
 															mProfileImage,
 															Constants.URL_POST_PROFILE_DATA,
 															mcontext);
+
+											mListener
+													.onUserDialogPositiveClick(ProfileDialogFragment.this);
+
 										}
 									}.start();
 

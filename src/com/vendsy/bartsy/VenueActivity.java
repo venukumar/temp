@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.ActionBar;
@@ -41,6 +44,7 @@ import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
@@ -64,8 +68,14 @@ public class VenueActivity extends FragmentActivity implements
 
 	public static final String TAG = "Bartsy";
 	public DrinksSectionFragment mDrinksFragment = null;
-	public OrdersSectionFragment mOrdersFragment = null;  	// make sure the set this to null when fragment is destroyed
-	public PeopleSectionFragment mPeopleFragment = null; 	// make sure the set this to null when fragment is destroyed
+	public OrdersSectionFragment mOrdersFragment = null; // make sure the set
+															// this to null when
+															// fragment is
+															// destroyed
+	public PeopleSectionFragment mPeopleFragment = null; // make sure the set
+															// this to null when
+															// fragment is
+															// destroyed
 	private Handler handler = new Handler();
 
 	public void appendStatus(String status) {
@@ -193,8 +203,9 @@ public class VenueActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+
 	}
-	
+
 	/**
 	 * To initialize the fragments
 	 */
@@ -206,33 +217,39 @@ public class VenueActivity extends FragmentActivity implements
 		// Initialize people view
 		if (mPeopleFragment == null)
 			mPeopleFragment = new PeopleSectionFragment();
-		
+
 		// Initialize drinks view
 		if (mDrinksFragment == null)
 			mDrinksFragment = new DrinksSectionFragment();
-		
+
 		loadMenuSections();
+
+		System.out.println("mApp.mPeople.size() " + mApp.mPeople.size());
+
+		if (mApp.mPeople.size() == 0) {
+			loadPeopleList();
+		}
 	}
-	
+
 	/**
 	 * To get Sections and Drinks from the server
 	 */
 	private void loadMenuSections() {
-		
+		// Service call for get menu list in background
 		new Thread() {
 
 			@Override
 			public void run() {
-				
-				if(mApp==null || mApp.activeVenue==null){
-					return;
-				}
-				WebServices.getMenuList(getApplicationContext(), mApp.activeVenue.getId());
-				if(mDrinksFragment!=null){
+
+				WebServices.getMenuList(getApplicationContext(),
+						mApp.activeVenue.getId());
+				if (mDrinksFragment != null) {
 					final List<Section> sectionsList = DatabaseManager
-							.getInstance().getMenuSections(mApp.activeVenue.getId());
+							.getInstance().getMenuSections(
+									mApp.activeVenue.getId());
+					// Handler to access UI thread
 					handler.post(new Runnable() {
-	
+
 						@Override
 						public void run() {
 							mDrinksFragment.updateListView(sectionsList);
@@ -241,6 +258,101 @@ public class VenueActivity extends FragmentActivity implements
 				}
 			}
 		}.start();
+	}
+
+	/**
+	 * To get CheckedIn People from the server
+	 */
+	private void loadPeopleList() {
+
+		try {
+
+			new Thread() {
+
+				public void run() {
+
+					String response = null;
+					if (mApp.activeVenue == null) {
+						return;
+					}
+					// Post data for to get the checkedIn people
+					JSONObject postData = new JSONObject();
+					try {
+						postData.put("venueId", mApp.activeVenue.getId());
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+					// Webservice call for to get the checkedIn people
+					try {
+						response = WebServices.postRequest(
+								Constants.URL_LIST_OF_CHECKED_IN_USERS,
+								postData, getApplicationContext());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					// CheckedIn people web service Response handling
+					if (response != null)
+						processCheckedInUsersResponse(response);
+
+				};
+			}.start();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * CheckedIn people web service Response handling
+	 * 
+	 * @param response
+	 */
+	private void processCheckedInUsersResponse(String response) {
+
+		try {
+			JSONObject peopleData = new JSONObject(response);
+
+			if (peopleData.has("checkedInUsers")) {
+				// Parse json format
+				JSONArray array = peopleData.getJSONArray("checkedInUsers");
+				for (int i = 0; i < array.length(); i++) {
+					String name = null, gender = null, imagepath = null;
+					JSONObject json = array.getJSONObject(i);
+					if (json.has("name"))
+						name = json.getString("name");
+					if (json.has("gender"))
+						gender = json.getString("gender");
+
+					if (json.has("userImage")) {
+						imagepath = json.getString("userImage");
+					}
+					// Create new instance for profile
+					Profile profile = new Profile(null, name, null, null, null,
+							null, imagepath);
+					// Add profile to the existing people list
+					mApp.mPeople.add(profile);
+
+				}
+				// To call UI thread and display checkedIn people list
+				handler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						mPeopleFragment.updatePeopleView();
+						// Update people count in people tab
+						updatePeopleCount();
+					}
+				});
+
+			} else {
+
+				Log.i(TAG, "checked in users not found !!!! ");
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
@@ -270,9 +382,10 @@ public class VenueActivity extends FragmentActivity implements
 		 * update the state of the action bar depending on our connection state.
 		 */
 		updateActionBarStatus();
-
+		// To update people count in order tab
 		updateOrdersCount();
-
+		// To update people count in people tab
+		updatePeopleCount();
 	}
 
 	public void onStop() {
@@ -281,7 +394,6 @@ public class VenueActivity extends FragmentActivity implements
 		mApp = (BartsyApplication) getApplication();
 		mApp.deleteObserver(this);
 	}
-	
 
 	/******
 	 * 
@@ -738,7 +850,7 @@ public class VenueActivity extends FragmentActivity implements
 		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
-		if(mApp.activeVenue==null){
+		if (mApp.activeVenue == null) {
 			return;
 		}
 		order = new Order();
@@ -746,11 +858,13 @@ public class VenueActivity extends FragmentActivity implements
 		String tipPercentageValue = tip.replace("%", "");
 		order.tipAmount = Float.valueOf(tipPercentageValue);
 
-		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order ID
-				null, 									// arg(1) - This order stil doesn't have a server-assigned ID
-				drink.getTitle(), 						// arg(2) - Title
-				drink.getDescription(), 				// arg(3) - Description
-				drink.getPrice(), 						// arg(4) - Price
+		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order
+														// ID
+				null, // arg(1) - This order stil doesn't have a server-assigned
+						// ID
+				drink.getTitle(), // arg(2) - Title
+				drink.getDescription(), // arg(3) - Description
+				drink.getPrice(), // arg(4) - Price
 				Integer.toString(R.drawable.drinks), // for now always use
 														// the
 														// same picture for
@@ -763,14 +877,15 @@ public class VenueActivity extends FragmentActivity implements
 								// the sender (and later the profile of the
 								// person that should pick it up)
 		order.itemId = drink.getDrinkId();
-		
-//		invokePaypalPayment(); // To enable paypal payment
+
+		// invokePaypalPayment(); // To enable paypal payment
 
 		processOrderData(); // bypass PayPal for now for testing
 
 	}
+
 	/**
-	 * To invoke PayPal payment 
+	 * To invoke PayPal payment
 	 */
 	private void invokePaypalPayment() {
 		try {
@@ -785,8 +900,9 @@ public class VenueActivity extends FragmentActivity implements
 			PayPal pp = PayPal.getInstance();
 			if (pp == null)
 				pp = PayPal.initWithAppID(this, Constants.PAYPAL_KEY,
-						PayPal.ENV_SANDBOX); // For now, Paypal sandbox is enable
-			
+						PayPal.ENV_SANDBOX); // For now, Paypal sandbox is
+												// enable
+
 			// To check out the paypal payment
 			Intent paypalIntent = pp.checkout(newPayment, this);
 			this.startActivityForResult(paypalIntent, 1);
@@ -796,8 +912,10 @@ public class VenueActivity extends FragmentActivity implements
 		}
 
 	}
+
 	/**
-	 * Invokes when the payment process is completed. Success/Failure cases has to be handle in this method
+	 * Invokes when the payment process is completed. Success/Failure cases has
+	 * to be handle in this method
 	 */
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode != 1)
@@ -816,10 +934,9 @@ public class VenueActivity extends FragmentActivity implements
 			String resultTitle = "SUCCESS";
 			String resultInfo = "You have successfully completed this ";
 			System.out.println(resultInfo);
-			
+
 			processOrderData();
-			
-			
+
 			// + (isPreapproval ? "preapproval." : "payment.");
 			// resultExtra = "Transaction ID: " +
 			// data.getStringExtra(PayPalActivity.EXTRA_PAY_KEY);

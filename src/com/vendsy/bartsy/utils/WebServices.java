@@ -2,8 +2,13 @@ package com.vendsy.bartsy.utils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.apache.http.HttpResponse;
@@ -28,8 +33,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
@@ -42,7 +50,8 @@ import com.vendsy.bartsy.model.Section;
 public class WebServices {
 
 	/**
-	 *  To check internet connection
+	 * To check internet connection
+	 * 
 	 * @param context
 	 * @return
 	 * @throws Exception
@@ -117,6 +126,7 @@ public class WebServices {
 		return response;
 
 	}
+
 	/**
 	 * Service call for user check in and check out
 	 * 
@@ -193,6 +203,7 @@ public class WebServices {
 
 		return result;
 	}
+
 	/**
 	 * Service call for post order
 	 * 
@@ -200,21 +211,21 @@ public class WebServices {
 	 * @param order
 	 * @param venueID
 	 */
-	public static void postOrderTOServer(final Context context, final Order order,
-			String venueID) {
+	public static void postOrderTOServer(final Context context,
+			final Order order, String venueID) {
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
 						R.string.config_shared_preferences_name),
 				Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId),
-				100002);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-//			orderData.put("clientOrderId", order.clientID);   - USE THIS LINE WHEN THE SERVER CODE IS READY
+			// orderData.put("clientOrderId", order.clientID); - USE THIS LINE
+			// WHEN THE SERVER CODE IS READY
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -238,6 +249,7 @@ public class WebServices {
 		}.start();
 
 	}
+
 	/**
 	 * Service call for profile information
 	 * 
@@ -334,11 +346,14 @@ public class WebServices {
 				if (responses != null) {
 					String responseofmain = EntityUtils.toString(responses
 							.getEntity());
-
+					System.out.println("responseofmain " + responseofmain);
 					int bartsyUserId = 0;
 					JSONObject resultJson = new JSONObject(responseofmain);
 					String errorCode = resultJson.getString("errorCode");
 					String errorMessage = resultJson.getString("errorMessage");
+					status = resultJson.getString("userExists");
+
+					System.out.println("status " + status);
 
 					System.out.println("error message " + errorMessage);
 					System.out.println("errorCode " + errorCode);
@@ -403,6 +418,7 @@ public class WebServices {
 		System.out.println("response venu " + response);
 		return response;
 	}
+
 	/**
 	 * To get list of menu list
 	 * 
@@ -428,7 +444,7 @@ public class WebServices {
 			try {
 				// To delete existing menu items
 				DatabaseManager.getInstance().deleteDrinks(venueID);
-				
+
 				JSONObject result = new JSONObject(response);
 				String errorCode = result.getString("errorCode");
 				String errorMessage = result.getString("errorMessage");
@@ -453,7 +469,7 @@ public class WebServices {
 									&& subsections.length() == 1) {
 								menuSection = new Section();
 								menuSection.setVenueId(venueID);
-								
+
 								if (name.length() > 0)
 									menuSection.setName(name);
 								DatabaseManager.getInstance().saveSection(
@@ -474,7 +490,8 @@ public class WebServices {
 									DatabaseManager.getInstance().saveSection(
 											menuSection);
 								}
-								// To save the drinks as per the section in the database
+								// To save the drinks as per the section in the
+								// database
 								JSONArray contents = subSection
 										.getJSONArray("contents");
 								for (int k = 0; k < contents.length(); k++) {
@@ -495,4 +512,64 @@ public class WebServices {
 			}
 		}
 	}
+
+	/**
+	 * 
+	 * To download the image from server and set image bitmap to imageView
+	 * 
+	 * @param fileUrl
+	 * @param model
+	 * @param imageView
+	 */
+	public static void downloadImage(final String fileUrl, final Object model,
+			final ImageView imageView) {
+
+		new AsyncTask<String, Void, Bitmap>() {
+			Bitmap bmImg;
+
+			protected void onPreExecute() {
+				super.onPreExecute();
+
+			}
+
+			protected Bitmap doInBackground(String... params) {
+
+				Log.i("file Url: ", fileUrl);
+				URL myFileUrl = null;
+				try {
+					myFileUrl = new URL(fileUrl);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+				// Webservice call to get the image bitmap from the image url
+				try {
+
+					HttpURLConnection conn = (HttpURLConnection) myFileUrl
+							.openConnection();
+					conn.setDoInput(true);
+					conn.connect();
+					InputStream is = conn.getInputStream();
+					bmImg = BitmapFactory.decodeStream(is);
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				return bmImg;
+			}
+
+			protected void onPostExecute(Bitmap result) {
+				if (model instanceof Profile) {
+					Profile profile = (Profile) model;
+					profile.setImage(result);
+				}
+				// Set bitmap image to profile image view
+				imageView.setImageBitmap(result);
+
+			}
+
+		}.execute();
+
+	}
+
 }

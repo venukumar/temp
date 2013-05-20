@@ -1,13 +1,12 @@
 package com.vendsy.bartsy.utils;
 
-
 public class Constants {
-	
-	//public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";
+
+// public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";
 
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";
-	
-	public static final String PROJECT_NAME ="Bartsy/";
+
+	public static final String PROJECT_NAME = "Bartsy/";
 
 	public static final boolean USE_ALLJOYN = false;
 
@@ -15,8 +14,8 @@ public class Constants {
 	public static final String URL_GET_BAR_LIST = DOMAIN_NAME + PROJECT_NAME
 			+ "venue/getMenu";
 	// This is the url for posting the Profiles Data to server
-	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME + PROJECT_NAME
-			+ "user/saveUserProfile";
+	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
+			+ PROJECT_NAME + "user/saveUserProfile";
 	// This is the url for place the order
 	public static final String URL_PLACE_ORDER = DOMAIN_NAME + PROJECT_NAME
 			+ "order/placeOrder";
@@ -30,13 +29,19 @@ public class Constants {
 	// This is the url for User Check Out
 	public static final String URL_USER_CHECK_OUT = DOMAIN_NAME + PROJECT_NAME
 			+ "user/userCheckOut";
+	// This is the url for to get the list of checked in users
+	public static final String URL_LIST_OF_CHECKED_IN_USERS = DOMAIN_NAME
+			+ PROJECT_NAME + "data/checkedInUsersList";
+	// This is the url for to sync data with customer app
+	public static final String URL_syncCustomerApp = DOMAIN_NAME + PROJECT_NAME
+			+ "data/syncCustomerApp";
 
 	// Android Device Type
 	public static final int DEVICE_Type = 0;
-	
+
 	// Paypal Key
 	public static final String PAYPAL_KEY = "APP-80W284485P519543T";
-	
+
 	// This is the url for download the facebook picture
-	public static final String FB_PICTURE="https://graph.facebook.com/";
+	public static final String FB_PICTURE = "https://graph.facebook.com/";
 }
