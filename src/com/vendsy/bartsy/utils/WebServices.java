@@ -327,7 +327,6 @@ public class WebServices {
 				if (babFirst != null)
 					reqEntity.addPart("userImage", babFirst);
 
-				System.out.println("json::" + json.toString());
 				if (json != null)
 					reqEntity.addPart("details", new StringBody(
 							json.toString(), Charset.forName("UTF-8")));
@@ -336,13 +335,6 @@ public class WebServices {
 				HttpResponse responses = client.execute(postRequest);
 
 				/* Checking response */
-
-				System.out.println("********** RESPONSE **********");
-				System.out.println("********** RESPONSE **********");
-				System.out.println("********** RESPONSE **********");
-
-				System.out.println(responses);
-
 				if (responses != null) {
 					String responseofmain = EntityUtils.toString(responses
 							.getEntity());
@@ -351,7 +343,7 @@ public class WebServices {
 					JSONObject resultJson = new JSONObject(responseofmain);
 					String errorCode = resultJson.getString("errorCode");
 					String errorMessage = resultJson.getString("errorMessage");
-					status = resultJson.getString("userExists");
+					status = resultJson.getString("userCheckedIn");
 
 					System.out.println("status " + status);
 
