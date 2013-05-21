@@ -78,9 +78,6 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		if (mPeopleListView == null)
 			return;
 
-		// For now remove list of people and do it from scratch. This is inefficient because it requires loading pictures for people we may already have in the list
-		mApp.mPeople.clear();
-		
 		// Load the people currently present in the venue
 		loadPeopleList();
 	}
@@ -137,31 +134,56 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	 */
 	private void processCheckedInUsersResponse(String response) {
 
+		// Save the list of people and use it as an image cache, resetting the global structure
+		ArrayList<Profile> knownPeople = mApp.mPeople;
+		mApp.mPeople = new ArrayList<Profile>();
+
 		try {
 			JSONObject peopleData = new JSONObject(response);
 
 			if (peopleData.has("checkedInUsers")) {
-				// Parse json format
+				
+				// Get list of people from API call. If a person is known, copy known version as an optimization
 				JSONArray array = peopleData.getJSONArray("checkedInUsers");
 				for (int i = 0; i < array.length(); i++) {
-					String name = null, gender = null, imagepath = null;
+					String name = null, gender = null, imagepath = null, userID = null;
 					JSONObject json = array.getJSONObject(i);
 					if (json.has("name"))
 						name = json.getString("name");
 					if (json.has("gender"))
 						gender = json.getString("gender");
-
-					if (json.has("userImage")) {
-						imagepath = json.getString("userImage");
+					if (json.has("bartsyId"))
+						userID = json.getString("bartsyId");
+					if (json.has("userImagePath")) {
+						imagepath = json.getString("userImagePath");
 					}
-					// Create new instance for profile
-					Profile profile = new Profile(null, name, null, null, null,
-							null, imagepath);
-					// Add profile to the existing people list
+					
+					// Go over the list of people in the global structure looking for images
+					Profile profile = null;
+					boolean found = false;
+					for (Profile p : knownPeople) {
+						if (p.userID.equalsIgnoreCase(userID) && p.image != null) {
+							// Found the profile and it has an image. Shamelessly reuse it
+							profile = p;
+							found = true;
+							break;
+						}
+					}
+					
+					// If an existing profile was not found, create one
+					if (found) {
+						// Profile found. Remove it from known people list
+						knownPeople.remove(profile);
+					} else {
+						// Create new instance for profile - this is for now incomplete!!
+						profile = new Profile(userID, name, null, null, null, null, imagepath);
+					}
+					
+					// Add profile (new or old) to the existing people list
 					mApp.mPeople.add(profile);
-
 				}
-				// To call UI thread and display checkedIn people list
+
+				// Call UI thread and display checkedIn people list
 				handler.post(new Runnable() {
 
 					@Override
@@ -194,6 +216,8 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 			e.printStackTrace();
 		}
 
+		// Cleanup
+		knownPeople.clear();
 	}
 	
 	
