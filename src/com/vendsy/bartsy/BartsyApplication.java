@@ -183,24 +183,14 @@ public class BartsyApplication extends Application implements AppObservable {
 	public Profile mProfile;
 
 	void loadUserProfile() {
-		SharedPreferences sharedPref = getSharedPreferences(getResources()
-				.getString(R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name),Context.MODE_PRIVATE);
 		mProfile = null;
 
-		Log.d(TAG,
-				"Loading user profile from "
-						+ getFilesDir()
-						+ File.separator
-						+ getResources().getString(
-								R.string.config_user_profile_picture));
+		Log.d(TAG, "Loading user profile from " + getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
 
 		Bitmap image = null;
 		try {
-			image = BitmapFactory.decodeFile(getFilesDir()
-					+ File.separator
-					+ getResources().getString(
-							R.string.config_user_profile_picture));
+			image = BitmapFactory.decodeFile(getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.d(TAG, "Could not load profile image");
@@ -210,25 +200,9 @@ public class BartsyApplication extends Application implements AppObservable {
 		Log.d(TAG, "Profile image found, creating profile...");
 		// New change - Added image path url to profile constructor
 		mProfile = new Profile(
-				sharedPref.getString(
-						getResources().getString(
-								R.string.config_user_account_name), ""),
-				sharedPref
-						.getString(
-								getResources().getString(
-										R.string.config_user_name), ""),
-				sharedPref
-						.getString(
-								getResources().getString(
-										R.string.config_user_location), ""),
-				sharedPref
-						.getString(
-								getResources().getString(
-										R.string.config_user_info), ""),
-				sharedPref.getString(
-						getResources().getString(
-								R.string.config_user_description), ""), image,
-				null);
+				sharedPref.getString(getResources().getString(R.string.config_user_account_name), ""), sharedPref.getString(getResources().getString(R.string.config_user_name), ""),
+				sharedPref.getString(getResources().getString(R.string.config_user_location), ""), sharedPref.getString(getResources().getString(R.string.config_user_info), ""),
+				sharedPref.getString(getResources().getString(R.string.config_user_description), ""), image, null);
 	}
 
 	/*****
