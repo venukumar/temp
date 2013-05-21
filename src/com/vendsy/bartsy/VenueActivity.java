@@ -228,13 +228,8 @@ public class VenueActivity extends FragmentActivity implements
 			mPeopleFragment = p;
 		}
 		
+		// Start loading the menu in the background
 		loadMenuSections();
-
-		System.out.println("mApp.mPeople.size() " + mApp.mPeople.size());
-
-		if (mApp.mPeople.size() == 0) {
-			loadPeopleList();
-		}
 	}
 	
 	/**
@@ -268,100 +263,6 @@ public class VenueActivity extends FragmentActivity implements
 		}.start();
 	}
 
-	/**
-	 * To get CheckedIn People from the server
-	 */
-	private void loadPeopleList() {
-
-		try {
-
-			new Thread() {
-
-				public void run() {
-
-					String response = null;
-					if (mApp.activeVenue == null) {
-						return;
-					}
-					// Post data for to get the checkedIn people
-					JSONObject postData = new JSONObject();
-					try {
-						postData.put("venueId", mApp.activeVenue.getId());
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					// Webservice call for to get the checkedIn people
-					try {
-						response = WebServices.postRequest(
-								Constants.URL_LIST_OF_CHECKED_IN_USERS,
-								postData, getApplicationContext());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					// CheckedIn people web service Response handling
-					if (response != null)
-						processCheckedInUsersResponse(response);
-
-				};
-			}.start();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * CheckedIn people web service Response handling
-	 * 
-	 * @param response
-	 */
-	private void processCheckedInUsersResponse(String response) {
-
-		try {
-			JSONObject peopleData = new JSONObject(response);
-
-			if (peopleData.has("checkedInUsers")) {
-				// Parse json format
-				JSONArray array = peopleData.getJSONArray("checkedInUsers");
-				for (int i = 0; i < array.length(); i++) {
-					String name = null, gender = null, imagepath = null;
-					JSONObject json = array.getJSONObject(i);
-					if (json.has("name"))
-						name = json.getString("name");
-					if (json.has("gender"))
-						gender = json.getString("gender");
-
-					if (json.has("userImage")) {
-						imagepath = json.getString("userImage");
-					}
-					// Create new instance for profile
-					Profile profile = new Profile(null, name, null, null, null,
-							null, imagepath);
-					// Add profile to the existing people list
-					mApp.mPeople.add(profile);
-
-				}
-				// To call UI thread and display checkedIn people list
-				handler.post(new Runnable() {
-
-					@Override
-					public void run() {
-						mPeopleFragment.updatePeopleView();
-						// Update people count in people tab
-						updatePeopleCount();
-					}
-				});
-
-			} else {
-
-				Log.i(TAG, "checked in users not found !!!! ");
-			}
-
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-	}
 
 	@Override
 	public void onStart() {
@@ -572,7 +473,7 @@ public class VenueActivity extends FragmentActivity implements
 	 * Updates the action bar tab with the number of open orders
 	 */
 
-	void updatePeopleCount() {
+	public void updatePeopleCount() {
 		// Update tab title with the number of orders - for now hardcode the tab
 		// at the right position
 		getActionBar().getTabAt(1).setText(
@@ -591,6 +492,11 @@ public class VenueActivity extends FragmentActivity implements
 		// When the given tab is selected, switch to the corresponding page in
 		// the ViewPager.
 		mViewPager.setCurrentItem(tab.getPosition());
+		
+		// upon selecting the people tab we want to update the list of people from the server
+		if (mTabs[tab.getPosition()] == R.string.title_people) {
+			mPeopleFragment.updatePeopleView();
+		}
 	}
 
 	@Override
@@ -609,10 +515,11 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 	VenueActivity main_activity = this;
 
-	public class SectionsPagerAdapter extends FragmentPagerAdapter {
+	private int mTabs[] = { R.string.title_drinks, R.string.title_people,
+			R.string.title_drink_orders };
 
-		private int mTabs[] = { R.string.title_drinks, R.string.title_people,
-				R.string.title_drink_orders };
+	
+	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
