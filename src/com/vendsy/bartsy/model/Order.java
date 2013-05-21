@@ -41,22 +41,22 @@ public class Order  {
 	// but the code manages the differences. 
 	public View view = null;
 	
-	// Each order has exactly one associated profile. The order is invalid without one.
-//	Profile profile;
-	
 	// Order states
-	// (received) -> NEW -> (accepted) -> IN_PROGRESS -> (completed) -> READY   -> (picked_up) -> COMPLETE
+	// (received) -> NEW -> (accepted) -> IN_PROGRESS -> (completed) -> READY   -> (picked_up) -> COMPLETE    -> (timed out, error, etc) -> CANCELLED
 	//                      (rejected) -> REJECTED       (failed)    -> FAILED     (forgotten) -> INCOMPLETE  
 	
-	
-	public int status;	
     public static final int ORDER_STATUS_NEW			= 0;
     public static final int ORDER_STATUS_REJECTED    	= 1;
     public static final int ORDER_STATUS_IN_PROGRESS  	= 2;
     public static final int ORDER_STATUS_READY 			= 3;
 	public static final int ORDER_STATUS_FAILED	 		= 4;
 	public static final int ORDER_STATUS_COMPLETE	 	= 5;
-	public static final int ORDER_STATUS_COUNT			= 6;
+	public static final int ORDER_STATUS_INCOMPLETE	 	= 6;
+	public static final int ORDER_STATUS_CANCELLED	 	= 7;
+	public static final int ORDER_STATUS_COUNT			= 8;
+
+	// The states are implemented in a status variable and each state transition has an associated time
+	public int status;	
 	public Date[] state_transitions = new Date[ORDER_STATUS_COUNT];
 	
 	
