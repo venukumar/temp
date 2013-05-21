@@ -69,7 +69,7 @@ public class MapActivity extends Activity implements LocationListener,
 
 	Activity activity = this;
 	private static final String TAG = "Map Activity";
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -101,7 +101,7 @@ public class MapActivity extends Activity implements LocationListener,
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(
 				LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
-		
+
 		// To obtain list view from the SupportMapFragment.
 		final ListView venueList = (ListView) findViewById(R.id.checkInListView);
 		venueList.setOnItemClickListener(new OnItemClickListener() {
@@ -109,12 +109,12 @@ public class MapActivity extends Activity implements LocationListener,
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// It will invoke when the venue list item selected 
+				// It will invoke when the venue list item selected
 				Venue venue = venues.get(arg2);
 				venueSelectedAction(venue);
 			}
 		});
-		
+
 		// To call web service in background
 		new Thread() {
 
@@ -124,14 +124,14 @@ public class MapActivity extends Activity implements LocationListener,
 		}.start();
 
 	}
-	
+
 	/**
 	 * To load venues information from the server
-	 *  
+	 * 
 	 * @param venueList
 	 */
 	protected void loadVenuesFromServer(final ListView venueList) {
-		
+
 		String response = WebServices.getVenueList(MapActivity.this);
 		if (response != null) {
 			venues = getVenueListResponse(response);
@@ -145,52 +145,49 @@ public class MapActivity extends Activity implements LocationListener,
 			});
 		}
 	}
-	
+
 	/**
-	 * To update list view with venue information and update markers in the Map view
+	 * To update list view with venue information and update markers in the Map
+	 * view
 	 * 
 	 * @param venueList
 	 */
 	protected void updateListView(ListView venueList) {
-		
-		if(venueList==null || venues==null){
+
+		if (venueList == null || venues == null) {
 			return;
 		}
 		// To set the adapter to the list view
 		VenueListViewAdapter customAdapter = new VenueListViewAdapter(
-				MapActivity.this, R.layout.map_list_item,
-				venues);
+				MapActivity.this, R.layout.map_list_item, venues);
 
 		venueList.setAdapter(customAdapter);
-		
+
 		// To add markers to the map view
 		for (int i = 0; i < venues.size(); i++) {
 			Venue venue = venues.get(i);
 
-			LatLng coord = new LatLng(Float.valueOf(venue
-					.getLatitude()), Float.valueOf(venue
-					.getLongitude()));
-			mMap.addMarker(new MarkerOptions()
-					.position(coord).title(venue.getName())
-					.snippet("People checked in: "+i));
+			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()),
+					Float.valueOf(venue.getLongitude()));
+			mMap.addMarker(new MarkerOptions().position(coord)
+					.title(venue.getName()).snippet("People checked in: " + i));
 		}
 	}
-	
+
 	/**
 	 * Invokes when the venue selected in the list view
 	 * 
 	 * @param venue
 	 */
 	protected void venueSelectedAction(Venue venue) {
-		
+
 		if (mApp.activeVenue != null) {
-			Log.i(TAG, "venueSelected(): venue id "+ venue.getId());
-			
-			if(venue.getId().trim()
+			Log.i(TAG, "venueSelected(): venue id " + venue.getId());
+
+			if (venue.getId().trim()
 					.equalsIgnoreCase(mApp.activeVenue.getId().trim())) {
 				// Selected venue was already active
-				Intent intent = new Intent(activity,
-						VenueActivity.class);
+				Intent intent = new Intent(activity, VenueActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(intent);
 				finish();
@@ -204,9 +201,8 @@ public class MapActivity extends Activity implements LocationListener,
 									+ ".You have open orders placed at"
 									+ mApp.activeVenue.getName()
 									+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from"
-									+ mApp.activeVenue.getName() + "?",
-							venue);
-				} 
+									+ mApp.activeVenue.getName() + "?", venue);
+				}
 				// Require to ask confirmation to check in to new venue
 				else if (mApp.activeVenue != null) {
 					alertBox("You are already checked-in to "
@@ -216,8 +212,8 @@ public class MapActivity extends Activity implements LocationListener,
 				}
 
 			}
-		} 
-		// Not check in yet 
+		}
+		// Not check in yet
 		else {
 			mApp.activeVenue = venue;
 			userCheckinAction();
@@ -226,8 +222,9 @@ public class MapActivity extends Activity implements LocationListener,
 			startActivity(intent);
 			finish();
 		}
-		
+
 	}
+
 	/**
 	 * To parse JSON format to list of venues
 	 * 
@@ -246,7 +243,7 @@ public class MapActivity extends Activity implements LocationListener,
 				String latitude = venueObject.getString("latitude");
 				String longitude = venueObject.getString("longitude");
 				String address = venueObject.getString("address");
-				
+
 				// To set all information to the venue object
 				Venue venueProfile = new Venue();
 				venueProfile.setId(venueId);
@@ -309,9 +306,10 @@ public class MapActivity extends Activity implements LocationListener,
 		// now
 		this.startActivity(new Intent().setClass(this, VenueActivity.class));
 	}
-	
+
 	/**
-	 * To display confirmation alert box when the user selects venue in the list view 
+	 * To display confirmation alert box when the user selects venue in the list
+	 * view
 	 * 
 	 * @param message
 	 * @param venue
@@ -343,8 +341,10 @@ public class MapActivity extends Activity implements LocationListener,
 		alert.show();
 
 	}
+
 	/**
-	 * Invokes this action when the user selects on the venue and calls check in web service
+	 * Invokes this action when the user selects on the venue and calls check in
+	 * web service
 	 */
 	protected void userCheckinAction() {
 		new Thread() {
@@ -360,11 +360,15 @@ public class MapActivity extends Activity implements LocationListener,
 						String errorMessage = json.has("errorMessage") ? json
 								.getString("errorMessage") : "";
 						// errorCode "0" indicates for success and "1" for failure
+						
 						if (errorCode.equalsIgnoreCase("0")) {
+							// To access UI thread
 							handler.post(new Runnable() {
 								public void run() {
-									Intent intent = new Intent(
-											activity,
+								//remove orders and people from the bartsy application class
+									mApp.mOrders.clear();
+									mApp.mPeople.clear();
+									Intent intent = new Intent(activity,
 											VenueActivity.class);
 									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 									startActivity(intent);
