@@ -136,7 +136,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		} else {
 			Log.v(TAG, "Already registered");
 		}
-		System.out.println("the registration id is:::::" + regId);
+		Log.i(TAG, "the registration id is:::::" + regId);
 
 		Log.i(TAG, "People list size: " + mPeople.size());
 		Log.i(TAG, "Orders list size: " + mOrders.size());

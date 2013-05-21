@@ -15,8 +15,12 @@
  */
 package com.vendsy.bartsy.utils;
 
+import com.vendsy.bartsy.R;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 
 /**
  * Helper class providing methods and constants common to other classes in the
@@ -32,9 +36,8 @@ public final class Utilities {
 	/**
 	 * Google API project id registered to use GCM.
 	 */
-//	public static final String SENDER_ID = "227827031375";
-	public static final String SENDER_ID = "605229245886"; //public server
-	
+	 public static final String SENDER_ID = "227827031375";
+	//public static final String SENDER_ID = "605229245886"; // public server
 
 	/**
 	 * Tag used on log messages.
@@ -67,5 +70,25 @@ public final class Utilities {
 		Intent intent = new Intent(DISPLAY_MESSAGE_ACTION);
 		intent.putExtra(EXTRA_MESSAGE, message);
 		context.sendBroadcast(intent);
+	}
+
+	/**
+	 * To get the Bartsy Id from shared preferences. When application went to
+	 * the sleep mode all variables will clear. Best way to get bartsy id from
+	 * shared preferences
+	 * 
+	 * @param context
+	 *            application's context.
+	 */
+
+	public static int getBartsyIdFromSharedPreferences(Context context) {
+
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				context.getResources().getString(
+						R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+		return sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
+
 	}
 }

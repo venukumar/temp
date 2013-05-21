@@ -135,9 +135,9 @@ public class InitActivity extends FragmentActivity implements
 						Toast.LENGTH_SHORT).show();
 			break;
 		case R.id.button_disconnect:
-//			Intent intent = new Intent(InitActivity.this,
-//					AndroidFacebookConnectActivity.class);
-//			startActivity(intent);
+			// Intent intent = new Intent(InitActivity.this,
+			// AndroidFacebookConnectActivity.class);
+			// startActivity(intent);
 			if (mPlusClient.isConnected()) {
 				mPlusClient.clearDefaultAccount();
 				mPlusClient.disconnect();
@@ -265,7 +265,6 @@ public class InitActivity extends FragmentActivity implements
 			bartsyProfile.setType("google");
 			bartsyProfile.setSocialNetworkId(mPerson.getId());
 			bartsyProfile.setGender(String.valueOf(mPerson.getGender()));
-			
 
 			// Show dialog and on exit start Bartsy (there should be an option
 			// to change the profile)
@@ -281,10 +280,18 @@ public class InitActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onUserDialogPositiveClick(DialogFragment dialog) {
+	public void onUserDialogPositiveClick(DialogFragment dialog,
+			String userCheckedInOrNot) {
 		// User accepted the profile, launch main activity
 		finish();
-		this.startActivity(new Intent().setClass(this, MainActivity.class));
+		// To check whether user is checkedIn or not. If user already checkedIn
+		// then it should navigate to VenueActivity, otherwise it should
+		// navigate to MainActivity
+		if (userCheckedInOrNot != null
+				&& userCheckedInOrNot.equalsIgnoreCase("0"))
+			this.startActivity(new Intent().setClass(this, VenueActivity.class));
+		else
+			this.startActivity(new Intent().setClass(this, MainActivity.class));
 	}
 
 	@Override

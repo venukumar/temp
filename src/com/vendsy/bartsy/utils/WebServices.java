@@ -29,16 +29,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.db.DatabaseManager;
@@ -46,8 +49,11 @@ import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.model.Section;
+import com.vendsy.bartsy.model.Venue;
 
 public class WebServices {
+
+	private static final String TAG = "WebServices";
 
 	/**
 	 * To check internet connection
@@ -150,17 +156,15 @@ public class WebServices {
 			json.put("bartsyId", bartsyId);
 			json.put("venueId", venueId);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		try {
 
 			response = postRequest(url, json, context);
-			System.out.println("response :: " + response);
+			Log.i(TAG, "CheckIn or Check Out response :: " + response);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return response;
@@ -181,7 +185,7 @@ public class WebServices {
 		try {
 			boolean status = isNetworkAvailable(context);
 			if (status == true) {
-
+				// Set Url to http request
 				httpRequest.setURI(new URI(url));
 
 				HttpResponse response = httpClient.execute(httpRequest);
@@ -229,7 +233,7 @@ public class WebServices {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
+		// Place order webservice call in background
 		new Thread() {
 
 			@Override
@@ -251,7 +255,9 @@ public class WebServices {
 	}
 
 	/**
-	 * Service call for profile information
+	 * @methodName: postProfile
+	 * 
+	 *              Service call for profile information
 	 * 
 	 * @param bartsyProfile
 	 * @param profileImage
@@ -277,12 +283,14 @@ public class WebServices {
 		// time
 		// out
 
+		// get registration id from shared preferences
 		SharedPreferences settings = context.getSharedPreferences(
 				GCMIntentService.REG_ID, 0);
 		String deviceToken = settings.getString("RegId", "");
 
 		int deviceType = Constants.DEVICE_Type;
 
+		// Created a json object for posting data to server
 		JSONObject json = new JSONObject();
 		try {
 			json.put("userName", bartsyProfile.getUsername());
@@ -293,12 +301,14 @@ public class WebServices {
 			json.put("deviceType", deviceType);
 			json.put("deviceToken", deviceToken);
 		} catch (JSONException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
+		System.out.println("json   "+json);
+		
 		try {
 
+			// Converting profile bitmap image into byte array
 			if (profileImage != null) {
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -308,9 +318,13 @@ public class WebServices {
 			}
 
 			try {
+
 				// String details = URLEncoder.encode(json.toString(), "UTF-8");
 				// url = url + details;
 				// System.out.println("details:"+details);
+
+				// Execute HTTP Post Request
+
 				HttpPost postRequest = new HttpPost(url);
 
 				HttpClient client = new DefaultHttpClient();
@@ -323,7 +337,7 @@ public class WebServices {
 
 				MultipartEntity reqEntity = new MultipartEntity(
 						HttpMultipartMode.BROWSER_COMPATIBLE);
-
+				// added profile image into MultipartEntity
 				if (babFirst != null)
 					reqEntity.addPart("userImage", babFirst);
 
@@ -336,61 +350,8 @@ public class WebServices {
 
 				/* Checking response */
 				if (responses != null) {
-					String responseofmain = EntityUtils.toString(responses
-							.getEntity());
-					System.out.println("responseofmain " + responseofmain);
-					int bartsyUserId = 0;
-					JSONObject resultJson = new JSONObject(responseofmain);
-					String errorCode = resultJson.getString("errorCode");
-					String errorMessage = resultJson.getString("errorMessage");
-					status = resultJson.getString("userCheckedIn");
-
-					System.out.println("status " + status);
-
-					System.out.println("error message " + errorMessage);
-					System.out.println("errorCode " + errorCode);
-
-					if (resultJson.has("bartsyUserId")) {
-						bartsyUserId = resultJson.getInt("bartsyUserId");
-
-						System.out.println("bartsyUserId " + bartsyUserId);
-					} else {
-						System.out.println("bartsyUserIdnot found");
-					}
-					if (bartsyUserId > 0) {
-						SharedPreferences sharedPref = context
-								.getSharedPreferences(
-										context.getResources()
-												.getString(
-														R.string.config_shared_preferences_name),
-										Context.MODE_PRIVATE);
-						Resources r = context.getResources();
-
-						SharedPreferences.Editor editor = sharedPref.edit();
-						editor.putInt(r.getString(R.string.bartsyUserId),
-								bartsyUserId);
-						editor.commit();
-					}
+					status = postProfileResponseChecking(responses, context);
 				}
-
-				// if (responses != null) {
-				// System.out.println("response not null");
-				// String responseofmain = EntityUtils.toString(responses
-				// .getEntity());
-				//
-				// System.out.println(responseofmain + " response :::: ");
-				//
-				// System.out.println(responseofmain);
-				//
-				// JSONObject jsonResponse = new JSONObject(responseofmain);
-				//
-				// if (jsonResponse.has("Result"))
-				// status = jsonResponse.getString("Result");
-				// else
-				// System.out.println("not has result");
-				// System.out.println("status :: " + status);
-				//
-				// }
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -403,11 +364,128 @@ public class WebServices {
 
 	}
 
+	/**
+	 * @methodName : postProfileResponseChecking
+	 * 
+	 *             Save profile webservice call response handling
+	 * 
+	 * @param responses
+	 * @param context
+	 * @return status ----> user already checked in or not
+	 * 
+	 */
+	private static String postProfileResponseChecking(HttpResponse responses,
+			Context context) {
+		String status = null;
+		try {
+			String responseofmain = EntityUtils.toString(responses.getEntity());
+			System.out.println("responseofmain " + responseofmain);
+			int bartsyUserId = 0;
+			JSONObject resultJson = new JSONObject(responseofmain);
+
+			if (resultJson.has("errorCode")
+					&& resultJson.getString("errorCode").equalsIgnoreCase("0")) {
+
+				// String errorCode = resultJson.getString("errorCode");
+				// String errorMessage = resultJson
+				// .getString("errorMessage");
+				status = resultJson.getString("userCheckedIn");
+				// if user checkedIn is true
+				if (status.equalsIgnoreCase("0"))
+
+				{
+					// Create Venue Object and assigned to active Venue
+					// object in BartsyApplication class
+					Venue venue = null;
+					if (resultJson.has("venueId")) {
+						venue = new Venue();
+						String venueId = resultJson.getString("venueId");
+						venue.setId(venueId);
+						System.out.println("venueId  " + venueId);
+					}
+					if (resultJson.has("venueName")) {
+						if (venue == null)
+							venue = new Venue();
+						String venueName = resultJson.getString("venueName");
+						venue.setName(venueName);
+						System.out.println("venueName " + venueName);
+					}
+					// set venue object to activeVenue
+					BartsyApplication app = (BartsyApplication) context;
+					app.activeVenue = venue;
+
+				}
+				if (resultJson.has("bartsyUserId")) {
+					bartsyUserId = resultJson.getInt("bartsyUserId");
+
+					Log.i(TAG, "bartsyUserId " + bartsyUserId + "");
+				} else {
+					Log.i(TAG, "BartsyID " + "bartsyUserIdnot found");
+				}
+				// If bartsy id exits we are saved into shared preferences
+				if (bartsyUserId > 0) {
+					SharedPreferences sharedPref = context
+							.getSharedPreferences(
+									context.getResources()
+											.getString(
+													R.string.config_shared_preferences_name),
+									Context.MODE_PRIVATE);
+					Resources r = context.getResources();
+
+					SharedPreferences.Editor editor = sharedPref.edit();
+					editor.putInt(r.getString(R.string.bartsyUserId),
+							bartsyUserId);
+					editor.commit();
+				}
+			} else {
+				status = null;
+			}
+		} catch (Exception e) {
+
+			Log.i(TAG,
+					"Exception found in postProfileResponseChecking "
+							+ e.getMessage());
+			return null;
+		}
+		return status;
+	}
+
+	/**
+	 * @methodName : getVenueList
+	 * 
+	 *             To get venue list from server
+	 * 
+	 * @param context
+	 * @return list of venues
+	 */
 	public static String getVenueList(final Context context) {
 		String response = null;
 
 		response = WebServices.getRequest(Constants.URL_GET_VENU_LIST, context);
-		System.out.println("response venu " + response);
+		Log.i(TAG, "response venu list " + response);
+		return response;
+	}
+
+	/**
+	 * methodName : getUserOrdersList
+	 * 
+	 * @return ordersList
+	 */
+
+	public static String getUserOrdersList(Context context) {
+		int bartsyId = Utilities.getBartsyIdFromSharedPreferences(context);
+		String response = null;
+		try {
+
+			JSONObject postData = new JSONObject();
+			postData.put("bartsyId", bartsyId);
+			response = WebServices.postRequest(
+					Constants.URL_LIST_OF_USER_ORDERS, postData, context);
+
+		} catch (Exception e) {
+			Log.i(TAG, "getUserOdersList Exception found " + e.getMessage());
+			return null;
+		}
 		return response;
 	}
 
@@ -443,7 +521,7 @@ public class WebServices {
 				String menus = result.getString("menu");
 
 				JSONArray jsonArray = new JSONArray(menus);
-				System.out.println("json arrya " + jsonArray.length());
+				Log.i(TAG, "Menus length " + jsonArray.length());
 
 				for (int section = 0; section < jsonArray.length(); section++) {
 
@@ -464,6 +542,7 @@ public class WebServices {
 
 								if (name.length() > 0)
 									menuSection.setName(name);
+								// To save section in DB
 								DatabaseManager.getInstance().saveSection(
 										menuSection);
 							}
@@ -479,6 +558,7 @@ public class WebServices {
 									menuSection = new Section();
 									menuSection.setName(newName);
 									menuSection.setVenueId(venueID);
+									// To save section in DB
 									DatabaseManager.getInstance().saveSection(
 											menuSection);
 								}
@@ -491,6 +571,7 @@ public class WebServices {
 											contents.getJSONObject(k));
 									menuDrink.setSection(menuSection);
 									menuDrink.setVenueId(venueID);
+									// To save menu drink in DB
 									DatabaseManager.getInstance().saveDrink(
 											menuDrink);
 								}
@@ -506,8 +587,10 @@ public class WebServices {
 	}
 
 	/**
+	 * @methodName : downloadImage
 	 * 
-	 * To download the image from server and set image bitmap to imageView
+	 *             To download the image from server and set image bitmap to
+	 *             imageView
 	 * 
 	 * @param fileUrl
 	 * @param model

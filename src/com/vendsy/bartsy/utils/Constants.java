@@ -4,8 +4,8 @@ public class Constants {
 
 	// Application name for logging purposes
 	public static final String TAG = "Bartsy";
-	
-// public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";
+
+	 //public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";
 
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";
 
@@ -36,8 +36,8 @@ public class Constants {
 	public static final String URL_LIST_OF_CHECKED_IN_USERS = DOMAIN_NAME
 			+ PROJECT_NAME + "data/checkedInUsersList";
 	// This is the url for to sync data with customer app
-	public static final String URL_syncCustomerApp = DOMAIN_NAME + PROJECT_NAME
-			+ "data/syncCustomerApp";
+	public static final String URL_LIST_OF_USER_ORDERS = DOMAIN_NAME
+			+ PROJECT_NAME + "data/getUserOrders";
 
 	// Android Device Type
 	public static final int DEVICE_Type = 0;

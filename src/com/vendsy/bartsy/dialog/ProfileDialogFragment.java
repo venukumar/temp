@@ -23,6 +23,7 @@ import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.support.v4.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -53,6 +54,7 @@ public class ProfileDialogFragment extends DialogFragment {
 	public Profile mProfile = null;
 	public Context mcontext = null;
 	private Bitmap mProfileImage = null;
+	private ProgressDialog progressDialog;
 
 	/*
 	 * The activity that creates an instance of this dialog fragment must
@@ -60,7 +62,8 @@ public class ProfileDialogFragment extends DialogFragment {
 	 * passes the DialogFragment in case the host needs to query it.
 	 */
 	public interface ProfileDialogListener {
-		public void onUserDialogPositiveClick(DialogFragment dialog);
+		public void onUserDialogPositiveClick(DialogFragment dialog,
+				String userCheckedInOrNot);
 
 		public void onUserDialogNegativeClick(DialogFragment dialog);
 	}
@@ -126,8 +129,6 @@ public class ProfileDialogFragment extends DialogFragment {
 
 							@Override
 							public void onClick(DialogInterface dialog, int id) {
-								// Send the positive button event back to the
-								// host activity
 
 								SharedPreferences settings = mcontext
 										.getSharedPreferences(
@@ -138,16 +139,24 @@ public class ProfileDialogFragment extends DialogFragment {
 
 									new Thread() {
 										public void run() {
-
-											String status = WebServices
+											// Service call for post profile
+											// data to server
+											String userChekedInOrNot = WebServices
 													.postProfile(
 															mProfile,
 															mProfileImage,
 															Constants.URL_POST_PROFILE_DATA,
 															mcontext);
-
-											mListener
-													.onUserDialogPositiveClick(ProfileDialogFragment.this);
+											// Added one more variable to check
+											// user checkedIn or not
+											// Send the positive button event
+											// back to the
+											// host activity
+											if (userChekedInOrNot != null)
+												mListener
+														.onUserDialogPositiveClick(
+																ProfileDialogFragment.this,
+																userChekedInOrNot);
 
 										}
 									}.start();

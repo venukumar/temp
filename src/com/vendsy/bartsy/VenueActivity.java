@@ -68,8 +68,14 @@ public class VenueActivity extends FragmentActivity implements
 
 	public static final String TAG = "Bartsy";
 	public DrinksSectionFragment mDrinksFragment = null;
-	public OrdersSectionFragment mOrdersFragment = null;  	// make sure to set this to null when fragment is destroyed
-	public PeopleSectionFragment mPeopleFragment = null; 	// make sure to set this to null when fragment is destroyed
+	public OrdersSectionFragment mOrdersFragment = null; // make sure to set
+															// this to null when
+															// fragment is
+															// destroyed
+	public PeopleSectionFragment mPeopleFragment = null; // make sure to set
+															// this to null when
+															// fragment is
+															// destroyed
 	private Handler handler = new Handler();
 
 	public void appendStatus(String status) {
@@ -192,7 +198,7 @@ public class VenueActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-		
+
 		/*
 		 * Now that we're all ready to go, we are ready to accept notifications
 		 * from other components.
@@ -205,21 +211,25 @@ public class VenueActivity extends FragmentActivity implements
 	 * Initialize the fragments
 	 */
 	private void initializeFragments() {
-		
+
 		Log.i(TAG, "MainActivity.initializeFragments()");
-		
-		// Initialize bartender fragment - the fragment may still exist even though the activity has restarted
-		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drink_orders);
-		if ( f == null) {
+
+		// Initialize bartender fragment - the fragment may still exist even
+		// though the activity has restarted
+		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager()
+				.findFragmentById(R.string.title_drink_orders);
+		if (f == null) {
 			Log.i(TAG, "Bartender fragment not found. Creating one.");
 			mOrdersFragment = new OrdersSectionFragment();
 		} else {
 			Log.i(TAG, "Bartender fragment found.");
 			mOrdersFragment = f;
 		}
-		
-		// Initialize people fragment - reuse the fragment if it's already in memory
-		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_people);
+
+		// Initialize people fragment - reuse the fragment if it's already in
+		// memory
+		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager()
+				.findFragmentById(R.string.title_people);
 		if (mPeopleFragment == null) {
 			Log.i(TAG, "People fragment not found. Creating one.");
 			mPeopleFragment = new PeopleSectionFragment();
@@ -227,16 +237,17 @@ public class VenueActivity extends FragmentActivity implements
 			Log.i(TAG, "People fragment found.");
 			mPeopleFragment = p;
 		}
-		
+
 		// Start loading the menu in the background
 		loadMenuSections();
+
 	}
-	
+
 	/**
 	 * To get Sections and Drinks from the server
 	 */
 	private void loadMenuSections() {
-		
+
 		Log.i("Bartsy", "VenueActivity.loadMenuSections()");
 
 		new Thread() {
@@ -263,7 +274,6 @@ public class VenueActivity extends FragmentActivity implements
 		}.start();
 	}
 
-
 	@Override
 	public void onStart() {
 		super.onStart();
@@ -281,7 +291,6 @@ public class VenueActivity extends FragmentActivity implements
 
 		mApp.checkin();
 
-
 		/*
 		 * update the state of the action bar depending on our connection state.
 		 */
@@ -293,13 +302,14 @@ public class VenueActivity extends FragmentActivity implements
 		super.onStop();
 		Log.i(TAG, "onStop()");
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "VenueActivity().onDestroy()");
 
-		// Only stop listening to messages from the application when we're killed (keep
+		// Only stop listening to messages from the application when we're
+		// killed (keep
 		// listening while in the background with no active view)
 		mApp.deleteObserver(this);
 
@@ -462,7 +472,7 @@ public class VenueActivity extends FragmentActivity implements
 	 * Updates the action bar tab with the number of open orders
 	 */
 
-	void updateOrdersCount() {
+	public void updateOrdersCount() {
 		// Update tab title with the number of orders - for now hardcode the tab
 		// at the right position
 		getActionBar().getTabAt(2).setText(
@@ -492,8 +502,9 @@ public class VenueActivity extends FragmentActivity implements
 		// When the given tab is selected, switch to the corresponding page in
 		// the ViewPager.
 		mViewPager.setCurrentItem(tab.getPosition());
-		
-		// upon selecting the people tab we want to update the list of people from the server
+
+		// upon selecting the people tab we want to update the list of people
+		// from the server
 		if (mTabs[tab.getPosition()] == R.string.title_people) {
 			mPeopleFragment.updatePeopleView();
 		}
@@ -518,7 +529,6 @@ public class VenueActivity extends FragmentActivity implements
 	private int mTabs[] = { R.string.title_drinks, R.string.title_people,
 			R.string.title_drink_orders };
 
-	
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 		public SectionsPagerAdapter(FragmentManager fm) {
@@ -669,17 +679,19 @@ public class VenueActivity extends FragmentActivity implements
 			}
 				break;
 			case HANDLE_ORDERS_UPDATED_EVENT:
-				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
+				Log.i(TAG,
+						"BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
 				if (mOrdersFragment != null) {
-					Log.i(TAG,"Updating orders view and count...");
+					Log.i(TAG, "Updating orders view and count...");
 					mOrdersFragment.updateOrdersView();
 					updateOrdersCount();
 				}
 				break;
 			case HANDLE_PEOPLE_UPDATED_EVENT:
-				Log.i(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
+				Log.i(TAG,
+						"BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
 				if (mPeopleFragment != null) {
-					Log.i(TAG,"Updating people view and count...");
+					Log.i(TAG, "Updating people view and count...");
 					mPeopleFragment.updatePeopleView();
 					updatePeopleCount();
 				}
@@ -778,13 +790,22 @@ public class VenueActivity extends FragmentActivity implements
 		String tipPercentageValue = tip.replace("%", "");
 		order.tipAmount = Float.valueOf(tipPercentageValue);
 
-		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order ID
-				null, 									// arg(1) - This order stil doesn't have a server-assigned ID
-				drink.getTitle(), 						// arg(2) - Title
-				drink.getDescription(), 				// arg(3) - Description
-				drink.getPrice(), 						// arg(4) - Price
-				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(), 
-				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order
+														// ID
+				null, // arg(1) - This order stil doesn't have a server-assigned
+						// ID
+				drink.getTitle(), // arg(2) - Title
+				drink.getDescription(), // arg(3) - Description
+				drink.getPrice(), // arg(4) - Price
+				Integer.toString(R.drawable.drinks), // arg(5) - Image resource
+														// for the order. for
+														// now always use the
+														// same picture for the
+														// drink
+														// drink.getImage(),
+				mApp.mProfile); // arg(6) - Each order contains the profile of
+								// the sender (and later the profile of the
+								// person that should pick it up)
 		order.itemId = drink.getDrinkId();
 
 		// invokePaypalPayment(); // To enable paypal payment

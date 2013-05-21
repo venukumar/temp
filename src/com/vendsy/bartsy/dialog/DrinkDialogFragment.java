@@ -95,8 +95,7 @@ public class DrinkDialogFragment extends DialogFragment {
 
 							@Override
 							public void onClick(DialogInterface dialog, int id) {
-								
-//								
+
 								// Send the positive button event back to the
 								// host activity
 
@@ -115,9 +114,9 @@ public class DrinkDialogFragment extends DialogFragment {
 								} else {
 									tipPercentageValue = b.getText().toString();
 								}
-								
+
 								mListener
-								.onDialogPositiveClick(DrinkDialogFragment.this);
+										.onDialogPositiveClick(DrinkDialogFragment.this);
 
 							}
 						});
