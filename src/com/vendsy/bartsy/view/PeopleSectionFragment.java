@@ -49,11 +49,12 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		mInflater = inflater;
 		mContainer = container;
 		mRootView = inflater.inflate(R.layout.users_main, container, false);
-		mPeopleListView = (LinearLayout) mRootView
-				.findViewById(R.id.view_singles);
-
+		mPeopleListView = (LinearLayout) mRootView.findViewById(R.id.view_singles);
+		
+		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
-
+		((VenueActivity) getActivity()).mPeopleFragment = this;
+		
 		updatePeopleView();
 		
 
@@ -63,9 +64,9 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	/**
 	 * Updates the people view from scratch
 	 */
-
-	public void updatePeopleView() {
-
+	
+	public void updatePeopleView () {
+		
 		Log.i("Bartsy", "About to update people list view");
 
 		if (mPeopleListView == null)
@@ -75,39 +76,30 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 		mPeopleListView.removeAllViews();
 
 		// Add any existing people in the layout, one by one
-
+		
 		Log.i("Bartsy", "mApp.mPeople list size = " + mApp.mPeople.size());
 
 		for (Profile profile : mApp.mPeople) {
 			Log.i("Bartsy", "Adding a user item to the layout");
-			profile.view = mInflater.inflate(R.layout.user_item, mContainer,
-					false);
-			profile.updateView(this); // sets up view specifics and sets
-										// listener to this
+			profile.view = mInflater.inflate(R.layout.user_item, mContainer, false);
+			profile.updateView(this); // sets up view specifics and sets listener to this
 			mPeopleListView.addView(profile.view);
 		}
 	}
 
-	@Override
-	public void onDestroyView() {
-		super.onDestroyView();
-
-		Log.d("Bartsy", "PeopleSectionFragment.onDestroyView()");
+	
+	@Override 
+	public void onDestroy() {
+		super.onDestroy();
+		
+		Log.d("Bartsy", "PeopleSectionFragment.onDestroy()");
 
 		mRootView = null;
 		mPeopleListView = null;
 		mInflater = null;
 		mContainer = null;
-	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		Log.i("Bartsy", "PeopleSectionFragment.onDestroy()");
-
-		// Because the fragment may be destroyed while the activity persists,
-		// remove pointer from activity
+		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
 		((VenueActivity) getActivity()).mPeopleFragment = null;
 	}
 

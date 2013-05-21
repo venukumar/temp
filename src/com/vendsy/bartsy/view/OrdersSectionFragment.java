@@ -48,8 +48,9 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		mRootView = mInflater.inflate(R.layout.orders_main, mContainer, false);
 		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 		
+		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
-		
+		((VenueActivity) getActivity()).mOrdersFragment = this;		
 		updateOrdersView();
 		
 		return mRootView;
@@ -80,23 +81,15 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 	
 	
 	@Override 
-	public void onDestroyView() {
-		super.onDestroyView();
+	public void onDestroy() {
+		super.onDestroy();
 
-		Log.d("Bartsy", "OrdersSectionFragment.onDestroyView()");
+		Log.d("Bartsy", "OrdersSectionFragment.onDestroy()");
 		
 		mRootView = null;
 		mOrderListView = null;
 		mInflater = null;
 		mContainer = null;
-
-	}
-	
-	@Override 
-	public void onDestroy() {
-		super.onDestroy();
-
-		Log.i("Bartsy", "OrdersSectionFragment.onDestroy()");
 
 		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
 		((VenueActivity) getActivity()).mOrdersFragment = null;

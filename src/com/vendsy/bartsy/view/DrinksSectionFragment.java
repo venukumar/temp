@@ -9,6 +9,7 @@ import java.util.List;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.ExpandableListView.OnChildClickListener;
 
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
@@ -31,37 +33,27 @@ import com.vendsy.bartsy.utils.WebServices;
 public class DrinksSectionFragment extends Fragment {
 	private View mRootView = null;
 	private ExpandableListView mDrinksListView = null;
-	LayoutInflater mInflater = null;
-	ViewGroup mContainer = null;
-	private Handler handler = new Handler();
-	private String activeVenueId;
+	public BartsyApplication mApp = null;
+
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
-
-		if (mDrinksListView == null) {
-
-			mRootView = inflater
-					.inflate(R.layout.drinks_main, container, false);
-			mDrinksListView = (ExpandableListView) mRootView
-					.findViewById(R.id.view_drinks_for_me_list);
-
-			mInflater = inflater;
-			mContainer = container;
-
-		}
-		// To update the list view with menu drinks from the db
-		BartsyApplication app = (BartsyApplication)getActivity().getApplication();
+		Log.i("Bartsy", "DrinksSectionFragment.onCreateView()");
 		
-		if(app.activeVenue!=null && app.activeVenue.getId()!=null){
-			activeVenueId = app.activeVenue.getId();
-			List<Section> sectionsList = DatabaseManager
-					.getInstance().getMenuSections(app.activeVenue.getId());
-			updateListView(sectionsList);
-		}
+		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
+		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
+
+		
+		// Make sure the fragment pointed to by the activity is accurate
+		mApp = (BartsyApplication) getActivity().getApplication();
+		((VenueActivity) getActivity()).mDrinksFragment = this;
+
+		// Update the view with the list of items from the DB
+		final List<Section> sectionsList = DatabaseManager
+				.getInstance().getMenuSections(mApp.activeVenue.getId());
+		updateListView(sectionsList);
 		
 		return mRootView;
 	}
@@ -72,13 +64,16 @@ public class DrinksSectionFragment extends Fragment {
 	 * @param sectionsList
 	 */
 	public void updateListView(List<Section> sectionsList) {
-		if(sectionsList==null || activeVenueId==null){
+		
+		Log.i("Bartsy", "DrinksSectionFragment.updateListView()");
+		
+		if(sectionsList==null){
 			return;
 		}
 		ArrayList<String> groupNames = new ArrayList<String>();
 		// Default group name for individual drinks
 		List<MenuDrink> defaultList = DatabaseManager.getInstance()
-				.getMenuDrinks(activeVenueId);
+				.getMenuDrinks(mApp.activeVenue.getId());
 		if (defaultList != null && defaultList.size() > 0) {
 			groupNames.add("Various items");
 		}
@@ -95,16 +90,12 @@ public class DrinksSectionFragment extends Fragment {
 		}
 		for (int j = 0; j < sectionsList.size(); j++) {
 			List<MenuDrink> list = DatabaseManager.getInstance().getMenuDrinks(
-					sectionsList.get(j), activeVenueId);
+					sectionsList.get(j), mApp.activeVenue.getId());
 			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
 			menuDrinks.add(menu);
 		}
 		
 		try {
-			if(getActivity() ==null ||  mDrinksListView==null){
-				return;
-			}
-			
 			final BartsyApplication app = (BartsyApplication) getActivity().getApplication();
 			
 			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
@@ -141,12 +132,13 @@ public class DrinksSectionFragment extends Fragment {
 	}
 
 	@Override
-	public void onDestroyView() {
-		super.onDestroyView();
-		mRootView = null;
-		mDrinksListView = null;
-		mInflater = null;
-		mContainer = null;
+	public void onDestroy() {
+		super.onDestroy();
+
+		Log.i("Bartsy", "DrinksSectionFragment.onDestroy()");
+		
+		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
+		((VenueActivity) getActivity()).mDrinksFragment = null;
 	}
 
 }
