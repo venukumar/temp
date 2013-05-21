@@ -2,6 +2,9 @@ package com.vendsy.bartsy.utils;
 
 public class Constants {
 
+	// Application name for logging purposes
+	public static final String TAG = "Bartsy";
+	
 // public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";
 
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";
