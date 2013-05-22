@@ -53,7 +53,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return;
-		} else {
+		} else if(mApp.activeVenue==null){
 
 			// To get the application resources
 			Resources r = getResources();
@@ -63,16 +63,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 			String venueName = sharedPref.getString(
 					r.getString(R.string.venueName), "Not Checked In");
-			
-			
 			if (!venueId.equalsIgnoreCase("0")) {
 				Venue venue = new Venue();
 				venue.setId(venueId);
 				venue.setName(venueName);
 				mApp.activeVenue = venue;
-			}
-			// If the Venue is exit means user already checked in, start the venue activity
-			if (mApp.activeVenue != null) {
+				
+				// If the Venue is exit means user already checked in, start the venue activity
 				Log.i(this.toString(),
 						"Venue Not null " + mApp.activeVenue.getName());
 				Intent intent = new Intent()
@@ -81,6 +78,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 				startActivity(intent);
 				finish();
 			}
+			
 		}
 
 		setContentView(R.layout.main);
