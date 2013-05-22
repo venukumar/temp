@@ -102,7 +102,7 @@ public class WebServices {
 		HttpPost httppost = new HttpPost(url);
 
 		String data = postData.toString();
-		Log.i(TAG,"Post request posted data " + data);
+		Log.i(TAG, "Post request posted data " + data);
 		try {
 			boolean status = isNetworkAvailable(context);
 			if (status == true) {
@@ -121,7 +121,7 @@ public class WebServices {
 					response = responseofmain.toString();
 				} catch (Exception e) {
 					Log.e("log_tag", "Error in http connection" + e.toString());
-					Log.i(TAG,"Exception found ::: " + e.getMessage());
+					Log.i(TAG, "Exception found ::: " + e.getMessage());
 
 				}
 			}
@@ -150,7 +150,7 @@ public class WebServices {
 		Resources r = context.getResources();
 		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
-		Log.i(TAG,"bartsyId ::: " + bartsyId);
+		Log.i(TAG, "bartsyId ::: " + bartsyId);
 		final JSONObject json = new JSONObject();
 		try {
 			json.put("bartsyId", bartsyId);
@@ -241,7 +241,7 @@ public class WebServices {
 					String response;
 					response = postRequest(Constants.URL_PLACE_ORDER,
 							orderData, context);
-					Log.i(TAG,"Post order to server response :: " + response);
+					Log.i(TAG, "Post order to server response :: " + response);
 					JSONObject json = new JSONObject(response);
 					order.serverID = json.getString("orderId");
 
@@ -296,7 +296,12 @@ public class WebServices {
 			json.put("name", bartsyProfile.getName());
 			json.put("loginId", bartsyProfile.getSocialNetworkId());
 			json.put("loginType", bartsyProfile.getType());
-			json.put("gender", bartsyProfile.getGender());
+			if (bartsyProfile.getGender().equalsIgnoreCase("0"))
+				json.put("gender", "male");
+			else if (bartsyProfile.getGender().equalsIgnoreCase("1"))
+				json.put("gender", "female");
+			else
+				json.put("gender", bartsyProfile.getGender());
 			json.put("deviceType", deviceType);
 			json.put("deviceToken", deviceToken);
 		} catch (JSONException e1) {
@@ -318,7 +323,7 @@ public class WebServices {
 
 				// String details = URLEncoder.encode(json.toString(), "UTF-8");
 				// url = url + details;
-				
+
 				// Execute HTTP Post Request
 
 				HttpPost postRequest = new HttpPost(url);
@@ -375,7 +380,7 @@ public class WebServices {
 		String status = null;
 		try {
 			String responseofmain = EntityUtils.toString(responses.getEntity());
-			Log.i(TAG,"postProfileResponseChecking " + responseofmain);
+			Log.i(TAG, "postProfileResponseChecking " + responseofmain);
 			int bartsyUserId = 0;
 			JSONObject resultJson = new JSONObject(responseofmain);
 
@@ -397,14 +402,14 @@ public class WebServices {
 						venue = new Venue();
 						String venueId = resultJson.getString("venueId");
 						venue.setId(venueId);
-						Log.i(TAG,"venueId  " + venueId);
+						Log.i(TAG, "venueId  " + venueId);
 					}
 					if (resultJson.has("venueName")) {
 						if (venue == null)
 							venue = new Venue();
 						String venueName = resultJson.getString("venueName");
 						venue.setName(venueName);
-						Log.i(TAG,"venueName " + venueName);
+						Log.i(TAG, "venueName " + venueName);
 					}
 					// set venue object to activeVenue
 					BartsyApplication app = (BartsyApplication) context;
