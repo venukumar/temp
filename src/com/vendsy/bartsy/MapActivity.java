@@ -50,6 +50,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.adapter.VenueListViewAdapter;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -216,6 +217,8 @@ public class MapActivity extends Activity implements LocationListener,
 		// Not check in yet
 		else {
 			mApp.activeVenue = venue;
+			if (mApp.activeVenue != null)
+				Utilities.saveVenueDetails(MapActivity.this,mApp.activeVenue);
 			userCheckinAction();
 			Intent intent = new Intent(activity, VenueActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -349,25 +352,28 @@ public class MapActivity extends Activity implements LocationListener,
 	protected void userCheckinAction() {
 		new Thread() {
 			public void run() {
-				Venue venue = mApp.activeVenue;
+				final Venue venue = mApp.activeVenue;
 				String response = WebServices.userCheckInOrOut(
 						MapActivity.this, venue.getId(),
 						Constants.URL_USER_CHECK_IN);
+
 				if (response != null) {
 					try {
 						JSONObject json = new JSONObject(response);
 						String errorCode = json.getString("errorCode");
 						String errorMessage = json.has("errorMessage") ? json
 								.getString("errorMessage") : "";
-						// errorCode "0" indicates for success and "1" for failure
-						
+						// errorCode "0" indicates for success and "1" for
+						// failure
+
 						if (errorCode.equalsIgnoreCase("0")) {
 							// To access UI thread
 							handler.post(new Runnable() {
 								public void run() {
-								//remove orders and people from the bartsy application class
+									// remove orders and people from the bartsy application class
 									mApp.mOrders.clear();
 									mApp.mPeople.clear();
+									Utilities.saveVenueDetails(MapActivity.this,venue);
 									Intent intent = new Intent(activity,
 											VenueActivity.class);
 									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -384,4 +390,6 @@ public class MapActivity extends Activity implements LocationListener,
 			};
 		}.start();
 	}
+
+	
 }

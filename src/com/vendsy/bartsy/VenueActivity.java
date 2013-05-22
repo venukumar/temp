@@ -18,6 +18,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -49,6 +51,7 @@ import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
@@ -429,6 +432,19 @@ public class VenueActivity extends FragmentActivity implements
 	}
 
 	private void updateActionBarStatus() {
+
+		SharedPreferences sharedPref = getSharedPreferences(getResources()
+				.getString(R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		// To get the application resources
+		Resources r = getResources();
+		// To get venue id from shared preferences
+		String venueId = sharedPref.getString(r.getString(R.string.venueId),
+				"0");
+		// If Venue id and name doesn't exits in shared preference we saving into shared preferences.
+		if (venueId.equalsIgnoreCase("0") && mApp.activeVenue != null) {
+			Utilities.saveVenueDetails(VenueActivity.this, mApp.activeVenue);
+		}
 
 		Log.i(TAG, "updateChannelState()");
 

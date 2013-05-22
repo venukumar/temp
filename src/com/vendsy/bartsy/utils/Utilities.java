@@ -15,7 +15,9 @@
  */
 package com.vendsy.bartsy.utils;
 
+import com.vendsy.bartsy.MapActivity;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.model.Venue;
 
 import android.content.Context;
 import android.content.Intent;
@@ -36,7 +38,7 @@ public final class Utilities {
 	/**
 	 * Google API project id registered to use GCM.
 	 */
-	 //public static final String SENDER_ID = "227827031375";
+	// public static final String SENDER_ID = "227827031375";
 	public static final String SENDER_ID = "605229245886"; // public server
 
 	/**
@@ -89,6 +91,43 @@ public final class Utilities {
 				Context.MODE_PRIVATE);
 		Resources r = context.getResources();
 		return sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
+
+	}
+/**
+ * To saved the data into shared preferences.
+ * 
+ * @param context
+ * @param key
+ * @param value
+ */
+	public static void saveDataInSharedPrefrences(Context context, String key,
+			String value) {
+
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				context.getResources().getString(
+						R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putString(key, value);
+		editor.commit();
+
+	}
+	/**
+	 * To save venue details in shared preferences
+	 * 
+	 * @param venue
+	 */
+	public static void saveVenueDetails(Context context,Venue venue) {
+		// To get venue id key from string.xml 
+		String id = context.getResources().getString(R.string.venueId);
+		// To get venue name key from string.xml 
+		String name =context.getResources().getString(R.string.venueName);
+		Utilities.saveDataInSharedPrefrences(context, id,
+				venue.getId());
+		Utilities.saveDataInSharedPrefrences(context, name,
+				venue.getName());
 
 	}
 }

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
@@ -38,6 +39,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		mApp = (BartsyApplication) getApplication();
 		// If the user profile is not set, start the init activity
 		SharedPreferences sharedPref = getSharedPreferences(getResources()
 				.getString(R.string.config_shared_preferences_name),
@@ -51,11 +53,37 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return;
+		} else {
+
+			// To get the application resources
+			Resources r = getResources();
+			// To get venue id from shared preferences
+			String venueId = sharedPref.getString(
+					r.getString(R.string.venueId), "0");
+
+			String venueName = sharedPref.getString(
+					r.getString(R.string.venueName), "Not Checked In");
+			
+			
+			if (!venueId.equalsIgnoreCase("0")) {
+				Venue venue = new Venue();
+				venue.setId(venueId);
+				venue.setName(venueName);
+				mApp.activeVenue = venue;
+			}
+			// If the Venue is exit means user already checked in, start the venue activity
+			if (mApp.activeVenue != null) {
+				Log.i(this.toString(),
+						"Venue Not null " + mApp.activeVenue.getName());
+				Intent intent = new Intent()
+						.setClass(this, VenueActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+				finish();
+			}
 		}
 
 		setContentView(R.layout.main);
-
-		mApp = (BartsyApplication) getApplication();
 
 		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 
@@ -229,6 +257,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			break;
 		}
 	}
+
 	/**
 	 * To checkout user from the active venue
 	 * 
@@ -246,7 +275,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 					+ mApp.activeVenue.getName() + "?");
 
 		}
-		
+
 	}
 
 	//
@@ -280,8 +309,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	// }
 	//
 	// }
-	
-	
+
 	/**
 	 * To display alert box when the user check out from the active venue
 	 */
@@ -308,25 +336,28 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 									Constants.URL_USER_CHECK_OUT);
 							if (response != null) {
 								System.out.println("response  ::: " + response);
-								// To parse check out web service response 
+								// To parse check out web service response
 								try {
 									JSONObject result = new JSONObject(response);
 									String errorCode = result
 											.getString("errorCode");
-									
-									// For now don't handle exceptions locally...
+
+									// For now don't handle exceptions
+									// locally...
 									if (errorCode.equalsIgnoreCase("0")) {
 										// No errors
 									} else {
 										// Errors
 									}
-									
-									// Check out user locally regardless of server status
+
+									// Check out user locally regardless of
+									// server status
 									handler.post(new Runnable() {
 										@Override
 										public void run() {
 											mApp.userCheckOut();
-											findViewById(R.id.view_active_venue).setVisibility(View.GONE);
+											findViewById(R.id.view_active_venue)
+													.setVisibility(View.GONE);
 										}
 									});
 								} catch (JSONException e) {
@@ -342,7 +373,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				// To close the alert dialog 
+				// To close the alert dialog
 				dialog.dismiss();
 			}
 		});
