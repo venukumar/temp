@@ -102,7 +102,7 @@ public class WebServices {
 		HttpPost httppost = new HttpPost(url);
 
 		String data = postData.toString();
-		System.out.println("*** " + data);
+		Log.i(TAG,"Post request posted data " + data);
 		try {
 			boolean status = isNetworkAvailable(context);
 			if (status == true) {
@@ -121,7 +121,7 @@ public class WebServices {
 					response = responseofmain.toString();
 				} catch (Exception e) {
 					Log.e("log_tag", "Error in http connection" + e.toString());
-					System.out.println("::: " + e.getMessage());
+					Log.i(TAG,"Exception found ::: " + e.getMessage());
 
 				}
 			}
@@ -150,7 +150,7 @@ public class WebServices {
 		Resources r = context.getResources();
 		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
-		System.out.println("bartsyId ::: " + bartsyId);
+		Log.i(TAG,"bartsyId ::: " + bartsyId);
 		final JSONObject json = new JSONObject();
 		try {
 			json.put("bartsyId", bartsyId);
@@ -175,7 +175,6 @@ public class WebServices {
 	 * get() method.
 	 */
 	public static String getRequest(String url, Context context) {
-		System.out.println("web service calling ");
 		BufferedReader bufferReader = null;
 		StringBuffer stringBuffer = new StringBuffer("");
 		HttpClient httpClient = new DefaultHttpClient();
@@ -242,7 +241,7 @@ public class WebServices {
 					String response;
 					response = postRequest(Constants.URL_PLACE_ORDER,
 							orderData, context);
-					System.out.println("response :: " + response);
+					Log.i(TAG,"Post order to server response :: " + response);
 					JSONObject json = new JSONObject(response);
 					order.serverID = json.getString("orderId");
 
@@ -304,8 +303,6 @@ public class WebServices {
 			e1.printStackTrace();
 		}
 
-		System.out.println("json   "+json);
-		
 		try {
 
 			// Converting profile bitmap image into byte array
@@ -321,8 +318,7 @@ public class WebServices {
 
 				// String details = URLEncoder.encode(json.toString(), "UTF-8");
 				// url = url + details;
-				// System.out.println("details:"+details);
-
+				
 				// Execute HTTP Post Request
 
 				HttpPost postRequest = new HttpPost(url);
@@ -379,7 +375,7 @@ public class WebServices {
 		String status = null;
 		try {
 			String responseofmain = EntityUtils.toString(responses.getEntity());
-			System.out.println("responseofmain " + responseofmain);
+			Log.i(TAG,"postProfileResponseChecking " + responseofmain);
 			int bartsyUserId = 0;
 			JSONObject resultJson = new JSONObject(responseofmain);
 
@@ -401,14 +397,14 @@ public class WebServices {
 						venue = new Venue();
 						String venueId = resultJson.getString("venueId");
 						venue.setId(venueId);
-						System.out.println("venueId  " + venueId);
+						Log.i(TAG,"venueId  " + venueId);
 					}
 					if (resultJson.has("venueName")) {
 						if (venue == null)
 							venue = new Venue();
 						String venueName = resultJson.getString("venueName");
 						venue.setName(venueName);
-						System.out.println("venueName " + venueName);
+						Log.i(TAG,"venueName " + venueName);
 					}
 					// set venue object to activeVenue
 					BartsyApplication app = (BartsyApplication) context;
@@ -497,7 +493,6 @@ public class WebServices {
 	 */
 	public static void getMenuList(Context context, String venueID) {
 
-		System.out.println("get menu list");
 		String response = null;
 		JSONObject json = new JSONObject();
 		try {
