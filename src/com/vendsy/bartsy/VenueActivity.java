@@ -219,8 +219,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Initialize bartender fragment - the fragment may still exist even
 		// though the activity has restarted
-		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager()
-				.findFragmentById(R.string.title_drink_orders);
+		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drink_orders);
 		if (f == null) {
 			Log.i(TAG, "Bartender fragment not found. Creating one.");
 			mOrdersFragment = new OrdersSectionFragment();
@@ -229,10 +228,8 @@ public class VenueActivity extends FragmentActivity implements
 			mOrdersFragment = f;
 		}
 
-		// Initialize people fragment - reuse the fragment if it's already in
-		// memory
-		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager()
-				.findFragmentById(R.string.title_people);
+		// Initialize people fragment - reuse the fragment if it's already in memory
+		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_people);
 		if (mPeopleFragment == null) {
 			Log.i(TAG, "People fragment not found. Creating one.");
 			mPeopleFragment = new PeopleSectionFragment();
@@ -241,41 +238,23 @@ public class VenueActivity extends FragmentActivity implements
 			mPeopleFragment = p;
 		}
 
-		// Start loading the menu in the background
-		loadMenuSections();
-
+		// Initialize people fragment - reuse the fragment if it's already in memory
+		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drinks);
+		if (mDrinksFragment == null) {
+			Log.i(TAG, "Drinks fragment not found. Creating one.");
+			mDrinksFragment = new DrinksSectionFragment();
+			mDrinksFragment.mActivity = this;
+			mDrinksFragment.mApp = (BartsyApplication) getApplication();
+			
+			// Already Start loading the menu in the background so by the time the OS creates the view of this fragment
+			// we've done some work
+			mDrinksFragment.loadMenu();
+		} else {
+			Log.i(TAG, "Drinks fragment found.");
+			mDrinksFragment = d;
+		}
 	}
 
-	/**
-	 * To get Sections and Drinks from the server
-	 */
-	private void loadMenuSections() {
-
-		Log.i("Bartsy", "VenueActivity.loadMenuSections()");
-
-		new Thread() {
-
-			@Override
-			public void run() {
-
-				WebServices.getMenuList(getApplicationContext(),
-						mApp.activeVenue.getId());
-				if (mDrinksFragment != null) {
-					final List<Section> sectionsList = DatabaseManager
-							.getInstance().getMenuSections(
-									mApp.activeVenue.getId());
-					// Handler to access UI thread
-					handler.post(new Runnable() {
-
-						@Override
-						public void run() {
-							mDrinksFragment.updateListView(sectionsList);
-						}
-					});
-				}
-			}
-		}.start();
-	}
 
 	@Override
 	public void onStart() {
@@ -560,7 +539,6 @@ public class VenueActivity extends FragmentActivity implements
 										// from previous orders, favorites, menu
 										// items, drink guides or completely
 										// custom.
-				mDrinksFragment = new DrinksSectionFragment();
 				return (mDrinksFragment);
 			case R.string.title_people: // The people tab shows who's local,
 										// allows to send them a drink or a chat

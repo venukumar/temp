@@ -94,8 +94,7 @@ public class WebServices {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String postRequest(String url, JSONObject postData,
-			Context context) throws Exception {
+	public static String postRequest(String url, JSONObject postData, Context context) throws Exception {
 
 		String response = null;
 		HttpClient httpclient = new DefaultHttpClient();
@@ -116,8 +115,7 @@ public class WebServices {
 
 					HttpResponse httpResponse = httpclient.execute(httppost);
 
-					String responseofmain = EntityUtils.toString(httpResponse
-							.getEntity());
+					String responseofmain = EntityUtils.toString(httpResponse.getEntity());
 					response = responseofmain.toString();
 				} catch (Exception e) {
 					Log.e("log_tag", "Error in http connection" + e.toString());
@@ -496,7 +494,9 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static void getMenuList(Context context, String venueID) {
+	public static String getMenuList(Context context, String venueID) {
+
+		Log.i(Constants.TAG, "getting menu for venue: " + venueID);
 
 		String response = null;
 		JSONObject json = new JSONObject();
@@ -508,82 +508,7 @@ public class WebServices {
 			e1.printStackTrace();
 		}
 
-		if (response == null) {
-
-		} else {
-			try {
-				// To delete existing menu items
-				DatabaseManager.getInstance().deleteDrinks(venueID);
-
-				JSONObject result = new JSONObject(response);
-				String errorCode = result.getString("errorCode");
-				String errorMessage = result.getString("errorMessage");
-				String menus = result.getString("menu");
-
-				JSONArray jsonArray = new JSONArray(menus);
-				Log.i(TAG, "Menus length " + jsonArray.length());
-
-				for (int section = 0; section < jsonArray.length(); section++) {
-
-					JSONObject jsonObject = jsonArray.getJSONObject(section);
-					Section menuSection = null;
-					if (jsonObject.has("section_name")
-							&& jsonObject.has("subsections")) {
-
-						String name = jsonObject.getString("section_name");
-						// To save sections in the database
-						JSONArray subsections = jsonObject
-								.getJSONArray("subsections");
-						if (subsections != null && subsections.length() > 0) {
-							if (name.trim().length() > 0
-									&& subsections.length() == 1) {
-								menuSection = new Section();
-								menuSection.setVenueId(venueID);
-
-								if (name.length() > 0)
-									menuSection.setName(name);
-								// To save section in DB
-								DatabaseManager.getInstance().saveSection(
-										menuSection);
-							}
-							// To save sub sections as sections in the database
-							for (int i = 0; i < subsections.length(); i++) {
-								JSONObject subSection = subsections
-										.getJSONObject(i);
-								String subName = subSection
-										.getString("subsection_name");
-
-								if (subName.trim().length() > 0) {
-									String newName = name + " - " + subName;
-									menuSection = new Section();
-									menuSection.setName(newName);
-									menuSection.setVenueId(venueID);
-									// To save section in DB
-									DatabaseManager.getInstance().saveSection(
-											menuSection);
-								}
-								// To save the drinks as per the section in the
-								// database
-								JSONArray contents = subSection
-										.getJSONArray("contents");
-								for (int k = 0; k < contents.length(); k++) {
-									MenuDrink menuDrink = new MenuDrink(
-											contents.getJSONObject(k));
-									menuDrink.setSection(menuSection);
-									menuDrink.setVenueId(venueID);
-									// To save menu drink in DB
-									DatabaseManager.getInstance().saveDrink(
-											menuDrink);
-								}
-							}
-						}
-					}
-				}
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
+		return response;
 	}
 
 	/**

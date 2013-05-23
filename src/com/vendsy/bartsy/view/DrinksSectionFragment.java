@@ -6,6 +6,10 @@ package com.vendsy.bartsy.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -24,6 +28,7 @@ import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Section;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -34,13 +39,31 @@ public class DrinksSectionFragment extends Fragment {
 	private View mRootView = null;
 	private ExpandableListView mDrinksListView = null;
 	public BartsyApplication mApp = null;
+	public VenueActivity mActivity = null;
+	private Handler handler = new Handler();
+	private Menu mMenu = null;
+	String TAG = "DrinksSectionFragment";
 
+	/*
+	 * Menu class used to cache the menu to avoid delays in UI response time. For now we save this in the 
+	 * fragment. Also consider saving this as part of the active venue structures in the main application
+	 */
+	
+	private class Menu {
+		ArrayList<String> headings;
+		ArrayList<ArrayList<MenuDrink>> items;
+		
+		Menu (ArrayList<String> headings, ArrayList<ArrayList<MenuDrink>> items) {
+			this.headings = headings;
+			this.items = items;
+		}
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		Log.i("Bartsy", "DrinksSectionFragment.onCreateView()");
+		Log.i(TAG, "onCreateView()");
 		
 		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
 		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
@@ -49,27 +72,220 @@ public class DrinksSectionFragment extends Fragment {
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
 		((VenueActivity) getActivity()).mDrinksFragment = this;
+		mActivity = (VenueActivity) getActivity();
 
-		// Update the view with the list of items from the DB
-		final List<Section> sectionsList = DatabaseManager
-				.getInstance().getMenuSections(mApp.activeVenue.getId());
-		updateListView(sectionsList);
-		
+		// Update the view
+		updateView();
+
 		return mRootView;
 	}
 
-	/**
-	 * To update listview from the db
+	
+	
+	/************
 	 * 
-	 * @param sectionsList
+	 * TODO - Menu loader. This function is called as soon as the fragment is created, to expedite the 
+	 * loading of the menu so that it's available to the UI as quickly as possible.
+	 * 
+	 * Two loaders are called from the loadMenu() function depending on what is available in terms of cache 
+	 * (memory, DB, or nothing): one loads the menu from the web, the other from the local database. Both 
+	 * loaders will automatically display the menu at the end of loading, so there is no need to explicitly 
+	 * call updateView()
+	 * 
 	 */
-	public void updateListView(List<Section> sectionsList) {
+	
+	/*
+	 * Main menu loader. Decides which sub-loader to use to load the menu either from the DB (if it exists)
+	 * or via a call to the web service
+	 */
+	
+	public void loadMenu() {
 		
-		Log.i("Bartsy", "DrinksSectionFragment.updateListView()");
+		Log.i(TAG, "loadMenu()");
+
+		// Check if menu has already been cached
 		
-		if(sectionsList==null){
-			return;
+		if (mMenu == null) {
+			Log.i(TAG, "Menu not available in memory");
+
+			// Menu is not already in memory, call the appropriate loader
+
+			new Thread() {
+
+				@Override
+				public void run() {
+
+					String apiResponse = null;
+			
+					// Menu not in memory - check if it exists in the DB
+					final List<Section> sectionsList = DatabaseManager.getInstance().getMenuSections(mApp.activeVenue.getId());
+					if (sectionsList != null && sectionsList.size() > 0) {
+						// Menu exists in the database. Load it into view
+						Log.i(TAG, "Loading menu from DB...");
+						loadAndDisplayMenu(sectionsList);
+						if (mMenu == null) {
+							// Database failed for some reason. Attempt to download the menu from the web
+							apiResponse = downloadAndDisplayMenu();
+						}
+					} else {
+						// Menu doesn't exist in the DB - load it from the server and display it
+						Log.i(TAG, "Loading menu from web services...");
+						apiResponse = downloadAndDisplayMenu();
+					}
+					
+					if (mMenu == null) {
+						// Both loaders failed - abort. 
+						Log.d(TAG, "Loaders failed...");
+						return;
+					}
+					
+					// Loading of the menu successful. Display it using a handler because Android 
+					// doesn't allow manipulating views from separate threads
+					handler.post(new Runnable() {
+						// Use a handler because Android doesn't allow manipulating views from separate threads
+						@Override public void run() {
+							updateView();
+						}
+					});				
+
+					// Check if menu is marked for saving
+					if (apiResponse != null) {
+						// Successfully downloaded the menu from the web. Save it in the DB for next time
+						Log.i(TAG, "Saving menu to DB");
+						saveMenuToDB(apiResponse, mApp.activeVenue.getId());
+					}
+				}
+			}.start();
+		} else {
+			// Menu already in memory. Nothing to load so just display it.
+			Log.i(TAG, "Menu available in memory - displaying it...");
+			updateView();
 		}
+	}
+	
+	
+	/******
+	 * 
+	 * TODO - Web service functions
+	 * 
+	 * @return
+	 */
+	
+	
+	/*
+	 * Web service loader. Downloads the menu from the server using a web service call. 
+	 * This is called from a background thread.
+	 */
+	private String downloadAndDisplayMenu() {
+
+		Log.i(TAG, "downloadAndDisplayMenu()");
+
+		// Step 1 - get the web service response and display the results in the view
+		String response = WebServices.getMenuList(mActivity.getApplicationContext(), mApp.activeVenue.getId());
+		if (response == null) {
+			Log.d(TAG, "Webservice get menu call failed");
+			return null;
+		} else {
+			Log.i(TAG, "Webservice menu response: " + response == null? "null" : response);
+		}
+		
+		// parse the response into a menu in-memory structure
+		mMenu = extractMenuFromResponse (response);
+		
+		return response;
+	}
+
+
+	
+	/*
+	 * Helper function for downloadAndDisplayMenu. Processes the server response and builds a menu object
+	 */
+	
+	private Menu extractMenuFromResponse (String response) {
+		
+		ArrayList<String> headings = new ArrayList<String>();
+		ArrayList<ArrayList<MenuDrink>> items = new ArrayList<ArrayList<MenuDrink>>();
+	
+		try {
+		
+			JSONObject result = new JSONObject(response);
+			String errorCode = result.getString("errorCode");
+			String errorMessage = result.getString("errorMessage");
+			String menus = result.getString("menu");
+	
+			JSONArray sections = new JSONArray(menus);
+			Log.i(TAG, "Menus length " + sections.length());
+	
+			// Parse sections 
+			for (int i = 0; i < sections.length(); i++) {
+	
+				JSONObject section = sections.getJSONObject(i);
+				if (section.has("section_name") && section.has("subsections")) {
+
+					JSONArray subsections = section.getJSONArray("subsections");
+					
+					if (subsections != null && subsections.length() > 0) {
+
+						for (int j = 0; j < subsections.length(); j++) {
+							
+							JSONObject subSection = subsections.getJSONObject(j);
+							String subsection_name = subSection.getString("subsection_name");
+
+							String section_name = section.getString("section_name");
+
+							// If it's a top level item (no section or subsection name) use a generic section title
+							if (section_name.trim().length() == 0)
+								section_name = subsection_name;
+							else if (subsection_name.trim().length() > 0)
+								section_name += " - " + subsection_name;
+							if (section_name.trim().length() == 0)
+								section_name = "Various items";
+							
+							// Add the heading title to the headings list 
+							headings.add(section_name);
+
+							// Add the list of items under that heading to the items list
+							JSONArray contents = subSection.getJSONArray("contents");
+							ArrayList<MenuDrink> subsection_contents = new ArrayList<MenuDrink>();
+							for (int k = 0; k < contents.length(); k++) {
+								MenuDrink menuDrink = new MenuDrink(contents.getJSONObject(k));
+
+								subsection_contents.add(menuDrink);
+							}
+							
+							// Add the contents of the subsection to the list of items
+							items.add(subsection_contents);
+						}
+					}
+				}
+			}	
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return new Menu(headings, items);
+	}
+
+	
+	/*****
+	 * 
+	 * TODO - DB functions
+	 * 
+	 */
+	
+	
+	/* 
+	 * DB loader. Loads menu from DB in the background and displays it when done.
+	 * This is called from a background thread.
+	 */
+	
+	private void loadAndDisplayMenu(final List<Section> sectionsList) {
+		
+		Log.i(TAG, "loadAndDisplayMenu()");
+		
+		// Safety first
+		if(sectionsList==null) return ;
+
 		ArrayList<String> groupNames = new ArrayList<String>();
 		// Default group name for individual drinks
 		List<MenuDrink> defaultList = DatabaseManager.getInstance()
@@ -95,34 +311,154 @@ public class DrinksSectionFragment extends Fragment {
 			menuDrinks.add(menu);
 		}
 		
-		try {
-			final BartsyApplication app = (BartsyApplication) getActivity().getApplication();
-			
-			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),
-					groupNames, menuDrinks));
-			mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
+		// Done loading the menu. Save it.
+		mMenu =  new Menu(groupNames, menuDrinks);
+	}
 
+	/*
+	 * Helper function for DB loader. Processes the server response and saves the menu to the DB
+	 * for the venue to which this menu belongs
+	 */
+	
+	private void saveMenuToDB (String response, String venueID) {
+		
+		Log.i(TAG, "saveMenuToDB()");
+		
+		if (response == null) {
+
+		} else {
+			try {
+				// To delete existing menu items
+				DatabaseManager.getInstance().deleteDrinks(venueID);
+
+				JSONObject result = new JSONObject(response);
+				String errorCode = result.getString("errorCode");
+				String errorMessage = result.getString("errorMessage");
+				String menus = result.getString("menu");
+
+				JSONArray jsonArray = new JSONArray(menus);
+				Log.i(TAG, "Menus length " + jsonArray.length());
+
+				for (int section = 0; section < jsonArray.length(); section++) {
+
+					JSONObject jsonObject = jsonArray.getJSONObject(section);
+					Section menuSection = null;
+					if (jsonObject.has("section_name") && jsonObject.has("subsections")) {
+
+						String name = jsonObject.getString("section_name");
+						// To save sections in the database
+						JSONArray subsections = jsonObject.getJSONArray("subsections");
+						if (subsections != null && subsections.length() > 0) {
+							if (name.trim().length() > 0 && subsections.length() == 1) {
+								menuSection = new Section();
+								menuSection.setVenueId(venueID);
+
+								if (name.length() > 0)
+									menuSection.setName(name);
+								// To save section in DB
+								DatabaseManager.getInstance().saveSection(menuSection);
+							}
+							// To save sub sections as sections in the database
+							for (int i = 0; i < subsections.length(); i++) {
+								JSONObject subSection = subsections
+										.getJSONObject(i);
+								String subName = subSection
+										.getString("subsection_name");
+
+								if (subName.trim().length() > 0) {
+									String newName = name + " - " + subName;
+									menuSection = new Section();
+									menuSection.setName(newName);
+									menuSection.setVenueId(venueID);
+									// To save section in DB
+									DatabaseManager.getInstance().saveSection(
+											menuSection);
+								}
+								// To save the drinks as per the section in the
+								// database
+								JSONArray contents = subSection
+										.getJSONArray("contents");
+								for (int k = 0; k < contents.length(); k++) {
+									MenuDrink menuDrink = new MenuDrink(
+											contents.getJSONObject(k));
+									menuDrink.setSection(menuSection);
+									menuDrink.setVenueId(venueID);
+									// To save menu drink in DB
+									DatabaseManager.getInstance().saveDrink(
+											menuDrink);
+								}
+							}
+						}
+					}
+				}
+
+			} catch (JSONException e) {
+				Log.i(TAG, "saveMenuToDB() failed");
+				e.printStackTrace();
+				return;
+			}
+		}
+		Log.i(TAG, "saveMenuToDB() finished");
+	}
+	
+	
+	
+	/*****
+	 * 
+	 * TODO - Viewer functions
+	 * 
+	 */
+	
+
+	/*
+	 * Displays a menu in the view's expandable list adapter. If the menu cache is not loaded yet,
+	 * it calls the appropriate loader that will in turn call this function again once they have 
+	 * loaded the menu.
+	 */
+	
+	void updateView(){
+		
+		Log.i(TAG, "updateView()");
+		
+		// If menu is not already in memory, call the appropriate loader
+		if (mMenu == null) {
+			Log.d(TAG, "Menu not available for display");
+			return;
+		}
+		
+		// Display menu from memory into the view
+		
+		ArrayList<String> headings = mMenu.headings;
+		final ArrayList<ArrayList<MenuDrink>> items = mMenu.items;
+
+		Log.i(TAG, "Menu is in cache. Displaying " + headings.size() + " headings");
+
+		try {
+			
+			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),headings, items));
+
+			// Setup the dialog to be displayed when clicking on an item in the menu
+			mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
 				@Override
 				public boolean onChildClick(ExpandableListView parent, View v,
 						int groupPosition, int childPosition, long id) {
 					
-					if(app.activeVenue == null){
+					if(mApp.activeVenue == null){
 						// for now don't post an error message, but this should be fixed ASAP
 						return false;
 					}
 					
-					MenuDrink menuDrink = menuDrinks.get(groupPosition).get(
-							childPosition);
+					MenuDrink menuDrink = items.get(groupPosition).get(childPosition);
 
 					// Create an instance of the dialog fragment and show it
 					DrinkDialogFragment dialog = new DrinkDialogFragment();
 					dialog.drink = menuDrink;
-					dialog.show(getActivity().getSupportFragmentManager(),
-							"Order drink");
+					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
 
 					return false;
 				}
 			});
+			
 		} catch (Exception e) {
 			
 			e.printStackTrace();
@@ -130,12 +466,13 @@ public class DrinksSectionFragment extends Fragment {
 		}
 
 	}
-
+	
+	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 
-		Log.i("Bartsy", "DrinksSectionFragment.onDestroy()");
+		Log.i(TAG, "onDestroy()");
 		
 		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
 		((VenueActivity) getActivity()).mDrinksFragment = null;
