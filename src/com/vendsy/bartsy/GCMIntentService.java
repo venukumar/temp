@@ -115,10 +115,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 			Log.i(TAG, "push message " + message);
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")) {
+				// To handle updateOrderStatus from Push Notification
 				if (json.getString("messageType").equals("updateOrderStatus")) {
 					app.updateOrder(json.getString("orderId"),
 							json.getString("orderStatus"));
 					messageTypeMSG = "Your order status changed";
+				}
+				// To handle orderTimeout from Push Notification. Time Out is based on venue configuration
+				else if(json.getString("messageType").equals("orderTimeout"))
+				{
+					app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));
+					messageTypeMSG = "Your order was cancelled";
+					
 				}
 			}
 		} catch (JSONException e) {

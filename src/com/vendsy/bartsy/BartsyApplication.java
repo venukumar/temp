@@ -323,6 +323,11 @@ public class BartsyApplication extends Application implements AppObservable {
 			localOrder.nextPositiveState();
 			mOrders.remove(localOrder);
 			break;
+			// Order cancelled. Remove from the order list for now.
+		case Order.ORDER_STATUS_CANCELLED:
+			mOrders.remove(localOrder);
+			break;
+			
 		}
 
 		// Update the orders tab view and title
