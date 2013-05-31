@@ -197,6 +197,11 @@ public class BartsyApplication extends Application implements AppObservable {
 			return;
 		}
 
+		if (image == null) {
+			Log.d(TAG, "Could not load profile image");
+			return;
+		}
+		
 		Log.d(TAG, "Profile image found, creating profile...");
 		// New change - Added image path url to profile constructor
 		mProfile = new Profile(
