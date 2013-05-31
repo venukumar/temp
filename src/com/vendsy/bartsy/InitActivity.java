@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -46,12 +47,12 @@ import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
 import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends FragmentActivity implements
-		ConnectionCallbacks, OnConnectionFailedListener,
-		OnPersonLoadedListener, ProfileDialogListener, OnClickListener {
+		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener {
 
 	private ViewPager pager;
 	private static int NUM_VIEWS = 2;
@@ -65,17 +66,25 @@ public class InitActivity extends FragmentActivity implements
 	private static final String TAG = "Bartsy";
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	private ProgressDialog mConnectionProgressDialog;
+
+	BartsyApplication mApp = null;
 	InitActivity mActivity = this;
-	Person mPerson = null;
 	String mAccountName = null;
 
-	/** Called when the activity is first created. */
+	
+	/** 
+	 * Called when the activity is first created. 
+	 * */
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.init_main);
 		cxt = this;
 
+		// Setup pointers
+		mApp = (BartsyApplication) getApplication();
+		
 		// Hide action bar
 		getActionBar().hide();
 
@@ -87,11 +96,9 @@ public class InitActivity extends FragmentActivity implements
 		// Initialize Google sign in framework
 		mPlusClient = new PlusClient.Builder(this, this, this)
 				.setScopes(SCOPES)
-				.setVisibleActivities("http://schemas.google.com/AddActivity",
-						"http://schemas.google.com/BuyActivity").build();
+				.setVisibleActivities("http://schemas.google.com/AddActivity", "http://schemas.google.com/BuyActivity").build();
 
-		// Progress bar to be displayed if the connection failure is not
-		// resolved.
+		// Progress bar to be displayed if the connection failure is not resolved.
 		mConnectionProgressDialog = new ProgressDialog(this);
 		mConnectionProgressDialog.setMessage("Connecting");
 
@@ -218,60 +225,25 @@ public class InitActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onConnected() {
+	public void onConnected(Bundle connectionHint) {
 		mConnectionProgressDialog.dismiss();
 		mAccountName = mPlusClient.getAccountName();
-		Toast.makeText(this, "Connected as " + mAccountName, Toast.LENGTH_LONG)
-				.show();
+		Toast.makeText(this, "Connected as " + mAccountName, Toast.LENGTH_LONG).show();
 		mPlusClient.loadPerson(this, "me");
 	}
+	
 
 	@Override
-	public void onPersonLoaded(ConnectionResult status, Person arg1) {
+	public void onPersonLoaded(ConnectionResult status, Person mPerson) {
 		if (status.getErrorCode() == ConnectionResult.SUCCESS) {
 
-			// Save person
-			mPerson = arg1;
-
 			// Save profile picture in the background
-			new DownloadImageTask().execute(
-					arg1.getImage().getUrl(),
-					getResources().getString(
-							R.string.config_user_profile_picture));
+			new DownloadImageTask().execute(mPerson.getImage().getUrl(), getResources().getString(R.string.config_user_profile_picture));
 
-			// Save the username and the user picture along with any other
-			// detail that was fetched to the local profile
-			SharedPreferences sharedPref = getSharedPreferences(getResources()
-					.getString(R.string.config_shared_preferences_name),
-					Context.MODE_PRIVATE);
-			SharedPreferences.Editor editor = sharedPref.edit();
-			Resources r = getResources();
-			editor.putString(r.getString(R.string.config_user_account_name),
-					mAccountName);
-			editor.putString(r.getString(R.string.config_user_name),
-					mPerson.getDisplayName());
-			editor.putString(r.getString(R.string.config_user_location),
-					mPerson.getCurrentLocation());
-			editor.putString(r.getString(R.string.config_user_info),
-					mPerson.getTagline());
-			editor.putString(r.getString(R.string.config_user_description),
-					mPerson.getAboutMe());
-			editor.commit();
 
-			// Save Profile web service call
-			final Profile bartsyProfile = new Profile();
-			bartsyProfile.setUsername(mPerson.getId());
-			bartsyProfile.setName(mPerson.getDisplayName());
-			bartsyProfile.setType("google");
-			bartsyProfile.setSocialNetworkId(mPerson.getId());
-			bartsyProfile.setGender(String.valueOf(mPerson.getGender()));
-
-			// Show dialog and on exit start Bartsy (there should be an option
-			// to change the profile)
+			// Show dialog and on exit start Bartsy (there should be an option to change the profile)
 			ProfileDialogFragment dialog = new ProfileDialogFragment();
-			dialog.mUser = arg1;
-			dialog.mProfile = bartsyProfile;
-			dialog.mcontext = getApplicationContext();
+			dialog.mUser = mPerson;
 			dialog.show(getSupportFragmentManager(), "Your profile");
 
 		} else {
@@ -280,19 +252,78 @@ public class InitActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onUserDialogPositiveClick(DialogFragment dialog,
-			String userCheckedInOrNot) {
+	public void onUserDialogPositiveClick(final DialogFragment dialog) {
 		// User accepted the profile, launch main activity
-		finish();
-		// To check whether user is checkedIn or not. If user already checkedIn
-		// then it should navigate to VenueActivity, otherwise it should
-		// navigate to MainActivity
-		if (userCheckedInOrNot != null
-				&& userCheckedInOrNot.equalsIgnoreCase("0"))
-			this.startActivity(new Intent().setClass(this, VenueActivity.class));
-		else
-			this.startActivity(new Intent().setClass(this, MainActivity.class));
+
+		Log.i(TAG, "InitActivity.onUserDialogPositiveClick()");
+		
+		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
+		String deviceToken = settings.getString("RegId", "");
+		if (deviceToken.trim().length() > 0) {
+			new Thread() {
+				public void run() {
+					
+					// Create a profile for the person
+					Person person = ((ProfileDialogFragment) dialog).mUser;
+					Profile profile = new Profile();
+					profile.setUsername(person.getId());
+					profile.setName(person.getDisplayName());
+					profile.setType("google");
+					profile.setSocialNetworkId(person.getId());
+					profile.setGender(String.valueOf(person.getGender()));
+					profile.setDescription(person.getAboutMe());
+					
+					// Service call for post profile data to server
+					String userCheckedInOrNot = WebServices.postProfile(profile, ((ProfileDialogFragment) dialog).mProfileImage, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+
+					// To check whether user is checkedIn or not. If user already checkedIn then it 
+					// should navigate to VenueActivity, otherwise it should navigate to MainActivity
+					
+					if (userCheckedInOrNot == null) {
+						// Error creating user. Ask parent to post Toast.
+						mHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+							}
+						});
+						return;
+					} 
+					
+					// Save the username and the user picture along with any other detail that was fetched to the local profile
+					SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+					SharedPreferences.Editor editor = sharedPref.edit();
+					Resources r = getResources();
+					editor.putString(r.getString(R.string.config_user_account_name), mAccountName);
+					editor.putString(r.getString(R.string.config_user_name), person.getDisplayName());
+					editor.putString(r.getString(R.string.config_user_location), person.getCurrentLocation());
+					editor.putString(r.getString(R.string.config_user_info), person.getTagline());
+					editor.putString(r.getString(R.string.config_user_description), person.getAboutMe());
+					editor.commit();
+
+					// Save profile in the global application structure
+					mApp.mProfile = profile;
+					
+					if (userCheckedInOrNot.equalsIgnoreCase("0")) {
+						// User profile saved successfully and user checked in
+						startActivity(new Intent().setClass(mActivity, VenueActivity.class));
+					} else {
+						// User profile saved successfully and user in not checked in
+						startActivity(new Intent().setClass(mActivity, MainActivity.class));
+					}
+					
+					// Stop the parent activity of this thread (initactivity) as we just started a new one
+					mActivity.finish();
+				}
+			}.start();
+
+		} else {
+			Toast.makeText(this, "Please try again....", Toast.LENGTH_LONG).show();
+			return;
+		}
 	}
+	
+	Handler mHandler = new Handler();
 
 	@Override
 	public void onUserDialogNegativeClick(DialogFragment dialog) {

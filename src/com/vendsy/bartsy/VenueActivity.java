@@ -34,6 +34,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
@@ -79,7 +80,7 @@ public class VenueActivity extends FragmentActivity implements
 															// this to null when
 															// fragment is
 															// destroyed
-	private Handler handler = new Handler();
+
 
 	public void appendStatus(String status) {
 		Log.d(TAG, status);
@@ -106,12 +107,6 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 	ViewPager mViewPager;
 
-	private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
-	private static final int HANDLE_HISTORY_CHANGED_EVENT = 1;
-	private static final int HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT = 2;
-	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
-	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
-	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
 
 	/**************************************
 	 * 
@@ -602,39 +597,46 @@ public class VenueActivity extends FragmentActivity implements
 	 * 
 	 */
 
+	private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
+	private static final int HANDLE_HISTORY_CHANGED_EVENT = 1;
+	private static final int HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT = 2;
+	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
+	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
+	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
+
 	public synchronized void update(AppObservable o, Object arg) {
 		Log.i(TAG, "update(" + arg + ")");
 		String qualifier = (String) arg;
 
 		if (qualifier.equals(BartsyApplication.APPLICATION_QUIT_EVENT)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_APPLICATION_QUIT_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		} else if (qualifier.equals(BartsyApplication.HISTORY_CHANGED_EVENT)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_HISTORY_CHANGED_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		} else if (qualifier
 				.equals(BartsyApplication.USE_CHANNEL_STATE_CHANGED_EVENT)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		} else if (qualifier.equals(BartsyApplication.ALLJOYN_ERROR_EVENT)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_ALLJOYN_ERROR_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		} else if (qualifier.equals(BartsyApplication.ORDERS_UPDATED)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_ORDERS_UPDATED_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		} else if (qualifier.equals(BartsyApplication.PEOPLE_UPDATED)) {
-			Message message = mHandler
+			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
-			mHandler.sendMessage(message);
+			mApplicationHandler.sendMessage(message);
 		}
 	}
 
-	private Handler mHandler = new Handler() {
+	private Handler mApplicationHandler= new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case HANDLE_APPLICATION_QUIT_EVENT:
@@ -776,30 +778,26 @@ public class VenueActivity extends FragmentActivity implements
 		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
+		
 		if (mApp.activeVenue == null) {
+			// No active venue. We need to termiate venue activity. We also notify the user.
+			Toast.makeText(this, "You need to be logged in to place an order", Toast.LENGTH_SHORT).show();
+			finish();
 			return;
 		}
+		
 		order = new Order();
 		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
 		String tipPercentageValue = tip.replace("%", "");
 		order.tipAmount = Float.valueOf(tipPercentageValue);
 
-		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order
-														// ID
-				null, // arg(1) - This order stil doesn't have a server-assigned
-						// ID
-				drink.getTitle(), // arg(2) - Title
-				drink.getDescription(), // arg(3) - Description
-				drink.getPrice(), // arg(4) - Price
-				Integer.toString(R.drawable.drinks), // arg(5) - Image resource
-														// for the order. for
-														// now always use the
-														// same picture for the
-														// drink
-														// drink.getImage(),
-				mApp.mProfile); // arg(6) - Each order contains the profile of
-								// the sender (and later the profile of the
-								// person that should pick it up)
+		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order  ID
+				null, 									// arg(1) - This order still doesn't have a server-assigned ID
+				drink.getTitle(), 						// arg(2) - Title
+				drink.getDescription(), 				// arg(3) - Description
+				drink.getPrice(), 						// arg(4) - Price
+				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
+				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		order.itemId = drink.getDrinkId();
 
 		// invokePaypalPayment(); // To enable paypal payment
@@ -880,6 +878,7 @@ public class VenueActivity extends FragmentActivity implements
 		}
 	}
 
+		
 	private void processOrderData() {
 
 		if (Constants.USE_ALLJOYN) {
@@ -905,22 +904,78 @@ public class VenueActivity extends FragmentActivity implements
 					"</command>");
 			appendStatus("Placed drink order");
 
+			// Add order to the list and update views
+			mApp.addOrder(order);
+
+			// Increment the local order count
+			mApp.mOrderIDs++;
+
+			// Update tab title with the number of open orders
+			updateOrdersCount();
+			
 		} else {
-			// Web service call
-			WebServices.postOrderTOServer(VenueActivity.this, order,
-					mApp.activeVenue.getId());
+			// Web service call - the response in handled asynchronously in processOrderDataHandler()
+			if (WebServices.postOrderTOServer(VenueActivity.this, order, mApp.activeVenue.getId(),
+					processOrderDataHandler))
+				// Failed to place syscall due to internal error
+				Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 		}
-
-		// Add order to the list and update views
-		mApp.addOrder(order);
-
-		// Increment the local order count
-		mApp.mOrderIDs++;
-
-		// Update tab title with the number of open orders
-		updateOrdersCount();
-
 	}
+
+	
+	/**
+	 * 
+	 * Response handler for asynchronous syscalls of processOrderData()
+	 * 
+	 */
+	
+	// Handler variables
+	VenueActivity mActivity = this;
+	
+	// Response codes
+	public static final int HANDLE_ORDER_RESPONSE_SUCCESS = 0;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE = 1;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE = 2;
+	
+	// The handler code
+	public Handler processOrderDataHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+
+			Log.i(TAG, "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
+			
+			switch (msg.what) {
+			case HANDLE_ORDER_RESPONSE_SUCCESS:
+				// The order was placed successfully 
+				
+				// Add order to the list and update views
+				mApp.addOrder(order);
+
+				// Increment the local order count
+				mApp.mOrderIDs++;
+
+				// Update tab title with the number of open orders
+				updateOrdersCount();
+				
+				break;
+				
+			case HANDLE_ORDER_RESPONSE_FAILURE:
+				// The syscall was not placed
+				Toast.makeText(mActivity, "Unable to place order. Check your internet connection", Toast.LENGTH_SHORT).show();
+				break;
+				
+			case HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE:
+				// The syscall got an error code
+				Toast.makeText(mActivity, "Unable to place order. Venue is not accepting orders (" + msg.obj + ")", Toast.LENGTH_SHORT).show();
+				break;
+			}
+		}
+	};
+
+	
+	
+	
+	
 
 	/*
 	 * 

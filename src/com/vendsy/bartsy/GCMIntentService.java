@@ -26,6 +26,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -33,9 +34,9 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
-import com.google.android.gms.internal.ap;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.utils.Utilities;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * IntentService responsible for handling GCM messages.
@@ -115,18 +116,26 @@ public class GCMIntentService extends GCMBaseIntentService {
 			Log.i(TAG, "push message " + message);
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")) {
-				// To handle updateOrderStatus from Push Notification
+
 				if (json.getString("messageType").equals("updateOrderStatus")) {
-					app.updateOrder(json.getString("orderId"),
-							json.getString("orderStatus"));
+					// Handle updateOrderStatus from Push Notification
+					app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));
 					messageTypeMSG = "Your order status changed";
-				}
-				// To handle orderTimeout from Push Notification. Time Out is based on venue configuration
-				else if(json.getString("messageType").equals("orderTimeout"))
-				{
+				} else if(json.getString("messageType").equals("orderTimeout")) {
+					// Handle orderTimeout from Push Notification. Time Out is based on venue configuration
 					app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));
 					messageTypeMSG = "Your order was cancelled";
+				} else if (json.getString("messageType").equals("heartBeat")) {
+					// Handle ping. All we need to do is reply back for now.
 					
+					Log.i(TAG, "PN received: " + json);
+
+					Resources r = app.getResources();
+					SharedPreferences sharedPref = app.getSharedPreferences(app.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+					WebServices.postHeartbeatResponse(app.getApplicationContext(),
+							"" + sharedPref.getInt(r.getString(R.string.bartsyUserId), 0), 
+							app.activeVenue == null ? "" : app.activeVenue.getId());
+					messageTypeMSG = "Synchronized with server.";
 				}
 			}
 		} catch (JSONException e) {

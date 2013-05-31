@@ -38,12 +38,15 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.nfc.Tag;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
@@ -101,7 +104,9 @@ public class WebServices {
 		HttpPost httppost = new HttpPost(url);
 
 		String data = postData.toString();
-		Log.i(TAG, "Post request posted data " + data);
+		
+		Log.i(TAG, "postRequest(" + url + ", " + data + ")");
+
 		try {
 			boolean status = isNetworkAvailable(context);
 			if (status == true) {
@@ -138,7 +143,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String userCheckInOrOut(final Context context,
+	public static String userCheckInOrOut (final Context context,
 			String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
@@ -168,6 +173,42 @@ public class WebServices {
 		return response;
 	}
 
+	
+	/**
+	 * 
+	 * Post the response to a heartbeat PN. The response simply indicates to the server
+	 * the app is alive, connected to the internet, able to process PN's and able to send
+	 * responses back. If the server does not receive the response for some period of time
+	 * (currently 15 min), the server will check the user out of the venue.
+	 * 
+	 */
+	
+	public static void postHeartbeatResponse (final Context context, 
+			String bartsyId, String venueId) {
+		
+		Log.i(TAG, "WebService.postHeartbeatResponse()");
+		final JSONObject json = new JSONObject();
+
+		// Prepare syscall
+		try {
+			json.put("bartsyId", bartsyId);
+			json.put("venueId", venueId);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		// Invoke syscall
+		try {
+			// We are not interested in the response to the syscall as the server is what's
+			// checking to see if everything is working property. If the server doesn't see
+			// the heartbeat it will check the user out. 
+			postRequest(Constants.URL_HEARTBEAT_RESPONSE, json, context);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/*
 	 * This Method i am using for each and every request which is going through
 	 * get() method.
@@ -206,50 +247,68 @@ public class WebServices {
 	}
 
 	/**
-	 * Service call for post order
+	 * Service call for post order. 
 	 * 
 	 * @param context
 	 * @param order
 	 * @param venueID
+	 * @param handler - this handler handles error events. It needs to be in the calling activity
+	 * @return	true	- failed to send syscall
+	 * 			false	- successfully sent syscall
 	 */
-	public static void postOrderTOServer(final Context context,
-			final Order order, String venueID) {
+	public static boolean postOrderTOServer(final Context context, final Order order, 
+			String venueID, final Handler processOrderDataHandler) {
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
-		SharedPreferences sharedPref = context.getSharedPreferences(
-				context.getResources().getString(
-						R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
+		// Prepare syscall 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			// orderData.put("clientOrderId", order.clientID); - USE THIS LINE
-			// WHEN THE SERVER CODE IS READY
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return true;
 		}
+
 		// Place order webservice call in background
 		new Thread() {
-
 			@Override
 			public void run() {
+				
+				Message msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE);
+				
 				try {
-					String response;
-					response = postRequest(Constants.URL_PLACE_ORDER,
-							orderData, context);
+					String response = postRequest(Constants.URL_PLACE_ORDER, orderData, context);
 					Log.i(TAG, "Post order to server response :: " + response);
+					
+												
 					JSONObject json = new JSONObject(response);
-					order.serverID = json.getString("orderId");
-
+					String errorCode = json.getString("errorCode");
+					
+					if (errorCode.equalsIgnoreCase("0")) {
+						// Error code 0 means the order was placed successfullly. Set the serverID of the order from the syscall.
+						response = "success";
+						order.serverID = json.getString("orderId");
+						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
+					} else if (errorCode.equalsIgnoreCase("1")) {
+						// Error code 1 means the venue doesn't accept orders.
+						response = json.getString("errorMessage");
+						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE, response);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				
+				// Send the response back to the caller's response handler
+				processOrderDataHandler.sendMessage(msg);
 			}
 		}.start();
 
+		return false;
 	}
+	
 
 	/**
 	 * @methodName: postProfile
@@ -262,23 +321,17 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String postProfile(Profile bartsyProfile,
-			Bitmap profileImage, String path, Context context) {
+	public static String postProfile(Profile bartsyProfile, Bitmap profileImage, String path, Context context) {
 
 		String url = path;
-
 		byte[] dataFirst = null;
-
 		String status = null;
 
-		int TIMEOUT_MILLISEC = 180000; // =180sec
+		// Setup connection parameters
+		int TIMEOUT_MILLISEC = 10000; // = 10 seconds
 		HttpParams my_httpParams = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(my_httpParams,
-				TIMEOUT_MILLISEC); // set conn time out
-		HttpConnectionParams.setSoTimeout(my_httpParams, TIMEOUT_MILLISEC); // set
-		// socket
-		// time
-		// out
+		HttpConnectionParams.setConnectionTimeout(my_httpParams, TIMEOUT_MILLISEC); 
+		HttpConnectionParams.setSoTimeout(my_httpParams, TIMEOUT_MILLISEC); 
 
 		// get registration id from shared preferences
 		SharedPreferences settings = context.getSharedPreferences(
@@ -302,6 +355,17 @@ public class WebServices {
 				json.put("gender", bartsyProfile.getGender());
 			json.put("deviceType", deviceType);
 			json.put("deviceToken", deviceToken);
+			
+			// For now hardcode some values to make sure the syscall works
+			json.put("firstname", "Peter");
+			json.put("lastname", "Kellis");
+			json.put("dateofbirth", "08/17/1984");
+			json.put("nickname", "Pan");
+			json.put("status", "Single");
+			json.put("orientation", "straight");
+			json.put("description", bartsyProfile.getDescription());
+			
+			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
@@ -310,51 +374,47 @@ public class WebServices {
 
 			// Converting profile bitmap image into byte array
 			if (profileImage != null) {
+				// Image found - converting it to a byte array and adding to syscall
+
+				Log.i(TAG, "Syscall (with image): " + json);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				profileImage.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 				dataFirst = baos.toByteArray();
 
+
+			} else {
+				// Could not find image
+				Log.i(TAG, "Syscall: " + json);
 			}
 
-			try {
+			// String details = URLEncoder.encode(json.toString(), "UTF-8");
+			// url = url + details;
 
-				// String details = URLEncoder.encode(json.toString(), "UTF-8");
-				// url = url + details;
+			// Execute HTTP Post Request
 
-				// Execute HTTP Post Request
+			HttpPost postRequest = new HttpPost(url);
+			HttpClient client = new DefaultHttpClient();
+			ByteArrayBody babFirst = null;
 
-				HttpPost postRequest = new HttpPost(url);
+			if (dataFirst != null)
+				babFirst = new ByteArrayBody(dataFirst, "userImage" + ".jpg");
 
-				HttpClient client = new DefaultHttpClient();
+			MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
 
-				ByteArrayBody babFirst = null;
+			// added profile image into MultipartEntity
 
-				if (dataFirst != null)
-					babFirst = new ByteArrayBody(dataFirst, "userImage"
-							+ ".jpg");
+			if (babFirst != null)
+				reqEntity.addPart("userImage", babFirst);
+			if (json != null)
+				reqEntity.addPart("details", new StringBody(json.toString(), Charset.forName("UTF-8")));
+			postRequest.setEntity(reqEntity);
+			HttpResponse responses = client.execute(postRequest);
 
-				MultipartEntity reqEntity = new MultipartEntity(
-						HttpMultipartMode.BROWSER_COMPATIBLE);
-				// added profile image into MultipartEntity
-				if (babFirst != null)
-					reqEntity.addPart("userImage", babFirst);
+			// Check response 
 
-				if (json != null)
-					reqEntity.addPart("details", new StringBody(
-							json.toString(), Charset.forName("UTF-8")));
-
-				postRequest.setEntity(reqEntity);
-				HttpResponse responses = client.execute(postRequest);
-
-				/* Checking response */
-				if (responses != null) {
-					status = postProfileResponseChecking(responses, context);
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			if (responses != null) 
+				status = postProfileResponseChecking(responses, context);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -373,8 +433,7 @@ public class WebServices {
 	 * @return status ----> user already checked in or not
 	 * 
 	 */
-	private static String postProfileResponseChecking(HttpResponse responses,
-			Context context) {
+	private static String postProfileResponseChecking(HttpResponse responses, Context context) {
 		String status = null;
 		try {
 			String responseofmain = EntityUtils.toString(responses.getEntity());
@@ -382,8 +441,7 @@ public class WebServices {
 			int bartsyUserId = 0;
 			JSONObject resultJson = new JSONObject(responseofmain);
 
-			if (resultJson.has("errorCode")
-					&& resultJson.getString("errorCode").equalsIgnoreCase("0")) {
+			if (resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
 
 				// String errorCode = resultJson.getString("errorCode");
 				// String errorMessage = resultJson
@@ -441,9 +499,7 @@ public class WebServices {
 			}
 		} catch (Exception e) {
 
-			Log.i(TAG,
-					"Exception found in postProfileResponseChecking "
-							+ e.getMessage());
+			Log.i(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
 			return null;
 		}
 		return status;

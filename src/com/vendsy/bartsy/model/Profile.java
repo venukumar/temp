@@ -23,17 +23,25 @@ public class Profile {
 	private String name;
 	private String email;
 	private String gender;
-	private String type;
+	private String type;		// oneof {"Google", "Facebook", "Bartsy"}
 	private String socialNetworkId;
 	private String imagePath;
 	ArrayList<Profile> likes = new ArrayList<Profile>();
 	ArrayList<Profile> favorites = new ArrayList<Profile>();
 
-	// ArrayList<Message> messages = new ArrayList<Message>();
+	// Advanced fields for "dating" profiles
+	
+	public String firstName;
+	public String lastName;
+	public String dateofbirth;
+	public String nickname;
+	public String status; 		// relationship status
+	public String orientation;  // sexual orientation
 
-	public View view = null; // the view of a particular user in a list, expect
-								// a layout type of user_item.xml
+	// The view of a particular user in the people list (expects a layout type of user_item.xml)
+	public View view = null; 	
 
+	
 	/**
 	 * Default constructor
 	 */

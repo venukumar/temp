@@ -51,9 +51,8 @@ import android.widget.Toast;
 public class ProfileDialogFragment extends DialogFragment {
 
 	public Person mUser = null;
-	public Profile mProfile = null;
-	public Context mcontext = null;
-	private Bitmap mProfileImage = null;
+//	public Profile mProfile = null;
+	public Bitmap mProfileImage = null;
 	private ProgressDialog progressDialog;
 
 	/*
@@ -62,29 +61,24 @@ public class ProfileDialogFragment extends DialogFragment {
 	 * passes the DialogFragment in case the host needs to query it.
 	 */
 	public interface ProfileDialogListener {
-		public void onUserDialogPositiveClick(DialogFragment dialog,
-				String userCheckedInOrNot);
-
+		public void onUserDialogPositiveClick(DialogFragment dialog);
 		public void onUserDialogNegativeClick(DialogFragment dialog);
 	}
 
 	// Use this instance of the interface to deliver action events
 	ProfileDialogListener mListener;
 
-	// Override the Fragment.onAttach() method to instantiate the
-	// NoticeDialogListener
+	// Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		// Verify that the host activity implements the callback interface
 		try {
-			// Instantiate the NoticeDialogListener so we can send events to the
-			// host
+			// Instantiate the NoticeDialogListener so we can send events to the host
 			mListener = (ProfileDialogListener) activity;
 		} catch (ClassCastException e) {
 			// The activity doesn't implement the interface, throw exception
-			throw new ClassCastException(activity.toString()
-					+ " must implement ProfileDialogListener");
+			throw new ClassCastException(activity.toString() + " must implement ProfileDialogListener");
 		}
 	}
 
@@ -94,91 +88,49 @@ public class ProfileDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		
 		// Get the layout inflater
 		LayoutInflater inflater = getActivity().getLayoutInflater();
 
-		// Inflate and set the layout for the dialog
-		// Pass null as the parent view because its going in the dialog layout
-
+		// Inflate and set the layout for the dialog. Pass null as the parent view because its going in the dialog layout
 		View view = inflater.inflate(R.layout.dialog_user_profile, null);
 
 		// Customize dialog for this user
-		((TextView) view.findViewById(R.id.view_user_dialog_name))
-				.setText(mUser.getDisplayName());
-		((TextView) view.findViewById(R.id.view_user_dialog_description))
-				.setText(mUser.getAboutMe());
+		((TextView) view.findViewById(R.id.view_user_dialog_name)).setText(mUser.getDisplayName());
+		((TextView) view.findViewById(R.id.view_user_dialog_description)).setText(mUser.getAboutMe());
 
-		// Set up user image asynchronously (it will be displayed when
-		// downloaded)
-		new DownloadImageTask().execute((ImageView) view
-				.findViewById(R.id.view_user_dialog_image_resource));
+		// Set up user image asynchronously (it will be displayed when downloaded)
+		new DownloadImageTask().execute((ImageView) view.findViewById(R.id.view_user_dialog_image_resource));
 
 		// Set up user info string
-		String info = mUser.getBirthday() + " / " + mUser.getGender() + " / "
-				+ mUser.getRelationshipStatus();
-		((TextView) view.findViewById(R.id.view_user_dialog_info))
-				.setText(info);
+		String info = mUser.getBirthday() + " / " + mUser.getGender() + " / " + mUser.getRelationshipStatus();
+		((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(info);
 
 		// Each dialog knows the user its displaying
 		view.findViewById(R.id.view_user_dialog_name).setTag(this.mUser);
 
+		// Set view and add click listeners by calling the listeners in the calling activity
 		builder.setView(view)
-				// Add action buttons
-				.setPositiveButton("Accept profile",
-						new DialogInterface.OnClickListener() {
+		
+			// Add action buttons
+			.setPositiveButton("Accept profile",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int id) {
 
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-
-								SharedPreferences settings = mcontext
-										.getSharedPreferences(
-												GCMIntentService.REG_ID, 0);
-								String deviceToken = settings.getString(
-										"RegId", "");
-								if (deviceToken.trim().length() > 0) {
-
-									new Thread() {
-										public void run() {
-											// Service call for post profile
-											// data to server
-											String userChekedInOrNot = WebServices
-													.postProfile(
-															mProfile,
-															mProfileImage,
-															Constants.URL_POST_PROFILE_DATA,
-															mcontext);
-											// Added one more variable to check
-											// user checkedIn or not
-											// Send the positive button event
-											// back to the
-											// host activity
-											if (userChekedInOrNot != null)
-												mListener
-														.onUserDialogPositiveClick(
-																ProfileDialogFragment.this,
-																userChekedInOrNot);
-
-										}
-									}.start();
-
-								} else {
-									Toast.makeText(mcontext,
-											"Please try again....",
-											Toast.LENGTH_LONG).show();
-								}
-							}
-						})
-				.setNegativeButton("Edit profile",
-						new DialogInterface.OnClickListener() {
-
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-								// Send the positive button event back to the
-								// host activity
-								mListener
-										.onUserDialogNegativeClick(ProfileDialogFragment.this);
-							}
-						});
+							// Send the positive button event back to the host activity
+							mListener.onUserDialogPositiveClick(ProfileDialogFragment.this);
+						}
+					})
+			.setNegativeButton("Edit profile",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int id) {
+							// Send the positive button event back to the host activity
+							mListener.onUserDialogNegativeClick(ProfileDialogFragment.this);
+						}
+					});
+		
 		return builder.create();
 	}
 
