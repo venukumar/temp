@@ -2,12 +2,17 @@ package com.vendsy.bartsy.model;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.zip.Inflater;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.vendsy.bartsy.R;
@@ -124,6 +129,7 @@ public class Order {
 
 		try {
 			status = Integer.valueOf(json.getString("orderStatus"));
+			state_transitions[status] = new Date(); // For now just use current date. the date should come in the syscall 
 			title = json.getString("itemName");
 			orderDate = json.getString("orderTime");
 			price = Float.valueOf(json.getString("basePrice"));
@@ -157,6 +163,9 @@ public class Order {
 			this.status = ORDER_STATUS_COMPLETE;
 			break;
 		}
+
+		// Mark the time of the state transition in the timetable
+		state_transitions[status] = new Date();
 	}
 
 	/**
@@ -171,69 +180,44 @@ public class Order {
 
 	}
 
-	public void updateView() {
+	public View updateView(LayoutInflater inflater, ViewGroup container) {
 
-		if (view == null)
-			return;
+		view = (View) inflater.inflate(R.layout.order_item, container, false);
+		
+		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
+		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
+		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
+		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[status]));
+		((TextView) view.findViewById(R.id.view_order_price)).setText(""+ (int) this.price); // use int for now
 
-		((TextView) view.findViewById(R.id.view_order_title))
-				.setText(this.title);
-		((TextView) view.findViewById(R.id.view_order_description))
-				.setText(this.description);
-		
-		// TODO : We have to format server GMT time here
-		
-		
-//		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat
-//				.getTimeInstance().format(
-//						this.state_transitions[ORDER_STATUS_NEW]));
-//		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat
-//				.getDateInstance().format(
-//						this.state_transitions[ORDER_STATUS_NEW]));
-		
-		
-		((TextView) view.findViewById(R.id.view_order_price)).setText(""
-				+ (int) this.price); // use int for now
-
-		String positive = "", negative = "";
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
-			positive = "ACCEPT";
-			negative = "REJECT";
-			((TextView) view.findViewById(R.id.view_order_number))
-					.setText("Waiting for bartender to accept ("
-							+ this.serverID + ")");
-			((View) view.findViewById(R.id.view_order_header))
-					.setBackgroundResource(R.drawable.rounded_corner_red);
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Waiting for bartender to accept (" + this.serverID + ")");
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_red);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
-			positive = "COMPLETED";
-			negative = "FAILED";
-			((TextView) view.findViewById(R.id.view_order_number))
-					.setText("Accepted with number " + this.serverID);
-			((View) view.findViewById(R.id.view_order_header))
-					.setBackgroundResource(R.drawable.rounded_corner_orange);
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Accepted with number " + this.serverID);
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_orange);
 			break;
 		case ORDER_STATUS_READY:
-			positive = "PICKED UP";
-			negative = "NO SHOW";
-			((TextView) view.findViewById(R.id.view_order_number))
-					.setText("Ready for pickup with number " + this.serverID);
-			((View) view.findViewById(R.id.view_order_header))
-					.setBackgroundResource(R.drawable.rounded_corner_green);
+			((TextView) view.findViewById(R.id.view_order_number)).setText("Ready for pickup with number " + this.serverID);
+			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_green);
 			break;
 		}
+		
+		return view;
 
-		((Button) view.findViewById(R.id.view_order_button_positive))
-				.setText(positive);
-		((Button) view.findViewById(R.id.view_order_button_positive))
-				.setTag(this);
-		((Button) view.findViewById(R.id.view_order_button_negative))
-				.setText(negative);
-		((Button) view.findViewById(R.id.view_order_button_negative))
-				.setTag(this);
-		view.setTag(this);
-
+	}
+	
+	public View getMiniView(LayoutInflater inflater, ViewGroup container ) {
+		
+		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.order_item_mini, container, false);
+		
+		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
+		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
+		((TextView) view.findViewById(R.id.view_order_price)).setText(""+ (int) this.price); // use int for now
+		
+		return view;
 	}
 
 }

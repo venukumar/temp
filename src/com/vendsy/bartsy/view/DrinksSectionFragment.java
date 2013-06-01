@@ -63,7 +63,7 @@ public class DrinksSectionFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		Log.i(TAG, "onCreateView()");
+		Log.v(TAG, "onCreateView()");
 		
 		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
 		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
@@ -97,16 +97,34 @@ public class DrinksSectionFragment extends Fragment {
 	/*
 	 * Main menu loader. Decides which sub-loader to use to load the menu either from the DB (if it exists)
 	 * or via a call to the web service
+	 * 
+ 	 * Expects mActivity to be pointing to the right context as this function could be called without having 
+ 	 * initialized this fragment's view. The caller should set mActivity
 	 */
+	
+	boolean mMenuLoading = false;
 	
 	public void loadMenu() {
 		
-		Log.i(TAG, "loadMenu()");
-
+		Log.v(TAG, "loadMenu()");
+		
+		// To avoid calling this function multiple times while it's still running, we have an indicator showing
+		// if the menu is being loaded. We set this indicator when the function stars and clear it when it's done
+		
+		if (mMenuLoading) {
+			// Another instance of this function is currently running, no need to call it again
+			Log.d(TAG, "Another instance of loadMenu() is running. Return.");
+			return;
+		}
+		
+		// Indicate start of loading menu
+		mMenuLoading = true;
+		Log.d(TAG, "Indicate start of menu loading");
+		
 		// Check if menu has already been cached
 		
 		if (mMenu == null) {
-			Log.i(TAG, "Menu not available in memory");
+			Log.v(TAG, "Menu not available in memory");
 
 			// Menu is not already in memory, call the appropriate loader
 
@@ -118,10 +136,10 @@ public class DrinksSectionFragment extends Fragment {
 					String apiResponse = null;
 			
 					// Menu not in memory - check if it exists in the DB
-					final List<Section> sectionsList = DatabaseManager.getInstance().getMenuSections(mApp.activeVenue.getId());
+					final List<Section> sectionsList = DatabaseManager.getInstance().getMenuSections(mApp.mActiveVenue.getId());
 					if (sectionsList != null && sectionsList.size() > 0) {
 						// Menu exists in the database. Load it into view
-						Log.i(TAG, "Loading menu from DB...");
+						Log.v(TAG, "Loading menu from DB...");
 						loadAndDisplayMenu(sectionsList);
 						if (mMenu == null) {
 							// Database failed for some reason. Attempt to download the menu from the web
@@ -129,16 +147,22 @@ public class DrinksSectionFragment extends Fragment {
 						}
 					} else {
 						// Menu doesn't exist in the DB - load it from the server and display it
-						Log.i(TAG, "Loading menu from web services...");
+						Log.v(TAG, "Loading menu from web services...");
 						apiResponse = downloadAndDisplayMenu();
 					}
 					
 					if (mMenu == null) {
 						// Both loaders failed - abort. 
 						Log.d(TAG, "Loaders failed...");
+						
+						// Mark the end end of menu loading as we failed and we're returning.
+						mMenuLoading = false;
+						Log.d(TAG, "Indicate end of menu loading");
+
 						return;
 					}
-					
+
+
 					// Loading of the menu successful. Display it using a handler because Android 
 					// doesn't allow manipulating views from separate threads
 					handler.post(new Runnable() {
@@ -151,22 +175,31 @@ public class DrinksSectionFragment extends Fragment {
 					// Check if menu is marked for saving
 					if (apiResponse != null) {
 						// Successfully downloaded the menu from the web. Save it in the DB for next time
-						Log.i(TAG, "Saving menu to DB");
-						saveMenuToDB(apiResponse, mApp.activeVenue.getId());
+						Log.v(TAG, "Saving menu to DB");
+						saveMenuToDB(apiResponse, mApp.mActiveVenue.getId());
 					}
+					
+					// Mark the end of menu loading
+					mMenuLoading = false;
+					Log.d(TAG, "Indicate end of menu loading");
 				}
 			}.start();
+						
 		} else {
 			// Menu already in memory. Nothing to load so just display it.
-			Log.i(TAG, "Menu available in memory - displaying it...");
+			Log.v(TAG, "Menu available in memory - displaying it...");
 			updateView();
+			
+			// Mark the end of menu loading
+			mMenuLoading = false;
+			Log.d(TAG, "Indicate end of menu loading");			
 		}
 	}
 	
 	
 	/******
 	 * 
-	 * TODO - Web service functions
+	 * TODO - Web service functions for menu loader
 	 * 
 	 * @return
 	 */
@@ -178,15 +211,15 @@ public class DrinksSectionFragment extends Fragment {
 	 */
 	private String downloadAndDisplayMenu() {
 
-		Log.i(TAG, "downloadAndDisplayMenu()");
+		Log.v(TAG, "downloadAndDisplayMenu()");
 
 		// Step 1 - get the web service response and display the results in the view
-		String response = WebServices.getMenuList(mActivity.getApplicationContext(), mApp.activeVenue.getId());
+		String response = WebServices.getMenuList(mActivity.getApplicationContext(), mApp.mActiveVenue.getId());
 		if (response == null) {
 			Log.d(TAG, "Webservice get menu call failed");
 			return null;
 		} else {
-			Log.i(TAG, "Webservice menu response: " + response == null? "null" : response);
+			Log.v(TAG, "Webservice menu response: " + response == null? "null" : response);
 		}
 		
 		// parse the response into a menu in-memory structure
@@ -214,7 +247,7 @@ public class DrinksSectionFragment extends Fragment {
 			String menus = result.getString("menu");
 	
 			JSONArray sections = new JSONArray(menus);
-			Log.i(TAG, "Menus length " + sections.length());
+			Log.v(TAG, "Menus length " + sections.length());
 	
 			// Parse sections 
 			for (int i = 0; i < sections.length(); i++) {
@@ -269,7 +302,7 @@ public class DrinksSectionFragment extends Fragment {
 	
 	/*****
 	 * 
-	 * TODO - DB functions
+	 * TODO - DB functions for menu loader
 	 * 
 	 */
 	
@@ -281,15 +314,14 @@ public class DrinksSectionFragment extends Fragment {
 	
 	private void loadAndDisplayMenu(final List<Section> sectionsList) {
 		
-		Log.i(TAG, "loadAndDisplayMenu()");
+		Log.v(TAG, "loadAndDisplayMenu()");
 		
 		// Safety first
 		if(sectionsList==null) return ;
 
 		ArrayList<String> groupNames = new ArrayList<String>();
 		// Default group name for individual drinks
-		List<MenuDrink> defaultList = DatabaseManager.getInstance()
-				.getMenuDrinks(mApp.activeVenue.getId());
+		List<MenuDrink> defaultList = DatabaseManager.getInstance().getMenuDrinks(mApp.mActiveVenue.getId());
 		if (defaultList != null && defaultList.size() > 0) {
 			groupNames.add("Various items");
 		}
@@ -306,7 +338,7 @@ public class DrinksSectionFragment extends Fragment {
 		}
 		for (int j = 0; j < sectionsList.size(); j++) {
 			List<MenuDrink> list = DatabaseManager.getInstance().getMenuDrinks(
-					sectionsList.get(j), mApp.activeVenue.getId());
+					sectionsList.get(j), mApp.mActiveVenue.getId());
 			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
 			menuDrinks.add(menu);
 		}
@@ -322,7 +354,7 @@ public class DrinksSectionFragment extends Fragment {
 	
 	private void saveMenuToDB (String response, String venueID) {
 		
-		Log.i(TAG, "saveMenuToDB()");
+		Log.v(TAG, "saveMenuToDB()");
 		
 		if (response == null) {
 
@@ -337,7 +369,7 @@ public class DrinksSectionFragment extends Fragment {
 				String menus = result.getString("menu");
 
 				JSONArray jsonArray = new JSONArray(menus);
-				Log.i(TAG, "Menus length " + jsonArray.length());
+				Log.v(TAG, "Menus length " + jsonArray.length());
 
 				for (int section = 0; section < jsonArray.length(); section++) {
 
@@ -393,12 +425,12 @@ public class DrinksSectionFragment extends Fragment {
 				}
 
 			} catch (JSONException e) {
-				Log.i(TAG, "saveMenuToDB() failed");
+				Log.v(TAG, "saveMenuToDB() failed");
 				e.printStackTrace();
 				return;
 			}
 		}
-		Log.i(TAG, "saveMenuToDB() finished");
+		Log.v(TAG, "saveMenuToDB() finished");
 	}
 	
 	
@@ -414,28 +446,38 @@ public class DrinksSectionFragment extends Fragment {
 	 * Displays a menu in the view's expandable list adapter. If the menu cache is not loaded yet,
 	 * it calls the appropriate loader that will in turn call this function again once they have 
 	 * loaded the menu.
+	 * 
+	 * Expects mActivity to be pointing to the right context
 	 */
 	
 	void updateView(){
 		
-		Log.i(TAG, "updateView()");
+		Log.v(TAG, "updateView()");
 		
 		// If menu is not already in memory, call the appropriate loader
 		if (mMenu == null) {
 			Log.d(TAG, "Menu not available for display");
+			loadMenu();
 			return;
 		}
+
+		// If the view is not yet initialized, don't display the menu. This also 
+		if (mDrinksListView == null) {
+			Log.d(TAG, "View is not available");
+			return;
+		}
+
 		
 		// Display menu from memory into the view
 		
 		ArrayList<String> headings = mMenu.headings;
 		final ArrayList<ArrayList<MenuDrink>> items = mMenu.items;
 
-		Log.i(TAG, "Menu is in cache. Displaying " + headings.size() + " headings");
+		Log.v(TAG, "Menu is in cache. Displaying " + headings.size() + " headings");
 
 		try {
-			
-			mDrinksListView.setAdapter(new ExpandableListAdapter(getActivity(),headings, items));
+
+			mDrinksListView.setAdapter(new ExpandableListAdapter(mActivity,headings, items));
 
 			// Setup the dialog to be displayed when clicking on an item in the menu
 			mDrinksListView.setOnChildClickListener(new OnChildClickListener() {
@@ -443,7 +485,7 @@ public class DrinksSectionFragment extends Fragment {
 				public boolean onChildClick(ExpandableListView parent, View v,
 						int groupPosition, int childPosition, long id) {
 					
-					if(mApp.activeVenue == null){
+					if(mApp.mActiveVenue == null){
 						// for now don't post an error message, but this should be fixed ASAP
 						return false;
 					}
@@ -472,7 +514,7 @@ public class DrinksSectionFragment extends Fragment {
 	public void onDestroy() {
 		super.onDestroy();
 
-		Log.i(TAG, "onDestroy()");
+		Log.v(TAG, "onDestroy()");
 		
 		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
 		((VenueActivity) getActivity()).mDrinksFragment = null;

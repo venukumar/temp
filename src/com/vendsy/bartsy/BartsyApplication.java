@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -100,7 +101,7 @@ import com.vendsy.bartsy.view.AppObserver;
  * is required to correctly display Activities when they are recreated.
  */
 public class BartsyApplication extends Application implements AppObservable {
-	private static final String TAG = "Bartsy";
+	private static final String TAG = "BartsyApplication";
 	public static String PACKAGE_NAME;
 
 	/**
@@ -110,19 +111,22 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 	public void onCreate() {
 		PACKAGE_NAME = getApplicationContext().getPackageName();
-		Log.i(TAG, PACKAGE_NAME + ".onCreate()");
+		Log.v(TAG, "onCreate()");
 
 		if (Constants.USE_ALLJOYN) {
 			Intent intent = new Intent(this, ConnectivityService.class);
 			mRunningService = startService(intent);
 			if (mRunningService == null) {
-				Log.i(TAG, "onCreate(): failed to startService()");
+				Log.e(TAG, "onCreate(): failed to startService()");
 			}
 		}
 
 		// load user profile if it exists. this is an application-wide variable.
 		loadUserProfile();
 
+		// Load active venue from preferences
+		loadActiveVenue();
+		
 		// DataBase initialization - First activity should call this method
 		MDBM = DatabaseManager.getNewInstance(this);
 
@@ -136,44 +140,132 @@ public class BartsyApplication extends Application implements AppObservable {
 		} else {
 			Log.v(TAG, "Already registered");
 		}
-		Log.i(TAG, "the registration id is:::::" + regId);
+		Log.v(TAG, "the registration id is:::::" + regId);
 
-		Log.i(TAG, "People list size: " + mPeople.size());
-		Log.i(TAG, "Orders list size: " + mOrders.size());
-		String venue;
-		if (activeVenue == null)
-			venue = "not checked in";
+		Log.v(TAG, "People list size: " + mPeople.size());
+		Log.v(TAG, "Orders list size: " + mOrders.size());
+		if (mActiveVenue == null)
+			Log.v(TAG, "Not checked in");
 		else
-			venue = activeVenue.getName();
+			Log.v(TAG, "Checked in at " + mActiveVenue.getName());
 
-		Log.i(TAG, "Venue: " + venue);
-
+	
 	}
+	
+	
 
 	// Database manager is a global variable
 	DatabaseManager MDBM = null;
 
+	
+	
 	/**
+	 * 
+	 * TODO - active venue
 	 * 
 	 * The active venue is the venue where the user is checked in or null if the
 	 * user is not checked in
 	 * 
 	 */
 
-	public Venue activeVenue = null;
+	public Venue mActiveVenue = null;
 
 	/*
 	 * Set the active venue to null and remove orders and people from the global
 	 * data structures. Assumes the views will be updated from elsewhere
 	 */
 
-	void userCheckOut() {
-		activeVenue = null;
+	public void userCheckOut() {
+
+		Log.v(TAG, "userCheckOut()");
+
+		mActiveVenue = null;
 		mOrders.clear();
 		mPeople.clear();
+		eraseSavedActiveVenue();
 	}
 
+	public void userCheckIn(String venueId, String venueName) {
+		
+		Log.v(TAG, "userCheckIn(" + venueId + ", " + venueName + ")");
+		
+		mActiveVenue = new Venue();
+		mActiveVenue.setId(venueId);
+		mActiveVenue.setName(venueName);
+
+		mOrders.clear();
+		mPeople.clear();
+		
+		saveActiveVenue();
+	}
+	
+	public void userCheckIn(Venue venue) {
+		
+		Log.v(TAG, "userCheckIn2(" + venue.getId() + ", " + venue.getName() + ")" );
+		
+		mActiveVenue = venue;
+
+		mOrders.clear();
+		mPeople.clear();
+		
+		saveActiveVenue();
+	}
+	
+	private void loadActiveVenue () {
+		
+		Log.v(TAG, "loadActiveVenue()");
+		
+		if (mActiveVenue != null) {
+			Log.v(TAG, "Venue already loaded");
+			saveActiveVenue(); // make sure the active venue is saved
+			return; 
+		}
+		
+		mActiveVenue = null;
+		mOrders.clear();
+		mPeople.clear();
+		
+		String venueID = Utilities.loadPref(this, R.string.venueId, null);
+		String venueName = Utilities.loadPref(this, R.string.venueName, null);
+
+		if (venueID == null || venueName == null) {
+			Log.v(TAG, "No active venue found");
+			return;
+		}
+		
+		mActiveVenue = new Venue();
+		mActiveVenue.setId(venueID);
+		mActiveVenue.setName(venueName);
+		
+		Log.v(TAG, "Active venue: " + venueID + ", " + venueName);
+	}
+	
+	private void saveActiveVenue() {
+		
+		Log.v(TAG, "saveActiveVenue()");
+
+		if (mActiveVenue == null) {
+			Log.v(TAG, "Active venue doesn't exist");
+			eraseSavedActiveVenue();
+		} else {
+			Log.v(TAG, "Venue saved:  (" + mActiveVenue.getId() + ", " + mActiveVenue.getName() + ")");
+			Utilities.savePref(this, R.string.venueId, mActiveVenue.getId());
+			Utilities.savePref(this, R.string.venueName, mActiveVenue.getName());
+		}
+	}
+	
+	private void eraseSavedActiveVenue() {
+
+		Log.v(TAG, "eraseSavedActiveVenue()");
+
+		Utilities.savePref(this, R.string.venueId, null);
+		Utilities.savePref(this, R.string.venueName, null);
+	}
+	
+	
 	/***
+	 * 
+	 * TODO - User Profile
 	 * 
 	 * The user profile is saved in the application state. It's small enough
 	 * that it shouldn't cause memory issues
@@ -183,11 +275,21 @@ public class BartsyApplication extends Application implements AppObservable {
 	public Profile mProfile;
 
 	void loadUserProfile() {
-		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name),Context.MODE_PRIVATE);
+		
+		Log.v(TAG, "loadUserProfile()");
+
+		// Initialize the profile structure
 		mProfile = null;
 
-		Log.d(TAG, "Loading user profile from " + getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
+		// Make sure the user's account name has been saved or there is no local profile
+		if (Utilities.loadPref(this, R.string.config_user_account_name, null) == null) {
+			Log.v(TAG, "No saved user profile");
+			return;
+		}			
 
+		// Load profile image
+
+		Log.d(TAG, "Loading user profile from " + getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
 		Bitmap image = null;
 		try {
 			image = BitmapFactory.decodeFile(getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
@@ -196,21 +298,38 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.d(TAG, "Could not load profile image");
 			return;
 		}
-
 		if (image == null) {
 			Log.d(TAG, "Could not load profile image");
 			return;
 		}
 		
-		Log.d(TAG, "Profile image found, creating profile...");
-		// New change - Added image path url to profile constructor
+		// Profile name and image were found. Create a user profile.
+
 		mProfile = new Profile(
-				sharedPref.getString(getResources().getString(R.string.config_user_account_name), ""), sharedPref.getString(getResources().getString(R.string.config_user_name), ""),
-				sharedPref.getString(getResources().getString(R.string.config_user_location), ""), sharedPref.getString(getResources().getString(R.string.config_user_info), ""),
-				sharedPref.getString(getResources().getString(R.string.config_user_description), ""), image, null);
+				Utilities.loadPref(this, R.string.config_user_account_name, ""), 
+				Utilities.loadPref(this, R.string.config_user_name, ""),
+				Utilities.loadPref(this, R.string.config_user_location, ""), 
+				Utilities.loadPref(this, R.string.config_user_info, ""),
+				Utilities.loadPref(this, R.string.config_user_description, ""), 
+				image, 
+				null);
+
+		Log.v(TAG, "Profile loaded: " + Utilities.loadPref(this, R.string.config_user_account_name, ""));
 	}
 
+	
+	public void saveUserProfile(int bartsyUserId) {
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = getResources();
+
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putInt(r.getString(R.string.bartsyUserId), bartsyUserId);
+		editor.commit();
+	}
+	
 	/*****
+	 * 
+	 * TODO - People 
 	 * 
 	 * The list of people present (when checked in) is also saved here, in the
 	 * global state. We have all handling code here because the application
@@ -231,7 +350,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	void addPerson(String userid, String name, String location, String info,
 			String description, String image // base64 encoded image
 	) {
-		Log.i(TAG, "New user checked in: " + name + " (" + userid + ")");
+		Log.v(TAG, "New user checked in: " + name + " (" + userid + ")");
 
 		// Decode the user image and create a new incoming profile
 		// byte[] decodedString = Base64.decode(image,
@@ -245,7 +364,11 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(PEOPLE_UPDATED);
 	}
 
+	
+	
 	/***
+	 * 
+	 * TODO - Orders
 	 * 
 	 * This is the local order id counter, incremented for each order and unique
 	 * within the context of the application. The server will have a different
@@ -289,7 +412,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void updateOrder(String order_server_id, String remote_order_status) {
 
-		Log.i(TAG, "Update for remote code " + order_server_id);
+		Log.v(TAG, "Update for remote code " + order_server_id);
 
 		int remote_status = Integer.parseInt(remote_order_status);
 
@@ -378,13 +501,13 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * through "kill -9". See quit().
 	 */
 	public void checkin() {
-		Log.i(TAG, "checkin()");
+		Log.v(TAG, "checkin()");
 		if (Constants.USE_ALLJOYN && mRunningService == null) {
-			Log.i(TAG, "checkin():  Starting the AllJoynService");
+			Log.v(TAG, "checkin():  Starting the AllJoynService");
 			Intent intent = new Intent(this, ConnectivityService.class);
 			mRunningService = startService(intent);
 			if (mRunningService == null) {
-				Log.i(TAG, "checkin(): failed to startService()");
+				Log.v(TAG, "checkin(): failed to startService()");
 			}
 		}
 	}
@@ -455,10 +578,10 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * name.
 	 */
 	public synchronized void addFoundChannel(String channel) {
-		Log.i(TAG, "addFoundChannel(" + channel + ")");
+		Log.v(TAG, "addFoundChannel(" + channel + ")");
 		removeFoundChannel(channel);
 		mChannels.add(channel);
-		Log.i(TAG, "addFoundChannel(): added " + channel);
+		Log.v(TAG, "addFoundChannel(): added " + channel);
 		notifyObservers(NEW_CHANNEL_FOUND_EVENT);
 
 	}
@@ -479,12 +602,12 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * channel.
 	 */
 	public synchronized void removeFoundChannel(String channel) {
-		Log.i(TAG, "removeFoundChannel(" + channel + ")");
+		Log.v(TAG, "removeFoundChannel(" + channel + ")");
 
 		for (Iterator<String> i = mChannels.iterator(); i.hasNext();) {
 			String string = i.next();
 			if (string.equals(channel)) {
-				Log.i(TAG, "removeFoundChannel(): removed " + channel);
+				Log.v(TAG, "removeFoundChannel(): removed " + channel);
 				i.remove();
 			}
 		}
@@ -497,10 +620,10 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * the list, and we are deeply paranoid, we provide a deep copy.
 	 */
 	public synchronized List<String> getFoundChannels() {
-		Log.i(TAG, "getFoundChannels()");
+		Log.v(TAG, "getFoundChannels()");
 		List<String> clone = new ArrayList<String>(mChannels.size());
 		for (String string : mChannels) {
-			Log.i(TAG, "getFoundChannels(): added " + string);
+			Log.v(TAG, "getFoundChannels(): added " + string);
 			clone.add(new String(string));
 		}
 		return clone;
@@ -903,7 +1026,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * an observer wants to register for change notifications, it calls here.
 	 */
 	public synchronized void addObserver(AppObserver obs) {
-		Log.i(TAG, "addObserver(" + obs + ")");
+		Log.v(TAG, "addObserver(" + obs + ")");
 		if (mObservers.indexOf(obs) < 0) {
 			mObservers.add(obs);
 		}
@@ -914,7 +1037,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * notifications, it calls here.
 	 */
 	public synchronized void deleteObserver(AppObserver obs) {
-		Log.i(TAG, "deleteObserver(" + obs + ")");
+		Log.v(TAG, "deleteObserver(" + obs + ")");
 		mObservers.remove(obs);
 	}
 
@@ -932,9 +1055,9 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * to act or not based on the content of the string.
 	 */
 	private void notifyObservers(Object arg) {
-		Log.i(TAG, "notifyObservers(" + arg + ")");
+		Log.v(TAG, "notifyObservers(" + arg + ")");
 		for (AppObserver obs : mObservers) {
-			Log.i(TAG, "notify observer = " + obs);
+			Log.v(TAG, "notify observer = " + obs);
 			obs.update(this, arg);
 		}
 	}

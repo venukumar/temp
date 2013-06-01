@@ -29,6 +29,8 @@ import com.vendsy.bartsy.utils.WebServices;
 
 public class MainActivity extends FragmentActivity implements OnClickListener {
 
+	private static final String TAG = "MainActivity";
+	
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
 	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some
@@ -39,83 +41,55 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
+		
+		
 		// If the user profile is not set, start the init activity
-		SharedPreferences sharedPref = getSharedPreferences(getResources()
-				.getString(R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
-		if (sharedPref
-				.getString(
-						getResources().getString(
-								R.string.config_user_account_name), "")
-				.equalsIgnoreCase("")) {
+
+		if (Utilities.loadPref(this, R.string.config_user_account_name, null) == null) {
 			Intent intent = new Intent().setClass(this, InitActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return;
-		} else if(mApp.activeVenue==null){
-
-			// To get the application resources
-			Resources r = getResources();
-			// To get venue id from shared preferences
-			String venueId = sharedPref.getString(
-					r.getString(R.string.venueId), "0");
-
-			String venueName = sharedPref.getString(
-					r.getString(R.string.venueName), "Not Checked In");
-			if (!venueId.equalsIgnoreCase("0")) {
-				Venue venue = new Venue();
-				venue.setId(venueId);
-				venue.setName(venueName);
-				mApp.activeVenue = venue;
-				
-				// If the Venue is exit means user already checked in, start the venue activity
-				Log.i(this.toString(),
-						"Venue Not null " + mApp.activeVenue.getName());
-				Intent intent = new Intent()
-						.setClass(this, VenueActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				finish();
-			}
-			
-		}
-
+		} 
+		
+		
 		setContentView(R.layout.main);
 
-		Venue venue = ((BartsyApplication) getApplication()).activeVenue;
 
-		if (venue == null) {
+		if (mApp.mActiveVenue == null) {
+
 			// No active venue - hide active menu UI
 			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
-
+			
 		} else {
-			// Active venue exists - set up the active venue view
-			// For now just show it
+			// Active venue exists - set up the active venue view. For now just show it
+
 			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
 			findViewById(R.id.check_out).setVisibility(View.VISIBLE);
-			// Set up button
+
+			// Set up checkout button
 			Button b = (Button) findViewById(R.id.button_active_venue);
 			Button checkOut = (Button) findViewById(R.id.check_out);
-
 			checkOut.setOnClickListener(this);
 
+			// Setup text for the view
 			if (mApp.mOrders.size() == 0) {
-				b.setText("Checked in at: " + venue.getName()
+				b.setText("Checked in at: " + mApp.mActiveVenue.getName()
 						+ "\nClick to order drinks and see who's here...");
 			} else {
-				b.setText("Checked in at: " + venue.getName() + "\n"
-						+ mApp.mOrders.size()
-						+ " open orders. Click for more...");
+				b.setText("Checked in at: " + mApp.mActiveVenue.getName() + "\n"
+						+ mApp.mOrders.size() + " open orders. Click for more...");
 			}
 		}
 
 		// Set up button listeners
+		
 		((Button) findViewById(R.id.button_checkin)).setOnClickListener(this);
 		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
 		((View) findViewById(R.id.button_active_venue))
 				.setOnClickListener(this);
-
 		((View) findViewById(R.id.button_notifications))
 				.setOnClickListener(this);
 		((View) findViewById(R.id.button_payments)).setOnClickListener(this);
@@ -130,31 +104,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		getActionBar().hide();
 	}
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-	}
-
-	// @Override
-	// protected Dialog onCreateDialog(int id) {
-	// Log.i("Dailog ", "onCreateDialog()");
-	// Dialog result = null;
-	// System.out.println("dialogg");
-	// switch (id) {
-	// case 0: {
-	// System.out.println("case o");
-	// VenueListDialog dialog = new VenueListDialog(MainActivity.this);
-	// }
-	// break;
-	//
-	// }
-	// return result;
-	// }
 
 	@Override
 	public void onClick(View v) {
@@ -172,35 +121,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 		case R.id.button_active_venue:
 
-			// VenueListDialog dialog = new VenueListDialog(MainActivity.this) {
-			// @Override
-			// protected void venueSelected(final VenueItem venueItem) {
-			// // TODO Auto-generated method stub
-			// super.venueSelected(venueItem);
-			//
-			// new Thread() {
-			//
-			// @Override
-			// public void run() {
-			// // TODO Auto-generated method stub
-			// final String response = WebServices.userCheckIn(
-			// MainActivity.this, venueItem.getId());
-			// handler.post(new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			// updateCheckInView(response,
-			// venueItem.getName());
-			// }
-			//
-			// });
-			// }
-			// }.start();
-			//
-			// }
-			// };
-			// dialog.show();
-
 			intent = new Intent().setClass(this, VenueActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
@@ -215,15 +135,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 					.getString(R.string.config_cardio_token));
 
 			// customize these values to suit your needs.
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true); // default:
-																			// true
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false); // default:
-																			// false
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_ZIP, false); // default:
-																			// false
+			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true);
+			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false);
+			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_ZIP, false); 
 
-			// MY_SCAN_REQUEST_CODE is arbitrary and is only used within this
-			// activity.
+			// MY_SCAN_REQUEST_CODE is arbitrary and is only used within this activity.
 			startActivityForResult(scanIntent, MY_SCAN_REQUEST_CODE);
 			break;
 		case R.id.button_payments_dismiss:
@@ -262,51 +178,20 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	 */
 	private void checkOutUser() {
 		// For now it will ask confirmation dialog
-		if (mApp.activeVenue != null && mApp.mOrders.size() > 0) {
+		if (mApp.mActiveVenue != null && mApp.mOrders.size() > 0) {
 			alertBox("You have open orders placed at "
-					+ mApp.activeVenue.getName()
+					+ mApp.mActiveVenue.getName()
 					+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from "
-					+ mApp.activeVenue.getName() + "?");
-		} else if (mApp.activeVenue != null) {
+					+ mApp.mActiveVenue.getName() + "?");
+		} else if (mApp.mActiveVenue != null) {
 
 			alertBox("Do you want to checkout from "
-					+ mApp.activeVenue.getName() + "?");
+					+ mApp.mActiveVenue.getName() + "?");
 
 		}
 
 	}
 
-	//
-	// private void updateCheckInView(String response, String checkInName) {
-	// // TODO Auto-generated method stub
-	// if (response != null) {
-	// try {
-	// JSONObject checkInObject = new JSONObject(response);
-	// if (checkInObject.has("errorCode")) {
-	// String errorCode = checkInObject.getString("errorCode");
-	// System.out.println("error code " + errorCode);
-	// if (Integer.valueOf(errorCode) == 1) {
-	//
-	// mApp.useSetChannelName(checkInName);
-	//
-	// Intent intent = new Intent().setClass(this,
-	// VenueActivity.class);
-	// intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	// this.startActivity(intent);
-	// finish();
-	// }
-	// }
-	//
-	// } catch (JSONException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// } else {
-	//
-	// }
-	//
-	// }
 
 	/**
 	 * To display alert box when the user check out from the active venue
@@ -323,14 +208,14 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 				// To check null condition (Error handling)
-				if (mApp.activeVenue != null) {
+				if (mApp.mActiveVenue != null) {
 					// Service call in the background
 					new Thread() {
 						public void run() {
 							// Check out web service call
 							String response = WebServices.userCheckInOrOut(
 									MainActivity.this,
-									mApp.activeVenue.getId(),
+									mApp.mActiveVenue.getId(),
 									Constants.URL_USER_CHECK_OUT);
 							if (response != null) {
 								System.out.println("response  ::: " + response);
@@ -354,8 +239,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 										@Override
 										public void run() {
 											mApp.userCheckOut();
-											findViewById(R.id.view_active_venue)
-													.setVisibility(View.GONE);
+											findViewById(R.id.view_active_venue).setVisibility(View.GONE);
 										}
 									});
 								} catch (JSONException e) {
@@ -381,6 +265,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 	}
 
+	/* This method is used by Card.io to process the credit card numbers 
+	 * (non-Javadoc)
+	 * @see android.support.v4.app.FragmentActivity#onActivityResult(int, int, android.content.Intent)
+	 */
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);

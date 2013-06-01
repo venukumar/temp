@@ -69,7 +69,7 @@ public class MapActivity extends Activity implements LocationListener,
 	BartsyApplication mApp = null;
 
 	Activity activity = this;
-	private static final String TAG = "Map Activity";
+	private static final String TAG = "MapActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -146,88 +146,7 @@ public class MapActivity extends Activity implements LocationListener,
 			});
 		}
 	}
-
-	/**
-	 * To update list view with venue information and update markers in the Map
-	 * view
-	 * 
-	 * @param venueList
-	 */
-	protected void updateListView(ListView venueList) {
-
-		if (venueList == null || venues == null) {
-			return;
-		}
-		// To set the adapter to the list view
-		VenueListViewAdapter customAdapter = new VenueListViewAdapter(
-				MapActivity.this, R.layout.map_list_item, venues);
-
-		venueList.setAdapter(customAdapter);
-
-		// To add markers to the map view
-		for (int i = 0; i < venues.size(); i++) {
-			Venue venue = venues.get(i);
-
-			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()),
-					Float.valueOf(venue.getLongitude()));
-			mMap.addMarker(new MarkerOptions().position(coord)
-					.title(venue.getName()).snippet("People checked in: " + i));
-		}
-	}
-
-	/**
-	 * Invokes when the venue selected in the list view
-	 * 
-	 * @param venue
-	 */
-	protected void venueSelectedAction(Venue venue) {
-
-		if (mApp.activeVenue != null) {
-			Log.i(TAG, "venueSelected(): venue id " + venue.getId());
-
-			if (venue.getId().trim()
-					.equalsIgnoreCase(mApp.activeVenue.getId().trim())) {
-				// Selected venue was already active
-				Intent intent = new Intent(activity, VenueActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				finish();
-
-			} else {
-				// There are some open orders in the last active venue
-				if (mApp.activeVenue != null && mApp.mOrders.size() > 0) {
-					alertBox(
-							"You are already checked-in to "
-									+ mApp.activeVenue.getName()
-									+ ".You have open orders placed at"
-									+ mApp.activeVenue.getName()
-									+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from"
-									+ mApp.activeVenue.getName() + "?", venue);
-				}
-				// Require to ask confirmation to check in to new venue
-				else if (mApp.activeVenue != null) {
-					alertBox("You are already checked-in to "
-							+ mApp.activeVenue.getName()
-							+ ".Do you want to checkout from "
-							+ mApp.activeVenue.getName() + "?", venue);
-				}
-
-			}
-		}
-		// Not check in yet
-		else {
-			mApp.activeVenue = venue;
-			if (mApp.activeVenue != null)
-				Utilities.saveVenueDetails(MapActivity.this,mApp.activeVenue);
-			userCheckinAction();
-			Intent intent = new Intent(activity, VenueActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			finish();
-		}
-
-	}
-
+	
 	/**
 	 * To parse JSON format to list of venues
 	 * 
@@ -263,6 +182,175 @@ public class MapActivity extends Activity implements LocationListener,
 		return list;
 	}
 
+
+	/**
+	 * To update list view with venue information and update markers in the Map
+	 * view
+	 * 
+	 * @param venueList
+	 */
+	protected void updateListView(ListView venueList) {
+
+		if (venueList == null || venues == null) {
+			return;
+		}
+		// To set the adapter to the list view
+		VenueListViewAdapter customAdapter = new VenueListViewAdapter(
+				MapActivity.this, R.layout.map_list_item, venues);
+
+		venueList.setAdapter(customAdapter);
+
+		// To add markers to the map view
+		for (int i = 0; i < venues.size(); i++) {
+			Venue venue = venues.get(i);
+
+			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()),
+					Float.valueOf(venue.getLongitude()));
+			mMap.addMarker(new MarkerOptions().position(coord)
+					.title(venue.getName()).snippet("People checked in: " + i));
+		}
+	}
+
+	/**
+	 * Invokes when the venue selected in the list view
+	 * 
+	 * @param venue
+	 */
+
+	// We're using this variable as a message buffer with the background service checking user in
+	Venue mVenue = null;
+	
+	protected void venueSelectedAction(Venue venue) {
+		
+		Log.v(TAG, "venueSelectedAction(" + venue.getId() + ")");
+
+		// Initialize message buffer for alertBox() and userCheckinAction()
+		mVenue = venue;
+
+		// Check user into venue after confirmation
+		
+		if (mApp.mActiveVenue == null) {
+			// We're not locally checked in, we don't need to display alerts so we 
+			// directly go to check the user in
+			invokeUserCheckInSyscall();
+		} else if (venue.getId().trim().equalsIgnoreCase(mApp.mActiveVenue.getId().trim())) {
+			// Selected venue was already active, no need to do anything more
+			Intent intent = new Intent(activity, VenueActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			finish();
+		} else if (mApp.mOrders.size() > 0) {
+			// We already have a local active venue different than the one selected
+			userCheckOutAlert("You are already checked-in an have open orders placed at" + mApp.mActiveVenue.getName() +
+					". If you checkout they will be cancelled and you will still be charged. Are you sure you want to check out?", venue);
+		} else if (mApp.mActiveVenue != null) {
+			// Require to ask confirmation to check in to new venue
+			userCheckOutAlert("You are already checked in " + mApp.mActiveVenue.getName()
+					+ ".Do you want to check out and check in " + venue.getName() + " instead?", venue);
+		}
+	}
+	
+
+
+	/**
+	 * To display confirmation alert box when the user selects venue in the list
+	 * view
+	 * 
+	 * @param message
+	 * @param venue
+	 */
+	private void userCheckOutAlert(String message, final Venue venue) {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+		builder.setCancelable(true);
+		builder.setTitle("Please Confirm!");
+		builder.setInverseBackgroundForced(true);
+		builder.setMessage(message);
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				dialog.dismiss();
+				invokeUserCheckInSyscall();
+
+			}
+		});
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+
+	}
+
+	/**
+	 * Invokes this action when the user selects on the venue and calls check in
+	 * web service
+	 * 
+	 * @param Uses a local variable "mVenue" as a parameter buffer
+	 * 
+	 */
+	
+	String errorMessage = null;
+	
+	protected void invokeUserCheckInSyscall() {
+		new Thread() {
+			public void run() {
+				
+				// Load the venue paramenter from the local parameter buffer
+				final Venue venue = mVenue;
+				
+				// Invoke the user checkin syscall
+				String response = WebServices.userCheckInOrOut(MapActivity.this, venue.getId(), Constants.URL_USER_CHECK_IN);
+
+				if (response != null) {
+					try {
+						JSONObject json = new JSONObject(response);
+						String errorCode = json.getString("errorCode");
+						errorMessage = json.has("errorMessage") ? json.getString("errorMessage") : "";
+
+						if (errorCode.equalsIgnoreCase("0")) {
+							
+							// Host checked user in successfully. Check the user in locally too.
+
+							handler.post(new Runnable() {
+								public void run() {
+									
+									// Check into the venue locally
+									mApp.userCheckIn(venue);
+
+									// Start venue activity and finish this activity
+									Intent intent = new Intent(activity, VenueActivity.class);
+									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									startActivity(intent);
+									finish();
+								}
+							});
+						} else {
+							
+							// An error has occurred and the user was not checked in - Toast it
+
+							handler.post(new Runnable() {
+								public void run() {
+									Toast.makeText(MapActivity.this, "Error checking in (" + errorMessage + 
+											"). Please try again or restart application.", Toast.LENGTH_SHORT).show();
+								}
+							});
+						}
+
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+		}.start();
+	}
+
+	
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -310,86 +398,6 @@ public class MapActivity extends Activity implements LocationListener,
 		this.startActivity(new Intent().setClass(this, VenueActivity.class));
 	}
 
-	/**
-	 * To display confirmation alert box when the user selects venue in the list
-	 * view
-	 * 
-	 * @param message
-	 * @param venue
-	 */
-	private void alertBox(String message, final Venue venue) {
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-		builder.setCancelable(true);
-		builder.setTitle("Please Confirm!");
-		builder.setInverseBackgroundForced(true);
-		builder.setMessage(message);
-		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-
-				dialog.dismiss();
-				mApp.activeVenue = venue;
-				userCheckinAction();
-
-			}
-		});
-		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		});
-		AlertDialog alert = builder.create();
-		alert.show();
-
-	}
-
-	/**
-	 * Invokes this action when the user selects on the venue and calls check in
-	 * web service
-	 */
-	protected void userCheckinAction() {
-		new Thread() {
-			public void run() {
-				final Venue venue = mApp.activeVenue;
-				String response = WebServices.userCheckInOrOut(
-						MapActivity.this, venue.getId(),
-						Constants.URL_USER_CHECK_IN);
-
-				if (response != null) {
-					try {
-						JSONObject json = new JSONObject(response);
-						String errorCode = json.getString("errorCode");
-						String errorMessage = json.has("errorMessage") ? json
-								.getString("errorMessage") : "";
-						// errorCode "0" indicates for success and "1" for
-						// failure
-
-						if (errorCode.equalsIgnoreCase("0")) {
-							// To access UI thread
-							handler.post(new Runnable() {
-								public void run() {
-									// remove orders and people from the bartsy application class
-									mApp.mOrders.clear();
-									mApp.mPeople.clear();
-									Utilities.saveVenueDetails(MapActivity.this,venue);
-									Intent intent = new Intent(activity,
-											VenueActivity.class);
-									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-									startActivity(intent);
-									finish();
-								}
-							});
-						}
-
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}
-			};
-		}.start();
-	}
 
 	
 }

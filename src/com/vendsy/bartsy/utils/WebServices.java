@@ -105,7 +105,7 @@ public class WebServices {
 
 		String data = postData.toString();
 		
-		Log.i(TAG, "postRequest(" + url + ", " + data + ")");
+		Log.v(TAG, "postRequest(" + url + ", " + data + ")");
 
 		try {
 			boolean status = isNetworkAvailable(context);
@@ -124,7 +124,7 @@ public class WebServices {
 					response = responseofmain.toString();
 				} catch (Exception e) {
 					Log.e("log_tag", "Error in http connection" + e.toString());
-					Log.i(TAG, "Exception found ::: " + e.getMessage());
+					Log.v(TAG, "Exception found ::: " + e.getMessage());
 
 				}
 			}
@@ -143,8 +143,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String userCheckInOrOut (final Context context,
-			String venueId, String url) {
+	public static String userCheckInOrOut (final Context context, String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
@@ -153,7 +152,7 @@ public class WebServices {
 		Resources r = context.getResources();
 		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
-		Log.i(TAG, "bartsyId ::: " + bartsyId);
+		Log.v(TAG, "bartsyId ::: " + bartsyId);
 		final JSONObject json = new JSONObject();
 		try {
 			json.put("bartsyId", bartsyId);
@@ -165,7 +164,7 @@ public class WebServices {
 		try {
 
 			response = postRequest(url, json, context);
-			Log.i(TAG, "CheckIn or Check Out response :: " + response);
+			Log.v(TAG, "CheckIn or Check Out response :: " + response);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -186,7 +185,7 @@ public class WebServices {
 	public static void postHeartbeatResponse (final Context context, 
 			String bartsyId, String venueId) {
 		
-		Log.i(TAG, "WebService.postHeartbeatResponse()");
+		Log.v(TAG, "WebService.postHeartbeatResponse()");
 		final JSONObject json = new JSONObject();
 
 		// Prepare syscall
@@ -281,7 +280,7 @@ public class WebServices {
 				
 				try {
 					String response = postRequest(Constants.URL_PLACE_ORDER, orderData, context);
-					Log.i(TAG, "Post order to server response :: " + response);
+					Log.v(TAG, "Post order to server response :: " + response);
 					
 												
 					JSONObject json = new JSONObject(response);
@@ -376,7 +375,7 @@ public class WebServices {
 			if (profileImage != null) {
 				// Image found - converting it to a byte array and adding to syscall
 
-				Log.i(TAG, "Syscall (with image): " + json);
+				Log.v(TAG, "Syscall (with image): " + json);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				profileImage.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -385,7 +384,7 @@ public class WebServices {
 
 			} else {
 				// Could not find image
-				Log.i(TAG, "Syscall: " + json);
+				Log.v(TAG, "Syscall: " + json);
 			}
 
 			// String details = URLEncoder.encode(json.toString(), "UTF-8");
@@ -434,72 +433,45 @@ public class WebServices {
 	 * 
 	 */
 	private static String postProfileResponseChecking(HttpResponse responses, Context context) {
+		
 		String status = null;
+		BartsyApplication app = (BartsyApplication) context;
+
 		try {
+
 			String responseofmain = EntityUtils.toString(responses.getEntity());
-			Log.i(TAG, "postProfileResponseChecking " + responseofmain);
+			Log.v(TAG, "postProfileResponseChecking " + responseofmain);
 			int bartsyUserId = 0;
 			JSONObject resultJson = new JSONObject(responseofmain);
 
 			if (resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
 
-				// String errorCode = resultJson.getString("errorCode");
-				// String errorMessage = resultJson
-				// .getString("errorMessage");
 				status = resultJson.getString("userCheckedIn");
+
 				// if user checkedIn is true
-				if (status.equalsIgnoreCase("0"))
-
+				if (status.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
 				{
-					// Create Venue Object and assigned to active Venue
-					// object in BartsyApplication class
-					Venue venue = null;
-					if (resultJson.has("venueId")) {
-						venue = new Venue();
-						String venueId = resultJson.getString("venueId");
-						venue.setId(venueId);
-						Log.i(TAG, "venueId  " + venueId);
-					}
-					if (resultJson.has("venueName")) {
-						if (venue == null)
-							venue = new Venue();
-						String venueName = resultJson.getString("venueName");
-						venue.setName(venueName);
-						Log.i(TAG, "venueName " + venueName);
-					}
-					// set venue object to activeVenue
-					BartsyApplication app = (BartsyApplication) context;
-					app.activeVenue = venue;
-
+					// Check the user in locally 
+					app.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
 				}
+
 				if (resultJson.has("bartsyUserId")) {
 					bartsyUserId = resultJson.getInt("bartsyUserId");
 
-					Log.i(TAG, "bartsyUserId " + bartsyUserId + "");
+					Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
 				} else {
-					Log.i(TAG, "BartsyID " + "bartsyUserIdnot found");
+					Log.v(TAG, "BartsyID " + "bartsyUserIdnot found");
 				}
 				// If bartsy id exits we are saved into shared preferences
 				if (bartsyUserId > 0) {
-					SharedPreferences sharedPref = context
-							.getSharedPreferences(
-									context.getResources()
-											.getString(
-													R.string.config_shared_preferences_name),
-									Context.MODE_PRIVATE);
-					Resources r = context.getResources();
-
-					SharedPreferences.Editor editor = sharedPref.edit();
-					editor.putInt(r.getString(R.string.bartsyUserId),
-							bartsyUserId);
-					editor.commit();
+					app.saveUserProfile(bartsyUserId);
 				}
 			} else {
 				status = null;
 			}
 		} catch (Exception e) {
 
-			Log.i(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
+			Log.v(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
 			return null;
 		}
 		return status;
@@ -517,7 +489,7 @@ public class WebServices {
 		String response = null;
 
 		response = WebServices.getRequest(Constants.URL_GET_VENU_LIST, context);
-		Log.i(TAG, "response venu list " + response);
+		Log.v(TAG, "response venu list " + response);
 		return response;
 	}
 
@@ -538,7 +510,7 @@ public class WebServices {
 					Constants.URL_LIST_OF_USER_ORDERS, postData, context);
 
 		} catch (Exception e) {
-			Log.i(TAG, "getUserOdersList Exception found " + e.getMessage());
+			Log.v(TAG, "getUserOdersList Exception found " + e.getMessage());
 			return null;
 		}
 		return response;
@@ -552,7 +524,7 @@ public class WebServices {
 	 */
 	public static String getMenuList(Context context, String venueID) {
 
-		Log.i(Constants.TAG, "getting menu for venue: " + venueID);
+		Log.v(Constants.TAG, "getting menu for venue: " + venueID);
 
 		String response = null;
 		JSONObject json = new JSONObject();
@@ -590,7 +562,7 @@ public class WebServices {
 
 			protected Bitmap doInBackground(String... params) {
 
-				Log.i("file Url: ", fileUrl);
+				Log.v("file Url: ", fileUrl);
 				URL myFileUrl = null;
 				try {
 					myFileUrl = new URL(fileUrl);

@@ -643,10 +643,10 @@ public class ConnectivityService extends Service implements AppObserver {
 
         	// For now just check in the venue with this channel, ignoring the fact we may already be checked in
         	if (Constants.USE_ALLJOYN) {
-        		mApp.activeVenue = new Venue();
-        		mApp.activeVenue.setId("locu_venue_id");
-        		mApp.activeVenue.setName(name);
-        		mApp.activeVenue.setAddress("Santa Monica, CA"); 
+        		mApp.mActiveVenue = new Venue();
+        		mApp.mActiveVenue.setId("locu_venue_id");
+        		mApp.mActiveVenue.setName(name);
+        		mApp.mActiveVenue.setAddress("Santa Monica, CA"); 
         	}
         }
         

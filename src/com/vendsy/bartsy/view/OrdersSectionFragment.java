@@ -3,6 +3,8 @@
  */
 package com.vendsy.bartsy.view;
 
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +32,7 @@ import android.widget.ToggleButton;
  * @author peterkellis
  * 
  */
-public class OrdersSectionFragment extends Fragment implements OnClickListener {
+public class OrdersSectionFragment extends Fragment {
 
 	private View mRootView = null;
 	public LinearLayout mOrderListView = null;
@@ -39,6 +41,8 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 	public BartsyApplication mApp = null;
 	private VenueActivity mActivity = null;
 	private Handler handler = new Handler();
+	
+	static final String TAG = "OrdersSectionFragment";
 
 	// private String mDBText = "";
 
@@ -70,7 +74,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	public void updateOrdersView() {
 
-		Log.i("Bartsy", "About to add orders list to the View");
+		Log.v(TAG, "About to add orders list to the View");
 
 		// Make sure the list view exists and is empty
 		if (mOrderListView == null)
@@ -94,7 +98,7 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 				String response = WebServices.getUserOrdersList(mApp
 						.getApplicationContext());
 
-				Log.i(Constants.TAG, "oreders " + response);
+				Log.v(Constants.TAG, "oreders " + response);
 
 				userOrdersResponseHandling(response);
 			};
@@ -126,27 +130,8 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 						@Override
 						public void run() {
-							// Make sure the list view is empty
-							mOrderListView.removeAllViews();
 
-							// Add any existing orders in the layout, one by one
-							Log.i("Bartsy", "mApp.mOrders list size = " + mApp.mOrders.size());
-
-							for (Order barOrder : mApp.mOrders) {
-								Log.d("Bartsy", "Adding an item to the layout");
-								barOrder.view = (View) mInflater.inflate(R.layout.order_item,
-										mContainer, false);
-								barOrder.updateView();
-								barOrder.view.findViewById(R.id.view_order_button_positive)
-										.setOnClickListener(OrdersSectionFragment.this);
-								barOrder.view.findViewById(R.id.view_order_button_negative)
-										.setOnClickListener(OrdersSectionFragment.this);
-
-								mOrderListView.addView(barOrder.view);
-							}
-
-						// Update people count in people tab
-						mActivity.updateOrdersCount();
+							displayOrders();
 						}
 					});
 				}
@@ -170,6 +155,95 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 
 	}
 
+	/*
+	 * Displays the orders from the order list into the view, bundled by state
+	 */
+	
+	private void displayOrders() {
+
+		Log.v(TAG, "mApp.mOrders list size = " + mApp.mOrders.size());
+
+		// Use a swallow copy of the global structure to be able to remove orders from the global structure in the iterator
+		ArrayList<Order> orders = (ArrayList<Order>) mApp.mOrders.clone();
+
+		// Update people count in people tab
+		mActivity.updateOrdersCount();
+
+		// Make sure the list view is empty
+		mOrderListView.removeAllViews();
+
+		// We bundle orders together according to their status, starting from the top of the list
+		boolean newOrdersDisplayed = false;
+		boolean acceptedOrdersDisplayed = false;
+		boolean readyOrdersDisplayed = false;
+
+		// Add any existing orders in the layout, one by one
+
+		for (int i = 0 ; i < orders.size(); i++) {
+			
+			Order order= orders.get(i);
+
+			Log.v(TAG, "Processing order " + order.serverID + " with status " + order.status);
+
+			int next = Order.ORDER_STATUS_COUNT;
+			
+			switch (order.status) {
+			case Order.ORDER_STATUS_NEW:
+				if (!newOrdersDisplayed) {
+					Log.v(TAG, "Order " + order.serverID + " is the first order with status " + order.status);
+					next = Order.ORDER_STATUS_NEW;
+					newOrdersDisplayed = true;
+				} else {
+					Log.v(TAG, "All orders of status " + order.status + " have been displayed. Skipping order " + order.serverID);					
+				}
+				break;
+			case Order.ORDER_STATUS_IN_PROGRESS:
+				if (!acceptedOrdersDisplayed) {
+					Log.v(TAG, "Order " + order.serverID + " is the first order with status " + order.status);
+					next = Order.ORDER_STATUS_IN_PROGRESS;
+					acceptedOrdersDisplayed = true;
+				} else {
+					Log.v(TAG, "All orders of status " + order.status + " have been displayed. Skipping order " + order.serverID);					
+				}
+				break;
+			case Order.ORDER_STATUS_READY:
+				if (!readyOrdersDisplayed) {
+					Log.v(TAG, "Order " + order.serverID + " is the first order with status " + order.status);
+					next = Order.ORDER_STATUS_READY;
+					readyOrdersDisplayed = true;
+				} else {
+					Log.v(TAG, "All orders of status " + order.status + " have been displayed. Skipping order " + order.serverID);					
+				}
+				break;
+			default:
+				Log.d(TAG, "Unexpected order status");
+				break;
+			}
+
+			// If we have found a new order to display that hasn't been displayed before, display it and any related mini-view
+			
+			if (next != Order.ORDER_STATUS_COUNT) {
+				Log.v(TAG, "Showing master order " + order.serverID);
+				
+				// Display header view with current order
+				mOrderListView.addView(order.updateView(mInflater, mContainer));
+				
+				// If there are any more orders of the same type display them as mini views
+				
+				for (int j = i+1 ; j < orders.size(); j++)
+				{
+					Order mini = orders.get(j);
+					if (mini.status == next) {
+						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
+						((LinearLayout)order.view.findViewById(R.id.view_order_mini))
+							.addView(mini.getMiniView(mInflater, mContainer));
+					}
+				}
+			}
+		}
+	}
+	
+	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -186,29 +260,6 @@ public class OrdersSectionFragment extends Fragment implements OnClickListener {
 		((VenueActivity) getActivity()).mOrdersFragment = null;
 	}
 
-	@Override
-	public void onClick(View v) {
-
-		Log.i("Bartsy", "Click event");
-
-		switch (v.getId()) {
-		case R.id.view_order_button_positive:
-			Order order = (Order) v.getTag();
-			Log.i("Bartsy", "Clicked on order positive button");
-
-			// Update the order status locally and send the update to the remote
-			order.nextPositiveState();
-			((VenueActivity) getActivity()).sendOrderStatusChanged(order);
-
-			if (order.status == Order.ORDER_STATUS_COMPLETE) {
-				// Trash the order for now (later save it to log of past orders)
-				removeOrder(order);
-			} else {
-				order.updateView();
-			}
-			break;
-		}
-	}
 
 	public void removeOrder(Order order) {
 		if (mOrderListView != null)

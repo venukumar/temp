@@ -100,34 +100,46 @@ public final class Utilities {
  * @param key
  * @param value
  */
-	public static void saveDataInSharedPrefrences(Context context, String key,
-			String value) {
+	public static void savePref(Context context, String key, String value) {
 
 		SharedPreferences sharedPref = context.getSharedPreferences(
-				context.getResources().getString(
-						R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
+				context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = context.getResources();
 
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(key, value);
 		editor.commit();
-
 	}
+	
+	public static void savePref(Context context, int key, String value) {
+
+		SharedPreferences sharedPref = context.getSharedPreferences(
+				context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putString(r.getString(key), value);
+		editor.commit();
+	}
+	
+	public static String loadPref(Context context, String key, String defaultValue) {
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources()
+				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		return sharedPref.getString(key, defaultValue);
+	}
+	
+	public static String loadPref(Context context, int key, String defaultValue) {
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources()
+				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+		return sharedPref.getString(r.getString(key), defaultValue);
+	}
+	
+	
 	/**
 	 * To save venue details in shared preferences
 	 * 
 	 * @param venue
 	 */
-	public static void saveVenueDetails(Context context,Venue venue) {
-		// To get venue id key from string.xml 
-		String id = context.getResources().getString(R.string.venueId);
-		// To get venue name key from string.xml 
-		String name =context.getResources().getString(R.string.venueName);
-		Utilities.saveDataInSharedPrefrences(context, id,
-				venue.getId());
-		Utilities.saveDataInSharedPrefrences(context, name,
-				venue.getName());
 
-	}
 }

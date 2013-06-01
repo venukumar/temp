@@ -49,7 +49,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		Log.i("Bartsy", "PeopleSectionFragment.onCreateView()");
+		Log.v("Bartsy", "PeopleSectionFragment.onCreateView()");
 
 		mInflater = inflater;
 		mContainer = container;
@@ -73,7 +73,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	
 	public void updatePeopleView () {
 		
-		Log.i("Bartsy", "About to update people list view");
+		Log.v("Bartsy", "About to update people list view");
 
 		if (mPeopleListView == null)
 			return;
@@ -88,7 +88,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	 */
 	private void loadPeopleList() {
 
-		Log.i(Constants.TAG, "PeopleSectionFragment.loadPeopleList()");
+		Log.v(Constants.TAG, "PeopleSectionFragment.loadPeopleList()");
 
 		try {
 
@@ -97,13 +97,13 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 				public void run() {
 
 					String response = null;
-					if (mApp.activeVenue == null) {
+					if (mApp.mActiveVenue == null) {
 						return;
 					}
 					// Post data for to get the checkedIn people
 					JSONObject postData = new JSONObject();
 					try {
-						postData.put("venueId", mApp.activeVenue.getId());
+						postData.put("venueId", mApp.mActiveVenue.getId());
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
@@ -193,10 +193,10 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 						// Add any existing people in the layout, one by one
 						
-						Log.i(Constants.TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
+						Log.v(Constants.TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
 
 						for (Profile profile : mApp.mPeople) {
-							Log.i("Bartsy", "Adding a user item to the layout");
+							Log.v("Bartsy", "Adding a user item to the layout");
 							profile.view = mInflater.inflate(R.layout.user_item, mContainer, false);
 							profile.updateView(mActivity.mPeopleFragment); // sets up view specifics and sets listener to this
 							mPeopleListView.addView(profile.view);
@@ -209,7 +209,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 			} else {
 
-				Log.i(Constants.TAG, "checked in users not found !!!! ");
+				Log.v(Constants.TAG, "checked in users not found !!!! ");
 			}
 
 		} catch (JSONException e) {
@@ -225,7 +225,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		Log.i(Constants.TAG, "PeopleSectionFragment.onDestroy()");
+		Log.v(Constants.TAG, "PeopleSectionFragment.onDestroy()");
 
 		mRootView = null;
 		mPeopleListView = null;

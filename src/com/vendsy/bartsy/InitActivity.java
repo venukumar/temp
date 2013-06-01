@@ -54,16 +54,16 @@ import com.vendsy.bartsy.utils.WebServices;
 public class InitActivity extends FragmentActivity implements
 		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener {
 
+	private static final String TAG = "InitActivity";
+
 	private ViewPager pager;
 	private static int NUM_VIEWS = 2;
-	private Context cxt;
 	private InitAdapter adapter;
 	private PlusClient mPlusClient;
 	// private ProgressDialog mConnectionProgressDialog;
 	final Context context = this;
 	private ConnectionResult mConnectionResult = null;
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
-	private static final String TAG = "Bartsy";
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	private ProgressDialog mConnectionProgressDialog;
 
@@ -80,7 +80,6 @@ public class InitActivity extends FragmentActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.init_main);
-		cxt = this;
 
 		// Setup pointers
 		mApp = (BartsyApplication) getApplication();

@@ -70,7 +70,7 @@ public class VenueActivity extends FragmentActivity implements
 	 * 
 	 */
 
-	public static final String TAG = "Bartsy";
+	public static final String TAG = "VenueActivity";
 	public DrinksSectionFragment mDrinksFragment = null;
 	public OrdersSectionFragment mOrdersFragment = null; // make sure to set
 															// this to null when
@@ -108,34 +108,6 @@ public class VenueActivity extends FragmentActivity implements
 	ViewPager mViewPager;
 
 
-	/**************************************
-	 * 
-	 * 
-	 * TODO - Save/restore state
-	 * 
-	 * 
-	 */
-	/*
-	 * static final String STATE_SCORE = "playerScore"; static final String
-	 * STATE_LEVEL = "playerLevel"; ...
-	 * 
-	 * @Override public void onSaveInstanceState(Bundle savedInstanceState) { //
-	 * Save the user's current game state savedInstanceState.putInt(STATE_SCORE,
-	 * mCurrentScore); savedInstanceState.putInt(STATE_LEVEL, mCurrentLevel);
-	 * savedInstanceState.
-	 * 
-	 * // Always call the superclass so it can save the view hierarchy state
-	 * super.onSaveInstanceState(savedInstanceState); }
-	 * 
-	 * 
-	 * public void onRestoreInstanceState(Bundle savedInstanceState) { // Always
-	 * call the superclass so it can restore the view hierarchy
-	 * super.onRestoreInstanceState(savedInstanceState);
-	 * 
-	 * // Restore state members from saved instance mCurrentScore =
-	 * savedInstanceState.getInt(STATE_SCORE); mCurrentLevel =
-	 * savedInstanceState.getInt(STATE_LEVEL); }
-	 */
 
 	/**********************
 	 * 
@@ -149,6 +121,8 @@ public class VenueActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.v(TAG, "onCreate()");
+		
 		// Set base view for the activity
 		setContentView(R.layout.activity_main);
 
@@ -210,33 +184,33 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 	private void initializeFragments() {
 
-		Log.i(TAG, "MainActivity.initializeFragments()");
+		Log.v(TAG, "initializeFragments()");
 
 		// Initialize bartender fragment - the fragment may still exist even
 		// though the activity has restarted
 		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drink_orders);
 		if (f == null) {
-			Log.i(TAG, "Bartender fragment not found. Creating one.");
+			Log.v(TAG, "Bartender fragment not found. Creating one.");
 			mOrdersFragment = new OrdersSectionFragment();
 		} else {
-			Log.i(TAG, "Bartender fragment found.");
+			Log.v(TAG, "Bartender fragment found.");
 			mOrdersFragment = f;
 		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
 		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_people);
 		if (mPeopleFragment == null) {
-			Log.i(TAG, "People fragment not found. Creating one.");
+			Log.v(TAG, "People fragment not found. Creating one.");
 			mPeopleFragment = new PeopleSectionFragment();
 		} else {
-			Log.i(TAG, "People fragment found.");
+			Log.v(TAG, "People fragment found.");
 			mPeopleFragment = p;
 		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
 		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drinks);
 		if (mDrinksFragment == null) {
-			Log.i(TAG, "Drinks fragment not found. Creating one.");
+			Log.v(TAG, "Drinks fragment not found. Creating one.");
 			mDrinksFragment = new DrinksSectionFragment();
 			mDrinksFragment.mActivity = this;
 			mDrinksFragment.mApp = (BartsyApplication) getApplication();
@@ -245,7 +219,7 @@ public class VenueActivity extends FragmentActivity implements
 			// we've done some work
 			mDrinksFragment.loadMenu();
 		} else {
-			Log.i(TAG, "Drinks fragment found.");
+			Log.v(TAG, "Drinks fragment found.");
 			mDrinksFragment = d;
 		}
 	}
@@ -277,16 +251,16 @@ public class VenueActivity extends FragmentActivity implements
 
 	public void onStop() {
 		super.onStop();
-		Log.i(TAG, "onStop()");
+		Log.v(TAG, "onStop()");
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.i(TAG, "VenueActivity().onDestroy()");
 
-		// Only stop listening to messages from the application when we're
-		// killed (keep
+		Log.v(TAG, "onDestroy()");
+
+		// Only stop listening to messages from the application when we're killed (keep
 		// listening while in the background with no active view)
 		mApp.deleteObserver(this);
 
@@ -305,61 +279,9 @@ public class VenueActivity extends FragmentActivity implements
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.menu_main, menu);
 
-		// Calling super after populating the menu is necessary here to ensure
-		// that the
+		// Calling super after populating the menu is necessary here to ensure that the
 		// action bar helpers have a chance to handle this event.
 		boolean retValue = super.onCreateOptionsMenu(menu);
-
-		/*
-		 * Set up Action buttons
-		 */
-		/*
-		 * MenuItem item ; View menuItem; LayoutInflater inflater =
-		 * (LayoutInflater)
-		 * getActionBar().getThemedContext().getSystemService(Context
-		 * .LAYOUT_INFLATER_SERVICE);
-		 * 
-		 * 
-		 * // Setup tab button item = menu.findItem(R.id.action_tab); //
-		 * ((TextView
-		 * )mConnectedView.findViewById(R.id.actionBarConnectedText)).
-		 * setText("(1 customer)");
-		 * item.setActionView(inflater.inflate(R.layout.actionbar_tab, null));
-		 * menuItem = item.getActionView().findViewById(R.id.button_tab);
-		 * menuItem.setOnClickListener(new OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) { Intent activity = new
-		 * Intent(getBaseContext(), NotificationsActivity.class);
-		 * startActivity(activity); }}); item.expandActionView();
-		 * 
-		 * // Set requests action item = menu.findItem(R.id.action_requests); //
-		 * ((TextView
-		 * )mConnectedView.findViewById(R.id.actionBarConnectedText)).
-		 * setText("(1 customer)");
-		 * item.setActionView(inflater.inflate(R.layout.actionbar_requests,
-		 * null));
-		 * 
-		 * 
-		 * // Set messages action item = menu.findItem(R.id.action_messages); //
-		 * ((TextView
-		 * )mConnectedView.findViewById(R.id.actionBarConnectedText)).
-		 * setText("(1 customer)"); menuItem =
-		 * inflater.inflate(R.layout.actionbar_messages, null);
-		 * item.setActionView(menuItem);
-		 * 
-		 * // Set notifications action item =
-		 * menu.findItem(R.id.action_notifications); menuItem =
-		 * inflater.inflate(R.layout.actionbar_notifications, null); //
-		 * ((TextView
-		 * )mConnectedView.findViewById(R.id.actionBarConnectedText)).
-		 * setText("(1 customer)"); item.setActionView(menuItem); menuItem =
-		 * item.getActionView(); menuItem.setOnClickListener(new
-		 * OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) { Intent activity = new
-		 * Intent(getBaseContext(), NotificationsActivity.class);
-		 * startActivity(activity); }}); item.expandActionView();
-		 */
 
 		return retValue;
 	}
@@ -367,6 +289,7 @@ public class VenueActivity extends FragmentActivity implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
 			Intent intent = new Intent(this, MainActivity.class);
@@ -374,21 +297,6 @@ public class VenueActivity extends FragmentActivity implements
 			startActivity(intent);
 			return true;
 
-			/*
-			 * case R.id.action_messages:
-			 * item.getActionView().findViewById(R.id.
-			 * view_action_bar_messages).setBackgroundColor(0xaaaaee); break;
-			 * 
-			 * <item android:id="@+id/menu_refresh"
-			 * android:title="@string/menu_refresh"
-			 * android:icon="@android:drawable/ic_popup_sync"
-			 * android:showAsAction="always" />
-			 * 
-			 * // case R.id.menu_refresh: Toast.makeText(this,
-			 * "Restarting P2P...", Toast.LENGTH_SHORT).show();
-			 * 
-			 * // Restart WiFi Direct discovery restartP2P(); break;
-			 */
 		case R.id.action_settings:
 			Intent settingsActivity = new Intent(getBaseContext(),
 					SettingsActivity.class);
@@ -405,41 +313,17 @@ public class VenueActivity extends FragmentActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
+	
 	private void updateActionBarStatus() {
 
-		SharedPreferences sharedPref = getSharedPreferences(getResources()
-				.getString(R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
-		// To get the application resources
-		Resources r = getResources();
-		// To get venue id from shared preferences
-		String venueId = sharedPref.getString(r.getString(R.string.venueId),
-				"0");
-		// If Venue id and name doesn't exits in shared preference we saving into shared preferences.
-		if (venueId.equalsIgnoreCase("0") && mApp.activeVenue != null) {
-			Utilities.saveVenueDetails(VenueActivity.this, mApp.activeVenue);
-		}
-
-		Log.i(TAG, "updateChannelState()");
+		Log.v(TAG, "updateActionBarStatus()");
 
 		String name;
-
-		if (mApp.activeVenue == null) {
+		
+		if (mApp.mActiveVenue == null) {
 			// Not checked in
 
 			appendStatus("Channel iddle");
-
-			// For now simply delete any open orders from the list
-			mApp.mOrders.clear();
-			if (mOrdersFragment != null
-					&& mOrdersFragment.mOrderListView != null)
-				mOrdersFragment.updateOrdersView();
-
-			// For now, also simply delete the list of people present
-			mApp.mPeople.clear();
-			if (mPeopleFragment != null
-					&& mPeopleFragment.mPeopleListView != null)
-				mPeopleFragment.mPeopleListView.removeAllViews();
 
 			// Set app title as not checked in for now. In the future this
 			// should be an illegal state
@@ -448,7 +332,7 @@ public class VenueActivity extends FragmentActivity implements
 		} else {
 			// Checked-in
 
-			name = mApp.activeVenue.getName();
+			name = mApp.mActiveVenue.getName();
 		}
 
 		getActionBar().setTitle(name);
@@ -605,7 +489,7 @@ public class VenueActivity extends FragmentActivity implements
 	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
 
 	public synchronized void update(AppObservable o, Object arg) {
-		Log.i(TAG, "update(" + arg + ")");
+		Log.v(TAG, "update(" + arg + ")");
 		String qualifier = (String) arg;
 
 		if (qualifier.equals(BartsyApplication.APPLICATION_QUIT_EVENT)) {
@@ -640,18 +524,15 @@ public class VenueActivity extends FragmentActivity implements
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case HANDLE_APPLICATION_QUIT_EVENT:
-				Log.i(TAG,
-						"BartsyActivity.mhandler.handleMessage(): HANDLE_APPLICATION_QUIT_EVENT");
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_APPLICATION_QUIT_EVENT");
 				finish();
 				break;
 			case HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT:
-				Log.i(TAG,
-						"BartsyActivity.mhandler.handleMessage(): HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT");
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_USE_CHANNEL_STATE_CHANGED_EVENT");
 				updateActionBarStatus();
 				break;
 			case HANDLE_HISTORY_CHANGED_EVENT: {
-				Log.i(TAG,
-						"BartsyActivity.mhandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
 
 				String message = mApp.getLastMessage();
 
@@ -669,25 +550,23 @@ public class VenueActivity extends FragmentActivity implements
 				break;
 			}
 			case HANDLE_ALLJOYN_ERROR_EVENT: {
-				Log.i(TAG,
+				Log.v(TAG,
 						"BartsyActivity.mhandler.handleMessage(): HANDLE_ALLJOYN_ERROR_EVENT");
 				alljoynError();
 			}
 				break;
 			case HANDLE_ORDERS_UPDATED_EVENT:
-				Log.i(TAG,
-						"BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
 				if (mOrdersFragment != null) {
-					Log.i(TAG, "Updating orders view and count...");
+					Log.v(TAG, "Updating orders view and count...");
 					mOrdersFragment.updateOrdersView();
 					updateOrdersCount();
 				}
 				break;
 			case HANDLE_PEOPLE_UPDATED_EVENT:
-				Log.i(TAG,
-						"BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
 				if (mPeopleFragment != null) {
-					Log.i(TAG, "Updating people view and count...");
+					Log.v(TAG, "Updating people view and count...");
 					mPeopleFragment.updatePeopleView();
 					updatePeopleCount();
 				}
@@ -779,7 +658,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		appendStatus("Placing order for: " + drink.getTitle());
 		
-		if (mApp.activeVenue == null) {
+		if (mApp.mActiveVenue == null) {
 			// No active venue. We need to termiate venue activity. We also notify the user.
 			Toast.makeText(this, "You need to be logged in to place an order", Toast.LENGTH_SHORT).show();
 			finish();
@@ -915,7 +794,7 @@ public class VenueActivity extends FragmentActivity implements
 			
 		} else {
 			// Web service call - the response in handled asynchronously in processOrderDataHandler()
-			if (WebServices.postOrderTOServer(VenueActivity.this, order, mApp.activeVenue.getId(),
+			if (WebServices.postOrderTOServer(VenueActivity.this, order, mApp.mActiveVenue.getId(),
 					processOrderDataHandler))
 				// Failed to place syscall due to internal error
 				Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
@@ -942,7 +821,7 @@ public class VenueActivity extends FragmentActivity implements
 		@Override
 		public void handleMessage(Message msg) {
 
-			Log.i(TAG, "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
+			Log.v(TAG, "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
 			
 			switch (msg.what) {
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
