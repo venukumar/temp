@@ -74,38 +74,19 @@ public final class Utilities {
 		context.sendBroadcast(intent);
 	}
 
+
 	/**
-	 * To get the Bartsy Id from shared preferences. When application went to
-	 * the sleep mode all variables will clear. Best way to get bartsy id from
-	 * shared preferences
+	 * Some shortcuts for saving and retrieving string preferences
 	 * 
 	 * @param context
-	 *            application's context.
+	 * @param key
+	 * @param value
 	 */
 
-	public static int getBartsyIdFromSharedPreferences(Context context) {
-
-		SharedPreferences sharedPref = context.getSharedPreferences(
-				context.getResources().getString(
-						R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
-		Resources r = context.getResources();
-		return sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
-
-	}
-/**
- * To saved the data into shared preferences.
- * 
- * @param context
- * @param key
- * @param value
- */
 	public static void savePref(Context context, String key, String value) {
 
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		Resources r = context.getResources();
-
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(key, value);
 		editor.commit();
@@ -116,7 +97,6 @@ public final class Utilities {
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = context.getResources();
-
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(r.getString(key), value);
 		editor.commit();

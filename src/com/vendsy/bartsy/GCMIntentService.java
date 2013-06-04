@@ -17,6 +17,7 @@ package com.vendsy.bartsy;
 
 import static com.vendsy.bartsy.utils.Utilities.SENDER_ID;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -125,14 +126,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 					app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));
 					messageTypeMSG = "Your order was cancelled";
 				} else if (json.getString("messageType").equals("heartBeat")) {
-					// Handle ping. All we need to do is reply back for now.
+					// Handle heart beat ping. 
 					
 					Log.v(TAG, "PN received: " + json);
-
+					
+					// Send reply to host
 					Resources r = app.getResources();
 					SharedPreferences sharedPref = app.getSharedPreferences(app.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-					WebServices.postHeartbeatResponse(app.getApplicationContext(),
-							"" + sharedPref.getInt(r.getString(R.string.bartsyUserId), 0), 
+					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyID(), 
 							app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
 					messageTypeMSG = "Synchronized with server.";
 				}

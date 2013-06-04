@@ -306,6 +306,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		// Profile name and image were found. Create a user profile.
 
 		mProfile = new Profile(
+				loadBartsyID(), 
 				Utilities.loadPref(this, R.string.config_user_account_name, ""), 
 				Utilities.loadPref(this, R.string.config_user_name, ""),
 				Utilities.loadPref(this, R.string.config_user_location, ""), 
@@ -316,14 +317,58 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		Log.v(TAG, "Profile loaded: " + Utilities.loadPref(this, R.string.config_user_account_name, ""));
 	}
-
 	
-	public void saveUserProfile(int bartsyUserId) {
+	void saveUserProfile(Profile profile) {
+
+		// Save in memory
+		mProfile = profile;
+		
+		// Save the username and the user picture along with any other detail that was fetched to the local profile
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		Resources r = getResources();
+		saveBartsyID(profile.bartsyID);
+		editor.putString(r.getString(R.string.config_user_account_name), profile.userID);
+		editor.putString(r.getString(R.string.config_user_name), profile.username);
+		editor.putString(r.getString(R.string.config_user_location), profile.location);
+		editor.putString(r.getString(R.string.config_user_info), profile.info);
+		editor.putString(r.getString(R.string.config_user_description), profile.description);
+		editor.commit();
+
+	}
+
+	void eraseUserProfile() {
+		SharedPreferences sharedPref = getSharedPreferences(getResources()
+				.getString(R.string.config_shared_preferences_name),
+				Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		Resources r = getResources();
+		editor.remove(r.getString(R.string.config_user_account_name));
+		editor.remove(r.getString(R.string.config_user_name));
+		editor.remove(r.getString(R.string.config_user_location));
+		editor.remove(r.getString(R.string.config_user_info));
+		editor.remove(r.getString(R.string.config_user_description));
+		editor.commit();
+	}
+	
+	
+	public int loadBartsyID() {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
-
+		return sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
+	}
+	
+	public void saveBartsyID(int bartsyUserId) {
+		
+		// Save the unique bartsy ID in the user profile
+		if (mProfile != null) {
+			mProfile.bartsyID = bartsyUserId;
+		}
+		// Save in preferences
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = getResources();
 		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putInt(r.getString(R.string.bartsyUserId), bartsyUserId);
+		editor.putInt(r.getString(R.string.config_user_bartsyID), bartsyUserId);
 		editor.commit();
 	}
 	
@@ -347,18 +392,12 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * Called when we have a new person check in a venue
 	 */
 
-	void addPerson(String userid, String name, String location, String info,
+	void addPerson(int userid, String username, String name, String location, String info,
 			String description, String image // base64 encoded image
 	) {
 		Log.v(TAG, "New user checked in: " + name + " (" + userid + ")");
 
-		// Decode the user image and create a new incoming profile
-		// byte[] decodedString = Base64.decode(image,
-		// Base64.DEFAULT);
-		// Bitmap img = BitmapFactory.decodeByteArray(decodedString, 0,
-		// decodedString.length);
-		Profile profile = new Profile(userid, name, location, info,
-				description, null, image);
+		Profile profile = new Profile(userid, username, name, location, info, description, null, image);
 
 		mPeople.add(profile);
 		notifyObservers(PEOPLE_UPDATED);

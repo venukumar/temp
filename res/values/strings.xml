@@ -5,7 +5,8 @@
 
     <!-- Config items -->
     <string name="config_shared_preferences_name">bartsy_preferences</string>
-    <string name="config_user_profile_picture">user_profile_picture</string>
+    <string name="config_user_bartsyID">bartsyUserId</string>
+	<string name="config_user_profile_picture">user_profile_picture</string>
     <string name="config_user_account_name">user_account_name</string>
     <string name="config_user_name">user_name</string>
     <string name="config_user_info">user_account_info</string>
@@ -13,7 +14,6 @@
     <string name="config_user_description">user_description</string>
     <string name="config_venue_channel_name">Venue</string>
     <string name="config_cardio_token">0f13c2616ead46e7a000674d20743cfe</string>
-    <string name="bartsyUserId">bartsyUserId</string>
     <string name="venueId">venueId</string>
     <string name="venueName">venueName</string>
 

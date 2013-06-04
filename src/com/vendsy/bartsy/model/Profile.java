@@ -14,11 +14,12 @@ import com.vendsy.bartsy.utils.WebServices;
 
 public class Profile {
 
-	public String userID; // Unique ID enforced by Bartsy service
-	public Bitmap image; // user's main profile image
-	public String username; // user's first name / last name
-	public String location; // use string for now
-	public String info; // info string
+	public int bartsyID;		// Unique ID enforced by Bartsy server
+	public String userID; 		// Google user id
+	public Bitmap image;		// user's main profile image
+	public String username;		// user's first name / last name
+	public String location;		// use string for now
+	public String info;			// info string
 	public String description;
 	private String name;
 	private String email;
@@ -60,8 +61,9 @@ public class Profile {
 	 * @param image
 	 * @param imagePath
 	 */
-	public Profile(String userid, String username, String location,
+	public Profile(int bartsyID, String userid, String username, String location,
 			String info, String description, Bitmap image, String imagePath) {
+		this.bartsyID = bartsyID;
 		this.image = image;
 		this.userID = userid;
 		this.username = username;

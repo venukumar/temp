@@ -37,6 +37,8 @@ import android.widget.ToggleButton;
  */
 public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
+	static final String TAG = "PeopleSectionFragment";
+	
 	View mRootView = null;
 	LayoutInflater mInflater = null;
 	ViewGroup mContainer = null;
@@ -49,7 +51,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		Log.v("Bartsy", "PeopleSectionFragment.onCreateView()");
+		Log.v(TAG, "PeopleSectionFragment.onCreateView()");
 
 		mInflater = inflater;
 		mContainer = container;
@@ -73,7 +75,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	
 	public void updatePeopleView () {
 		
-		Log.v("Bartsy", "About to update people list view");
+		Log.v(TAG, "About to update people list view");
 
 		if (mPeopleListView == null)
 			return;
@@ -135,7 +137,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	private void processCheckedInUsersResponse(String response) {
 
 		// Save the list of people and use it as an image cache, resetting the global structure
-		ArrayList<Profile> knownPeople = mApp.mPeople;
+		ArrayList<Profile> knownPeople = (ArrayList<Profile>) mApp.mPeople.clone();
 		mApp.mPeople = new ArrayList<Profile>();
 
 		try {
@@ -146,14 +148,15 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 				// Get list of people from API call. If a person is known, copy known version as an optimization
 				JSONArray array = peopleData.getJSONArray("checkedInUsers");
 				for (int i = 0; i < array.length(); i++) {
-					String name = null, gender = null, imagepath = null, userID = null;
+					String name = null, gender = null, imagepath = null;
+					int bartsyID = 0;
 					JSONObject json = array.getJSONObject(i);
 					if (json.has("name"))
 						name = json.getString("name");
 					if (json.has("gender"))
 						gender = json.getString("gender");
 					if (json.has("bartsyId"))
-						userID = json.getString("bartsyId");
+						bartsyID = json.getInt("bartsyId");
 					if (json.has("userImagePath")) {
 						imagepath = json.getString("userImagePath");
 					}
@@ -162,8 +165,9 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 					Profile profile = null;
 					boolean found = false;
 					for (Profile p : knownPeople) {
-						if (p.userID.equalsIgnoreCase(userID) && p.image != null) {
+						if (p.bartsyID == bartsyID && p.image != null) {
 							// Found the profile and it has an image. Shamelessly reuse it
+							Log.v(TAG, "Reusing image for profile " + bartsyID);
 							profile = p;
 							found = true;
 							break;
@@ -176,7 +180,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 						knownPeople.remove(profile);
 					} else {
 						// Create new instance for profile - this is for now incomplete!!
-						profile = new Profile(userID, name, null, null, null, null, imagepath);
+						profile = new Profile(bartsyID, null, name, null, null, null, null, imagepath);
 					}
 					
 					// Add profile (new or old) to the existing people list
@@ -188,6 +192,13 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 					@Override
 					public void run() {
+						
+						// Avoid null pointer exceptions...
+						if (mPeopleListView == null) {
+							Log.e(TAG, "Called processCheckedInUsers() with a null mPeopleListView");
+							return;
+						}
+						
 						// Make sure the list view is empty
 						mPeopleListView.removeAllViews();
 
@@ -196,7 +207,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 						Log.v(Constants.TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
 
 						for (Profile profile : mApp.mPeople) {
-							Log.v("Bartsy", "Adding a user item to the layout");
+							Log.v(TAG, "Adding a user item to the layout");
 							profile.view = mInflater.inflate(R.layout.user_item, mContainer, false);
 							profile.updateView(mActivity.mPeopleFragment); // sets up view specifics and sets listener to this
 							mPeopleListView.addView(profile.view);

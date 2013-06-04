@@ -143,19 +143,18 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String userCheckInOrOut (final Context context, String venueId, String url) {
+	public static String userCheckInOrOut (final Context context, int bartsyID, String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
 						R.string.config_shared_preferences_name),
 				Context.MODE_PRIVATE);
 		Resources r = context.getResources();
-		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
 
-		Log.v(TAG, "bartsyId ::: " + bartsyId);
+		Log.v(TAG, "bartsyId ::: " + bartsyID);
 		final JSONObject json = new JSONObject();
 		try {
-			json.put("bartsyId", bartsyId);
+			json.put("bartsyId", bartsyID);
 			json.put("venueId", venueId);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -260,7 +259,7 @@ public class WebServices {
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
 		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.bartsyUserId), 0);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
 
 		// Prepare syscall 
 		try {
@@ -460,11 +459,11 @@ public class WebServices {
 
 					Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
 				} else {
-					Log.v(TAG, "BartsyID " + "bartsyUserIdnot found");
+					Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
 				}
 				// If bartsy id exits we are saved into shared preferences
 				if (bartsyUserId > 0) {
-					app.saveUserProfile(bartsyUserId);
+					app.saveBartsyID(bartsyUserId);
 				}
 			} else {
 				status = null;
@@ -500,7 +499,10 @@ public class WebServices {
 	 */
 
 	public static String getUserOrdersList(Context context) {
-		int bartsyId = Utilities.getBartsyIdFromSharedPreferences(context);
+		Resources r = context.getResources();
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
+
 		String response = null;
 		try {
 

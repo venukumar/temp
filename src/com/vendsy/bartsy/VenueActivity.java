@@ -342,26 +342,34 @@ public class VenueActivity extends FragmentActivity implements
 		updatePeopleCount();
 	}
 
-	/**
+	
+	/*
 	 * Updates the action bar tab with the number of open orders
 	 */
 
 	public void updateOrdersCount() {
-		// Update tab title with the number of orders - for now hardcode the tab
-		// at the right position
-		getActionBar().getTabAt(2).setText(
-				"Orders (" + mApp.mOrders.size() + ")");
+		for (int i= 0 ; i < mTabs.length ; i++) {
+			if (mTabs[i] == R.string.title_drink_orders) {
+				// Found the right tab - update it
+				getActionBar().getTabAt(i).setText("Orders (" + mApp.mOrders.size() + ")");
+				return;
+			}
+		}
 	}
+	
 
 	/*
 	 * Updates the action bar tab with the number of open orders
 	 */
 
 	public void updatePeopleCount() {
-		// Update tab title with the number of orders - for now hardcode the tab
-		// at the right position
-		getActionBar().getTabAt(1).setText(
-				"People (" + mApp.mPeople.size() + ")");
+		for (int i= 0 ; i < mTabs.length ; i++) {
+			if (mTabs[i] == R.string.title_people) {
+				// Found the right tab - update it
+				getActionBar().getTabAt(i).setText("People (" + mApp.mPeople.size() + ")");
+				return;
+			}
+		}
 	}
 
 	/***********
@@ -400,8 +408,7 @@ public class VenueActivity extends FragmentActivity implements
 	 */
 	VenueActivity main_activity = this;
 
-	private int mTabs[] = { R.string.title_drinks, R.string.title_people,
-			R.string.title_drink_orders };
+	private int mTabs[] = { R.string.title_drinks, R.string.title_drink_orders, R.string.title_people };
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -776,7 +783,7 @@ public class VenueActivity extends FragmentActivity implements
 					+ order.description + "</argument>" + "<argument>"
 					+ order.total + "</argument>"
 					+ "<argument>" // Image +
-					+ "</argument>" + "<argument>" + mApp.mProfile.userID
+					+ "</argument>" + "<argument>" + mApp.mProfile.bartsyID
 					+ "</argument>" +
 					// Each order contains the profile of the sender (and
 					// later the profile of the person that should pick it up)
@@ -874,7 +881,7 @@ public class VenueActivity extends FragmentActivity implements
 																// this end
 				"<argument>" + order.serverID + "</argument>" + // arg(1)
 				"<argument>" + order.clientID + "</argument>" + // arg(2)
-				"<argument>" + order.orderSender.userID + "</argument>" + // arg(3)
+				"<argument>" + order.orderSender.bartsyID + "</argument>" + // arg(3)
 				"</command>");
 
 		// Update tab title with the number of open orders
@@ -893,7 +900,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Because with Alljoyn every connected client gets a command, we make
 		// sure this command is for us
-		if (!orderSenderID.equalsIgnoreCase(mApp.mProfile.userID))
+		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.bartsyID))
 			return true;
 
 		mApp.updateOrder(command.arguments.get(1), command.arguments.get(0));
@@ -945,7 +952,9 @@ public class VenueActivity extends FragmentActivity implements
 
 	void processProfile(BartsyCommand command) {
 		appendStatus("Process command: " + command.opcode);
-		mApp.addPerson(command.arguments.get(0), command.arguments.get(1),
+		mApp.addPerson(Integer.parseInt(command.arguments.get(0)), 
+				command.arguments.get(0),
+				command.arguments.get(1),
 				command.arguments.get(2), command.arguments.get(3),
 				command.arguments.get(4), command.arguments.get(5));
 	}

@@ -141,9 +141,6 @@ public class InitActivity extends FragmentActivity implements
 						Toast.LENGTH_SHORT).show();
 			break;
 		case R.id.button_disconnect:
-			// Intent intent = new Intent(InitActivity.this,
-			// AndroidFacebookConnectActivity.class);
-			// startActivity(intent);
 			if (mPlusClient.isConnected()) {
 				mPlusClient.clearDefaultAccount();
 				mPlusClient.disconnect();
@@ -166,14 +163,10 @@ public class InitActivity extends FragmentActivity implements
 					.revokeAccessAndDisconnect(new OnAccessRevokedListener() {
 						@Override
 						public void onAccessRevoked(ConnectionResult status) {
-							// mPlusClient is now disconnected and access has
-							// been revoked.
-							// Trigger app logic to comply with the developer
-							// policies
-							Toast.makeText(mActivity,
-									"Disconnected App from Google",
-									Toast.LENGTH_SHORT).show();
-							clearUserProfile();
+							// mPlusClient is now disconnected and access has been revoked.
+							// Trigger app logic to comply with the developer policies
+							Toast.makeText(mActivity, "Disconnected App from Google", Toast.LENGTH_SHORT).show();
+							mApp.eraseUserProfile();
 						}
 					});
 
@@ -288,20 +281,9 @@ public class InitActivity extends FragmentActivity implements
 						});
 						return;
 					} 
-					
-					// Save the username and the user picture along with any other detail that was fetched to the local profile
-					SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-					SharedPreferences.Editor editor = sharedPref.edit();
-					Resources r = getResources();
-					editor.putString(r.getString(R.string.config_user_account_name), mAccountName);
-					editor.putString(r.getString(R.string.config_user_name), person.getDisplayName());
-					editor.putString(r.getString(R.string.config_user_location), person.getCurrentLocation());
-					editor.putString(r.getString(R.string.config_user_info), person.getTagline());
-					editor.putString(r.getString(R.string.config_user_description), person.getAboutMe());
-					editor.commit();
 
-					// Save profile in the global application structure
-					mApp.mProfile = profile;
+					// Save profile in the global application structure and in preferences
+					mApp.saveUserProfile(profile);
 					
 					if (userCheckedInOrNot.equalsIgnoreCase("0")) {
 						// User profile saved successfully and user checked in
@@ -330,19 +312,7 @@ public class InitActivity extends FragmentActivity implements
 
 	}
 
-	void clearUserProfile() {
-		SharedPreferences sharedPref = getSharedPreferences(getResources()
-				.getString(R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = sharedPref.edit();
-		Resources r = getResources();
-		editor.remove(r.getString(R.string.config_user_account_name));
-		editor.remove(r.getString(R.string.config_user_name));
-		editor.remove(r.getString(R.string.config_user_location));
-		editor.remove(r.getString(R.string.config_user_info));
-		editor.remove(r.getString(R.string.config_user_description));
-		editor.commit();
-	}
+
 
 	@Override
 	public void onDisconnected() {

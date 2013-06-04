@@ -728,7 +728,7 @@ public class ConnectivityService extends Service implements AppObserver {
         	Log.d(TAG, "Sending user profile for: " + mApp.mProfile.username);
             mApp.newLocalUserMessage(
         			"<command><opcode>profile</opcode>" +
-        			"<argument>" + mApp.mProfile.userID + "</argument>" +		// arg(0) - userID
+        			"<argument>" + mApp.mProfile.bartsyID + "</argument>" +		// arg(0) - userID
         			"<argument>" + mApp.mProfile.username + "</argument>" +		// arg(1) - username
         			"<argument>" + mApp.mProfile.location + "</argument>" +		// arg(2) - location
         			"<argument>" + mApp.mProfile.info + "</argument>" +			// arg(3) - info

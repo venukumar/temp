@@ -304,7 +304,7 @@ public class MapActivity extends Activity implements LocationListener,
 				final Venue venue = mVenue;
 				
 				// Invoke the user checkin syscall
-				String response = WebServices.userCheckInOrOut(MapActivity.this, venue.getId(), Constants.URL_USER_CHECK_IN);
+				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyID(), venue.getId(), Constants.URL_USER_CHECK_IN);
 
 				if (response != null) {
 					try {
