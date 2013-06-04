@@ -90,7 +90,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	 */
 	private void loadPeopleList() {
 
-		Log.v(Constants.TAG, "PeopleSectionFragment.loadPeopleList()");
+		Log.v(TAG, "PeopleSectionFragment.loadPeopleList()");
 
 		try {
 
@@ -204,7 +204,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 						// Add any existing people in the layout, one by one
 						
-						Log.v(Constants.TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
+						Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
 
 						for (Profile profile : mApp.mPeople) {
 							Log.v(TAG, "Adding a user item to the layout");
@@ -220,7 +220,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 			} else {
 
-				Log.v(Constants.TAG, "checked in users not found !!!! ");
+				Log.v(TAG, "checked in users not found !!!! ");
 			}
 
 		} catch (JSONException e) {
@@ -236,7 +236,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		Log.v(Constants.TAG, "PeopleSectionFragment.onDestroy()");
+		Log.v(TAG, "PeopleSectionFragment.onDestroy()");
 
 		mRootView = null;
 		mPeopleListView = null;

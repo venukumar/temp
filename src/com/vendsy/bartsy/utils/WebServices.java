@@ -526,7 +526,7 @@ public class WebServices {
 	 */
 	public static String getMenuList(Context context, String venueID) {
 
-		Log.v(Constants.TAG, "getting menu for venue: " + venueID);
+		Log.v(TAG, "getting menu for venue: " + venueID);
 
 		String response = null;
 		JSONObject json = new JSONObject();
