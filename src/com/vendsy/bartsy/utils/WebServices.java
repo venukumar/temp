@@ -319,7 +319,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String postProfile(Profile bartsyProfile, Bitmap profileImage, String path, Context context) {
+	public static JSONObject postProfile(Profile bartsyProfile, Bitmap profileImage, String path, Context context) {
 
 		String url = path;
 		byte[] dataFirst = null;
@@ -351,18 +351,18 @@ public class WebServices {
 				json.put("gender", "female");
 			else
 				json.put("gender", bartsyProfile.getGender());
-			json.put("deviceType", deviceType);
+			json.put("deviceType", String.valueOf(deviceType));
 			json.put("deviceToken", deviceToken);
 			
 			// For now hardcode some values to make sure the syscall works
-			json.put("firstname", "Peter");
-			json.put("lastname", "Kellis");
-			json.put("dateofbirth", "08/17/1984");
-			json.put("nickname", "Pan");
-			json.put("status", "Single");
-			json.put("orientation", "straight");
+			json.put("firstname", bartsyProfile.firstName);
+			json.put("lastname", bartsyProfile.lastName);
+			json.put("dateofbirth", bartsyProfile.dateofbirth);
+			json.put("nickname", bartsyProfile.nickname);
+			json.put("status", bartsyProfile.status);
+			json.put("orientation", bartsyProfile.orientation);
 			json.put("description", bartsyProfile.getDescription());
-			
+			json.put("emailId", bartsyProfile.getEmail());
 			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
@@ -411,70 +411,85 @@ public class WebServices {
 
 			// Check response 
 
-			if (responses != null) 
-				status = postProfileResponseChecking(responses, context);
+			if (responses != null){
+				
+				String responseofmain = EntityUtils.toString(responses.getEntity());
+				Log.v(TAG, "postProfileResponseChecking " + responseofmain);
+				JSONObject resultJson = new JSONObject(responseofmain);
+				return resultJson;
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return status;
+		return null;
 
 	}
 
-	/**
-	 * @methodName : postProfileResponseChecking
-	 * 
-	 *             Save profile webservice call response handling
-	 * 
-	 * @param responses
-	 * @param context
-	 * @return status ----> user already checked in or not
-	 * 
-	 */
-	private static String postProfileResponseChecking(HttpResponse responses, Context context) {
-		
-		String status = null;
-		BartsyApplication app = (BartsyApplication) context;
-
-		try {
-
-			String responseofmain = EntityUtils.toString(responses.getEntity());
-			Log.v(TAG, "postProfileResponseChecking " + responseofmain);
-			int bartsyUserId = 0;
-			JSONObject resultJson = new JSONObject(responseofmain);
-
-			if (resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
-
-				status = resultJson.getString("userCheckedIn");
-
-				// if user checkedIn is true
-				if (status.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
-				{
-					// Check the user in locally 
-					app.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
-				}
-
-				if (resultJson.has("bartsyUserId")) {
-					bartsyUserId = resultJson.getInt("bartsyUserId");
-
-					Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
-				} else {
-					Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
-				}
-				// If bartsy id exits we are saved into shared preferences
-				if (bartsyUserId > 0) {
-					app.saveBartsyID(bartsyUserId);
-				}
-			} else {
-				status = null;
-			}
-		} catch (Exception e) {
-
-			Log.v(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
-			return null;
-		}
-		return status;
-	}
+//	/**
+//	 * @methodName : postProfileResponseChecking
+//	 * 
+//	 *             Save profile webservice call response handling
+//	 * 
+//	 * @param responses
+//	 * @param context
+//	 * @return status ----> user already checked in or not
+//	 * 
+//	 */
+//	private static String postProfileResponseChecking(HttpResponse responses, Context context) {
+//		String status = null;
+//		final BartsyApplication app = (BartsyApplication) context;
+//
+//		try {
+//
+//			String responseofmain = EntityUtils.toString(responses.getEntity());
+//			Log.v(TAG, "postProfileResponseChecking " + responseofmain);
+//			int bartsyUserId = 0;
+//			JSONObject resultJson = new JSONObject(responseofmain);
+//
+//			if (resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
+//
+//				status = resultJson.getString("userCheckedIn");
+//
+//				// if user checkedIn is true
+//				if (status.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
+//				{
+//					// Check the user in locally 
+//					app.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
+//				}
+//
+//				if (resultJson.has("bartsyUserId")) {
+//					bartsyUserId = resultJson.getInt("bartsyUserId");
+//
+//					Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
+//				} else {
+//					Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
+//				}
+//				
+//				final int bartsyId = bartsyUserId;
+//				
+//				// Handler to access UI thread
+//				handler.post(new Runnable() {
+//					
+//					@Override
+//					public void run() {
+//						// If bartsy id exits we are saved into shared preferences
+//						if (bartsyId > 0) {
+//							app.saveBartsyID(bartsyId);
+//						}
+//					}
+//				});
+//				
+//			} else {
+//				status = null;
+//			}
+//		} catch (Exception e) {
+//
+//			Log.v(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
+//			return null;
+//		}
+//		return status;
+//	}
 
 	/**
 	 * @methodName : getVenueList

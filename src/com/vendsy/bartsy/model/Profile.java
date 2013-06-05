@@ -20,9 +20,9 @@ public class Profile {
 	public String username;		// user's first name / last name
 	public String location;		// use string for now
 	public String info;			// info string
-	public String description;
+	public String description="";
 	private String name;
-	private String email;
+	private String email; 
 	private String gender;
 	private String type;		// oneof {"Google", "Facebook", "Bartsy"}
 	private String socialNetworkId;
@@ -31,13 +31,13 @@ public class Profile {
 	ArrayList<Profile> favorites = new ArrayList<Profile>();
 
 	// Advanced fields for "dating" profiles
-	
-	public String firstName;
-	public String lastName;
-	public String dateofbirth;
-	public String nickname;
-	public String status; 		// relationship status
-	public String orientation;  // sexual orientation
+	// NULL is not acceptable in JSON format. So, we can use empty instead of null 
+	public String firstName="";
+	public String lastName="";
+	public String dateofbirth="";
+	public String nickname="";
+	public String status="Single"; 		// relationship status
+	public String orientation="straight";  // sexual orientation
 
 	// The view of a particular user in the people list (expects a layout type of user_item.xml)
 	public View view = null; 	

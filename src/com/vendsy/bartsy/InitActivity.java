@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -70,6 +73,7 @@ public class InitActivity extends FragmentActivity implements
 	BartsyApplication mApp = null;
 	InitActivity mActivity = this;
 	String mAccountName = null;
+	Handler mHandler = new Handler();
 
 	
 	/** 
@@ -155,6 +159,7 @@ public class InitActivity extends FragmentActivity implements
 			if (!mPlusClient.isConnected()) {
 				// Need to be connected in order to revoke access
 				mPlusClient.connect();
+				
 				Toast.makeText(this, "Need to be logged in to disconnect App",
 						Toast.LENGTH_SHORT).show();
 				break;
@@ -246,55 +251,80 @@ public class InitActivity extends FragmentActivity implements
 	@Override
 	public void onUserDialogPositiveClick(final DialogFragment dialog) {
 		// User accepted the profile, launch main activity
-
+		
 		Log.i(TAG, "InitActivity.onUserDialogPositiveClick()");
 		
 		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
 		String deviceToken = settings.getString("RegId", "");
 		if (deviceToken.trim().length() > 0) {
+			// To send profile data to server in background
 			new Thread() {
 				public void run() {
-					
+					int bartsyUserId=0;
 					// Create a profile for the person
 					Person person = ((ProfileDialogFragment) dialog).mUser;
-					Profile profile = new Profile();
-					profile.setUsername(person.getId());
-					profile.setName(person.getDisplayName());
-					profile.setType("google");
-					profile.setSocialNetworkId(person.getId());
-					profile.setGender(String.valueOf(person.getGender()));
-					profile.setDescription(person.getAboutMe());
 					
-					// Service call for post profile data to server
-					String userCheckedInOrNot = WebServices.postProfile(profile, ((ProfileDialogFragment) dialog).mProfileImage, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+					final Profile profile = getNewProfile(person);
+					
+					try {
+						// Service call for post profile data to server
+						JSONObject resultJson = WebServices.postProfile(profile, ((ProfileDialogFragment) dialog).mProfileImage, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
 
-					// To check whether user is checkedIn or not. If user already checkedIn then it 
-					// should navigate to VenueActivity, otherwise it should navigate to MainActivity
-					
-					if (userCheckedInOrNot == null) {
-						// Error creating user. Ask parent to post Toast.
-						mHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
-							}
-						});
-						return;
-					} 
+							final String userCheckedInOrNot = resultJson.getString("userCheckedIn");
+							// Error handling
+								// if user checkedIn is true
+								if ( userCheckedInOrNot!=null && userCheckedInOrNot.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
+								{
+									// Check the user in locally 
+									mApp.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
+								}
+								
+								if (resultJson.has("bartsyId")) {
+									bartsyUserId = resultJson.getInt("bartsyId");
 
-					// Save profile in the global application structure and in preferences
-					mApp.saveUserProfile(profile);
-					
-					if (userCheckedInOrNot.equalsIgnoreCase("0")) {
-						// User profile saved successfully and user checked in
-						startActivity(new Intent().setClass(mActivity, VenueActivity.class));
-					} else {
-						// User profile saved successfully and user in not checked in
-						startActivity(new Intent().setClass(mActivity, MainActivity.class));
+									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
+								} else {
+									Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
+								}
+								
+								final int bartsyId = bartsyUserId;
+								// To check whether user is checkedIn or not. If user already checkedIn then it 
+								// should navigate to VenueActivity, otherwise it should navigate to MainActivity
+								
+								mHandler.post(new Runnable() {
+									public void run() {
+										// Save profile in the global application structure and in preferences
+										profile.bartsyID = bartsyId;
+										
+										mApp.saveUserProfile(profile);
+										
+										if (userCheckedInOrNot.equalsIgnoreCase("0")) {
+											// User profile saved successfully and user checked in
+											startActivity(new Intent().setClass(mActivity, VenueActivity.class));
+										} else {
+											// User profile saved successfully and user in not checked in
+											startActivity(new Intent().setClass(mActivity, MainActivity.class));
+										}
+										
+										// Stop the parent activity of this thread (initactivity) as we just started a new one
+										mActivity.finish();
+									}
+								});
+								
+						}else{
+									// Error creating user. Ask parent to post Toast.
+									mHandler.post(new Runnable() {
+										@Override
+										public void run() {
+											Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+										}
+									});
+									return;
+						}
+					} catch (JSONException e) {
+						e.printStackTrace();
 					}
-					
-					// Stop the parent activity of this thread (initactivity) as we just started a new one
-					mActivity.finish();
 				}
 			}.start();
 
@@ -304,7 +334,51 @@ public class InitActivity extends FragmentActivity implements
 		}
 	}
 	
-	Handler mHandler = new Handler();
+	/**
+	 * To initiate new profile from the google+ person object 
+	 * 
+	 * @param person
+	 * @return
+	 */
+	protected Profile getNewProfile(Person person) {
+		
+		Profile profile = new Profile();
+		profile.setUsername(person.getId());
+		profile.setName(person.getDisplayName());
+		profile.setType("google");
+		profile.setSocialNetworkId(person.getId());
+		profile.setGender(String.valueOf(person.getGender()));
+		
+		
+		if(person.getAboutMe()!=null){
+			profile.setDescription(person.getAboutMe());
+		}
+		if(person.getBirthday()!=null){
+			profile.dateofbirth = person.getBirthday();
+		}
+		if(person.getNickname()!=null){
+			profile.nickname = person.getNickname();
+		}
+		// Error handling - null should not get in JSON format
+		if(person.getName()!=null && person.getName().hasGivenName()){
+			profile.firstName = person.getName().getGivenName();
+		}else{
+			profile.firstName = "";
+		}
+		// Error handling
+		if(person.getName()!=null && person.getName().hasFamilyName()){
+			profile.lastName = person.getName().getFamilyName();
+		}else{
+			profile.lastName = "";
+		}
+		
+		if(mPlusClient!=null && mPlusClient.getAccountName()!=null){
+			profile.setEmail(mPlusClient.getAccountName());
+		}
+		
+		return profile;
+	}
+
 
 	@Override
 	public void onUserDialogNegativeClick(DialogFragment dialog) {

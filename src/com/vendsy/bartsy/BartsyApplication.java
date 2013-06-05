@@ -327,14 +327,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
-		saveBartsyID(profile.bartsyID);
 		editor.putString(r.getString(R.string.config_user_account_name), profile.userID);
 		editor.putString(r.getString(R.string.config_user_name), profile.username);
 		editor.putString(r.getString(R.string.config_user_location), profile.location);
 		editor.putString(r.getString(R.string.config_user_info), profile.info);
 		editor.putString(r.getString(R.string.config_user_description), profile.description);
 		editor.commit();
-
+		// It is better to call this method after editor commit. Because we are using same preference name
+		saveBartsyID(profile.bartsyID);
 	}
 
 	void eraseUserProfile() {
