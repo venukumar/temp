@@ -16,46 +16,32 @@
 
 package com.vendsy.bartsy;
 
-import android.app.Application;
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
-import android.content.BroadcastReceiver;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
-import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import java.util.Date;
-
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
-import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.service.ConnectivityService;
-import com.vendsy.bartsy.service.ConnectivityService.BusAttachmentState;
-import com.vendsy.bartsy.service.ConnectivityService.HostChannelState;
-import com.vendsy.bartsy.service.ConnectivityService.UseChannelState;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.view.AppObserver;
@@ -149,7 +135,8 @@ public class BartsyApplication extends Application implements AppObservable {
 		else
 			Log.v(TAG, "Checked in at " + mActiveVenue.getName());
 
-	
+		// Setup Crittercism
+		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
 	}
 	
 	
