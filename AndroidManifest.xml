@@ -119,6 +119,9 @@
         <activity android:name=".CustomDrinksActivity"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".OrderCustomDrinkActivity"
+            android:screenOrientation="portrait">
+        </activity>
         
         <activity
             android:name=".MainActivity"
