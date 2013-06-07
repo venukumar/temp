@@ -24,6 +24,7 @@
                 android:id="@+id/view_drink_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="#000000"
                 android:text="Drink title"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="15sp" />
@@ -32,7 +33,7 @@
                 android:id="@+id/view_drink_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Drink description"
+                android:text=""
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="12sp" />
 

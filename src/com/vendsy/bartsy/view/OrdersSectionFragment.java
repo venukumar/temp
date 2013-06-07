@@ -141,14 +141,12 @@ public class OrdersSectionFragment extends Fragment {
 						
 						@Override
 						public void run() {
-							// TODO Auto-generated method stub
 							// Make sure the list view is empty
 							mOrderListView.removeAllViews();
 						}
 					});
 				}
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

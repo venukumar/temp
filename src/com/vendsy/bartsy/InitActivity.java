@@ -356,20 +356,26 @@ public class InitActivity extends FragmentActivity implements
 		if(person.getBirthday()!=null){
 			profile.dateofbirth = person.getBirthday();
 		}
-		if(person.getNickname()!=null){
-			profile.nickname = person.getNickname();
-		}
+		
 		// Error handling - null should not get in JSON format
 		if(person.getName()!=null && person.getName().hasGivenName()){
 			profile.firstName = person.getName().getGivenName();
 		}else{
 			profile.firstName = "";
 		}
+		
 		// Error handling
 		if(person.getName()!=null && person.getName().hasFamilyName()){
 			profile.lastName = person.getName().getFamilyName();
 		}else{
 			profile.lastName = "";
+		}
+		
+		// try to get nick name. if it is not exist then we can set first name
+		if(person.getNickname()!=null){
+			profile.nickname = person.getNickname();
+		}else{
+			profile.nickname = profile.firstName;
 		}
 		
 		if(mPlusClient!=null && mPlusClient.getAccountName()!=null){

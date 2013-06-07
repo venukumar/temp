@@ -38,6 +38,7 @@ import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.AppObservable;
+import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Profile;
 import com.vendsy.bartsy.model.Venue;
@@ -488,6 +489,24 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		notifyObservers(ORDERS_UPDATED);
 	}
+	
+	/**
+	 * The spirit list is saved in the global application state. This is done to
+	 * avoid losing any spirits while the other activities are swapped in and out
+	 * as the user navigates in different screens.
+	 * 
+	 */
+	public ArrayList<Category> spirits = new ArrayList<Category>();
+	
+
+	/**
+	 * The mixers list is saved in the global application state. This is done to
+	 * avoid losing any mixers while the other activities are swapped in and out
+	 * as the user navigates in different screens.
+	 * 
+	 */
+	public ArrayList<Category> mixers = new ArrayList<Category>();
+	
 
 	/************************************************************************
 	 * 
@@ -519,7 +538,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(APPLICATION_QUIT_EVENT);
 		mRunningService = null;
 	}
-
+	
 	/**
 	 * Application components call this method to indicate that they are alive
 	 * and may have need of the AllJoyn Service. This is required because the

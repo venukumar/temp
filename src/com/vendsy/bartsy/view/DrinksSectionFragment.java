@@ -77,7 +77,7 @@ public class DrinksSectionFragment extends Fragment {
 			
 			@Override
 			public void onClick(View v) {
-				// User profile saved successfully and user checked in
+				// Start custom drink activity
 				startActivity(new Intent().setClass(mActivity, CustomDrinksActivity.class));
 			}
 		});

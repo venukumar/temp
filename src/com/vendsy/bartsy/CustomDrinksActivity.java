@@ -1,13 +1,17 @@
 package com.vendsy.bartsy;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.vendsy.bartsy.model.Category;
+import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.view.CustomDrinksSectionFragment;
 
 import android.app.ActionBar;
 import android.app.ProgressDialog;
@@ -20,7 +24,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.JsonReader;
 import android.util.Log;
 /**
  * 
@@ -38,6 +41,8 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 	private ActionBar actionBar;
 	private Handler handler = new Handler();
 	
+	private BartsyApplication mApp;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -47,11 +52,13 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 		// Set base view for the activity
 		setContentView(R.layout.activity_custom_drinks);
 		// Set up the action bar custom view
-
+		
 		actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		
+		mApp = (BartsyApplication)getApplication();
 		
 		// To display progress dialog
 		progressDialog = Utilities.progressDialog(this, "Loading..");
@@ -74,7 +81,9 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 					
 					@Override
 					public void run() {
-						
+						// To stop progress dialog
+						progressDialog.dismiss();
+						// To setup tabs fo categories
 						setupTabs();
 					}
 				});
@@ -88,21 +97,73 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 	 */
 	protected void parseIngredientsResponse(String response) {
 		try {
-			JSONObject json = new JSONObject(response);
+			mApp.spirits.clear();
+			mApp.mixers.clear();
 			
+			JSONObject json = new JSONObject(response);
+			// verify the request is success or failed 
 			if(json.has("ingredients") && json.has("errorCode") && json.getString("errorCode").equals("0")){
 				JSONArray array = json.getJSONArray("ingredients");
+				
 				for(int i=0; i<array.length();i++){
 					JSONObject jsonObject = array.getJSONObject(i);
-					
+					// To verify type Name exist or not
+					if(jsonObject.has("typeName")){
+						String type = jsonObject.getString("typeName");
+						// To parse spirits categories
+						if(type.equals(Category.SPIRITS_TYPE) && jsonObject.has("categories")){
+							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
+							if(categoriesArray!=null && categoriesArray.length()>0){
+								updateCategoriesAndIngredients(categoriesArray, mApp.spirits);
+							}
+						}
+						// To parse mixers categories
+						else if(type.equals(Category.MIXER_TYPE) && jsonObject.has("categories")){
+							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
+							if(categoriesArray!=null && categoriesArray.length()>0){
+								updateCategoriesAndIngredients(categoriesArray, mApp.mixers);
+							}
+						}
+					}
 				}
+			}else{
+				Log.e(TAG, "Error in IngredientsResponse: "+response);
 			}
 			
 		} catch (JSONException e) {
-			e.printStackTrace();
+			Log.e(TAG, "parseIngredientsResponse():  JSON error :: "+e.getMessage());
 		}
 	}
+	/**
+	 * To parse ingredients and categories and add to the given list
+	 * 
+	 * @param categoriesArray
+	 */
+	private void updateCategoriesAndIngredients(JSONArray categoriesArray, ArrayList<Category> list) {
 
+		for(int i=0;i<categoriesArray.length();i++){
+			try {
+				JSONObject json = categoriesArray.getJSONObject(i);
+				// To get category name and initialize category object and add to the spirits list
+				String categoryName = json.getString("categoryName");
+				Category category = new Category();
+				category.setName(categoryName);
+				list.add(category);
+				
+				JSONArray ingredients = json.getJSONArray("ingredients");
+				// To add ingredients to the category
+				for(int j=0;j<ingredients.length();j++){
+					Ingredient ingredient = new Ingredient(ingredients.getJSONObject(j));
+					category.getIngredients().add(ingredient);
+				}
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**
 	 * To setup tabs in the action bar
 	 */
@@ -147,19 +208,19 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 		@Override
 		public Fragment getItem(int position) {
 			
-			return null;
+			return new CustomDrinksSectionFragment(mApp.spirits.get(position));
 		}
 
 		@Override
 		public int getCount() {
-			return 0;
+			return mApp.spirits.size();
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 
-			return "";
+			return mApp.spirits.get(position).getName();
 		}
 	}
 	
@@ -170,11 +231,6 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 		// the ViewPager.
 		mViewPager.setCurrentItem(tab.getPosition());
 
-		// upon selecting the people tab we want to update the list of people
-		// from the server
-//		if (mTabs[tab.getPosition()] == R.string.title_people) {
-//			mPeopleFragment.updatePeopleView();
-//		}
 	}
 
 	@Override
