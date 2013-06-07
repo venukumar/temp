@@ -164,6 +164,33 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />
         -->
+         <!-- Start of Crittercism.com Code -->
+        <activity android:name="com.crittercism.NotificationActivity" />
+
+        <!-- For Crittercism's support forum, also include the activities below: -->
+        <activity
+            android:name="com.crittercism.NewFeedbackSpringboardActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackIssueListActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackQuestionListActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackItemDetailsActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackCreateActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <!-- End of Crittercism.com Code -->
     </application>
+    
+   
 
 </manifest>
