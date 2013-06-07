@@ -19,6 +19,7 @@ import com.vendsy.bartsy.MapActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.Venue;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,7 +40,7 @@ public final class Utilities {
 	 * Google API project id registered to use GCM.
 	 */
 	// public static final String SENDER_ID = "227827031375";
-	public static final String SENDER_ID = "605229245886"; // public server
+	public static final String SENDER_ID = "569714356856"; // public server
 
 	/**
 	 * Tag used on log messages.
@@ -73,7 +74,23 @@ public final class Utilities {
 		intent.putExtra(EXTRA_MESSAGE, message);
 		context.sendBroadcast(intent);
 	}
-
+	
+	/**
+	 * To prepare progress dialog
+	 * 
+	 * @param context
+	 * @return
+	 */
+	public static ProgressDialog progressDialog(Context context, String message){
+		ProgressDialog mProgressDialog = new ProgressDialog(context);
+		
+		// To configure the loading dialog
+        mProgressDialog.setMessage(message);
+        mProgressDialog.setIndeterminate(false);
+        mProgressDialog.setCancelable(true);
+        
+        return mProgressDialog;
+	}
 
 	/**
 	 * Some shortcuts for saving and retrieving string preferences

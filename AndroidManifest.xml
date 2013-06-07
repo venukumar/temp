@@ -72,7 +72,7 @@
         android:name=".BartsyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name">
 
         <!-- Activities responsible for gathering payment info -->
         <activity
@@ -116,6 +116,10 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo" >
         </activity>
+        <activity android:name=".CustomDrinksActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        
         <activity
             android:name=".MainActivity"
             android:icon="@drawable/ic_launcher"
@@ -155,7 +159,7 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCgZRYaiDOrJp9hNO6xu1UracE_dOhgmRI" />
 
-        <!--
+         <!--
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />

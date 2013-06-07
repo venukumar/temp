@@ -506,6 +506,21 @@ public class WebServices {
 		Log.v(TAG, "response venu list " + response);
 		return response;
 	}
+	
+	
+	public static String getIngredients(final Context context, String venueID){
+		String response = null;
+		JSONObject json = new JSONObject();
+		try {
+			json.put("venueId", venueID);
+			response = postRequest(Constants.URL_GET_INGREDIENTS, json, context);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		Log.v(TAG, "response Ingredient list " + response);
+		return response;
+	}
+	
 
 	/**
 	 * methodName : getUserOrdersList

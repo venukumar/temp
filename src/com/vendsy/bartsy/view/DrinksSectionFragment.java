@@ -10,16 +10,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.LinearLayout;
 
+import com.vendsy.bartsy.CustomDrinksActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.VenueActivity;
@@ -67,7 +71,16 @@ public class DrinksSectionFragment extends Fragment {
 		
 		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
 		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
-
+		
+		LinearLayout customList = (LinearLayout) mRootView.findViewById(R.id.view_custom_drinks);
+		customList.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// User profile saved successfully and user checked in
+				startActivity(new Intent().setClass(mActivity, CustomDrinksActivity.class));
+			}
+		});
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
