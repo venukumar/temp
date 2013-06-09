@@ -30,7 +30,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -359,7 +361,7 @@ public class WebServices {
 			json.put("lastname", bartsyProfile.lastName);
 			json.put("dateofbirth", bartsyProfile.dateofbirth);
 			json.put("nickname", bartsyProfile.nickname);
-			json.put("status", bartsyProfile.status);
+			json.put("status", bartsyProfile.status); 
 			json.put("orientation", bartsyProfile.orientation);
 			json.put("description", bartsyProfile.getDescription());
 			json.put("emailId", bartsyProfile.getEmail());
@@ -426,70 +428,6 @@ public class WebServices {
 
 	}
 
-//	/**
-//	 * @methodName : postProfileResponseChecking
-//	 * 
-//	 *             Save profile webservice call response handling
-//	 * 
-//	 * @param responses
-//	 * @param context
-//	 * @return status ----> user already checked in or not
-//	 * 
-//	 */
-//	private static String postProfileResponseChecking(HttpResponse responses, Context context) {
-//		String status = null;
-//		final BartsyApplication app = (BartsyApplication) context;
-//
-//		try {
-//
-//			String responseofmain = EntityUtils.toString(responses.getEntity());
-//			Log.v(TAG, "postProfileResponseChecking " + responseofmain);
-//			int bartsyUserId = 0;
-//			JSONObject resultJson = new JSONObject(responseofmain);
-//
-//			if (resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
-//
-//				status = resultJson.getString("userCheckedIn");
-//
-//				// if user checkedIn is true
-//				if (status.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
-//				{
-//					// Check the user in locally 
-//					app.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
-//				}
-//
-//				if (resultJson.has("bartsyUserId")) {
-//					bartsyUserId = resultJson.getInt("bartsyUserId");
-//
-//					Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
-//				} else {
-//					Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
-//				}
-//				
-//				final int bartsyId = bartsyUserId;
-//				
-//				// Handler to access UI thread
-//				handler.post(new Runnable() {
-//					
-//					@Override
-//					public void run() {
-//						// If bartsy id exits we are saved into shared preferences
-//						if (bartsyId > 0) {
-//							app.saveBartsyID(bartsyId);
-//						}
-//					}
-//				});
-//				
-//			} else {
-//				status = null;
-//			}
-//		} catch (Exception e) {
-//
-//			Log.v(TAG, "Exception found in postProfileResponseChecking " + e.getMessage());
-//			return null;
-//		}
-//		return status;
-//	}
 
 	/**
 	 * @methodName : getVenueList
@@ -630,6 +568,20 @@ public class WebServices {
 
 		}.execute();
 
+	}
+
+	
+	// alert box
+	public static void alertbox(final String message, final Activity a) {
+
+		new AlertDialog.Builder(a).setMessage(message).setCancelable(false)
+				.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int whichButton) {
+
+						return;
+					}
+				}).show();
 	}
 
 }
