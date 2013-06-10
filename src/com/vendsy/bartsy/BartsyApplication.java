@@ -41,6 +41,7 @@ import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
+import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -533,6 +534,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * 
 	 */
 	public ArrayList<Category> spirits = new ArrayList<Category>();
+	public Ingredient selectedSpirit;
 	
 
 	/**

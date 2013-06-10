@@ -83,7 +83,7 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 					public void run() {
 						// To stop progress dialog
 						progressDialog.dismiss();
-						// To setup tabs fo categories
+						// To setup tabs for categories
 						setupTabs();
 					}
 				});
@@ -148,7 +148,7 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 				String categoryName = json.getString("categoryName");
 				Category category = new Category();
 				category.setName(categoryName);
-				list.add(category);
+				
 				
 				JSONArray ingredients = json.getJSONArray("ingredients");
 				// To add ingredients to the category
@@ -156,9 +156,11 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 					Ingredient ingredient = new Ingredient(ingredients.getJSONObject(j));
 					category.getIngredients().add(ingredient);
 				}
-				
+				// Add categories which contains at least one ingredient 
+				if(category.getIngredients().size()>0){
+					list.add(category);
+				}
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.CustomDrinksActivity;
 import com.vendsy.bartsy.OrderCustomDrinkActivity;
 import com.vendsy.bartsy.R;
@@ -31,6 +32,8 @@ public class CustomDrinksSectionFragment extends Fragment {
 	private String TAG = "CustomDrinksSectionFragment";
 
 	private Category category;
+
+	private BartsyApplication mApp;
 	
 	public CustomDrinksSectionFragment(Category category) {
 		this.category = category;
@@ -42,6 +45,8 @@ public class CustomDrinksSectionFragment extends Fragment {
 
 		Log.v(TAG, "onCreateView()");
 		
+		mApp = (BartsyApplication)getActivity().getApplication();
+		
 		mRootView = inflater.inflate(R.layout.custom_drinks_main, container, false);
 		
 		// To obtain list view from the SupportMapFragment.
@@ -49,10 +54,17 @@ public class CustomDrinksSectionFragment extends Fragment {
 		venueList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position,
 									long arg3) {
 				// It will invoke when the custom drink list item selected
 				
+				// Error handling
+				if(category==null || category.getIngredients().size()<=position){
+					return;
+				}
+				// To use selected drink in next activity
+				mApp.selectedSpirit = category.getIngredients().get(position);
+				// Proceed to order screen
 				startActivity(new Intent().setClass(getActivity(), OrderCustomDrinkActivity.class));
 					
 			}
