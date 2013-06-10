@@ -21,7 +21,7 @@ import android.widget.Toast;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.facebook.AsyncFacebookRunner.RequestListener;
 import com.vendsy.bartsy.facebook.Facebook.DialogListener;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -209,7 +209,7 @@ public class AndroidFacebookConnectActivity extends Activity {
 				try {
 					JSONObject fbProfileData = new JSONObject(response);
 					
-					final Profile bartsyProfile = new Profile();
+					final UserProfile bartsyProfile = new UserProfile();
 					// getting name of the user
 					bartsyProfile.setName(fbProfileData.getString("name"));
 					// getting email of the user

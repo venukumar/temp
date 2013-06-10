@@ -14,7 +14,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -137,8 +137,8 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	private void processCheckedInUsersResponse(String response) {
 
 		// Save the list of people and use it as an image cache, resetting the global structure
-		ArrayList<Profile> knownPeople = (ArrayList<Profile>) mApp.mPeople.clone();
-		mApp.mPeople = new ArrayList<Profile>();
+		ArrayList<UserProfile> knownPeople = (ArrayList<UserProfile>) mApp.mPeople.clone();
+		mApp.mPeople = new ArrayList<UserProfile>();
 
 		try {
 			JSONObject peopleData = new JSONObject(response);
@@ -162,9 +162,9 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 					}
 					
 					// Go over the list of people in the global structure looking for images
-					Profile profile = null;
+					UserProfile profile = null;
 					boolean found = false;
-					for (Profile p : knownPeople) {
+					for (UserProfile p : knownPeople) {
 						if (p.bartsyID == bartsyID && p.image != null) {
 							// Found the profile and it has an image. Shamelessly reuse it
 							Log.v(TAG, "Reusing image for profile " + bartsyID);
@@ -180,7 +180,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 						knownPeople.remove(profile);
 					} else {
 						// Create new instance for profile - this is for now incomplete!!
-						profile = new Profile(bartsyID, null, name, null, null, null, null, imagepath);
+						profile = new UserProfile(bartsyID, null, name, null, null, null, null, imagepath);
 					}
 					
 					// Add profile (new or old) to the existing people list
@@ -206,7 +206,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 						
 						Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
 
-						for (Profile profile : mApp.mPeople) {
+						for (UserProfile profile : mApp.mPeople) {
 							Log.v(TAG, "Adding a user item to the layout");
 							profile.view = mInflater.inflate(R.layout.user_item, mContainer, false);
 							profile.updateView(mActivity.mPeopleFragment); // sets up view specifics and sets listener to this

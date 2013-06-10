@@ -17,6 +17,7 @@
 package com.vendsy.bartsy;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,11 +37,12 @@ import android.util.Log;
 
 import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
+import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.service.ConnectivityService;
 import com.vendsy.bartsy.utils.Constants;
@@ -137,7 +139,7 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.v(TAG, "Checked in at " + mActiveVenue.getName());
 
 		// Setup Crittercism
-		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
+//		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
 	}
 	
 	
@@ -260,7 +262,12 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * 
 	 */
 
-	public Profile mProfile;
+	public UserProfile mProfile;
+	
+	// These two fields are only used to pass information to the UserProfileActivity from InitActivity
+	public Person mUser = null; 
+	public UserProfile mUserProfile = null;
+	public String mUserEmail = null;
 
 	void loadUserProfile() {
 		
@@ -277,15 +284,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Load profile image
 
-		Log.d(TAG, "Loading user profile from " + getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
-		Bitmap image = null;
-		try {
-			image = BitmapFactory.decodeFile(getFilesDir() + File.separator + getResources().getString(R.string.config_user_profile_picture));
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.d(TAG, "Could not load profile image");
-			return;
-		}
+		Bitmap image = loadUserProfileImage();
 		if (image == null) {
 			Log.d(TAG, "Could not load profile image");
 			return;
@@ -293,7 +292,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		// Profile name and image were found. Create a user profile.
 
-		mProfile = new Profile(
+		mProfile = new UserProfile(
 				loadBartsyID(), 
 				Utilities.loadPref(this, R.string.config_user_account_name, ""), 
 				Utilities.loadPref(this, R.string.config_user_name, ""),
@@ -306,7 +305,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		Log.v(TAG, "Profile loaded: " + Utilities.loadPref(this, R.string.config_user_account_name, ""));
 	}
 	
-	void saveUserProfile(Profile profile) {
+	void saveUserProfile(UserProfile profile) {
 
 		// Save in memory
 		mProfile = profile;
@@ -323,6 +322,8 @@ public class BartsyApplication extends Application implements AppObservable {
 		editor.commit();
 		// It is better to call this method after editor commit. Because we are using same preference name
 		saveBartsyID(profile.bartsyID);
+		
+		saveUserProfileImage(profile.getImage());
 	}
 
 	void eraseUserProfile() {
@@ -337,6 +338,8 @@ public class BartsyApplication extends Application implements AppObservable {
 		editor.remove(r.getString(R.string.config_user_info));
 		editor.remove(r.getString(R.string.config_user_description));
 		editor.commit();
+		
+		eraseUserProfileImage();
 	}
 	
 	
@@ -347,7 +350,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	}
 	
 	public void saveBartsyID(int bartsyUserId) {
-		
 		// Save the unique bartsy ID in the user profile
 		if (mProfile != null) {
 			mProfile.bartsyID = bartsyUserId;
@@ -359,6 +361,40 @@ public class BartsyApplication extends Application implements AppObservable {
 		editor.putInt(r.getString(R.string.config_user_bartsyID), bartsyUserId);
 		editor.commit();
 	}
+	
+	public void saveUserProfileImage(Bitmap bitmap) {
+		// Save bitmap to file
+		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
+		Log.v(TAG, "Saving user profile image to " + file);
+
+		try {
+			FileOutputStream out = new FileOutputStream(file);
+			bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.e(TAG, "Error saving profile image");
+		}
+	}
+	
+	Bitmap loadUserProfileImage() {
+		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
+		Log.d(TAG, "Loading user profile from " + file);
+		Bitmap image = null;
+		try {
+			image = BitmapFactory.decodeFile(file);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.d(TAG, "Could not load profile image");
+		}
+		return image;
+	}
+	
+	void eraseUserProfileImage() {
+		File file = new File(getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture));
+		file.delete();
+	}
+	
+	
 	
 	/*****
 	 * 
@@ -373,7 +409,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * 
 	 */
 
-	public ArrayList<Profile> mPeople = new ArrayList<Profile>();
+	public ArrayList<UserProfile> mPeople = new ArrayList<UserProfile>();
 	public static final String PEOPLE_UPDATED = "PEOPLE_UPDATED";
 
 	/*
@@ -385,7 +421,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	) {
 		Log.v(TAG, "New user checked in: " + name + " (" + userid + ")");
 
-		Profile profile = new Profile(userid, username, name, location, info, description, null, image);
+		UserProfile profile = new UserProfile(userid, username, name, location, info, description, null, image);
 
 		mPeople.add(profile);
 		notifyObservers(PEOPLE_UPDATED);

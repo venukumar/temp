@@ -32,6 +32,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -49,7 +50,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
@@ -67,6 +68,7 @@ public class InitActivity extends FragmentActivity implements
 	final Context context = this;
 	private ConnectionResult mConnectionResult = null;
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
+	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	private ProgressDialog mConnectionProgressDialog;
 
@@ -131,8 +133,7 @@ public class InitActivity extends FragmentActivity implements
 					mConnectionProgressDialog.show();
 				} else {
 					try {
-						mConnectionResult.startResolutionForResult(mActivity,
-								REQUEST_CODE_RESOLVE_ERR);
+						mConnectionResult.startResolutionForResult(mActivity, REQUEST_CODE_RESOLVE_ERR);
 					} catch (SendIntentException e) {
 						// Try connecting again.
 						mConnectionResult = null;
@@ -140,9 +141,12 @@ public class InitActivity extends FragmentActivity implements
 					}
 				}
 				Log.d(TAG, "Connecting App to Google...");
-			} else
-				Toast.makeText(this, "Already logged in to Google...",
-						Toast.LENGTH_SHORT).show();
+			} else {
+				// Disconnect and connect again per user request...
+				mPlusClient.clearDefaultAccount();
+				mPlusClient.disconnect();
+				mPlusClient.connect();
+			}
 			break;
 		case R.id.button_disconnect:
 			if (mPlusClient.isConnected()) {
@@ -155,7 +159,12 @@ public class InitActivity extends FragmentActivity implements
 				Toast.makeText(this, "Already logged out from Google",
 						Toast.LENGTH_SHORT).show();
 			break;
-		case R.id.button_revoke:
+		case R.id.view_init_create_account:
+			
+			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+
+			/*
 			if (!mPlusClient.isConnected()) {
 				// Need to be connected in order to revoke access
 				mPlusClient.connect();
@@ -174,34 +183,52 @@ public class InitActivity extends FragmentActivity implements
 							mApp.eraseUserProfile();
 						}
 					});
-
+*/
 			break;
 		}
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int responseCode,
-			Intent intent) {
-		Log.d(TAG, "Activity result for request: " + requestCode
-				+ " with response: " + responseCode);
-
-		String error = "";
+	protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
+		
+		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
 
 		switch (requestCode) {
 		case REQUEST_CODE_RESOLVE_ERR:
 			switch (responseCode) {
 			case RESULT_OK:
-				Log.d(TAG, "Result is ok, trying to reconnect");
+				Log.v(TAG, "Result is ok, trying to reconnect");
 				mConnectionResult = null;
 				mPlusClient.connect();
 				break;
 			default:
+				Log.e(TAG, "Connection cancelled");
 				if (mConnectionProgressDialog.isShowing())
 					mConnectionProgressDialog.dismiss();
-				Toast.makeText(this, "Connection cancelled", Toast.LENGTH_SHORT)
-						.show();
+				Toast.makeText(this, "Connection cancelled", Toast.LENGTH_SHORT).show();
 				break;
 			}
+			break;
+		case REQUEST_CODE_USER_PROFILE:
+			switch (responseCode) {
+			case RESULT_OK:
+				// We got a response from the user profile activity. Process the user profile and start
+				// the right activity if successful
+				Log.v(TAG, "Profile saved - process results");
+				processUserProfile(mApp.mUserProfile);
+				break;
+			default:
+				Log.v(TAG, "Profile not saved");
+				break;
+			}
+
+			// Reset parameters passed as inputs using the application object 
+			Log.d(TAG, "Resetting application user input/output buffers");
+			mApp.mUser = null;
+			mApp.mUserEmail = null;
+			mApp.mUserProfile = null;
+
+			break;
 		}
 	}
 
@@ -223,52 +250,111 @@ public class InitActivity extends FragmentActivity implements
 
 	@Override
 	public void onConnected(Bundle connectionHint) {
-		mConnectionProgressDialog.dismiss();
 		mAccountName = mPlusClient.getAccountName();
-		Toast.makeText(this, "Connected as " + mAccountName, Toast.LENGTH_LONG).show();
+//		Toast.makeText(this, "Connected as " + mAccountName, Toast.LENGTH_LONG).show();
 		mPlusClient.loadPerson(this, "me");
 	}
 	
 
 	@Override
 	public void onPersonLoaded(ConnectionResult status, Person mPerson) {
+
+		Log.v(TAG, "onPersonLoaded()");
+
+		
 		if (status.getErrorCode() == ConnectionResult.SUCCESS) {
 
-			// Save profile picture in the background
-			new DownloadImageTask().execute(mPerson.getImage().getUrl(), getResources().getString(R.string.config_user_profile_picture));
+			Log.v(TAG, "Person Loaded successfully");
 
+			// Download and save profile picture in the background
+			if (mPerson.hasImage() && mPerson.hasName() && mPerson.hasBirthday() && !mPerson.getBirthday().substring(0,4).equalsIgnoreCase("0000")) {
+				new DownloadAndSaveUserProfileImageTask().execute(mPerson.getImage().getUrl(), getResources().getString(R.string.config_user_profile_picture));
 
-			// Show dialog and on exit start Bartsy (there should be an option to change the profile)
-			ProfileDialogFragment dialog = new ProfileDialogFragment();
-			dialog.mUser = mPerson;
-			dialog.show(getSupportFragmentManager(), "Your profile");
+				// Show dialog and on exit start Bartsy (there should be an option to change the profile)
+				ProfileDialogFragment dialog = new ProfileDialogFragment();
+				dialog.mUser = mPerson;
+				dialog.show(getSupportFragmentManager(), "Your profile");
 
+				Toast.makeText(mActivity, "Downloaded your Google profile, please verify it...", Toast.LENGTH_SHORT).show();
+				
+				Log.d(TAG, mPerson.getAgeRange().toString());
+				return;
+				
+			} else {
+				// Incomplete profile
+				Log.d(TAG, "Incomplete profile - starting blank user edit activity");
+//				Toast.makeText(mActivity, "Your Google profile could use some adding too...", Toast.LENGTH_SHORT).show();
+			}
 		} else {
-			Log.d(TAG, "Error loading person");
+			Log.d(TAG, "Error loading person - starting blank user edit activity");
+			Toast.makeText(mActivity, "Could not download profile, please create one...", Toast.LENGTH_SHORT).show();
 		}
+		
+		// If the profile is incomplete or couldn't be downloaded, start teh profile edit activity
+		mApp.mUser = mPerson; // use the application as a buffer to pass the message to the new activity
+		mApp.mUserEmail = mAccountName;
+		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);		
+		
 	}
+
+	
 
 	@Override
 	public void onUserDialogPositiveClick(final DialogFragment dialog) {
 		// User accepted the profile, launch main activity
 		
-		Log.i(TAG, "InitActivity.onUserDialogPositiveClick()");
+		Log.v(TAG, "onUserDialogPositiveClick()");
+		
+		// Create a profile for the person
+		Person person = ((ProfileDialogFragment) dialog).mUser;
+		UserProfile profile = new UserProfile(person, this.mAccountName);
+		profile.setImage(mApp.loadUserProfileImage());
+		processUserProfile(profile);
+	}
+	
+	
+	@Override 
+	public void onUserDialogNegativeClick(final DialogFragment dialog) {
+		// Start user profile activity and pass it a pointer to the user object saved in the global application structure for convenience
+		Person person = ((ProfileDialogFragment) dialog).mUser;
+		mApp.mUser = person; // use the application as a buffer to pass the message to the new activity
+		mApp.mUserEmail = mAccountName;
+		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+		finish();
+	}
+	
+	
+	/**
+	 * THis function is called when the user has accepted the profile in the profile activity. It saves the user
+	 * details locally. If the user is checked in according to the server, the function also checks the user in
+	 * locally. This function will either terminate the activity and start a new one or leave the user in this 
+	 * activity with a Toast asking them to retry their login.
+	 * 
+	 * The function uses the mUser parameters passed through the application as assumes they are set up
+	 */
+	
+	public void processUserProfile(final UserProfile userProfile) {
+		
+		Log.i(TAG, "processUserProfileData()");
 		
 		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
 		String deviceToken = settings.getString("RegId", "");
 		if (deviceToken.trim().length() > 0) {
-			// To send profile data to server in background
+			
+			// Send profile data to server in background
+
 			new Thread() {
 				public void run() {
 					int bartsyUserId=0;
-					// Create a profile for the person
-					Person person = ((ProfileDialogFragment) dialog).mUser;
-					
-					final Profile profile = getNewProfile(person);
 					
 					try {
 						// Service call for post profile data to server
-						JSONObject resultJson = WebServices.postProfile(profile, ((ProfileDialogFragment) dialog).mProfileImage, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+						JSONObject resultJson = WebServices.postProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+
+						// Process web service response
+						
 						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
 
 							final String userCheckedInOrNot = resultJson.getString("userCheckedIn");
@@ -285,7 +371,7 @@ public class InitActivity extends FragmentActivity implements
 
 									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
 								} else {
-									Log.e(TAG, "BartsyID " + "bartsyUserIdnot found");
+									Log.e(TAG, "BartsyID " + "bartsyUserId not found");
 								}
 								
 								final int bartsyId = bartsyUserId;
@@ -295,9 +381,9 @@ public class InitActivity extends FragmentActivity implements
 								mHandler.post(new Runnable() {
 									public void run() {
 										// Save profile in the global application structure and in preferences
-										profile.bartsyID = bartsyId;
+										userProfile.bartsyID = bartsyId;
 										
-										mApp.saveUserProfile(profile);
+										mApp.saveUserProfile(userProfile);
 										
 										if (userCheckedInOrNot.equalsIgnoreCase("0")) {
 											// User profile saved successfully and user checked in
@@ -313,17 +399,27 @@ public class InitActivity extends FragmentActivity implements
 								});
 								
 						}else{
-									// Error creating user. Ask parent to post Toast.
-									mHandler.post(new Runnable() {
-										@Override
-										public void run() {
-											Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
-										}
-									});
-									return;
+							// Error creating user. Ask parent to post Toast.
+							mHandler.post(new Runnable() {
+								@Override
+								public void run() {
+									Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+								}
+							});
+							return;
 						}
 					} catch (JSONException e) {
 						e.printStackTrace();
+
+						// Error creating user. Ask parent to post Toast.
+						mHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+							}
+						});
+						return;
+					
 					}
 				}
 			}.start();
@@ -333,92 +429,30 @@ public class InitActivity extends FragmentActivity implements
 			return;
 		}
 	}
-	
-	/**
-	 * To initiate new profile from the google+ person object 
-	 * 
-	 * @param person
-	 * @return
-	 */
-	protected Profile getNewProfile(Person person) {
-		
-		Profile profile = new Profile();
-		profile.setUsername(person.getId());
-		profile.setName(person.getDisplayName());
-		profile.setType("google");
-		profile.setSocialNetworkId(person.getId());
-		profile.setGender(String.valueOf(person.getGender()));
-		
-		
-		if(person.getAboutMe()!=null){
-			profile.setDescription(person.getAboutMe());
-		}
-		if(person.getBirthday()!=null){
-			profile.dateofbirth = person.getBirthday();
-		}
-		
-		// Error handling - null should not get in JSON format
-		if(person.getName()!=null && person.getName().hasGivenName()){
-			profile.firstName = person.getName().getGivenName();
-		}else{
-			profile.firstName = "";
-		}
-		
-		// Error handling
-		if(person.getName()!=null && person.getName().hasFamilyName()){
-			profile.lastName = person.getName().getFamilyName();
-		}else{
-			profile.lastName = "";
-		}
-		
-		// try to get nick name. if it is not exist then we can set first name
-		if(person.getNickname()!=null){
-			profile.nickname = person.getNickname();
-		}else{
-			profile.nickname = profile.firstName;
-		}
-		
-		if(mPlusClient!=null && mPlusClient.getAccountName()!=null){
-			profile.setEmail(mPlusClient.getAccountName());
-		}
-		
-		return profile;
-	}
-
-
-	@Override
-	public void onUserDialogNegativeClick(DialogFragment dialog) {
-		// User wants to edit the profile. For now, do nothing - TODO
-
-	}
-
 
 
 	@Override
 	public void onDisconnected() {
 		Log.d(TAG, "disconnected");
-		Toast.makeText(this, "Logged out from Google", Toast.LENGTH_LONG)
-				.show();
-
+		Toast.makeText(this, "Logged out from Google", Toast.LENGTH_LONG).show();
 	}
 
-	private class DownloadImageTask extends AsyncTask<String, Integer, Bitmap> {
+	
+	private class DownloadAndSaveUserProfileImageTask extends AsyncTask<String, Integer, Bitmap> {
 		// Do the long-running work in here
 
 		protected Bitmap doInBackground(String... params) {
 			// Kind of inefficient way to download an image. Need to just save
 			// the file as it comes...
 
-			String url = params[0], file = params[1];
-			Bitmap bitmap; // the temporary bitmap used to transfer the image
-							// from the web to a file
+			String url = params[0];
+			Bitmap bitmap; // the temporary bitmap used to transfer the image from the web to a file
 
 			Log.d(TAG, "Fetching user image profile image from: " + url);
 
 			// Fetch image from URL into a bitmap
 			try {
-				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url)
-						.getContent());
+				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url).getContent());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 				Log.d(TAG, "Bad URL: " + url);
@@ -435,23 +469,7 @@ public class InitActivity extends FragmentActivity implements
 			}
 
 			// Save bitmap to file
-			Log.d(TAG, "Saving user profile to " + getFilesDir()
-					+ File.separator + file);
-
-			try {
-				FileOutputStream out = new FileOutputStream(getFilesDir()
-						+ File.separator + file);
-
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.d(TAG,
-						"Could not save user profile to "
-								+ getResources().getString(
-										R.string.config_user_profile_picture));
-
-				return null;
-			}
+			mApp.saveUserProfileImage(bitmap);
 
 			return bitmap;
 		}
@@ -512,9 +530,9 @@ public class InitActivity extends FragmentActivity implements
 						.findViewById(R.id.button_disconnect);
 				b.setOnClickListener(mActivity);
 
-				// Set up Twitter button to revoke (DEBUG)
-				b = (ImageButton) v.findViewById(R.id.button_revoke);
-				b.setOnClickListener(mActivity);
+				// Set up create account button
+				Button bt = (Button) v.findViewById(R.id.view_init_create_account);
+				bt.setOnClickListener(mActivity);
 				break;
 			}
 			collection.addView(v);

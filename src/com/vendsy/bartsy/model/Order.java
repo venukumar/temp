@@ -43,8 +43,8 @@ public class Order {
 
 	// Each order contains the sender and the recipient (another single in the
 	// bar or a friend to pick the order up)
-	public Profile orderSender;
-	public Profile orderReceiver;
+	public UserProfile orderSender;
+	public UserProfile orderReceiver;
 
 	// The view displaying this order or null. The view is the display of the
 	// order in a list.
@@ -79,7 +79,7 @@ public class Order {
 	 */
 	public void initialize(String clientOrderID, String serverOrderID,
 			String title, String description, String price,
-			String image_resource, Profile order_sender) {
+			String image_resource, UserProfile order_sender) {
 		this.clientID = clientOrderID;
 		this.serverID = serverOrderID;
 		this.title = title;

@@ -13,7 +13,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 

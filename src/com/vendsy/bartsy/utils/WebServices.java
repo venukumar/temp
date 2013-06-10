@@ -52,7 +52,7 @@ import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.model.Venue;
 
@@ -321,11 +321,10 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static JSONObject postProfile(Profile bartsyProfile, Bitmap profileImage, String path, Context context) {
+	public static JSONObject postProfile(UserProfile bartsyProfile, String path, Context context) {
 
 		String url = path;
 		byte[] dataFirst = null;
-		String status = null;
 
 		// Setup connection parameters
 		int TIMEOUT_MILLISEC = 10000; // = 10 seconds
@@ -373,19 +372,19 @@ public class WebServices {
 		try {
 
 			// Converting profile bitmap image into byte array
-			if (profileImage != null) {
+			if (bartsyProfile.getImage() != null) {
 				// Image found - converting it to a byte array and adding to syscall
 
 				Log.v(TAG, "Syscall (with image): " + json);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				profileImage.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+				bartsyProfile.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);
 				dataFirst = baos.toByteArray();
 
 
 			} else {
 				// Could not find image
-				Log.v(TAG, "Syscall: " + json);
+				Log.v(TAG, "Syscall (no image): " + json);
 			}
 
 			// String details = URLEncoder.encode(json.toString(), "UTF-8");
@@ -557,8 +556,8 @@ public class WebServices {
 			}
 
 			protected void onPostExecute(Bitmap result) {
-				if (model instanceof Profile) {
-					Profile profile = (Profile) model;
+				if (model instanceof UserProfile) {
+					UserProfile profile = (UserProfile) model;
 					profile.setImage(result);
 				}
 				// Set bitmap image to profile image view

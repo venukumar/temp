@@ -40,7 +40,6 @@
         android:layout_gravity="center"
         android:layout_weight="2"
         android:orientation="vertical" >
-
         
         <com.google.android.gms.common.SignInButton
             xmlns:plus="http://schemas.android.com/apk/lib/com.google.android.gms.plus"
@@ -63,70 +62,41 @@
             android:scaleType="fitXY"
             android:src="@drawable/sign_in_with_facebook" />
 
-        <ImageButton
-            android:id="@+id/button_revoke"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="208dp"
-            android:layout_height="44dp"
-            android:layout_gravity="center"
-            android:layout_margin="@dimen/activity_vertical_margin"
-            android:padding="4dp"
-            android:scaleType="fitXY"
-            android:src="@drawable/sign_in_with_twitter" />
-
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:orientation="horizontal" >
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:padding="10dp" >
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" >
 
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/view_init_create_account"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Get Started"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="16sp" />
+                android:layout_weight="2"
+                android:text="Create account"
+                android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/view_init_sign_in"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Create Bartsy Account"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="12sp" />
+                android:layout_weight="2"
+                android:text="Sign in"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:padding="10dp" >
-
-            <TextView
-                android:id="@+id/TextView02"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sign In"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/TextView01"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Existing Bartsy Account"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="12sp" />
-        </LinearLayout>
     </LinearLayout>
 
     <TextView

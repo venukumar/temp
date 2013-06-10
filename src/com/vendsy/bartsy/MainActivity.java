@@ -33,8 +33,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
-	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some
-													// random unique number
 
 	/** Called when the activity is first created. */
 	@Override
@@ -88,16 +86,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		
 		((Button) findViewById(R.id.button_checkin)).setOnClickListener(this);
 		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
-		((View) findViewById(R.id.button_active_venue))
-				.setOnClickListener(this);
-		((View) findViewById(R.id.button_notifications))
-				.setOnClickListener(this);
-		((View) findViewById(R.id.button_payments)).setOnClickListener(this);
+		((View) findViewById(R.id.button_active_venue)).setOnClickListener(this);
+		((View) findViewById(R.id.button_notifications)).setOnClickListener(this);
 		((View) findViewById(R.id.button_profile)).setOnClickListener(this);
-		((View) findViewById(R.id.button_payments_dismiss))
-				.setOnClickListener(this);
-		((View) findViewById(R.id.button_profile_dismiss))
-				.setOnClickListener(this);
+		((View) findViewById(R.id.button_profile_dismiss)).setOnClickListener(this);
 		((View) findViewById(R.id.button_my_venues)).setOnClickListener(this);
 
 		// Hide action bar
@@ -125,29 +117,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
-		case R.id.button_payments:
-			// For now directly call card.io. This should be separate activity
-			// that allows to edit credit cards
-			Intent scanIntent = new Intent(this, CardIOActivity.class);
-
-			// required for authentication with card.io
-			scanIntent.putExtra(CardIOActivity.EXTRA_APP_TOKEN, getResources()
-					.getString(R.string.config_cardio_token));
-
-			// customize these values to suit your needs.
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true);
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false);
-			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_ZIP, false); 
-
-			// MY_SCAN_REQUEST_CODE is arbitrary and is only used within this activity.
-			startActivityForResult(scanIntent, MY_SCAN_REQUEST_CODE);
-			break;
-		case R.id.button_payments_dismiss:
-			// For now simply modify the UI. This should open a dialog with
-			// choices: remind again, don't remind again
-			((View) v.getParent()).setVisibility(View.GONE);
-			break;
 		case R.id.button_profile:
+			mApp.eraseUserProfile();
+			finish();
+			intent = new Intent().setClass(this, InitActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
 			break;
 		case R.id.button_profile_dismiss:
 			// For now simply modify the UI. This should open a dialog with
@@ -275,43 +250,6 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode == MY_SCAN_REQUEST_CODE) {
-			String resultDisplayStr;
-			if (data != null && data.hasExtra(CardIOActivity.EXTRA_SCAN_RESULT)) {
-				CreditCard scanResult = data
-						.getParcelableExtra(CardIOActivity.EXTRA_SCAN_RESULT);
-
-				// Never log a raw card number. Avoid displaying it, but if
-				// necessary use getFormattedCardNumber()
-				resultDisplayStr = "Card Number: "
-						+ scanResult.getRedactedCardNumber() + "\n";
-
-				// Do something with the raw number, e.g.:
-				// myService.setCardNumber( scanResult.cardNumber );
-
-				if (scanResult.isExpiryValid()) {
-					resultDisplayStr += "Expiration Date: "
-							+ scanResult.expiryMonth + "/"
-							+ scanResult.expiryYear + "\n";
-				}
-
-				if (scanResult.cvv != null) {
-					// Never log or display a CVV
-					resultDisplayStr += "CVV has " + scanResult.cvv.length()
-							+ " digits.\n";
-				}
-
-				if (scanResult.zip != null) {
-					resultDisplayStr += "Zip: " + scanResult.zip + "\n";
-				}
-			} else {
-				resultDisplayStr = "Scan was canceled.";
-			}
-			// do something with resultDisplayStr, maybe display it in a
-			// textView
-
-			Toast.makeText(this, resultDisplayStr, Toast.LENGTH_SHORT).show();
-		}
 		// else handle other activity results
 	}
 }

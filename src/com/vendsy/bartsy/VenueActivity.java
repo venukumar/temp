@@ -47,7 +47,7 @@ import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;

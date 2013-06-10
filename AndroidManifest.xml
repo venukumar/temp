@@ -116,6 +116,13 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo" >
         </activity>
+        <activity
+            android:name=".UserProfileActivity"
+            android:label="Edit your profile"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" 
+            android:theme="@style/AppTheme" >
+        </activity>
         <activity android:name=".CustomDrinksActivity"
             android:screenOrientation="portrait">
         </activity>

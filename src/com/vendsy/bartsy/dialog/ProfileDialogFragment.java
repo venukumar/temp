@@ -14,7 +14,7 @@ import com.google.android.gms.plus.model.people.Person.Image;
 import com.google.android.gms.plus.model.people.Person.Name;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.model.Profile;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
