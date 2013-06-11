@@ -20,30 +20,30 @@ public class UserProfile {
 
 	static final String TAG = "Profile";
 	
-	public int bartsyID;		// Unique ID enforced by Bartsy server
-	public String userID; 		// Google user id
-	public Bitmap image;		// user's main profile image
-	public String username;		// user's first name / last name
-	public String location;		// use string for now
-	public String info;			// info string
-	public String description="";
-	private String name;
-	private String email = "noreply@bartsy.com"; 
-	private String gender = "Male";
-	private String type;		// oneof {"Google", "Facebook", "Bartsy"}
-	private String socialNetworkId;
-	private String imagePath;
-	ArrayList<UserProfile> likes = new ArrayList<UserProfile>();
-	ArrayList<UserProfile> favorites = new ArrayList<UserProfile>();
+	public int bartsyID ;				// Unique ID enforced by Bartsy server
+	public String userID = null; 		// Google user id
+	public Bitmap image = null;			// user's main profile image
+	public String username = null;		// user's Facebook username
+	public String location = null;		// use string for now
+	public String info = null;			// info string
+	public String description = null;
+	private String name = null;
+	private String email  = null; 		// required and doubles as username for the Bartsy account
+	private String password = null;		// required
+	private String gender  = null;
+	private String type = null;			// oneof {"Google", "Facebook", "Bartsy"}
+	private String socialNetworkId = null;
+	private String imagePath = null;
+	ArrayList<UserProfile> likes  = null;
+	ArrayList<UserProfile> favorites  = null;
 
 	// Advanced fields for "dating" profiles
-	// NULL is not acceptable in JSON format. So, we can use empty instead of null 
-	public String firstName="";
-	public String lastName="";
-	public String dateofbirth="00/00/0000";
-	public String nickname="";
-	public String status="Single"; 		// relationship status
-	public String orientation="Straight";  // sexual orientation
+	private String firstName = null;
+	private String lastName = null;
+	private String birthday  = null;	// MM/DD/YYYY
+	private String nickname = null;
+	private String status = null; 		// relationship status ("single", "attached", 
+	private String orientation = null;  // sexual orientation
 
 	// The view of a particular user in the people list (expects a layout type of user_item.xml)
 	public View view = null; 	
@@ -88,19 +88,32 @@ public class UserProfile {
 	 */
 	public UserProfile (Person person, String email) {
 		
-		username = person.getId();
+		userID = person.getId();
 		name = person.getDisplayName();
 		type = "google";
 		socialNetworkId = person.getId();
-//		gender = String.valueOf(person.getGender());
-		
+
+		if (person.hasGender()) {
+			switch (person.getGender()) {
+			case Person.Gender.MALE:
+				gender = "male";
+				break;
+			case Person.Gender.FEMALE:
+				gender = "female";
+				break;
+			case Person.Gender.OTHER:
+				gender = "other";
+				break;
+			}
+		}
+				
 		if (person.getAboutMe() != null)
 			description = person.getAboutMe();
 		if (person.getBirthday() != null) {
 			// Convert from yyyy-mm-dd to mm/dd/yyyy
 			String bd = person.getBirthday();
-			dateofbirth = bd.substring(5,7) + "/" + bd.substring(8, 10) + "/" + bd.substring(0, 4);
-			Log.v(TAG, "Dateofbirth: " + bd + " -> " + dateofbirth);
+			birthday = bd.substring(5,7) + "/" + bd.substring(8, 10) + "/" + bd.substring(0, 4);
+			Log.v(TAG, "Dateofbirth: " + bd + " -> " + birthday);
 		}
 		
 		if(person.getName()!=null && person.getName().hasGivenName())
@@ -114,15 +127,37 @@ public class UserProfile {
 		if(person.getName() != null && person.getName().hasFamilyName())
 			lastName = person.getName().getFamilyName();
 		this.email = email;
+		
+		if (person.hasImage())
+			setImagePath(person.getImage().getUrl());
+			
 	}
 
+	public boolean hasUsername () {
+		return username != null;
+	}
 
+	public boolean hasSocialNetworkId() {
+		if (socialNetworkId == null || socialNetworkId.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	
 	public String getSocialNetworkId() {
 		return socialNetworkId;
 	}
 
 	public void setSocialNetworkId(String socialNetworkId) {
 		this.socialNetworkId = socialNetworkId;
+	}
+
+	public boolean hasName() {
+		if (name == null || name.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
 	}
 
 	public String getName() {
@@ -133,18 +168,58 @@ public class UserProfile {
 		this.name = name;
 	}
 
+	public boolean hasFirstName() {
+		if (firstName == null || firstName.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getFirstName() {
+		return firstName;
+	}
+	
 	public void setFirstName(String name) {
 		this.firstName = name;
 	}
 
+	public String getLastName() {
+		return lastName;
+	}
+	
+	public boolean hasLastName() {
+		if (lastName == null || lastName.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
 	public void setLastName(String name) {
 		this.lastName = name;
 	}
 
+	public boolean hasNickname() {
+		if (nickname == null || nickname.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getNickname() {
+		return nickname;
+	}
+	
 	public void setNickname(String name) {
 		this.nickname = name;
 	}
 
+	public boolean hasGender() {
+		if (gender == null || gender.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
 	public String getGender() {
 		return gender;
 	}
@@ -153,6 +228,43 @@ public class UserProfile {
 		this.gender = gender;
 	}
 
+	public boolean hasUserId() {
+		if (userID == null || userID.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+
+	public String getUserId() {
+		return userID;
+	}
+
+	public void setUserId(String userId) {
+		this.userID = userId;
+	}
+
+	public boolean hasPassword() {
+		if (password == null || password.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+		
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String email) {
+		this.password = email;
+	}
+
+	public boolean hasEmail() {
+		if (email == null || email.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+		
 	public String getEmail() {
 		return email;
 	}
@@ -177,6 +289,13 @@ public class UserProfile {
 		this.location = location;
 	}
 
+	public boolean hasDescription() {
+		if (description == null || description.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
 	public String getDescription() {
 		return description;
 	}
@@ -185,12 +304,72 @@ public class UserProfile {
 		this.description = description;
 	}
 
+	public boolean hasBirthday() {
+		if (birthday == null || birthday.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getBirthday() {
+		return birthday;
+	}
+
+	public void setBirthday(String birthday) {
+		this.birthday = birthday;
+	}
+
+	public boolean hasStatus() {
+		if (status == null || status.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String birthday) {
+		this.status = birthday;
+	}
+
+
+	public boolean hasOrientation() {
+		if (orientation == null || orientation.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(String orientation) {
+		this.orientation = orientation;
+	}
+
+	public boolean hasType() {
+		if (type == null || type.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
 	public String getType() {
 		return type;
 	}
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public boolean hasImagePath() {
+		if (imagePath == null || imagePath.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
 	}
 
 	public String getImagePath() {
@@ -201,6 +380,13 @@ public class UserProfile {
 		this.imagePath = imagePath;
 	}
 
+	public boolean hasImage() {
+		if (image == null)
+			return false;
+		else 
+			return true;
+	}
+	
 	public Bitmap getImage() {
 		return image;
 	}
@@ -211,10 +397,8 @@ public class UserProfile {
 
 	public void updateView(OnClickListener listener) {
 
-		((ImageView) view.findViewById(R.id.view_user_list_image_resource))
-				.setImageBitmap(this.image);
-		((TextView) view.findViewById(R.id.view_user_list_name))
-				.setText(this.username);
+		((ImageView) view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(getImage());
+		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
 
 		ImageView profileImageView = (ImageView) view
 				.findViewById(R.id.ImageView16);

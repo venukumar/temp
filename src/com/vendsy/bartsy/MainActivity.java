@@ -33,6 +33,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
+	private static final int REQUEST_CODE_USER_PROFILE = 9001;
+
 
 	/** Called when the activity is first created. */
 	@Override
@@ -140,12 +142,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			// For now don't do anything
 			break;
 		case R.id.button_settings:
+			mApp.mUserProfileActivityInput = mApp.mProfile;
+			intent = new Intent(getBaseContext(), UserProfileActivity.class);
+			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+/*
 			intent = new Intent().setClass(this, SettingsActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
+*/
 			break;
 		}
 	}
+
 
 	/**
 	 * To checkout user from the active venue

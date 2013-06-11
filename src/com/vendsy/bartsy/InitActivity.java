@@ -70,7 +70,7 @@ public class InitActivity extends FragmentActivity implements
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
-	private ProgressDialog mConnectionProgressDialog;
+	public ProgressDialog mConnectionProgressDialog;
 
 	BartsyApplication mApp = null;
 	InitActivity mActivity = this;
@@ -161,6 +161,7 @@ public class InitActivity extends FragmentActivity implements
 			break;
 		case R.id.view_init_create_account:
 			
+			mApp.mUserProfileActivityInput = null;
 			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 
@@ -215,18 +216,20 @@ public class InitActivity extends FragmentActivity implements
 				// We got a response from the user profile activity. Process the user profile and start
 				// the right activity if successful
 				Log.v(TAG, "Profile saved - process results");
-				processUserProfile(mApp.mUserProfile);
+				processUserProfile(mApp.mUserProfileActivityOutput);
 				break;
 			default:
+				// No profile was created - dismiss the dialog
+				if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing()) 
+					mConnectionProgressDialog.dismiss();
 				Log.v(TAG, "Profile not saved");
 				break;
 			}
 
 			// Reset parameters passed as inputs using the application object 
 			Log.d(TAG, "Resetting application user input/output buffers");
-			mApp.mUser = null;
-			mApp.mUserEmail = null;
-			mApp.mUserProfile = null;
+			mApp.mUserProfileActivityInput = null;
+			mApp.mUserProfileActivityOutput = null;
 
 			break;
 		}
@@ -290,9 +293,8 @@ public class InitActivity extends FragmentActivity implements
 			Toast.makeText(mActivity, "Could not download profile, please create one...", Toast.LENGTH_SHORT).show();
 		}
 		
-		// If the profile is incomplete or couldn't be downloaded, start teh profile edit activity
-		mApp.mUser = mPerson; // use the application as a buffer to pass the message to the new activity
-		mApp.mUserEmail = mAccountName;
+		// If the profile is incomplete or couldn't be downloaded, start the profile edit activity
+		mApp.mUserProfileActivityInput = new UserProfile(mPerson, mAccountName); // use the application as a buffer to pass the message to the new activity
 		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);		
 		
@@ -318,8 +320,7 @@ public class InitActivity extends FragmentActivity implements
 	public void onUserDialogNegativeClick(final DialogFragment dialog) {
 		// Start user profile activity and pass it a pointer to the user object saved in the global application structure for convenience
 		Person person = ((ProfileDialogFragment) dialog).mUser;
-		mApp.mUser = person; // use the application as a buffer to pass the message to the new activity
-		mApp.mUserEmail = mAccountName;
+		mApp.mUserProfileActivityInput = new UserProfile(person, mAccountName); // use the application as a buffer to pass the message to the new activity
 		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 		finish();
@@ -404,6 +405,8 @@ public class InitActivity extends FragmentActivity implements
 								@Override
 								public void run() {
 									Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+									if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
+										mConnectionProgressDialog.dismiss();
 								}
 							});
 							return;
@@ -416,6 +419,8 @@ public class InitActivity extends FragmentActivity implements
 							@Override
 							public void run() {
 								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+								if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
+									mConnectionProgressDialog.dismiss();
 							}
 						});
 						return;
@@ -426,6 +431,8 @@ public class InitActivity extends FragmentActivity implements
 
 		} else {
 			Toast.makeText(this, "Please try again....", Toast.LENGTH_LONG).show();
+			if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
+				mConnectionProgressDialog.dismiss();
 			return;
 		}
 	}

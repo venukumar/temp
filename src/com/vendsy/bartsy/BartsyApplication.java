@@ -265,10 +265,9 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public UserProfile mProfile;
 	
-	// These two fields are only used to pass information to the UserProfileActivity from InitActivity
-	public Person mUser = null; 
-	public UserProfile mUserProfile = null;
-	public String mUserEmail = null;
+	// These two fields are only used to pass information to and from the UserProfileActivity from InitActivity
+	public UserProfile mUserProfileActivityInput = null; 
+	public UserProfile mUserProfileActivityOutput = null;
 
 	void loadUserProfile() {
 		

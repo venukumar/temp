@@ -8,6 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,7 +78,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		
 		// Set up pointer to activity used as an input/output buffer
 		mApp = (BartsyApplication) getApplication();
-		Person person = mApp.mUser;
+		UserProfile person = mApp.mUserProfileActivityInput;
 
 		// Set the base view then pre-populate it with any existing values found in the application input buffer (mUser)
 		setContentView(R.layout.user_profile);
@@ -81,23 +87,29 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		// Pre-populate fields if there is a user object already
 		if (person != null) {
 			// Set first name, last name, nickname, description, email, user image
-			if(person.getName()!=null && person.getName().hasGivenName())
-				((TextView) findViewById(R.id.view_profile_first_name)).setText(person.getName().getGivenName());
-			if(person.getName()!=null && person.getName().hasFamilyName())
-				((TextView) findViewById(R.id.view_profile_last_name)).setText(person.getName().getFamilyName());
+			if(person.hasFirstName())
+				((TextView) findViewById(R.id.view_profile_first_name)).setText(person.getFirstName());
+			if(person.hasLastName())
+				((TextView) findViewById(R.id.view_profile_last_name)).setText(person.getLastName());
 			if (person.getNickname() != null) 
 				((TextView) findViewById(R.id.view_profile_nickname)).setText(person.getNickname());
 			else
 				// If no Nickname, use the peron's first name
 				((TextView) findViewById(R.id.view_profile_nickname)).setText(
 						((TextView) findViewById(R.id.view_profile_first_name)).getText());
-			if (person.hasAboutMe())
-				((TextView) findViewById(R.id.view_profile_description)).setText(person.getAboutMe());
-			if (mApp.mUserEmail != null) 
-				((TextView) findViewById(R.id.view_profile_email)).setText(mApp.mUserEmail);
-			if (mApp.mUser.getImage() != null) 
+			if (person.hasDescription())
+				((TextView) findViewById(R.id.view_profile_description)).setText(person.getDescription());
+			if (person.hasEmail()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());
+			if (person.hasImagePath()) 
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
 				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
+			if (person.hasGender()) {
+				if (person.getGender().equalsIgnoreCase("male"))
+					((RadioButton) findViewById(R.id.view_profile_gender_male)).setChecked(true);
+				if (person.getGender().equalsIgnoreCase("female"))
+					((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
+			}
 		}
 		
 		// Set up image controllers
@@ -215,7 +227,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			if (profile != null) {
 				// The new form contains valid data - accept it and return with result OK
 				Log.v(TAG, "Form valid - save profile data");
-				mApp.mUserProfile = profile;
+				mApp.mUserProfileActivityOutput = profile;
 				this.setResult(InitActivity.RESULT_OK);
 				finish();
 			}
@@ -358,38 +370,99 @@ public class UserProfileActivity extends Activity implements OnClickListener {
     }
 	
 	/**
-	 * Invokes this method when the user clicks on the Register Button
+	 * Invokes this method when the user clicks on the Submit Button
 	 */
 	public UserProfile validateProfileData() {
 		
+		Log.v(TAG, "validateProfileData()");
+		
 		UserProfile user = new UserProfile();
 		
+		// Make sure there is an email and password
+		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
+		if (email.length() > 0) {
+			user.setEmail(email);
+		} else {
+			Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
+			return null;
+		}
+		String password =  ((TextView) findViewById(R.id.view_profile_password)).getText().toString();
+		if (password.length() < 6) {
+			Toast.makeText(this, "Please create a password that's at least 6 characters long", Toast.LENGTH_SHORT).show();
+			return null;			
+		}
+		user.setPassword(password);
+
 		// Set fields not present in the form such as username etc.
-		if (mApp.mUser == null) {
+		if (mApp.mUserProfileActivityInput == null) {
 			// The user input buffer is not set up, this mean we started with a blank profile
 			user.setUsername(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setSocialNetworkId(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setType("bartsy");
 		} else {
 			// For now we haven't wired the Facebook button, so it's G+ or nothing...
-			user.setUsername(mApp.mUser.getId());
-			user.setSocialNetworkId(mApp.mUser.getId());
+			Log.v(TAG, "G+ profile with ID " + mApp.mUserProfileActivityInput.getUserId());
+			user.setUsername(mApp.mUserProfileActivityInput.getUserId());
+			user.setSocialNetworkId(mApp.mUserProfileActivityInput.getUserId());
 			user.setType("google");
 		}		
+
+
+		// Make sure there's a nickname
+		String nickname = ((TextView) findViewById(R.id.view_profile_nickname)).getText().toString();
+		if (nickname.length() > 0) {
+			user.setNickname(nickname);
+		} else {
+			Toast.makeText(this, "Nickname is required", Toast.LENGTH_SHORT).show();
+			return null;			
+		}
+			
+		// Validate birthday format
+		String bd = ((TextView) findViewById(R.id.view_profile_birthday)).getText().toString();
+		if (bd.length() > 0) {
+			try {
+				DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+				Date date = df.parse(bd);
+				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+				bd = sdf.format(date);
+			} catch (Exception e) {
+				Toast.makeText(this, "Birthday format is invalid", Toast.LENGTH_SHORT).show();
+				return null;			
+			}
+			user.setBirthday(bd);
+		}
 		
-		// Validate and save first name, last name and email
+		// Setup status based on checkboxes
+		Boolean singles = ((CheckBox) findViewById(R.id.view_profile_status_singles)).isChecked();
+		Boolean friends = ((CheckBox) findViewById(R.id.view_profile_status_friends)).isChecked();
+		if (friends && singles) 
+			user.setStatus("Singles/Friends");
+		else if (friends)
+			user.setStatus("Friends");
+		else if (singles)
+			user.setStatus("Singles");
+		
+		// Setup orientation
+		if (((RadioButton) findViewById(R.id.view_profile_orientation_straight)).isChecked())
+			user.setOrientation("Straight");
+		if (((RadioButton) findViewById(R.id.view_profile_orientation_gay)).isChecked())
+			user.setOrientation("Gay");
+		if (((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).isChecked())
+			user.setOrientation("Bisexual");
+		
+		// Extract first and last name
 		String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
 		String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
-		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
-		if (first_name.length() > 0 && last_name.length() > 0 && email.length() > 0) {
+		if (first_name.length() > 0 && last_name.length() > 0)
 			user.setName(first_name + " " + last_name);
+		else if (first_name.length() > 0)
+			user.setName(first_name);
+		else if (last_name.length() > 0)
+			user.setName(last_name);
+		if (first_name.length() > 0)
 			user.setFirstName(first_name);
-			user.setLastName(last_name);
-			user.setEmail(email);
-		} else {
-			Toast.makeText(this, "Name, last name and email are required", Toast.LENGTH_SHORT).show();
-			return null;
-		}
+		if (last_name.length() > 0)
+				user.setLastName(last_name);
 		
 		// Make sure we have a valid image and save it
 		Bitmap image = (Bitmap) findViewById(R.id.view_profile_user_image).getTag();
@@ -400,70 +473,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		}
 		user.setImage(image);
 		
-		// Save non-required fields: nickname, description
+		// Extract description
 		user.setDescription( ((TextView) findViewById(R.id.view_profile_description)).getText().toString() );
-		user.setNickname( ((TextView) findViewById(R.id.view_profile_nickname)).getText().toString() );
 		
 		
-
-		
-/*
-
-		int selectedWifiPresent = wifiPresent.getCheckedRadioButtonId();
-
-		// Gets a reference to our "selected" radio button
-		RadioButton wifi = (RadioButton) findViewById(selectedWifiPresent);
-
-		int selectedTypeOfAuthentication = typeOfAuthentication
-				.getCheckedRadioButtonId();
-
-		// Gets a reference to our "selected" radio button
-		RadioButton typeOfAuthentication = (RadioButton) findViewById(selectedTypeOfAuthentication);
-		SharedPreferences settings = getSharedPreferences(
-				GCMIntentService.REG_ID, 0);
-		String deviceToken = settings.getString("RegId", "");
-
-		System.out.println("sumbit");
-		
-		// To check GCM token received or not
-		if (deviceToken.trim().length() > 0) {
-
-			final JSONObject postData = new JSONObject();
-			try {
-				// Prepare registration information in JSON format to the web service
-				postData.put("locuId", locuId.getText().toString());
-				postData.put("deviceToken", deviceToken);
-				postData.put("wifiName", wifiName.getText().toString());
-				postData.put("wifiPassword", wifiPassword.getText().toString());
-				postData.put("typeOfAuthentication",
-						typeOfAuthentication == null ? ""
-								: typeOfAuthentication.getText().toString());
-				postData.put("paypalId", paypal.getText().toString());
-				postData.put("deviceType", "0");
-				postData.put("cancelOrderTime",orderTimeOut.getText().toString());
-
-				if (wifi == null ? false : wifi.getText().toString()
-						.equalsIgnoreCase("Yes"))
-					postData.put("wifiPresent", "1");
-				else
-					postData.put("wifiPresent", "0");
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-				return null;
-			}
-			
-			// Start progress dialog from here
-			progressDialog = Utilities.progressDialog(this, "Loading..");
-			progressDialog.show();
-			
-		} else {
-		// To stop sending details to server if the GCM device token is failed
-			WebServices.alertbox("Please try again....", UserProfileActivity.this);
-			return null;
-		}
-		
-		*/
 		
 		return user;
 	}
@@ -483,10 +496,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			Bitmap bitmap;
 			String url = null;
 
-			if (mApp.mUser == null)
+			if (mApp.mUserProfileActivityInput == null)
 				return null;
 
-			url = mApp.mUser.getImage().getUrl();
+			url = mApp.mUserProfileActivityInput.getImagePath();
 			
 			try {
 				Log.d("Bartsy", "About to decode image for dialog from URL: " + url);
@@ -494,7 +507,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url).getContent());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
-				Log.d("Bartsy", "Bad URL: " + mApp.mUser.getImage().getUrl());
+				Log.d("Bartsy", "Bad URL: " + mApp.mUserProfileActivityInput.getImagePath());
 				return null;
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -315,13 +315,13 @@ public class WebServices {
 	 * 
 	 *              Service call for profile information
 	 * 
-	 * @param bartsyProfile
+	 * @param user
 	 * @param profileImage
 	 * @param path
 	 * @param context
 	 * @return
 	 */
-	public static JSONObject postProfile(UserProfile bartsyProfile, String path, Context context) {
+	public static JSONObject postProfile(UserProfile user, String path, Context context) {
 
 		String url = path;
 		byte[] dataFirst = null;
@@ -335,50 +335,89 @@ public class WebServices {
 		// get registration id from shared preferences
 		SharedPreferences settings = context.getSharedPreferences(
 				GCMIntentService.REG_ID, 0);
-		String deviceToken = settings.getString("RegId", "");
-
-		int deviceType = Constants.DEVICE_Type;
 
 		// Created a json object for posting data to server
 		JSONObject json = new JSONObject();
 		try {
-			json.put("userName", bartsyProfile.getUsername());
-			json.put("name", bartsyProfile.getName());
-			json.put("loginId", bartsyProfile.getSocialNetworkId());
-			json.put("loginType", bartsyProfile.getType());
-			if (bartsyProfile.getGender().equalsIgnoreCase("0"))
-				json.put("gender", "male");
-			else if (bartsyProfile.getGender().equalsIgnoreCase("1"))
-				json.put("gender", "female");
-			else
-				json.put("gender", bartsyProfile.getGender());
-			json.put("deviceType", String.valueOf(deviceType));
-			json.put("deviceToken", deviceToken);
 			
-			// For now hardcode some values to make sure the syscall works
-			json.put("firstname", bartsyProfile.firstName);
-			json.put("lastname", bartsyProfile.lastName);
-			json.put("dateofbirth", bartsyProfile.dateofbirth);
-			json.put("nickname", bartsyProfile.nickname);
-			json.put("status", bartsyProfile.status); 
-			json.put("orientation", bartsyProfile.orientation);
-			json.put("description", bartsyProfile.getDescription());
-			json.put("emailId", bartsyProfile.getEmail());
+			// Required system parameter
+			json.put("deviceType", String.valueOf(Constants.DEVICE_Type));
+			json.put("deviceToken", settings.getString("RegId", ""));
+
+			
+			// Check and place required user-related system parameters
+			if (!user.hasUsername()) {
+				Log.e(TAG, "Missing username");
+				return null;
+			} else {
+				json.put("userName", user.getUsername());
+			}
+			if (!user.hasSocialNetworkId()) {
+				Log.e(TAG, "Missing loginId (socialNetowordId)");
+				return null;
+			} else {
+				json.put("loginId", user.getSocialNetworkId());
+			}
+			if (!user.hasType()) {
+				Log.e(TAG, "Missing type");
+				return null;				
+			} else {
+				json.put("loginType", user.getType());
+			}
+
+			// Required parameters (user)
+			if (!user.hasEmail()) {
+				Log.e(TAG, "Missing email");
+				return null;				
+			} else {
+				json.put("emailId", user.getEmail());
+			}
+			if (!user.hasPassword()) {
+				Log.e(TAG, "Missing password");
+				return null;				
+			} else {
+				json.put("password", user.getPassword());
+			}
+			if (!user.hasNickname()) {
+				Log.e(TAG, "Missing nickname");
+				return null;				
+			} else {
+				json.put("nickname", user.getNickname());
+			}
+			
+			// Optional parameters (user)
+			if (user.hasName())
+				json.put("name", user.getName());
+			if (user.hasFirstName())
+				json.put("firstname", user.getFirstName());
+			if (user.hasLastName())
+				json.put("lastname", user.getLastName());
+			if (user.hasBirthday())
+				json.put("dateofbirth", user.getBirthday());
+			if (user.hasStatus())
+				json.put("status", user.getStatus()); 
+			if (user.hasOrientation())
+				json.put("orientation", user.getOrientation());
+			if (user.hasDescription())
+				json.put("description", user.getDescription());
+			if (user.hasGender()) 
+				json.put("gender", user.getGender());
 			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
+			return null;
 		}
 
 		try {
 
 			// Converting profile bitmap image into byte array
-			if (bartsyProfile.getImage() != null) {
+			if (user.hasImage()) {
 				// Image found - converting it to a byte array and adding to syscall
 
 				Log.v(TAG, "Syscall (with image): " + json);
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				bartsyProfile.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);
+				user.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);
 				dataFirst = baos.toByteArray();
 
 
