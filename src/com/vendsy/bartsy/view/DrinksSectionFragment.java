@@ -28,11 +28,9 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
-import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Section;
-import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -53,7 +51,7 @@ public class DrinksSectionFragment extends Fragment {
 	 * fragment. Also consider saving this as part of the active venue structures in the main application
 	 */
 	
-	private class Menu {
+	public class Menu {
 		ArrayList<String> headings;
 		ArrayList<ArrayList<MenuDrink>> items;
 		
@@ -148,21 +146,9 @@ public class DrinksSectionFragment extends Fragment {
 
 					String apiResponse = null;
 			
-					// Menu not in memory - check if it exists in the DB
-					final List<Section> sectionsList = DatabaseManager.getInstance().getMenuSections(mApp.mActiveVenue.getId());
-					if (sectionsList != null && sectionsList.size() > 0) {
-						// Menu exists in the database. Load it into view
-						Log.v(TAG, "Loading menu from DB...");
-						loadAndDisplayMenu(sectionsList);
-						if (mMenu == null) {
-							// Database failed for some reason. Attempt to download the menu from the web
-							apiResponse = downloadAndDisplayMenu();
-						}
-					} else {
-						// Menu doesn't exist in the DB - load it from the server and display it
-						Log.v(TAG, "Loading menu from web services...");
-						apiResponse = downloadAndDisplayMenu();
-					}
+					
+					// Database failed for some reason. Attempt to download the menu from the web
+					downloadAndDisplayMenu();
 					
 					if (mMenu == null) {
 						// Both loaders failed - abort. 
@@ -174,8 +160,6 @@ public class DrinksSectionFragment extends Fragment {
 
 						return;
 					}
-
-
 					// Loading of the menu successful. Display it using a handler because Android 
 					// doesn't allow manipulating views from separate threads
 					handler.post(new Runnable() {
@@ -185,13 +169,6 @@ public class DrinksSectionFragment extends Fragment {
 						}
 					});				
 
-					// Check if menu is marked for saving
-					if (apiResponse != null) {
-						// Successfully downloaded the menu from the web. Save it in the DB for next time
-						Log.v(TAG, "Saving menu to DB");
-						saveMenuToDB(apiResponse, mApp.mActiveVenue.getId());
-					}
-					
 					// Mark the end of menu loading
 					mMenuLoading = false;
 					Log.d(TAG, "Indicate end of menu loading");
@@ -237,6 +214,7 @@ public class DrinksSectionFragment extends Fragment {
 		
 		// parse the response into a menu in-memory structure
 		mMenu = extractMenuFromResponse (response);
+		// To save menu in application class
 		
 		return response;
 	}
@@ -312,139 +290,6 @@ public class DrinksSectionFragment extends Fragment {
 		return new Menu(headings, items);
 	}
 
-	
-	/*****
-	 * 
-	 * TODO - DB functions for menu loader
-	 * 
-	 */
-	
-	
-	/* 
-	 * DB loader. Loads menu from DB in the background and displays it when done.
-	 * This is called from a background thread.
-	 */
-	
-	private void loadAndDisplayMenu(final List<Section> sectionsList) {
-		
-		Log.v(TAG, "loadAndDisplayMenu()");
-		
-		// Safety first
-		if(sectionsList==null) return ;
-
-		ArrayList<String> groupNames = new ArrayList<String>();
-		// Default group name for individual drinks
-		List<MenuDrink> defaultList = DatabaseManager.getInstance().getMenuDrinks(mApp.mActiveVenue.getId());
-		if (defaultList != null && defaultList.size() > 0) {
-			groupNames.add("Various items");
-		}
-
-		for (int i = 0; i < sectionsList.size(); i++) {
-			groupNames.add(sectionsList.get(i).getName());
-		}
-
-		final ArrayList<ArrayList<MenuDrink>> menuDrinks = new ArrayList<ArrayList<MenuDrink>>();
-		if (defaultList != null && defaultList.size() > 0) {
-			ArrayList<MenuDrink> defaultmenu = new ArrayList<MenuDrink>(
-					defaultList);
-			menuDrinks.add(defaultmenu);
-		}
-		for (int j = 0; j < sectionsList.size(); j++) {
-			List<MenuDrink> list = DatabaseManager.getInstance().getMenuDrinks(
-					sectionsList.get(j), mApp.mActiveVenue.getId());
-			ArrayList<MenuDrink> menu = new ArrayList<MenuDrink>(list);
-			menuDrinks.add(menu);
-		}
-		
-		// Done loading the menu. Save it.
-		mMenu =  new Menu(groupNames, menuDrinks);
-	}
-
-	/*
-	 * Helper function for DB loader. Processes the server response and saves the menu to the DB
-	 * for the venue to which this menu belongs
-	 */
-	
-	private void saveMenuToDB (String response, String venueID) {
-		
-		Log.v(TAG, "saveMenuToDB()");
-		
-		if (response == null) {
-
-		} else {
-			try {
-				// To delete existing menu items
-				DatabaseManager.getInstance().deleteDrinks(venueID);
-
-				JSONObject result = new JSONObject(response);
-				String errorCode = result.getString("errorCode");
-				String errorMessage = result.getString("errorMessage");
-				String menus = result.getString("menu");
-
-				JSONArray jsonArray = new JSONArray(menus);
-				Log.v(TAG, "Menus length " + jsonArray.length());
-
-				for (int section = 0; section < jsonArray.length(); section++) {
-
-					JSONObject jsonObject = jsonArray.getJSONObject(section);
-					Section menuSection = null;
-					if (jsonObject.has("section_name") && jsonObject.has("subsections")) {
-
-						String name = jsonObject.getString("section_name");
-						// To save sections in the database
-						JSONArray subsections = jsonObject.getJSONArray("subsections");
-						if (subsections != null && subsections.length() > 0) {
-							if (name.trim().length() > 0 && subsections.length() == 1) {
-								menuSection = new Section();
-								menuSection.setVenueId(venueID);
-
-								if (name.length() > 0)
-									menuSection.setName(name);
-								// To save section in DB
-								DatabaseManager.getInstance().saveSection(menuSection);
-							}
-							// To save sub sections as sections in the database
-							for (int i = 0; i < subsections.length(); i++) {
-								JSONObject subSection = subsections
-										.getJSONObject(i);
-								String subName = subSection
-										.getString("subsection_name");
-
-								if (subName.trim().length() > 0) {
-									String newName = name + " - " + subName;
-									menuSection = new Section();
-									menuSection.setName(newName);
-									menuSection.setVenueId(venueID);
-									// To save section in DB
-									DatabaseManager.getInstance().saveSection(
-											menuSection);
-								}
-								// To save the drinks as per the section in the
-								// database
-								JSONArray contents = subSection
-										.getJSONArray("contents");
-								for (int k = 0; k < contents.length(); k++) {
-									MenuDrink menuDrink = new MenuDrink(
-											contents.getJSONObject(k));
-									menuDrink.setSection(menuSection);
-									menuDrink.setVenueId(venueID);
-									// To save menu drink in DB
-									DatabaseManager.getInstance().saveDrink(
-											menuDrink);
-								}
-							}
-						}
-					}
-				}
-
-			} catch (JSONException e) {
-				Log.v(TAG, "saveMenuToDB() failed");
-				e.printStackTrace();
-				return;
-			}
-		}
-		Log.v(TAG, "saveMenuToDB() finished");
-	}
 	
 	
 	

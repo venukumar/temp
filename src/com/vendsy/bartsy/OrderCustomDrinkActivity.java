@@ -229,6 +229,8 @@ public class OrderCustomDrinkActivity extends Activity{
 
 					// Increment the local order count
 					mApp.mOrderIDs++;
+					
+					finish();
 
 					break;
 					
@@ -242,6 +244,7 @@ public class OrderCustomDrinkActivity extends Activity{
 					Toast.makeText(OrderCustomDrinkActivity.this, "Unable to place order. Venue is not accepting orders (" + msg.obj + ")", Toast.LENGTH_SHORT).show();
 					break;
 				}
+				
 			}
 		};
 	

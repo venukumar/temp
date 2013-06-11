@@ -25,7 +25,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,23 +37,17 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.db.DatabaseManager;
-import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.model.Section;
-import com.vendsy.bartsy.model.Venue;
 
 public class WebServices {
 
@@ -595,13 +588,13 @@ public class WebServices {
 			}
 
 			protected void onPostExecute(Bitmap result) {
-				if (model instanceof UserProfile) {
+				if (model!=null && model instanceof UserProfile) {
 					UserProfile profile = (UserProfile) model;
 					profile.setImage(result);
 				}
 				// Set bitmap image to profile image view
 				imageView.setImageBitmap(result);
-
+				imageView.setTag(result);
 			}
 
 		}.execute();

@@ -18,6 +18,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.InitActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.facebook.AsyncFacebookRunner.RequestListener;
 import com.vendsy.bartsy.facebook.Facebook.DialogListener;
@@ -43,10 +45,14 @@ public class AndroidFacebookConnectActivity extends Activity {
 	Button btnPostToWall;
 	Button btnShowAccessTokens;
 
+	private BartsyApplication mApp;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.facebook_layout);
+		
+		mApp = (BartsyApplication)getApplication();
 
 		btnFbLogin = (Button) findViewById(R.id.btn_fblogin);
 		// btnFbGetProfile = (Button) findViewById(R.id.btn_get_profile);
@@ -205,24 +211,33 @@ public class AndroidFacebookConnectActivity extends Activity {
 			@Override
 			public void onComplete(String response, Object state) {
 				Log.d("Profile", response);
-				System.out.println("the response from json is :::" + response);
 				try {
 					JSONObject fbProfileData = new JSONObject(response);
 					
-					final UserProfile bartsyProfile = new UserProfile();
-					// getting name of the user
-					bartsyProfile.setName(fbProfileData.getString("name"));
-					// getting email of the user
-					bartsyProfile.setEmail(fbProfileData.getString("email"));
-					// getting accessToken of the user
+					// Reset parameters passed as inputs using the application object 
+					Log.d("AndroidFacebookConnectActivity", "Setting application user input/output buffers");
+					mApp.mFBUser = fbProfileData;
 					
-					bartsyProfile.setSocialNetworkId(fbProfileData.getString("id"));
+					// It will go back to Init Activity
+					setResult(InitActivity.RESULT_OK);
+					finish();
 					
-					// getting username of the user
-					bartsyProfile.setUsername(fbProfileData.getString("username"));
-					// getting gender of the user
-					bartsyProfile.setGender(fbProfileData.getString("gender"));
-					bartsyProfile.setType("facebook");
+					
+					
+//					final UserProfile bartsyProfile = new UserProfile();
+//					// getting name of the user
+//					bartsyProfile.setName(fbProfileData.getString("name"));
+//					// getting email of the user
+//					bartsyProfile.setEmail(fbProfileData.getString("email"));
+//					// getting accessToken of the user
+//					
+//					bartsyProfile.setSocialNetworkId(fbProfileData.getString("id"));
+//					
+//					// getting username of the user
+//					bartsyProfile.setUsername(fbProfileData.getString("username"));
+//					// getting gender of the user
+//					bartsyProfile.setGender(fbProfileData.getString("gender"));
+//					bartsyProfile.setType("facebook");
 					
 					
 				//	WebServices.saveProfileData(bartsyProfile, getApplicationContext());

@@ -69,6 +69,7 @@ public class InitActivity extends FragmentActivity implements
 	private ConnectionResult mConnectionResult = null;
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
+	private static final int REQUEST_CODE_USER_FB = 9002;
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	public ProgressDialog mConnectionProgressDialog;
 
@@ -155,9 +156,15 @@ public class InitActivity extends FragmentActivity implements
 				// mPlusClient.connect();
 				Toast.makeText(this, "Logged out from Google",
 						Toast.LENGTH_SHORT).show();
+				
 			} else
 				Toast.makeText(this, "Already logged out from Google",
 						Toast.LENGTH_SHORT).show();
+			// Start Face book connection
+			Intent fbIntent = new Intent(InitActivity.this, AndroidFacebookConnectActivity.class);
+//			startActivity(fbIntent);
+			this.startActivityForResult(fbIntent, REQUEST_CODE_USER_FB);
+			
 			break;
 		case R.id.view_init_create_account:
 			
@@ -210,6 +217,19 @@ public class InitActivity extends FragmentActivity implements
 				break;
 			}
 			break;
+			
+		case REQUEST_CODE_USER_FB:
+			switch (responseCode) {
+			case RESULT_OK:
+				Log.v(TAG, "Receieved Facebook information");
+				Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
+				this.startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);		
+				break;
+			default:
+				Log.v(TAG, "Failed to get FACEBOOK information");
+				break;
+			}
+			break;
 		case REQUEST_CODE_USER_PROFILE:
 			switch (responseCode) {
 			case RESULT_OK:
@@ -230,7 +250,8 @@ public class InitActivity extends FragmentActivity implements
 			Log.d(TAG, "Resetting application user input/output buffers");
 			mApp.mUserProfileActivityInput = null;
 			mApp.mUserProfileActivityOutput = null;
-
+			mApp.mFBUser = null;
+			
 			break;
 		}
 	}

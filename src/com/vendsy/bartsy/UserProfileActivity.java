@@ -111,6 +111,32 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
 			}
 		}
+		// Pre-populate fields if there is a mFBUser JSONObject already - for Facebook
+		else if (mApp.mFBUser != null) {
+			try {
+					// Set first name, last name, nickname, description, email, user image
+					if(mApp.mFBUser.has("first_name"))
+						((TextView) findViewById(R.id.view_profile_first_name)).setText(mApp.mFBUser.getString("first_name"));
+					if(mApp.mFBUser.has("last_name"))
+						((TextView) findViewById(R.id.view_profile_last_name)).setText(mApp.mFBUser.getString("last_name"));
+//					if (person.getNickname() != null) 
+//						((TextView) findViewById(R.id.view_profile_nickname)).setText(person.getNickname());
+					
+					// If no Nickname, use the peron's first name
+					((TextView) findViewById(R.id.view_profile_nickname)).setText(
+								((TextView) findViewById(R.id.view_profile_first_name)).getText());
+					if (mApp.mFBUser.has("bio"))
+						((TextView) findViewById(R.id.view_profile_description)).setText(mApp.mFBUser.getString("bio"));
+					if (mApp.mFBUser.has("email")) 
+						((TextView) findViewById(R.id.view_profile_email)).setText(mApp.mFBUser.getString("email"));
+					if (mApp.mFBUser.has("id")){ 
+						// User profile has an image - display it asynchronously
+						ImageView profileImage = (ImageView) findViewById(R.id.view_profile_user_image);
+						WebServices.downloadImage(Constants.FB_PICTURE+mApp.mFBUser.getString("id")+"/picture", null, profileImage);
+					}
+			} catch (JSONException e) {
+			}
+		}
 		
 		// Set up image controllers
 		findViewById(R.id.view_profile_checkbox_details).setOnClickListener(this);
@@ -394,19 +420,29 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		user.setPassword(password);
 
 		// Set fields not present in the form such as username etc.
+
 		if (mApp.mUserProfileActivityInput == null) {
 			// The user input buffer is not set up, this mean we started with a blank profile
 			user.setUsername(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setSocialNetworkId(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setType("bartsy");
-		} else {
-			// For now we haven't wired the Facebook button, so it's G+ or nothing...
+		} 
+		// For google+ setup username and id
+		else if(mApp.mUserProfileActivityInput != null){
 			Log.v(TAG, "G+ profile with ID " + mApp.mUserProfileActivityInput.getUserId());
 			user.setUsername(mApp.mUserProfileActivityInput.getUserId());
 			user.setSocialNetworkId(mApp.mUserProfileActivityInput.getUserId());
 			user.setType("google");
+		} 
+		// For Facebook setup username and id
+		else if(mApp.mFBUser != null && mApp.mFBUser.has("id") && mApp.mFBUser.has("username")){
+			try {
+				user.setUsername(mApp.mFBUser.getString("username"));
+				user.setSocialNetworkId(mApp.mFBUser.getString("id"));
+				user.setType("facebook");
+			} catch (JSONException e) {
+			}
 		}		
-
 
 		// Make sure there's a nickname
 		String nickname = ((TextView) findViewById(R.id.view_profile_nickname)).getText().toString();

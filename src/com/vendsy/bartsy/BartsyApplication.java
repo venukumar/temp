@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONObject;
+
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,7 +40,6 @@ import android.util.Log;
 import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
 import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.db.DatabaseManager;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
@@ -49,6 +50,7 @@ import com.vendsy.bartsy.service.ConnectivityService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.view.AppObserver;
+import com.vendsy.bartsy.view.DrinksSectionFragment.Menu;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common user
@@ -116,9 +118,6 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Load active venue from preferences
 		loadActiveVenue();
-		
-		// DataBase initialization - First activity should call this method
-		MDBM = DatabaseManager.getNewInstance(this);
 
 		// GCM registration code
 
@@ -145,10 +144,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	
 
-	// Database manager is a global variable
-	DatabaseManager MDBM = null;
-
-	
 	
 	/**
 	 * 
@@ -268,6 +263,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	// These two fields are only used to pass information to and from the UserProfileActivity from InitActivity
 	public UserProfile mUserProfileActivityInput = null; 
 	public UserProfile mUserProfileActivityOutput = null;
+	public JSONObject mFBUser; // To get Facebook profile information
+
 
 	void loadUserProfile() {
 		
@@ -525,6 +522,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		notifyObservers(ORDERS_UPDATED);
 	}
+	
 	
 	/**
 	 * The spirit list is saved in the global application state. This is done to
