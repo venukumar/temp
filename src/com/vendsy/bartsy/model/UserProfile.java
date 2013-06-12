@@ -3,6 +3,9 @@ package com.vendsy.bartsy.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
@@ -56,8 +59,17 @@ public class UserProfile {
 
 	}
 
+	
+	
 	/**
-	 * Constructor to set all profile information
+	 * 
+	 * TODO - Constructors
+	 * 
+	 */
+	
+	
+	/*
+	 * Constructor to set some basic profile information
 	 * 
 	 * @param userid
 	 * @param username
@@ -80,7 +92,7 @@ public class UserProfile {
 		this.imagePath = imagePath;
 	}
 	
-	/**
+	/*
 	 * Constructor using Google+ profile as a base.  
 	 * 
 	 * @param person
@@ -88,10 +100,9 @@ public class UserProfile {
 	 */
 	public UserProfile (Person person, String email) {
 		
-		userID = person.getId();
+		socialNetworkId = username = userID = person.getId();
 		name = person.getDisplayName();
 		type = "google";
-		socialNetworkId = person.getId();
 
 		if (person.hasGender()) {
 			switch (person.getGender()) {
@@ -132,7 +143,74 @@ public class UserProfile {
 			setImagePath(person.getImage().getUrl());
 			
 	}
+	
+	
+	/*
+	 * Constructor using Facebook profile JSON as a base.  
+	 * 
+	 * @param person
+	 * @return
+	 */
+	public UserProfile (JSONObject person) {
 
+		try {
+			setUsername(person.getString("username"));
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+		try {
+			setSocialNetworkId(person.getString("id"));
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+		setType("facebook");
+		
+		if(person.has("first_name"))
+			try {
+				setFirstName(person.getString("first_name"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		if(person.has("last_name"))
+			try {
+				setLastName(person.getString("last_name"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		
+		if (person.has("bio"))
+			try {
+				setDescription(person.getString("bio"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		if (person.has("email"))
+			try {
+				setEmail(person.getString("email"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		if (person.has("id")){ 
+			String id;
+			try {
+				id = person.getString("id");
+				this.setImagePath(Constants.FB_PICTURE+id+"/picture");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * 
+	 * TODO - Setters/Getters
+	 * 
+	 * @return
+	 */
+	
+	
 	public boolean hasUsername () {
 		return username != null;
 	}

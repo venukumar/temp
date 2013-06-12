@@ -2,7 +2,6 @@ package com.vendsy.bartsy;
 
 import io.card.payment.CardIOActivity;
 import io.card.payment.CreditCard;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,44 +11,25 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.ContactsContract.Profile;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class UserProfileActivity extends Activity implements OnClickListener {
@@ -59,13 +39,8 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 	BartsyApplication mApp = null ; // pointer to the application used as an input/output buffer to this activity
 	
 	EditText locuId, paypal, wifiName, wifiPassword,orderTimeOut;
-	private RadioGroup typeOfAuthentication, wifiPresent;
-
-	private LinearLayout wifiNameLinear, wifiTypeLinear, wifiPasswordLinear;
 	
 	// Progress dialog
-	private ProgressDialog progressDialog;
-	
 	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some random unique number
 
 
@@ -111,32 +86,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
 			}
 		}
-		// Pre-populate fields if there is a mFBUser JSONObject already - for Facebook
-		else if (mApp.mFBUser != null) {
-			try {
-					// Set first name, last name, nickname, description, email, user image
-					if(mApp.mFBUser.has("first_name"))
-						((TextView) findViewById(R.id.view_profile_first_name)).setText(mApp.mFBUser.getString("first_name"));
-					if(mApp.mFBUser.has("last_name"))
-						((TextView) findViewById(R.id.view_profile_last_name)).setText(mApp.mFBUser.getString("last_name"));
-//					if (person.getNickname() != null) 
-//						((TextView) findViewById(R.id.view_profile_nickname)).setText(person.getNickname());
-					
-					// If no Nickname, use the peron's first name
-					((TextView) findViewById(R.id.view_profile_nickname)).setText(
-								((TextView) findViewById(R.id.view_profile_first_name)).getText());
-					if (mApp.mFBUser.has("bio"))
-						((TextView) findViewById(R.id.view_profile_description)).setText(mApp.mFBUser.getString("bio"));
-					if (mApp.mFBUser.has("email")) 
-						((TextView) findViewById(R.id.view_profile_email)).setText(mApp.mFBUser.getString("email"));
-					if (mApp.mFBUser.has("id")){ 
-						// User profile has an image - display it asynchronously
-						ImageView profileImage = (ImageView) findViewById(R.id.view_profile_user_image);
-						WebServices.downloadImage(Constants.FB_PICTURE+mApp.mFBUser.getString("id")+"/picture", null, profileImage);
-					}
-			} catch (JSONException e) {
-			}
-		}
+
 		
 		// Set up image controllers
 		findViewById(R.id.view_profile_checkbox_details).setOnClickListener(this);
@@ -147,50 +97,6 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		findViewById(R.id.view_profile_button_cc_replace).setOnClickListener(this);
 		findViewById(R.id.view_profile_button_cc_delete).setOnClickListener(this);
 		
-
-		
-		// Try to get all form elements from the XML
-/*		locuId = (EditText) findViewById(R.id.locuId);
-		paypal = (EditText) findViewById(R.id.paypalEdit);
-		wifiPassword = (EditText) findViewById(R.id.wifiPassword);
-		typeOfAuthentication = (RadioGroup) findViewById(R.id.authentication);
-		wifiPresent = (RadioGroup) findViewById(R.id.wifiPresent);
-		orderTimeOut = (EditText) findViewById(R.id.orderTimeOut);
-
-		wifiNameLinear = (LinearLayout) findViewById(R.id.wifiNameLinear);
-		wifiTypeLinear = (LinearLayout) findViewById(R.id.wifiTypeLinear);
-		wifiPasswordLinear = (LinearLayout) findViewById(R.id.wifiPasswordLinear);
-
-		// Setup a listener for the submit button
-		findViewById(R.id.button_venue_registration_submit).setOnClickListener(
-				this);
-		// Setup on check listener for the check box
-		wifiPresent.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-		
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				// Invoke this method when the check box selected or unselected
-				RadioButton selectedButton = (RadioButton) findViewById(checkedId);
-				String name = selectedButton.getText().toString();
-				// To hide the wifi information when user selects "no"
-				if (name.equalsIgnoreCase("No")) {
-					wifiNameLinear.setVisibility(View.GONE);
-					wifiTypeLinear.setVisibility(View.GONE);
-					wifiPasswordLinear.setVisibility(View.GONE);
-				} 
-				// Set the wifi information visibility true when user selects "Yes"
-				else
-				{
-					wifiNameLinear.setVisibility(View.VISIBLE);
-					wifiTypeLinear.setVisibility(View.VISIBLE);
-					wifiPasswordLinear.setVisibility(View.VISIBLE);
-				}
-
-			}
-		});
-		
-		*/
 	}
 
 	
@@ -422,27 +328,20 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		// Set fields not present in the form such as username etc.
 
 		if (mApp.mUserProfileActivityInput == null) {
+
 			// The user input buffer is not set up, this mean we started with a blank profile
 			user.setUsername(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setSocialNetworkId(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
 			user.setType("bartsy");
 		} 
-		// For google+ setup username and id
 		else if(mApp.mUserProfileActivityInput != null){
-			Log.v(TAG, "G+ profile with ID " + mApp.mUserProfileActivityInput.getUserId());
-			user.setUsername(mApp.mUserProfileActivityInput.getUserId());
-			user.setSocialNetworkId(mApp.mUserProfileActivityInput.getUserId());
-			user.setType("google");
+
+			// If we're not starting with a blank profile, use the input setup
+			Log.v(TAG, "Setting profile up from social netowrk with username ID " + mApp.mUserProfileActivityInput.getUserId());
+			user.setUsername(mApp.mUserProfileActivityInput.getUsername());
+			user.setSocialNetworkId(mApp.mUserProfileActivityInput.getSocialNetworkId());
+			user.setType(mApp.mUserProfileActivityInput.getType());
 		} 
-		// For Facebook setup username and id
-		else if(mApp.mFBUser != null && mApp.mFBUser.has("id") && mApp.mFBUser.has("username")){
-			try {
-				user.setUsername(mApp.mFBUser.getString("username"));
-				user.setSocialNetworkId(mApp.mFBUser.getString("id"));
-				user.setType("facebook");
-			} catch (JSONException e) {
-			}
-		}		
 
 		// Make sure there's a nickname
 		String nickname = ((TextView) findViewById(R.id.view_profile_nickname)).getText().toString();

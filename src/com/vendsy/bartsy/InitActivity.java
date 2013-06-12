@@ -70,6 +70,7 @@ public class InitActivity extends FragmentActivity implements
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 	private static final int REQUEST_CODE_USER_FB = 9002;
+	public static final String REQUEST_CODE_USER_FB_RESULT = "AndroidFacebookConnectActivity.result";
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	public ProgressDialog mConnectionProgressDialog;
 
@@ -150,20 +151,12 @@ public class InitActivity extends FragmentActivity implements
 			}
 			break;
 		case R.id.button_disconnect:
-			if (mPlusClient.isConnected()) {
-				mPlusClient.clearDefaultAccount();
-				mPlusClient.disconnect();
-				// mPlusClient.connect();
-				Toast.makeText(this, "Logged out from Google",
-						Toast.LENGTH_SHORT).show();
-				
-			} else
-				Toast.makeText(this, "Already logged out from Google",
-						Toast.LENGTH_SHORT).show();
+
+			mConnectionProgressDialog.show();
+
 			// Start Face book connection
 			Intent fbIntent = new Intent(InitActivity.this, AndroidFacebookConnectActivity.class);
-//			startActivity(fbIntent);
-			this.startActivityForResult(fbIntent, REQUEST_CODE_USER_FB);
+			startActivityForResult(fbIntent, REQUEST_CODE_USER_FB);
 			
 			break;
 		case R.id.view_init_create_account:
@@ -172,26 +165,6 @@ public class InitActivity extends FragmentActivity implements
 			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 
-			/*
-			if (!mPlusClient.isConnected()) {
-				// Need to be connected in order to revoke access
-				mPlusClient.connect();
-				
-				Toast.makeText(this, "Need to be logged in to disconnect App",
-						Toast.LENGTH_SHORT).show();
-				break;
-			}
-			mPlusClient
-					.revokeAccessAndDisconnect(new OnAccessRevokedListener() {
-						@Override
-						public void onAccessRevoked(ConnectionResult status) {
-							// mPlusClient is now disconnected and access has been revoked.
-							// Trigger app logic to comply with the developer policies
-							Toast.makeText(mActivity, "Disconnected App from Google", Toast.LENGTH_SHORT).show();
-							mApp.eraseUserProfile();
-						}
-					});
-*/
 			break;
 		}
 	}
@@ -221,12 +194,34 @@ public class InitActivity extends FragmentActivity implements
 		case REQUEST_CODE_USER_FB:
 			switch (responseCode) {
 			case RESULT_OK:
-				Log.v(TAG, "Receieved Facebook information");
+				Log.v(TAG, "Received Facebook information");
+				String response  = intent.getStringExtra(InitActivity.REQUEST_CODE_USER_FB_RESULT);
+				
+				// Reset the user profile activity input buffer
+				mApp.mUserProfileActivityInput = null;
+				
+				try {
+					JSONObject fbProfileData = new JSONObject(response);
+					UserProfile p = new UserProfile(fbProfileData);
+
+					// If the Facebook response was parsed correctly, start the profile activity with a FB user
+					mApp.mUserProfileActivityInput = p;
+				} catch (JSONException e) {
+					e.printStackTrace();
+					if (mConnectionProgressDialog.isShowing())
+						mConnectionProgressDialog.dismiss();
+					Toast.makeText(this, "Could not download Facebook information", Toast.LENGTH_SHORT).show();
+					return;
+				}
+				 
 				Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
 				this.startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);		
 				break;
 			default:
 				Log.v(TAG, "Failed to get FACEBOOK information");
+				Toast.makeText(this, "Could not download Facebook information", Toast.LENGTH_SHORT).show();
+				if (mConnectionProgressDialog.isShowing())
+					mConnectionProgressDialog.dismiss();
 				break;
 			}
 			break;

@@ -210,45 +210,14 @@ public class AndroidFacebookConnectActivity extends Activity {
 		mAsyncRunner.request("me", new RequestListener() {
 			@Override
 			public void onComplete(String response, Object state) {
-				Log.d("Profile", response);
-				try {
-					JSONObject fbProfileData = new JSONObject(response);
 					
-					// Reset parameters passed as inputs using the application object 
-					Log.d("AndroidFacebookConnectActivity", "Setting application user input/output buffers");
-					mApp.mFBUser = fbProfileData;
+				Log.d("AndroidFacebookConnectActivity", "Setting application user input/output buffers");
 					
-					// It will go back to Init Activity
-					setResult(InitActivity.RESULT_OK);
-					finish();
-					
-					
-					
-//					final UserProfile bartsyProfile = new UserProfile();
-//					// getting name of the user
-//					bartsyProfile.setName(fbProfileData.getString("name"));
-//					// getting email of the user
-//					bartsyProfile.setEmail(fbProfileData.getString("email"));
-//					// getting accessToken of the user
-//					
-//					bartsyProfile.setSocialNetworkId(fbProfileData.getString("id"));
-//					
-//					// getting username of the user
-//					bartsyProfile.setUsername(fbProfileData.getString("username"));
-//					// getting gender of the user
-//					bartsyProfile.setGender(fbProfileData.getString("gender"));
-//					bartsyProfile.setType("facebook");
-					
-					
-				//	WebServices.saveProfileData(bartsyProfile, getApplicationContext());
-					
-					
-				} catch (JSONException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				// It will go back to Init Activity
+				Intent result = new Intent();
+				result.putExtra(InitActivity.REQUEST_CODE_USER_FB_RESULT, response);
+				setResult(InitActivity.RESULT_OK, result);
 				finish();
-				
 			}
 
 			@Override
