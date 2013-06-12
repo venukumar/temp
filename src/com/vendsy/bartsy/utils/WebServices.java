@@ -48,6 +48,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.utils.Constants;
 
 public class WebServices {
 
@@ -97,7 +98,9 @@ public class WebServices {
 		String response = null;
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost(url);
-
+		
+		// added apiVersion
+		postData.put("apiVersion", Constants.API_VERSION);
 		String data = postData.toString();
 		
 		Log.v(TAG, "postRequest(" + url + ", " + data + ")");
@@ -200,44 +203,6 @@ public class WebServices {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	/*
-	 * This Method i am using for each and every request which is going through
-	 * get() method.
-	 */
-	public static String getRequest(String url, Context context) {
-		BufferedReader bufferReader = null;
-		StringBuffer stringBuffer = new StringBuffer("");
-		HttpClient httpClient = new DefaultHttpClient();
-		HttpGet httpRequest = new HttpGet();
-		String result = "";
-
-		try {
-			boolean status = isNetworkAvailable(context);
-			if (status == true) {
-				// Set Url to http request
-				httpRequest.setURI(new URI(url));
-
-				HttpResponse response = httpClient.execute(httpRequest);
-
-				bufferReader = new BufferedReader(new InputStreamReader(
-						response.getEntity().getContent()));
-				String line = "";
-				String NL = System.getProperty("line.separator");
-				while ((line = bufferReader.readLine()) != null) {
-					stringBuffer.append(line + NL);
-				}
-				bufferReader.close();
-
-			}
-			result = stringBuffer.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return result;
-	}
 
 	/**
 	 * Service call for post order. 
@@ -260,7 +225,10 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			orderData.put("recieverBartsyId", bartsyId);
+			if(order.orderReceiver!=null){
+				orderData.put("recieverBartsyId", order.orderReceiver.bartsyID);
+			}
+			orderData.put("specialInstructions", "");
 
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -338,7 +306,8 @@ public class WebServices {
 			// Required system parameter
 			json.put("deviceType", String.valueOf(Constants.DEVICE_Type));
 			json.put("deviceToken", settings.getString("RegId", ""));
-
+			// added apiVersion
+			json.put("apiVersion", Constants.API_VERSION);
 			
 			// Check and place required user-related system parameters
 			if (!user.hasUsername()) {
@@ -479,8 +448,12 @@ public class WebServices {
 	 */
 	public static String getVenueList(final Context context) {
 		String response = null;
-
-		response = WebServices.getRequest(Constants.URL_GET_VENU_LIST, context);
+		try {
+			JSONObject json = new JSONObject();
+			response = WebServices.postRequest(Constants.URL_GET_VENU_LIST, json, context);
+		} catch (Exception e) {
+			Log.v(TAG, "Error venu list " + e.getMessage());
+		}
 		Log.v(TAG, "response venu list " + response);
 		return response;
 	}
