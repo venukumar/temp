@@ -1,5 +1,7 @@
 package com.vendsy.bartsy.model;
 
+import io.card.payment.CreditCard;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +57,8 @@ public class UserProfile {
 	public static final String VISIBLE = "ON"; // show user profile and see other profiles
 	public static final String HIDDEN = "OFF"; // don't show user profile and don't see other profiles
 	
+	private CreditCard cc = null;
+
 	
 	/**
 	 * Default constructor
@@ -490,6 +494,21 @@ public class UserProfile {
 
 	public void setImage(Bitmap image) {
 		this.image = image;
+	}
+
+	public boolean hasCreditCard() {
+		if (cc == null)
+			return false;
+		else 
+			return true;
+	}
+	
+	public CreditCard getCreditCard() {
+		return cc;
+	}
+
+	public void setCreditCard(CreditCard cc) {
+		this.cc = cc;
 	}
 
 	public void updateView(OnClickListener listener) {

@@ -228,13 +228,16 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						resultDisplayStr += "Zip: " + scanResult.zip + "\n";
 					}
 					
-					// TODO - save credit card info
-					
 					// Display credit card info
 					((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(scanResult.getFormattedCardNumber()));
 					((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(scanResult.getRedactedCardNumber());
+					((TextView) findViewById(R.id.view_profile_cc_month)).setText(Integer.toString(scanResult.expiryMonth));
+					((TextView) findViewById(R.id.view_profile_cc_year)).setText(Integer.toString(scanResult.expiryYear));
 					findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 					findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
+					
+					// Setup the credit card result object in the view
+					findViewById(R.id.view_profile_has_cc).setTag(scanResult);
 					
 				} else {
 					Toast.makeText(this, "Credit card scan was cancelled", Toast.LENGTH_SHORT).show();
@@ -357,6 +360,35 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			return null;			
 		}
 			
+
+		// Setup credit card information
+		if (findViewById(R.id.view_profile_has_cc).getVisibility() == View.VISIBLE) {
+			
+			// Extract first and last name
+			String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
+			String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
+			if (first_name.length() > 0 && last_name.length() > 0)
+				user.setName(first_name + " " + last_name);
+			else if (first_name.length() > 0)
+				user.setName(first_name);
+			else if (last_name.length() > 0)
+				user.setName(last_name);
+			if (first_name.length() > 0)
+				user.setFirstName(first_name);
+			if (last_name.length() > 0)
+					user.setLastName(last_name);
+			
+			//Extract card details 	
+			user.setCreditCard((CreditCard) findViewById(R.id.view_profile_has_cc).getTag());
+		}
+		
+		
+		// Setup visibility preference
+		if (((CheckBox) findViewById(R.id.view_profile_checkbox_details)).isChecked())
+			user.setVisibility(UserProfile.VISIBLE);
+		else
+			user.setVisibility(UserProfile.HIDDEN);
+		
 		// Validate birthday format
 		String bd = ((TextView) findViewById(R.id.view_profile_birthday)).getText().toString();
 		if (bd.length() > 0) {
@@ -389,27 +421,6 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			user.setOrientation("Gay");
 		if (((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).isChecked())
 			user.setOrientation("Bisexual");
-		
-		// Setup visibility preference
-		if (((CheckBox) findViewById(R.id.view_profile_checkbox_details)).isChecked())
-			user.setVisibility(UserProfile.VISIBLE);
-		else
-			user.setVisibility(UserProfile.HIDDEN);
-		
-		
-		// Extract first and last name
-		String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
-		String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
-		if (first_name.length() > 0 && last_name.length() > 0)
-			user.setName(first_name + " " + last_name);
-		else if (first_name.length() > 0)
-			user.setName(first_name);
-		else if (last_name.length() > 0)
-			user.setName(last_name);
-		if (first_name.length() > 0)
-			user.setFirstName(first_name);
-		if (last_name.length() > 0)
-				user.setLastName(last_name);
 		
 		// Make sure we have a valid image and save it
 		Bitmap image = (Bitmap) findViewById(R.id.view_profile_user_image).getTag();

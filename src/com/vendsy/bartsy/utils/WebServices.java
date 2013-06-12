@@ -399,6 +399,11 @@ public class WebServices {
 				json.put("description", user.getDescription());
 			if (user.hasGender()) 
 				json.put("gender", user.getGender());
+			if (user.hasCreditCard()) {
+				json.put("creditCardNumber", user.getCreditCard().cardNumber);
+				json.put("expMonth", Integer.toString(user.getCreditCard().expiryMonth));
+				json.put("expYear", Integer.toString(user.getCreditCard().expiryYear));				
+			}
 			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
