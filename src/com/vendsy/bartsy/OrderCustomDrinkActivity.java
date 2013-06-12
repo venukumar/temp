@@ -198,7 +198,10 @@ public class OrderCustomDrinkActivity extends Activity{
 				String.valueOf(totalAmount), 						// arg(4) - Price
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
 				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
-
+		
+		// for now, it will not support to send drinks to other people
+		order.orderReceiver = mApp.mProfile;
+		
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()

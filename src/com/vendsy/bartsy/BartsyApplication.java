@@ -273,14 +273,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		// Initialize the profile structure
 		mProfile = null;
 
-		// Make sure the user's account name has been saved or there is no local profile
-		if (Utilities.loadPref(this, R.string.config_user_account_name, null) == null) {
-			Log.v(TAG, "No saved user profile");
-			return;
-		}			
-
-		// Load profile image
-
+//		// Make sure the user's account name has been saved or there is no local profile
+//		if (Utilities.loadPref(this, R.string.config_user_account_name, null) == null) {
+//			Log.v(TAG, "No saved user profile");
+//			return;
+//		}			
+//
+//		// Load profile image
+//
 		Bitmap image = loadUserProfileImage();
 		if (image == null) {
 			Log.d(TAG, "Could not load profile image");
@@ -312,7 +312,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
 		editor.putString(r.getString(R.string.config_user_account_name), profile.userID);
-		editor.putString(r.getString(R.string.config_user_name), profile.username);
+		editor.putString(r.getString(R.string.config_user_name), profile.getNickname());
 		editor.putString(r.getString(R.string.config_user_location), profile.location);
 		editor.putString(r.getString(R.string.config_user_info), profile.info);
 		editor.putString(r.getString(R.string.config_user_description), profile.description);

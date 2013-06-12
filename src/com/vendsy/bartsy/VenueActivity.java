@@ -682,85 +682,15 @@ public class VenueActivity extends FragmentActivity implements
 				drink.getDescription(), 				// arg(3) - Description
 				drink.getPrice(), 						// arg(4) - Price
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
-				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+				mApp.mProfile);
+		order.orderReceiver = ((DrinkDialogFragment) dialog).profile;
+		// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		order.itemId = drink.getDrinkId();
 
 		// invokePaypalPayment(); // To enable paypal payment
 
 		processOrderData(); // bypass PayPal for now for testing
 
-	}
-
-	/**
-	 * To invoke PayPal payment
-	 */
-	private void invokePaypalPayment() {
-		try {
-			// Configure Paypal
-			PayPalPayment newPayment = new PayPalPayment();
-			newPayment.setSubtotal(BigDecimal.valueOf(order.total));
-			newPayment.setCurrencyType("USD");
-			// .setCurrency("USD");
-			newPayment.setRecipient("example@paypal.com");
-			newPayment.setMerchantName("Bartsy");
-
-			PayPal pp = PayPal.getInstance();
-			if (pp == null)
-				pp = PayPal.initWithAppID(this, Constants.PAYPAL_KEY,
-						PayPal.ENV_SANDBOX); // For now, Paypal sandbox is
-												// enable
-
-			// To check out the paypal payment
-			Intent paypalIntent = pp.checkout(newPayment, this);
-			this.startActivityForResult(paypalIntent, 1);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * Invokes when the payment process is completed. Success/Failure cases has
-	 * to be handle in this method
-	 */
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode != 1)
-			return;
-
-		/**
-		 * If you choose not to implement the PayPalResultDelegate, then you
-		 * will receive the transaction results here. Below is a section of code
-		 * that is commented out. This is an example of how to get result
-		 * information for the transaction. The resultCode will tell you how the
-		 * transaction ended and other information can be pulled from the Intent
-		 * using getStringExtra.
-		 */
-		switch (resultCode) {
-		case Activity.RESULT_OK:
-			String resultTitle = "SUCCESS";
-			String resultInfo = "You have successfully completed this ";
-			System.out.println(resultInfo);
-
-			processOrderData();
-
-			// + (isPreapproval ? "preapproval." : "payment.");
-			// resultExtra = "Transaction ID: " +
-			// data.getStringExtra(PayPalActivity.EXTRA_PAY_KEY);
-			break;
-		case Activity.RESULT_CANCELED:
-			resultTitle = "CANCELED";
-			resultInfo = "The transaction has been cancelled.";
-			System.out.println(resultInfo);
-			String resultExtra = "";
-			break;
-		case PayPalActivity.RESULT_FAILURE:
-			resultTitle = "FAILURE";
-			resultInfo = data
-					.getStringExtra(PayPalActivity.EXTRA_ERROR_MESSAGE);
-			resultExtra = "Error ID: "
-					+ data.getStringExtra(PayPalActivity.EXTRA_ERROR_ID);
-		}
 	}
 
 		

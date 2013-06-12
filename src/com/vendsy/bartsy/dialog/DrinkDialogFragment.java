@@ -11,13 +11,18 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
@@ -26,6 +31,7 @@ import com.vendsy.bartsy.model.MenuDrink;
 public class DrinkDialogFragment extends DialogFragment {
 
 	public MenuDrink drink;
+	public UserProfile profile;
 	public String tipPercentageValue;
 
 	/*
@@ -58,6 +64,7 @@ public class DrinkDialogFragment extends DialogFragment {
 	}
 
 	DialogInterface dialog = null;
+	private View view;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -71,7 +78,7 @@ public class DrinkDialogFragment extends DialogFragment {
 
 		// Inflate and set the layout for the dialog
 		// Pass null as the parent view because its going in the dialog layout
-		View view = inflater.inflate(R.layout.dialog_drink_order, null);
+		view = inflater.inflate(R.layout.dialog_drink_order, null);
 
 		// Customize dialog for this drink
 		((TextView) view.findViewById(R.id.view_dialog_drink_title))
@@ -80,6 +87,11 @@ public class DrinkDialogFragment extends DialogFragment {
 				.setText(drink.getDescription());
 		((TextView) view.findViewById(R.id.view_dialog_drink_price)).setText(""
 				+ drink.getPrice());
+		// To set self profile information by default
+		if(profile!=null){
+			updateProfileView(profile);
+		}
+		
 		// ((ImageView)view.findViewById(R.id.view_dialog_drink_image_resource)).setImageResource(drink.image_resource);
 		// // don't show image for now
 		view.findViewById(R.id.view_dialog_drink_title).setTag(this.drink);
@@ -123,5 +135,40 @@ public class DrinkDialogFragment extends DialogFragment {
 
 		// Create dialog and set up animation
 		return builder.create();
+	}
+
+	private void updateProfileView(UserProfile profile) {
+		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));
+		
+		if (profile.image == null) {
+			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile,
+					profileImageView);
+		} else {
+			profileImageView.setImageBitmap(profile.image);
+		}
+		((TextView) view.findViewById(R.id.view_user_dialog_info))
+		.setText(profile.getNickname());	
+		
+		
+		
+		// To pick more user profiles when user pressed on the image view
+		profileImageView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				PeopleSectionFragmentDialog dialog = new PeopleSectionFragmentDialog(){
+					@Override
+					protected void selectedProfile(UserProfile userProfile) {
+						// Update profile with new selected profile
+						DrinkDialogFragment.this.profile = userProfile;
+						updateProfileView(userProfile);
+						super.selectedProfile(userProfile);
+					}
+				};
+				dialog.show(getActivity().getSupportFragmentManager(),"PeopleSectionDialog");
+			}
+		});
+		
+		
 	}
 }

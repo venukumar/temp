@@ -273,8 +273,12 @@ public class DrinksSectionFragment extends Fragment {
 							ArrayList<MenuDrink> subsection_contents = new ArrayList<MenuDrink>();
 							for (int k = 0; k < contents.length(); k++) {
 								MenuDrink menuDrink = new MenuDrink(contents.getJSONObject(k));
-
-								subsection_contents.add(menuDrink);
+								// Try to parse price to decimal. if it is succeeded then drink will be added to the subsection list otherwise it will not add the list 
+								try {
+									Float.parseFloat(menuDrink.getPrice());
+									subsection_contents.add(menuDrink);
+								} catch (NumberFormatException e) {
+								}
 							}
 							
 							// Add the contents of the subsection to the list of items
@@ -353,6 +357,7 @@ public class DrinksSectionFragment extends Fragment {
 					// Create an instance of the dialog fragment and show it
 					DrinkDialogFragment dialog = new DrinkDialogFragment();
 					dialog.drink = menuDrink;
+					dialog.profile = mApp.mProfile;
 					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
 
 					return false;

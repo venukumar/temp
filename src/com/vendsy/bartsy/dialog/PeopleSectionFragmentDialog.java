@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.vendsy.bartsy.view;
+package com.vendsy.bartsy.dialog;
 
 import java.util.ArrayList;
 
@@ -9,64 +9,63 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.R;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.DialogFragment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.LinearLayout;
+
 import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.dialog.PeopleDialogFragment;
+import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.View.OnClickListener;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ToggleButton;
-
 /**
- * @author peterkellis
+ * @author Seenu Malireddy
  * 
  */
-public class PeopleSectionFragment extends Fragment implements OnClickListener {
+public class PeopleSectionFragmentDialog extends DialogFragment{
 
-	static final String TAG = "PeopleSectionFragment";
+	static final String TAG = "PeopleSectionFragmentDialog";
 	
 	View mRootView = null;
-	LayoutInflater mInflater = null;
-	ViewGroup mContainer = null;
 	public LinearLayout mPeopleListView = null;
 	public BartsyApplication mApp = null;
-	private VenueActivity mActivity = null;
 	private Handler handler = new Handler();
 
+	private LayoutInflater mInflater;
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-		Log.v(TAG, "PeopleSectionFragment.onCreateView()");
+		// Create dialog and set animation styles
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());// ,
+																				// R.style.DrinkDialog);
 
-		mInflater = inflater;
-		mContainer = container;
-		mRootView = inflater.inflate(R.layout.users_main, container, false);
+		// Get the layout inflater
+		mInflater = getActivity().getLayoutInflater();
+
+		// Inflate and set the layout for the dialog
+		// Pass null as the parent view because its going in the dialog layout
+		mRootView = mInflater.inflate(R.layout.users_main, null);
+		
+		
 		mPeopleListView = (LinearLayout) mRootView.findViewById(R.id.view_singles);
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
-		mActivity = (VenueActivity) getActivity();
-		((VenueActivity) getActivity()).mPeopleFragment = this;
+		
+		builder.setView(mRootView);
 		
 		updatePeopleView();
 		
+		return builder.create();
 
-		return mRootView;
 	}
 
 	/**
@@ -90,7 +89,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	 */
 	private void loadPeopleList() {
 
-		Log.v(TAG, "PeopleSectionFragment.loadPeopleList()");
+		Log.v(TAG, "PeopleSectionFragmentDialog.loadPeopleList()");
 
 		try {
 
@@ -208,13 +207,18 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 
 						for (UserProfile profile : mApp.mPeople) {
 							Log.v(TAG, "Adding a user item to the layout");
-							profile.view = mInflater.inflate(R.layout.user_item, mContainer, false);
-							profile.updateView(mActivity.mPeopleFragment); // sets up view specifics and sets listener to this
+							profile.view = mInflater.inflate(R.layout.user_item, null);
+							profile.updateView(new OnClickListener() {
+								
+								@Override
+								public void onClick(View v) {
+									selectedProfile((UserProfile)v.getTag());
+								}
+							}); 
+							// sets up view specifics and sets listener to this
 							mPeopleListView.addView(profile.view);
 						};
 
-						// Update people count in people tab
-						mActivity.updatePeopleCount();
 					}
 				});
 
@@ -232,28 +236,17 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 	}
 	
 	
-	@Override 
-	public void onDestroy() {
-		super.onDestroy();
-		
-		Log.v(TAG, "PeopleSectionFragment.onDestroy()");
 
-		mRootView = null;
-		mPeopleListView = null;
-		mInflater = null;
-		mContainer = null;
-
-		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
-		((VenueActivity) getActivity()).mPeopleFragment = null;
-	}
-
-	@Override
-	public void onClick(View v) {
-		// Create an instance of the dialog fragment and show it
-		// PeopleDialogFragment dialog = new PeopleDialogFragment();
-		// dialog.mUser = (Person) v.getTag();
-		// dialog.show(getActivity().getSupportFragmentManager(),
-		// "User profile");
+	
+	/**
+	 * There is no implementation for this method and implementation is provided by the DrinkDialogFragment
+	 * 
+	 * @see DrinkDialogFragment
+	 * 
+	 * @param profile
+	 */
+	protected void selectedProfile(UserProfile profile) {
+		dismiss();
 	}
 
 }
