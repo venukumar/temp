@@ -53,4 +53,7 @@ public class Constants {
 
 	// This is the url for download the facebook picture
 	public static final String FB_PICTURE = "https://graph.facebook.com/";
+	
+	// Current ApiVersion number
+	public static final String 	API_VERSION="1";
 }
