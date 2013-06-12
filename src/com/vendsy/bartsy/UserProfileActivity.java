@@ -385,6 +385,13 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		if (((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).isChecked())
 			user.setOrientation("Bisexual");
 		
+		// Setup visibility preference
+		if (((CheckBox) findViewById(R.id.view_profile_checkbox_details)).isChecked())
+			user.setVisibility(UserProfile.VISIBLE);
+		else
+			user.setVisibility(UserProfile.HIDDEN);
+		
+		
 		// Extract first and last name
 		String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
 		String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();

@@ -41,6 +41,7 @@ public class UserProfile {
 	ArrayList<UserProfile> favorites  = null;
 
 	// Advanced fields for "dating" profiles
+	private String visibility = null;	
 	private String firstName = null;
 	private String lastName = null;
 	private String birthday  = null;	// MM/DD/YYYY
@@ -51,6 +52,9 @@ public class UserProfile {
 	// The view of a particular user in the people list (expects a layout type of user_item.xml)
 	public View view = null; 	
 
+	public static final String VISIBLE = "ON"; // show user profile and see other profiles
+	public static final String HIDDEN = "OFF"; // don't show user profile and don't see other profiles
+	
 	
 	/**
 	 * Default constructor
@@ -246,6 +250,21 @@ public class UserProfile {
 		this.name = name;
 	}
 
+	public boolean hasVisibility() {
+		if (visibility == null || visibility.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getVisibility() {
+		return visibility;
+	}
+	
+	public void setVisibility(String name) {
+		this.visibility = name;
+	}
+	
 	public boolean hasFirstName() {
 		if (firstName == null || firstName.equalsIgnoreCase(""))
 			return false;

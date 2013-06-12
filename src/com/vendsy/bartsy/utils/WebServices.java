@@ -260,6 +260,8 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
+			orderData.put("receiverBartsyId", bartsyId);
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return true;
@@ -346,7 +348,7 @@ public class WebServices {
 				json.put("userName", user.getUsername());
 			}
 			if (!user.hasSocialNetworkId()) {
-				Log.e(TAG, "Missing loginId (socialNetowordId)");
+				Log.e(TAG, "Missing loginId (socialNetoworkId)");
 				return null;
 			} else {
 				json.put("loginId", user.getSocialNetworkId());
@@ -379,6 +381,8 @@ public class WebServices {
 			}
 			
 			// Optional parameters (user)
+			if (user.hasVisibility())
+				json.put("showProfile", user.getVisibility());
 			if (user.hasName())
 				json.put("name", user.getName());
 			if (user.hasFirstName())
