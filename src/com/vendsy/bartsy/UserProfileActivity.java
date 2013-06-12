@@ -323,6 +323,11 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			Toast.makeText(this, "Please create a password that's at least 6 characters long", Toast.LENGTH_SHORT).show();
 			return null;			
 		}
+		String password_confirm =  ((TextView) findViewById(R.id.view_profile_password_confirm)).getText().toString();
+		if (password.compareTo(password_confirm) != 0) {
+			Toast.makeText(this, "Password confirmation mismatch.", Toast.LENGTH_SHORT).show();
+			return null;						
+		}
 		user.setPassword(password);
 
 		// Set fields not present in the form such as username etc.

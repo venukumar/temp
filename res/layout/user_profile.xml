@@ -75,6 +75,28 @@
                         android:inputType="textPassword"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:text="Confirm:" />
+
+                    <EditText
+                        android:id="@+id/view_profile_password_confirm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:hint="retype your password"
+                        android:inputType="textPassword"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <TextView

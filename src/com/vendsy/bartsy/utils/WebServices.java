@@ -260,7 +260,7 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			orderData.put("receiverBartsyId", bartsyId);
+			orderData.put("recieverBartsyId", bartsyId);
 
 		} catch (JSONException e) {
 			e.printStackTrace();
