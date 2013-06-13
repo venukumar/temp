@@ -81,26 +81,27 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onMessage(Context context, Intent intent) {
-		String message = (String) intent.getExtras().get(
-				Utilities.EXTRA_MESSAGE);
+		
+		String message = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
 		String count = (String) intent.getExtras().get("badgeCount");
-		Uri notification = RingtoneManager
-				.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
-		if (ringtone != null) {
-			ringtone.play();
-		}
+		String notifyMSG = null;
+
 		Log.v(TAG, "message: " + message);
-		String notifyMSG = "Received..";
+
 		if (message == null) {
 			message = "";
 		} else {
 			notifyMSG = processPushNotification(message);
 		}
 
-		// displayMessage(context, message);
 		// notifies user
-		generateNotification(context, notifyMSG, count);
+		if (notifyMSG != null) {
+			generateNotification(context, notifyMSG, count);
+			Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
+			if (ringtone != null) 
+				ringtone.play();
+		}
 	}
 
 	/**
@@ -124,18 +125,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 				} else if(json.getString("messageType").equals("orderTimeout")) {
 					// Handle orderTimeout from Push Notification. Time Out is based on venue configuration
 					app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));
-					messageTypeMSG = "Your order was cancelled";
+					messageTypeMSG = "Your order timed out";
 				} else if (json.getString("messageType").equals("heartBeat")) {
 					// Handle heart beat ping. 
 					
-					Log.v(TAG, "PN received: " + json);
+					Log.v(TAG, "Heartbeat" + json);
 					
 					// Send reply to host
-					Resources r = app.getResources();
-					SharedPreferences sharedPref = app.getSharedPreferences(app.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyID(), 
-							app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
-					messageTypeMSG = "Synchronized with server.";
+					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyID(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
+					messageTypeMSG = null;
 				}
 			}
 		} catch (JSONException e) {
