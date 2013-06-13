@@ -2,7 +2,7 @@ package com.vendsy.bartsy.utils;
 
 public class Constants {
 
-//	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // local machine
+//	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
 
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/"; // amazon server
 
@@ -44,6 +44,10 @@ public class Constants {
 	// This is the url for place the order
 	public static final String URL_GET_INGREDIENTS = DOMAIN_NAME + PROJECT_NAME
 				+ "inventory/getIngredients";
+	
+	// To update offered drink status
+	public static final String URL_UPDATE_OFFERED_DRINK = DOMAIN_NAME + PROJECT_NAME
+			+ "order/updateOfferedDrinkStatus";
 
 	// Android Device Type
 	public static final int DEVICE_Type = 0;

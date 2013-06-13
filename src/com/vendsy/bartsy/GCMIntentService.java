@@ -130,6 +130,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 					// Send reply to host
 					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
 					messageTypeMSG = null;
+				}else if(json.getString("messageType").equals("DrinkOffered")){
+					// To display offer drink dialog
+					app.displayOfferDrink(new Order(json),json.getString("senderBartsyId"));
+					if(json.has("body")){
+						messageTypeMSG = json.getString("body");
+					}
 				}
 			}
 		} catch (JSONException e) {

@@ -140,6 +140,7 @@ public class Order {
 			itemId = json.getString("itemId");
 			updatedDate = json.getString("updateTime");
 			
+			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {

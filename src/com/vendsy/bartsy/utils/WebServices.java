@@ -512,6 +512,30 @@ public class WebServices {
 
 		return response;
 	}
+	
+	/**
+	 * To get list of menu list
+	 * 
+	 * @param context
+	 * @param venueID
+	 */
+	public static String updateOfferDrinkStatus(Context context, String venueID, Order order) {
+
+		Log.v(TAG, "To update offer drink: " + venueID);
+
+		String response = null;
+		JSONObject json = new JSONObject();
+		try {
+			json.put("venueId", venueID);
+			json.put("orderId", order.serverID);
+//			json.put("bartsyId", );
+			json.put("orderStatus", order.status);
+			response = postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, context);
+		} catch (Exception e1) {
+		}
+
+		return response;
+	}
 
 	/**
 	 * @methodName : downloadImage

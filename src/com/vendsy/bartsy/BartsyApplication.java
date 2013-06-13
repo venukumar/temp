@@ -40,6 +40,7 @@ import android.util.Log;
 import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
 import com.google.android.gms.plus.model.people.Person;
+import com.vendsy.bartsy.dialog.OfferDrinkDialog;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
@@ -507,6 +508,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		// Update the orders tab view and title
 
 		notifyObservers(ORDERS_UPDATED);
+	}
+	/**
+	 * To display offer drink dialog
+	 * 
+	 * @param order
+	 */
+	public void displayOfferDrink(Order order, String senderBartsyId){
+		new OfferDrinkDialog(getApplicationContext()).show();
 	}
 	
 	

@@ -147,11 +147,11 @@ public class PeopleSectionFragmentDialog extends DialogFragment{
 				// Get list of people from API call. If a person is known, copy known version as an optimization
 				JSONArray array = peopleData.getJSONArray("checkedInUsers");
 				for (int i = 0; i < array.length(); i++) {
-					String name = null, gender = null, imagepath = null;
+					String nickName = null, gender = null, imagepath = null;
 					int bartsyID = 0;
 					JSONObject json = array.getJSONObject(i);
 					if (json.has("nickName"))
-						name = json.getString("nickName");
+						nickName = json.getString("nickName");
 					if (json.has("gender"))
 						gender = json.getString("gender");
 					if (json.has("bartsyId"))
@@ -179,9 +179,10 @@ public class PeopleSectionFragmentDialog extends DialogFragment{
 						knownPeople.remove(profile);
 					} else {
 						// Create new instance for profile - this is for now incomplete!!
+
 						profile = new UserProfile();
 						profile.setBartsyId(bartsyID);
-						profile.setNickname(name);
+						profile.setNickname(nickName);
 						profile.setImagePath(imagepath);
 					}
 					
