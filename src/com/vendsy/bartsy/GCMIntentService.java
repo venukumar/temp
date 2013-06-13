@@ -81,22 +81,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onMessage(Context context, Intent intent) {
-		
 		String message = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
 		String count = (String) intent.getExtras().get("badgeCount");
-		String notifyMSG = null;
 
 		Log.v(TAG, "message: " + message);
-
-		if (message == null) {
-			message = "";
-		} else {
-			notifyMSG = processPushNotification(message);
-		}
-
+		
+		// Process notification
+		if (message != null)
+			message = processPushNotification(message);
+		
 		// notifies user
-		if (notifyMSG != null) {
-			generateNotification(context, notifyMSG, count);
+		if (message != null) {
+			generateNotification(context, message, count);
 			Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 			Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
 			if (ringtone != null) 
