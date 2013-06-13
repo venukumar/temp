@@ -128,7 +128,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					Log.v(TAG, "Heartbeat" + json);
 					
 					// Send reply to host
-					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyID(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
+					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
 					messageTypeMSG = null;
 				}
 			}

@@ -245,7 +245,6 @@ public class InitActivity extends FragmentActivity implements
 			Log.d(TAG, "Resetting application user input/output buffers");
 			mApp.mUserProfileActivityInput = null;
 			mApp.mUserProfileActivityOutput = null;
-			mApp.mFBUser = null;
 			
 			break;
 		}
@@ -398,7 +397,7 @@ public class InitActivity extends FragmentActivity implements
 								mHandler.post(new Runnable() {
 									public void run() {
 										// Save profile in the global application structure and in preferences
-										userProfile.bartsyID = bartsyId;
+										userProfile.bartsyId = bartsyId;
 										
 										mApp.saveUserProfile(userProfile);
 										

@@ -219,14 +219,14 @@ public class WebServices {
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		Resources r = context.getResources();
 		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
 
 		// Prepare syscall 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
 			if(order.orderReceiver!=null){
-				orderData.put("recieverBartsyId", order.orderReceiver.bartsyID);
+				orderData.put("recieverBartsyId", order.orderReceiver.bartsyId);
 			}
 			orderData.put("specialInstructions", "");
 
@@ -309,45 +309,36 @@ public class WebServices {
 			// added apiVersion
 			json.put("apiVersion", Constants.API_VERSION);
 			
-			// Check and place required user-related system parameters
-			if (!user.hasUsername()) {
-				Log.e(TAG, "Missing username");
+			// Make sure the profile has username/password and add them
+			if (!user.hasLogin()) {
+				Log.e(TAG, "Missing login");
 				return null;
 			} else {
-				json.put("userName", user.getUsername());
-			}
-			if (!user.hasSocialNetworkId()) {
-				Log.e(TAG, "Missing loginId (socialNetoworkId)");
-				return null;
-			} else {
-				json.put("loginId", user.getSocialNetworkId());
-			}
-			if (!user.hasType()) {
-				Log.e(TAG, "Missing type");
-				return null;				
-			} else {
-				json.put("loginType", user.getType());
-			}
-
-			// Required parameters (user)
-			if (!user.hasEmail()) {
-				Log.e(TAG, "Missing email");
-				return null;				
-			} else {
-				json.put("emailId", user.getEmail());
+				json.put("bartsyLogin", user.getLogin());
 			}
 			if (!user.hasPassword()) {
 				Log.e(TAG, "Missing password");
-				return null;				
+				return null;
 			} else {
-				json.put("password", user.getPassword());
+				json.put("bartsyPassword", user.getPassword());
 			}
+
+			// Required parameters (user)
 			if (!user.hasNickname()) {
 				Log.e(TAG, "Missing nickname");
 				return null;				
 			} else {
 				json.put("nickname", user.getNickname());
 			}
+
+			// Set up social network connections
+			if (user.hasFacebookUsername())
+				json.put("userName", user.getFacebookUsername());
+			if (user.hasFacebookId()) 
+				json.put("facebookId", user.getFacebookId());
+			if (user.hasGoogleId()) 
+				json.put("googleId", user.getGoogleId());
+
 			
 			// Optional parameters (user)
 			if (user.hasVisibility())
@@ -482,7 +473,7 @@ public class WebServices {
 	public static String getUserOrdersList(Context context) {
 		Resources r = context.getResources();
 		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
+		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
 
 		String response = null;
 		try {

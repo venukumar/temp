@@ -74,8 +74,8 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						((TextView) findViewById(R.id.view_profile_first_name)).getText());
 			if (person.hasDescription())
 				((TextView) findViewById(R.id.view_profile_description)).setText(person.getDescription());
-			if (person.hasEmail()) 
-				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());
+			if (person.hasLogin()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getLogin());
 			if (person.hasImagePath()) 
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
 				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
@@ -154,7 +154,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.view_profile_button_submit:
 			// Check and save modifications. If all goes well, finish activity, if not stay.
-			UserProfile profile = validateProfileData();
+			UserProfile profile = processProfileData();
 	
 			if (profile != null) {
 				// The new form contains valid data - accept it and return with result OK
@@ -307,16 +307,16 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 	/**
 	 * Invokes this method when the user clicks on the Submit Button
 	 */
-	public UserProfile validateProfileData() {
+	private UserProfile processProfileData() {
 		
 		Log.v(TAG, "validateProfileData()");
 		
 		UserProfile user = new UserProfile();
 		
-		// Make sure there is an email and password
+		// Make sure there is a login/email and password
 		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
 		if (email.length() > 0) {
-			user.setEmail(email);
+			user.setLogin(email);
 		} else {
 			Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
 			return null;
@@ -333,22 +333,12 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		}
 		user.setPassword(password);
 
-		// Set fields not present in the form such as username etc.
-
-		if (mApp.mUserProfileActivityInput == null) {
-
-			// The user input buffer is not set up, this mean we started with a blank profile
-			user.setUsername(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
-			user.setSocialNetworkId(((TextView) findViewById(R.id.view_profile_email)).getText().toString());		// use email as the username
-			user.setType("bartsy");
-		} 
-		else if(mApp.mUserProfileActivityInput != null){
-
-			// If we're not starting with a blank profile, use the input setup
+		// Set social network fields if present
+		if( mApp.mUserProfileActivityInput != null){
 			Log.v(TAG, "Setting profile up from social netowrk with username ID " + mApp.mUserProfileActivityInput.getUserId());
-			user.setUsername(mApp.mUserProfileActivityInput.getUsername());
-			user.setSocialNetworkId(mApp.mUserProfileActivityInput.getSocialNetworkId());
-			user.setType(mApp.mUserProfileActivityInput.getType());
+			user.setFacebookUsername(mApp.mUserProfileActivityInput.getFacebookUsername());
+			user.setFacebookId(mApp.mUserProfileActivityInput.getFacebookId());
+			user.setGoogleId(mApp.mUserProfileActivityInput.getGoogleId());
 		} 
 
 		// Make sure there's a nickname

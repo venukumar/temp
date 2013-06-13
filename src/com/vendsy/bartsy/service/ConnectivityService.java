@@ -724,11 +724,12 @@ public class ConnectivityService extends Service implements AppObserver {
     			e.printStackTrace();
     		}
         	*/
+            /*
         	
         	Log.d(TAG, "Sending user profile for: " + mApp.mProfile.username);
             mApp.newLocalUserMessage(
         			"<command><opcode>profile</opcode>" +
-        			"<argument>" + mApp.mProfile.bartsyID + "</argument>" +		// arg(0) - userID
+        			"<argument>" + mApp.mProfile.bartsyId + "</argument>" +		// arg(0) - userID
         			"<argument>" + mApp.mProfile.username + "</argument>" +		// arg(1) - username
         			"<argument>" + mApp.mProfile.location + "</argument>" +		// arg(2) - location
         			"<argument>" + mApp.mProfile.info + "</argument>" +			// arg(3) - info
@@ -736,6 +737,8 @@ public class ConnectivityService extends Service implements AppObserver {
         			"<argument>" + image_string + "</argument>" +			// arg(5) - image
         			"</command>"
             );
+            
+            */
 
         }
         

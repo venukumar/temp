@@ -46,17 +46,15 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		
 		
 		// If the user profile is not set, start the init activity
-
-		if (mApp.loadBartsyID() == 0) {
+		if (mApp.mProfile == null) {
 			Intent intent = new Intent().setClass(this, InitActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
+			finish();
 			return;
 		} 
 		
-		
 		setContentView(R.layout.main);
-
 
 		if (mApp.mActiveVenue == null) {
 
@@ -198,7 +196,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 							// Check out web service call
 							String response = WebServices.userCheckInOrOut(
 									MainActivity.this,
-									mApp.loadBartsyID(),
+									mApp.loadBartsyId(),
 									mApp.mActiveVenue.getId(),
 									Constants.URL_USER_CHECK_OUT);
 							if (response != null) {

@@ -25,20 +25,30 @@ public class UserProfile {
 
 	static final String TAG = "Profile";
 	
-	public int bartsyID ;				// Unique ID enforced by Bartsy server
-	public String userID = null; 		// Google user id
+	// User record ID
+	public int bartsyId ;				// Unique ID enforced by Bartsy server
+
+	// User login information
+	private String login  = null; 		// required and doubles as email for the user
+	private String password = null;		// required
+			
+	// Optional social network parameters
+	public String googleId = null; 		// Google user id
+	private String sdf = null;
+	private String facebookId = null;
+	public String facebookUsername = null;		// user's Facebook username
+	
+	// Required user information
 	public Bitmap image = null;			// user's main profile image
-	public String username = null;		// user's Facebook username
+	private String imagePath = null;
+	private String nickname = null;
+
+	// Optional user information
 	public String location = null;		// use string for now
 	public String info = null;			// info string
 	public String description = null;
 	private String name = null;
-	private String email  = null; 		// required and doubles as username for the Bartsy account
-	private String password = null;		// required
 	private String gender  = null;
-	private String type = null;			// oneof {"Google", "Facebook", "Bartsy"}
-	private String socialNetworkId = null;
-	private String imagePath = null;
 	ArrayList<UserProfile> likes  = null;
 	ArrayList<UserProfile> favorites  = null;
 
@@ -47,7 +57,6 @@ public class UserProfile {
 	private String firstName = null;
 	private String lastName = null;
 	private String birthday  = null;	// MM/DD/YYYY
-	private String nickname = null;
 	private String status = null; 		// relationship status ("single", "attached", 
 	private String orientation = null;  // sexual orientation
 
@@ -87,6 +96,8 @@ public class UserProfile {
 	 * @param image
 	 * @param imagePath
 	 */
+	
+	/*
 	public UserProfile(int bartsyID, String userid, String username, String location,
 			String info, String description, Bitmap image, String imagePath) {
 		this.bartsyID = bartsyID;
@@ -99,6 +110,7 @@ public class UserProfile {
 		this.image = image;
 		this.imagePath = imagePath;
 	}
+	*/
 	
 	/*
 	 * Constructor using Google+ profile as a base.  
@@ -108,9 +120,9 @@ public class UserProfile {
 	 */
 	public UserProfile (Person person, String email) {
 		
-		socialNetworkId = username = userID = person.getId();
+		login = email;
+		googleId = person.getId();
 		name = person.getDisplayName();
-		type = "google";
 
 		if (person.hasGender()) {
 			switch (person.getGender()) {
@@ -145,7 +157,6 @@ public class UserProfile {
 
 		if(person.getName() != null && person.getName().hasFamilyName())
 			lastName = person.getName().getFamilyName();
-		this.email = email;
 		
 		if (person.hasImage())
 			setImagePath(person.getImage().getUrl());
@@ -162,16 +173,15 @@ public class UserProfile {
 	public UserProfile (JSONObject person) {
 
 		try {
-			setUsername(person.getString("username"));
+			setFacebookUsername(person.getString("username"));
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
 		try {
-			setSocialNetworkId(person.getString("id"));
+			setFacebookId(person.getString("id"));
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
-		setType("facebook");
 		
 		if(person.has("first_name"))
 			try {
@@ -194,7 +204,7 @@ public class UserProfile {
 			}
 		if (person.has("email"))
 			try {
-				setEmail(person.getString("email"));
+				setLogin(person.getString("email"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -218,25 +228,64 @@ public class UserProfile {
 	 * @return
 	 */
 	
-	
-	public boolean hasUsername () {
-		return username != null;
+	public boolean hasBartsyId() {
+		if (bartsyId == -1)
+			return false;
+		else 
+			return true;
 	}
 
-	public boolean hasSocialNetworkId() {
-		if (socialNetworkId == null || socialNetworkId.equalsIgnoreCase(""))
+	public int getBartsyId() {
+		return bartsyId;
+	}
+
+	public void setBartsyId(int bartsyID) {
+		this.bartsyId = bartsyID;
+	}
+
+	public boolean hasLogin() {
+		if (login == null || login.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public boolean hasFacebookId() {
+		if (facebookId == null || facebookId.equalsIgnoreCase(""))
 			return false;
 		else 
 			return true;
 	}
 	
-	
-	public String getSocialNetworkId() {
-		return socialNetworkId;
+	public String getFacebookId() {
+		return facebookId;
 	}
 
-	public void setSocialNetworkId(String socialNetworkId) {
-		this.socialNetworkId = socialNetworkId;
+	public void setFacebookId(String facebookId) {
+		this.facebookId = facebookId;
+	}
+
+	public boolean hasGoogleId() {
+		if (googleId == null || googleId.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getGoogleId() {
+		return googleId;
+	}
+
+	public void setGoogleId(String googleId) {
+		this.googleId = googleId;
 	}
 
 	public boolean hasName() {
@@ -330,18 +379,18 @@ public class UserProfile {
 	}
 
 	public boolean hasUserId() {
-		if (userID == null || userID.equalsIgnoreCase(""))
+		if (googleId == null || googleId.equalsIgnoreCase(""))
 			return false;
 		else 
 			return true;
 	}
 
 	public String getUserId() {
-		return userID;
+		return googleId;
 	}
 
 	public void setUserId(String userId) {
-		this.userID = userId;
+		this.googleId = userId;
 	}
 
 	public boolean hasPassword() {
@@ -359,27 +408,16 @@ public class UserProfile {
 		this.password = email;
 	}
 
-	public boolean hasEmail() {
-		if (email == null || email.equalsIgnoreCase(""))
-			return false;
-		else 
-			return true;
-	}
-		
-	public String getEmail() {
-		return email;
+	public boolean hasFacebookUsername () {
+		return facebookUsername != null;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public String getFacebookUsername() {
+		return facebookUsername;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
+	public void setFacebookUsername(String username) {
+		this.facebookUsername = username;
 	}
 
 	public String getLocation() {
@@ -449,21 +487,6 @@ public class UserProfile {
 
 	public void setOrientation(String orientation) {
 		this.orientation = orientation;
-	}
-
-	public boolean hasType() {
-		if (type == null || type.equalsIgnoreCase(""))
-			return false;
-		else 
-			return true;
-	}
-	
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public boolean hasImagePath() {

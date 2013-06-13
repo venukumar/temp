@@ -644,8 +644,6 @@ public class VenueActivity extends FragmentActivity implements
 			if (processRemoteOrderStatusChanged(command))
 				// An error occurred - for now log it
 				appendStatus("ERROR PROCESSING ORDER STATUS CHANGED COMMAND");
-		} else if (command.opcode.equalsIgnoreCase("profile")) {
-			processProfile(command);
 		} else
 			appendStatus("Unknown command: " + command.opcode);
 	}
@@ -712,7 +710,7 @@ public class VenueActivity extends FragmentActivity implements
 					+ order.description + "</argument>" + "<argument>"
 					+ order.total + "</argument>"
 					+ "<argument>" // Image +
-					+ "</argument>" + "<argument>" + mApp.mProfile.bartsyID
+					+ "</argument>" + "<argument>" + mApp.mProfile.bartsyId
 					+ "</argument>" +
 					// Each order contains the profile of the sender (and
 					// later the profile of the person that should pick it up)
@@ -810,7 +808,7 @@ public class VenueActivity extends FragmentActivity implements
 																// this end
 				"<argument>" + order.serverID + "</argument>" + // arg(1)
 				"<argument>" + order.clientID + "</argument>" + // arg(2)
-				"<argument>" + order.orderSender.bartsyID + "</argument>" + // arg(3)
+				"<argument>" + order.orderSender.bartsyId + "</argument>" + // arg(3)
 				"</command>");
 
 		// Update tab title with the number of open orders
@@ -829,7 +827,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Because with Alljoyn every connected client gets a command, we make
 		// sure this command is for us
-		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.bartsyID))
+		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.bartsyId))
 			return true;
 
 		mApp.updateOrder(command.arguments.get(1), command.arguments.get(0));
@@ -874,17 +872,4 @@ public class VenueActivity extends FragmentActivity implements
 		appendStatus("Sent message");
 	}
 
-	/*
-	 * 
-	 * TODO - Profile commands
-	 */
-
-	void processProfile(BartsyCommand command) {
-		appendStatus("Process command: " + command.opcode);
-		mApp.addPerson(Integer.parseInt(command.arguments.get(0)), 
-				command.arguments.get(0),
-				command.arguments.get(1),
-				command.arguments.get(2), command.arguments.get(3),
-				command.arguments.get(4), command.arguments.get(5));
-	}
 }

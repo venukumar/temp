@@ -165,7 +165,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 					UserProfile profile = null;
 					boolean found = false;
 					for (UserProfile p : knownPeople) {
-						if (p.bartsyID == bartsyID && p.image != null) {
+						if (p.bartsyId == bartsyID && p.image != null) {
 							// Found the profile and it has an image. Shamelessly reuse it
 							Log.v(TAG, "Reusing image for profile " + bartsyID);
 							profile = p;
@@ -180,7 +180,10 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 						knownPeople.remove(profile);
 					} else {
 						// Create new instance for profile - this is for now incomplete!!
-						profile = new UserProfile(bartsyID, null, name, null, null, null, null, imagepath);
+						profile = new UserProfile();
+						profile.setBartsyId(bartsyID);
+						profile.setNickname(name);
+						profile.setImagePath(imagepath);
 					}
 					
 					// Add profile (new or old) to the existing people list

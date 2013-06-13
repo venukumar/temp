@@ -263,7 +263,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	// These two fields are only used to pass information to and from the UserProfileActivity from InitActivity
 	public UserProfile mUserProfileActivityInput = null; 
 	public UserProfile mUserProfileActivityOutput = null;
-	public JSONObject mFBUser; // To get Facebook profile information
 
 
 	void loadUserProfile() {
@@ -273,14 +272,13 @@ public class BartsyApplication extends Application implements AppObservable {
 		// Initialize the profile structure
 		mProfile = null;
 
-//		// Make sure the user's account name has been saved or there is no local profile
-//		if (Utilities.loadPref(this, R.string.config_user_account_name, null) == null) {
-//			Log.v(TAG, "No saved user profile");
-//			return;
-//		}			
-//
-//		// Load profile image
-//
+		// Make sure the user's account name has been saved or there is no local profile
+		if (loadBartsyId() == 0) {
+			Log.v(TAG, "No saved user profile");
+			return;
+		}			
+
+		// Load profile image
 		Bitmap image = loadUserProfileImage();
 		if (image == null) {
 			Log.d(TAG, "Could not load profile image");
@@ -288,18 +286,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		}
 		
 		// Profile name and image were found. Create a user profile.
+		mProfile = new UserProfile();
+		mProfile.setBartsyId(loadBartsyId()); 
+		mProfile.setLogin(Utilities.loadPref(this, R.string.config_user_login, ""));
+		mProfile.setPassword(Utilities.loadPref(this, R.string.config_user_password, ""));
+		mProfile.setNickname(Utilities.loadPref(this, R.string.config_user_nickname, ""));
+		mProfile.setImage(image);
 
-		mProfile = new UserProfile(
-				loadBartsyID(), 
-				Utilities.loadPref(this, R.string.config_user_account_name, ""), 
-				Utilities.loadPref(this, R.string.config_user_name, ""),
-				Utilities.loadPref(this, R.string.config_user_location, ""), 
-				Utilities.loadPref(this, R.string.config_user_info, ""),
-				Utilities.loadPref(this, R.string.config_user_description, ""), 
-				image, 
-				null);
-
-		Log.v(TAG, "Profile loaded: " + Utilities.loadPref(this, R.string.config_user_account_name, ""));
+		Log.v(TAG, "Profile loaded: " + loadBartsyId() + " (" + mProfile.getNickname() + ")");
 	}
 	
 	void saveUserProfile(UserProfile profile) {
@@ -311,51 +305,47 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
-		editor.putString(r.getString(R.string.config_user_account_name), profile.userID);
-		editor.putString(r.getString(R.string.config_user_name), profile.getNickname());
-		editor.putString(r.getString(R.string.config_user_location), profile.location);
-		editor.putString(r.getString(R.string.config_user_info), profile.info);
-		editor.putString(r.getString(R.string.config_user_description), profile.description);
+		editor.putString(r.getString(R.string.config_user_login), profile.getLogin());
+		editor.putString(r.getString(R.string.config_user_password), profile.getPassword());
+		editor.putString(r.getString(R.string.config_user_nickname), profile.getNickname());
 		editor.commit();
+		
 		// It is better to call this method after editor commit. Because we are using same preference name
-		saveBartsyID(profile.bartsyID);
+		saveBartsyID(profile.bartsyId);
 		
 		saveUserProfileImage(profile.getImage());
 	}
 
 	void eraseUserProfile() {
-		SharedPreferences sharedPref = getSharedPreferences(getResources()
-				.getString(R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
-		editor.remove(r.getString(R.string.config_user_account_name));
-		editor.remove(r.getString(R.string.config_user_name));
-		editor.remove(r.getString(R.string.config_user_location));
-		editor.remove(r.getString(R.string.config_user_info));
-		editor.remove(r.getString(R.string.config_user_description));
+		editor.remove(r.getString(R.string.config_user_login));
+		editor.remove(r.getString(R.string.config_user_password));
+		editor.remove(r.getString(R.string.config_user_nickname));
+		editor.remove(r.getString(R.string.config_user_bartsyId));
 		editor.commit();
 		
 		eraseUserProfileImage();
 	}
 	
 	
-	public int loadBartsyID() {
+	public int loadBartsyId() {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
-		return sharedPref.getInt(r.getString(R.string.config_user_bartsyID), 0);
+		return sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
 	}
 	
 	public void saveBartsyID(int bartsyUserId) {
 		// Save the unique bartsy ID in the user profile
 		if (mProfile != null) {
-			mProfile.bartsyID = bartsyUserId;
+			mProfile.bartsyId = bartsyUserId;
 		}
 		// Save in preferences
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
 		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putInt(r.getString(R.string.config_user_bartsyID), bartsyUserId);
+		editor.putInt(r.getString(R.string.config_user_bartsyId), bartsyUserId);
 		editor.commit();
 	}
 	
@@ -413,12 +403,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * Called when we have a new person check in a venue
 	 */
 
-	void addPerson(int userid, String username, String name, String location, String info,
-			String description, String image // base64 encoded image
-	) {
-		Log.v(TAG, "New user checked in: " + name + " (" + userid + ")");
-
-		UserProfile profile = new UserProfile(userid, username, name, location, info, description, null, image);
+	void addPerson(UserProfile profile) {
+		Log.v(TAG, "New user checked in: " + profile.getName() + " (" + profile.getBartsyId() + ")");
 
 		mPeople.add(profile);
 		notifyObservers(PEOPLE_UPDATED);
