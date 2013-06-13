@@ -776,12 +776,12 @@ public class VenueActivity extends FragmentActivity implements
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE:
 				// The syscall was not placed
-				Toast.makeText(mActivity, "Unable to place order. Check your internet connection", Toast.LENGTH_SHORT).show();
+				Toast.makeText(mActivity, "Unable to place order. Check your internet connection, restart application, reset application or download new version.", Toast.LENGTH_SHORT).show();
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE:
 				// The syscall got an error code
-				Toast.makeText(mActivity, "Unable to place order. Venue is not accepting orders (" + msg.obj + ")", Toast.LENGTH_SHORT).show();
+				Toast.makeText(mActivity, "Unable to place order: " + msg.obj, Toast.LENGTH_SHORT).show();
 				break;
 			}
 		}
