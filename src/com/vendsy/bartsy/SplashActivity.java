@@ -6,6 +6,7 @@ import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -37,7 +38,7 @@ public class SplashActivity extends Activity {
 		Log.v(TAG, "onCreate()");
 
 		setContentView(R.layout.splash_screen);
-		
+
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
@@ -50,21 +51,21 @@ public class SplashActivity extends Activity {
 			finish();
 			return;
 		} 
+		   
+		new AsyncLoadXMLFeed().execute();
+	   }
 
-		
-	}
-	
-	@Override
-	public void onResume() {
-		
-		// Common init
-		super.onResume();
-		Log.v(TAG, "onResume()");
-		
-		
-		// Profile is set - synchronize the user's states (checked in or not)
-		new Thread() {
-			public void run() {
+	   private class AsyncLoadXMLFeed extends AsyncTask<Void, Void, Void>{
+	      @Override
+	      protected void onPreExecute(){
+	            // show your progress dialog
+	      }
+
+	      @Override
+	      protected Void doInBackground(Void... Voids){
+	            // load your xml feed asynchronously
+	    	  
+
 				Venue venue = WebServices.syncUserDetails(mApp.getApplicationContext(), mApp.mProfile);
 
 				// If venue found - set it up as the active venue
@@ -73,22 +74,18 @@ public class SplashActivity extends Activity {
 					mApp.userCheckIn(venue);
 					
 				}
-					
-				handler.post(new Runnable() {
-					@Override
-					public void run() {
-						// Finish the activity and start the main activity
-						Toast.makeText(mActivity, "Synced with server", Toast.LENGTH_SHORT).show();
-						Intent intent = new Intent().setClass(SplashActivity.this, MainActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						startActivity(intent);
-						finish();
-					}
-				});
-				return;
-			};
-		}.start();
+				return null;
+	      }
 
-
+	      @Override
+	      protected void onPostExecute(Void params){
+	            // dismiss your dialog
+	            // launch your News activity
+				Toast.makeText(mActivity, "Synced with server", Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent().setClass(SplashActivity.this, MainActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+				finish();
+	      }
 	}
 }
