@@ -46,11 +46,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.adapter.VenueListViewAdapter;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**

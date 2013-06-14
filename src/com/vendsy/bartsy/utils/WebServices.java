@@ -1,21 +1,15 @@
 package com.vendsy.bartsy.utils;
 
-import io.card.payment.CreditCard;
-
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -52,7 +46,6 @@ import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.Constants;
 
 public class WebServices {
 
@@ -534,7 +527,7 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static String updateOfferDrinkStatus(Context context, String venueID, Order order) {
+	public static String updateOfferDrinkStatus(Context context, String venueID, Order order, int orderStatus, String barstyId) {
 
 		Log.v(TAG, "To update offer drink: " + venueID);
 
@@ -543,8 +536,8 @@ public class WebServices {
 		try {
 			json.put("venueId", venueID);
 			json.put("orderId", order.serverID);
-//			json.put("bartsyId", );
-			json.put("orderStatus", order.status);
+			json.put("bartsyId", barstyId);
+			json.put("orderStatus", orderStatus);
 			response = postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, context);
 		} catch (Exception e1) {
 			e1.printStackTrace();

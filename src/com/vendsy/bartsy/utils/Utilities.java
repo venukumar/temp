@@ -15,15 +15,13 @@
  */
 package com.vendsy.bartsy.utils;
 
-import com.vendsy.bartsy.MapActivity;
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.model.Venue;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+
+import com.vendsy.bartsy.R;
 
 /**
  * Helper class providing methods and constants common to other classes in the
@@ -39,7 +37,7 @@ public final class Utilities {
 	/**
 	 * Google API project id registered to use GCM.
 	 */
-	// public static final String SENDER_ID = "227827031375";
+//	 public static final String SENDER_ID = "227827031375";
 	public static final String SENDER_ID = "605229245886"; // public server
 
 	/**

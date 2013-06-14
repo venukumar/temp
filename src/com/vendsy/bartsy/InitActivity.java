@@ -1,7 +1,5 @@
 package com.vendsy.bartsy;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -11,13 +9,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.IntentSender.SendIntentException;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -25,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -36,18 +30,15 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.google.android.gcm.GCMRegistrar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.plus.PlusClient;
-import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.LoginDialogFragment;
 import com.vendsy.bartsy.dialog.LoginDialogFragment.LoginDialogListener;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment;
@@ -55,10 +46,9 @@ import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
-public class InitActivity extends FragmentActivity implements
+public class InitActivity extends SherlockFragmentActivity implements
 		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener, LoginDialogListener {
 
 	private static final String TAG = "InitActivity";
@@ -90,13 +80,14 @@ public class InitActivity extends FragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
 		setContentView(R.layout.init_main);
 
 		// Setup pointers
 		mApp = (BartsyApplication) getApplication();
 		
 		// Hide action bar
-		getActionBar().hide();
+		getSupportActionBar().hide();
 
 		// Initialize the startup screen tabs
 		adapter = new InitAdapter();

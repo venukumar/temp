@@ -1,25 +1,18 @@
 package com.vendsy.bartsy.dialog;
 
-import com.vendsy.bartsy.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.LayoutInflater;
-import android.view.Window;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.Spinner;
+import android.view.View;
 import android.widget.TextView;
 
-public class LoginDialogFragment extends DialogFragment {
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.vendsy.bartsy.R;
+
+public class LoginDialogFragment extends SherlockDialogFragment {
 	
 	// The parameters that the dialog sets up and passes to the listener below
 	public String username;

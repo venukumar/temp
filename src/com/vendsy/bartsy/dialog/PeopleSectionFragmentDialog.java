@@ -13,13 +13,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.UserProfile;
@@ -30,7 +30,7 @@ import com.vendsy.bartsy.utils.WebServices;
  * @author Seenu Malireddy
  * 
  */
-public class PeopleSectionFragmentDialog extends DialogFragment{
+public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 
 	static final String TAG = "PeopleSectionFragmentDialog";
 	

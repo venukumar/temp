@@ -3,27 +3,19 @@
  */
 package com.vendsy.bartsy.dialog;
 
-import com.vendsy.bartsy.R;
-
-import android.support.v4.app.Fragment;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageButton;
+
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.vendsy.bartsy.R;
 
 /**
  * @author peterkellis
  *
  */
-public class PeopleProfileDialog extends DialogFragment  {
+public class PeopleProfileDialog extends SherlockDialogFragment  {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {

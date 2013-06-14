@@ -9,30 +9,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.WebServices;
-
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ToggleButton;
+
+import com.actionbarsherlock.app.SherlockFragment;
+import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
  * 
  */
-public class OrdersSectionFragment extends Fragment {
+public class OrdersSectionFragment extends SherlockFragment {
 
 	private View mRootView = null;
 	public LinearLayout mOrderListView = null;

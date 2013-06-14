@@ -4,17 +4,16 @@ package com.vendsy.bartsy.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.CustomDrinksActivity;
 import com.vendsy.bartsy.OrderCustomDrinkActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.adapter.CustomDrinksListViewAdapter;
@@ -24,7 +23,7 @@ import com.vendsy.bartsy.model.Category;
  * @author Seenu Malireddy
  * 
  */
-public class CustomDrinksSectionFragment extends Fragment {
+public class CustomDrinksSectionFragment extends SherlockFragment {
 	private View mRootView = null;
 	
 	private Handler handler = new Handler();

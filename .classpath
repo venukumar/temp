@@ -9,6 +9,5 @@
 	<classpathentry kind="lib" path="libs/ormlite-core-4.41.jar"/>
 	<classpathentry kind="lib" path="libs/card.io.jar"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry exported="true" kind="lib" path="C:/Documents and Settings/peterkellis/My Documents/My Dropbox/Vendsy/Bartsy/Bartsy Development/Peter/google-play-services_lib/libs/google-play-services.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -25,8 +25,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,10 +35,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-import com.crittercism.app.Crittercism;
 import com.google.android.gcm.GCMRegistrar;
-import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.dialog.OfferDrinkDialog;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
@@ -51,7 +46,6 @@ import com.vendsy.bartsy.service.ConnectivityService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.view.AppObserver;
-import com.vendsy.bartsy.view.DrinksSectionFragment.Menu;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common user
@@ -534,13 +528,27 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		notifyObservers(ORDERS_UPDATED);
 	}
+	
+	public static final String DRINK_OFFERED = "DRINK_OFFERED";
+	public Order drinkOffered;
+	
 	/**
-	 * To display offer drink dialog
+	 * To display offer drink dialog in VenueActivity
 	 * 
 	 * @param order
+	 * @param senderBartsyId
 	 */
 	public void displayOfferDrink(Order order, String senderBartsyId){
-		new OfferDrinkDialog(getApplicationContext()).show();
+		drinkOffered = order;
+		// Try to search for profile based on senderBartsyId and set to order sender.
+		for (UserProfile profile : mPeople) {
+			if(senderBartsyId!=null && senderBartsyId.equals(profile.getBartsyId())){
+				order.orderSender = profile;
+				break;
+			}
+		}
+		// To display offer drink dialog
+		notifyObservers(DRINK_OFFERED);
 	}
 	
 	

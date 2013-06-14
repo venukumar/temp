@@ -9,33 +9,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.dialog.PeopleDialogFragment;
-import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.WebServices;
-
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import android.widget.ImageButton;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ToggleButton;
+
+import com.actionbarsherlock.app.SherlockFragment;
+import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
  * 
  */
-public class PeopleSectionFragment extends Fragment implements OnClickListener {
+public class PeopleSectionFragment extends SherlockFragment implements OnClickListener {
 
 	static final String TAG = "PeopleSectionFragment";
 	

@@ -4,7 +4,6 @@
 package com.vendsy.bartsy.view;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +12,6 @@ import org.json.JSONObject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,21 +21,21 @@ import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.LinearLayout;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.CustomDrinksActivity;
 import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.MenuDrink;
-import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
  * 
  */
-public class DrinksSectionFragment extends Fragment {
+public class DrinksSectionFragment extends SherlockFragment {
 	private View mRootView = null;
 	private ExpandableListView mDrinksListView = null;
 	public BartsyApplication mApp = null;

@@ -11,9 +11,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.app.ActionBar;
+
 import android.app.Activity;
-import android.app.FragmentTransaction;
+
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -25,24 +25,25 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.paypal.android.MEP.PayPal;
 import com.paypal.android.MEP.PayPalActivity;
 import com.paypal.android.MEP.PayPalPayment;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
+import com.vendsy.bartsy.dialog.OfferDrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
+import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
@@ -57,8 +58,13 @@ import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
 import com.vendsy.bartsy.view.OrdersSectionFragment;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.ActionMode;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
-public class VenueActivity extends FragmentActivity implements
+
+public class VenueActivity extends SherlockFragmentActivity implements
 		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
 		PeopleDialogFragment.UserDialogListener, AppObserver {
 
@@ -119,7 +125,7 @@ public class VenueActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
 		Log.v(TAG, "onCreate()");
 		
 		// Set base view for the activity
@@ -134,7 +140,7 @@ public class VenueActivity extends FragmentActivity implements
 		appendStatus(this.toString() + "onCreate()");
 
 		// Set up the action bar custom view
-		final ActionBar actionBar = getActionBar();
+		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
@@ -268,23 +274,36 @@ public class VenueActivity extends FragmentActivity implements
 	/******
 	 * 
 	 * 
-	 * TODO - Action bar (menu) helper functions
+	 * TODO - Setup sherlock menu
 	 * 
 	 */
+	
+	 @Override
+	 public boolean onCreateOptionsMenu(Menu menu) {
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	        menu.add("Search")
+	            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_main, menu);
+	       
 
-		// Calling super after populating the menu is necessary here to ensure that the
-		// action bar helpers have a chance to handle this event.
-		boolean retValue = super.onCreateOptionsMenu(menu);
-
-		return retValue;
-	}
-
+	        return true;
+	 }
+	 
+	
+//	
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//
+//		// Inflate the menu; this adds items to the action bar if it is present.
+//		getMenuInflater().inflate(R.menu.menu_main, menu);
+//
+//		// Calling super after populating the menu is necessary here to ensure that the
+//		// action bar helpers have a chance to handle this event.
+//		boolean retValue = super.onCreateOptionsMenu(menu);
+//
+//		return retValue;
+//	}
+//
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -334,7 +353,7 @@ public class VenueActivity extends FragmentActivity implements
 			name = mApp.mActiveVenue.getName();
 		}
 
-		getActionBar().setTitle(name);
+		getSupportActionBar().setTitle(name);
 
 		// Update the tab titles
 		updateOrdersCount();
@@ -350,7 +369,7 @@ public class VenueActivity extends FragmentActivity implements
 		for (int i= 0 ; i < mTabs.length ; i++) {
 			if (mTabs[i] == R.string.title_drink_orders) {
 				// Found the right tab - update it
-				getActionBar().getTabAt(i).setText("Orders (" + mApp.mOrders.size() + ")");
+				getSupportActionBar().getTabAt(i).setText("Orders (" + mApp.mOrders.size() + ")");
 				return;
 			}
 		}
@@ -365,7 +384,7 @@ public class VenueActivity extends FragmentActivity implements
 		for (int i= 0 ; i < mTabs.length ; i++) {
 			if (mTabs[i] == R.string.title_people) {
 				// Found the right tab - update it
-				getActionBar().getTabAt(i).setText("People (" + mApp.mPeople.size() + ")");
+				getSupportActionBar().getTabAt(i).setText("People (" + mApp.mPeople.size() + ")");
 				return;
 			}
 		}
@@ -493,6 +512,7 @@ public class VenueActivity extends FragmentActivity implements
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
 	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
 	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
+	private static final int HANDLE_DRINK_OFFERED_EVENT = 6;
 
 	public synchronized void update(AppObservable o, Object arg) {
 		Log.v(TAG, "update(" + arg + ")");
@@ -522,6 +542,10 @@ public class VenueActivity extends FragmentActivity implements
 		} else if (qualifier.equals(BartsyApplication.PEOPLE_UPDATED)) {
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
+			mApplicationHandler.sendMessage(message);
+		} else if (qualifier.equals(BartsyApplication.DRINK_OFFERED)) {
+			Message message = mApplicationHandler
+					.obtainMessage(HANDLE_DRINK_OFFERED_EVENT);
 			mApplicationHandler.sendMessage(message);
 		}
 	}
@@ -577,11 +601,26 @@ public class VenueActivity extends FragmentActivity implements
 					updatePeopleCount();
 				}
 				break;
+			case HANDLE_DRINK_OFFERED_EVENT:
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_DRINK_OFFERED_EVENT");
+				if (mPeopleFragment != null) {
+					Log.v(TAG, "DRINK_OFFERED dialog..");
+					displayOfferDrinkDialog();
+				}
+				break;
 			default:
 				break;
 			}
 		}
+
+		
 	};
+	
+	private void displayOfferDrinkDialog() {
+		OfferDrinkDialogFragment dialog = new OfferDrinkDialogFragment();
+		dialog.show(getSupportFragmentManager(),"displayOfferDrink");
+	}
+	
 	private Order order;
 
 	private void alljoynError() {

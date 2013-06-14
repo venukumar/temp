@@ -18,6 +18,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.UserProfile;
@@ -28,7 +29,7 @@ import com.vendsy.bartsy.utils.WebServices;
  * @author peterkellis
  * 
  */
-public class DrinkDialogFragment extends DialogFragment {
+public class DrinkDialogFragment extends SherlockDialogFragment {
 
 	public MenuDrink drink;
 	public UserProfile profile;

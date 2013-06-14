@@ -1,34 +1,23 @@
 package com.vendsy.bartsy;
 
-import io.card.payment.CardIOActivity;
-import io.card.payment.CreditCard;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.google.android.gcm.GCMRegistrar;
-import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.model.Venue;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
-public class MainActivity extends FragmentActivity implements OnClickListener {
+public class MainActivity extends SherlockFragmentActivity implements OnClickListener {
 
 	private static final String TAG = "MainActivity";
 	
@@ -42,7 +31,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
@@ -87,7 +76,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		((View) findViewById(R.id.button_my_venues)).setOnClickListener(this);
 
 		// Hide action bar
-		getActionBar().hide();
+		getSupportActionBar().hide();
 	}
 
 

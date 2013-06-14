@@ -6,41 +6,32 @@ package com.vendsy.bartsy.dialog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 
-import com.google.android.gms.plus.model.people.Person;
-import com.google.android.gms.plus.model.people.Person.Image;
-import com.google.android.gms.plus.model.people.Person.Name;
-import com.vendsy.bartsy.R;
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.google.android.gms.plus.model.people.Person;
+import com.vendsy.bartsy.R;
 
 /**
  * @author peterkellis
  *
  */
-public class PeopleDialogFragment extends DialogFragment  {
+public class PeopleDialogFragment extends SherlockDialogFragment  {
 
 	public Person mUser = null;
 	

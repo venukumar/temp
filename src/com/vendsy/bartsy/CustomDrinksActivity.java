@@ -7,30 +7,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.CustomDrinksSectionFragment;
-
-import android.app.ActionBar;
-import android.app.ProgressDialog;
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.util.Log;
 /**
  * 
  * @author Seenu Malireddy
  *
  */
-public class CustomDrinksActivity extends FragmentActivity implements ActionBar.TabListener{
+public class CustomDrinksActivity extends SherlockFragmentActivity implements ActionBar.TabListener{
 
 	public static final String TAG = "CustomDrinksActivity";
 	private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -46,14 +46,14 @@ public class CustomDrinksActivity extends FragmentActivity implements ActionBar.
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
 		Log.v(TAG, "onCreate()");
 
 		// Set base view for the activity
 		setContentView(R.layout.activity_custom_drinks);
 		// Set up the action bar custom view
 		
-		actionBar = getActionBar();
+		actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);

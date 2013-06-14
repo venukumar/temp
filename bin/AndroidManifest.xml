@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="14"
+        android:minSdkVersion="8"
         android:targetSdkVersion="17" />
 
     <uses-feature
@@ -72,18 +72,30 @@
         android:name=".BartsyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name">
 
+        <activity 
+            android:name=".SplashActivity"            
+            android:theme="@android:style/Theme.Holo.NoActionBar"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
         <!-- Activities responsible for gathering payment info -->
         <activity
             android:name="io.card.payment.CardIOActivity"
-            android:configChanges="keyboardHidden|orientation" />
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait" />
         <activity
             android:name="io.card.payment.DataEntryActivity"
             android:screenOrientation="portrait" />
-        
         <activity
-         	android:name="com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity"
+            android:name="com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="Contacts Client"
             android:screenOrientation="portrait" >
@@ -91,40 +103,49 @@
 
         <service android:name="ConnectivityService" >
         </service>
-        
+
         <activity
             android:name=".VenueActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" >
         </activity>
-        
         <activity
             android:name=".SettingsActivity"
-            android:label="SettingsActivity" >
+            android:label="SettingsActivity"
+            android:screenOrientation="portrait" >
         </activity>
-        
         <activity
             android:name=".MapActivity"
             android:label="Bartsy Service Stations"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" >
         </activity>
-        
         <activity
             android:name=".InitActivity"
             android:label="Your one stop to nightlife!"
+            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo" >
         </activity>
-
+        <activity
+            android:name=".UserProfileActivity"
+            android:label="Edit your profile"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" 
+            android:theme="@style/AppTheme" >
+        </activity>
+        <activity android:name=".CustomDrinksActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".OrderCustomDrinkActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        
         <activity
             android:name=".MainActivity"
-            android:icon="@drawable/ic_launcher"
-        	android:label="@string/app_name" 
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <receiver
@@ -139,26 +160,52 @@
         </receiver>
 
         <service
-            android:name="com.vendsy.bartsy.service.GCMIntentServiceentService"
+            android:name="com.vendsy.bartsy.GCMIntentService"
             android:enabled="true" >
         </service>
-
-        <!-- ZooZ Activity -->
-        <activity
-            android:name="com.zooz.android.lib.CheckoutActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@android:style/Theme.Translucent" />
 
         <!-- Pay Pal -->
         <activity
             android:name="com.paypal.android.MEP.PayPalActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
- 
+
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCgZRYaiDOrJp9hNO6xu1UracE_dOhgmRI" />
 
+         <!--
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />
+        -->
+         <!-- Start of Crittercism.com Code -->
+        <activity android:name="com.crittercism.NotificationActivity" />
+
+        <!-- For Crittercism's support forum, also include the activities below: -->
+        <activity
+            android:name="com.crittercism.NewFeedbackSpringboardActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackIssueListActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackQuestionListActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackItemDetailsActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="com.crittercism.NewFeedbackCreateActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <!-- End of Crittercism.com Code -->
     </application>
+    
+   
 
 </manifest>
