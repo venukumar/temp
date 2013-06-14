@@ -274,7 +274,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		mProfile = null;
 
 		// Make sure the user's account name has been saved or there is no local profile
-		if (loadBartsyId() == 0) {
+		if (loadBartsyId() == null) {
 			Log.v(TAG, "No saved user profile");
 			return;
 		}			
@@ -288,10 +288,22 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		// Profile name and image were found. Create a user profile.
 		mProfile = new UserProfile();
-		mProfile.setBartsyId(loadBartsyId()); 
-		mProfile.setLogin(Utilities.loadPref(this, R.string.config_user_login, ""));
-		mProfile.setPassword(Utilities.loadPref(this, R.string.config_user_password, ""));
-		mProfile.setNickname(Utilities.loadPref(this, R.string.config_user_nickname, ""));
+		
+		// Bartsy login
+		mProfile.setLogin(Utilities.loadPref(this, R.string.config_user_login, null));
+		mProfile.setPassword(Utilities.loadPref(this, R.string.config_user_password, null));
+		mProfile.setBartsyId(Utilities.loadPref(this, R.string.config_user_bartsyId, null)); 
+
+		// Facebook Login
+		mProfile.setFacebookUsername(Utilities.loadPref(this, R.string.config_facebook_username, null));
+		mProfile.setFacebookId(Utilities.loadPref(this, R.string.config_facebook_id, null)); 
+		
+		// Google login
+		mProfile.setGoogleUsername(Utilities.loadPref(this, R.string.config_google_username, null));
+		mProfile.setGoogleId(Utilities.loadPref(this, R.string.config_google_id, null)); 
+
+		// Other required params
+		mProfile.setNickname(Utilities.loadPref(this, R.string.config_user_nickname, null));
 		mProfile.setImage(image);
 
 		Log.v(TAG, "Profile loaded: " + loadBartsyId() + " (" + mProfile.getNickname() + ")");
@@ -306,14 +318,19 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
+
 		editor.putString(r.getString(R.string.config_user_login), profile.getLogin());
 		editor.putString(r.getString(R.string.config_user_password), profile.getPassword());
+		editor.putString(r.getString(R.string.config_user_bartsyId), profile.getBartsyId());
+
+		editor.putString(r.getString(R.string.config_facebook_username), profile.getFacebookUsername());
+		editor.putString(r.getString(R.string.config_facebook_id), profile.getFacebookId());
+		
+		editor.putString(r.getString(R.string.config_google_username), profile.getGoogleUsername());
+		editor.putString(r.getString(R.string.config_google_id), profile.getGoogleId());
+		
 		editor.putString(r.getString(R.string.config_user_nickname), profile.getNickname());
 		editor.commit();
-		
-		// It is better to call this method after editor commit. Because we are using same preference name
-		saveBartsyID(profile.bartsyId);
-		
 		saveUserProfileImage(profile.getImage());
 	}
 
@@ -321,32 +338,40 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
+		
 		editor.remove(r.getString(R.string.config_user_login));
 		editor.remove(r.getString(R.string.config_user_password));
-		editor.remove(r.getString(R.string.config_user_nickname));
 		editor.remove(r.getString(R.string.config_user_bartsyId));
-		editor.commit();
+
+		editor.remove(r.getString(R.string.config_facebook_username));
+		editor.remove(r.getString(R.string.config_facebook_id));
 		
+		editor.remove(r.getString(R.string.config_google_username));
+		editor.remove(r.getString(R.string.config_google_id));
+
+		editor.remove(r.getString(R.string.config_user_nickname));
+		editor.commit();		
 		eraseUserProfileImage();
 	}
 	
 	
-	public int loadBartsyId() {
+	public String loadBartsyId() {
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
-		return sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
+		return sharedPref.getString(r.getString(R.string.config_user_bartsyId), null);
 	}
 	
-	public void saveBartsyID(int bartsyUserId) {
+	public void saveBartsyID(String bartsyUserId) {
+
 		// Save the unique bartsy ID in the user profile
-		if (mProfile != null) {
-			mProfile.bartsyId = bartsyUserId;
-		}
+		if (mProfile != null) 
+			mProfile.setBartsyId(bartsyUserId);
+
 		// Save in preferences
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
 		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putInt(r.getString(R.string.config_user_bartsyId), bartsyUserId);
+		editor.putString(r.getString(R.string.config_user_bartsyId), bartsyUserId);
 		editor.commit();
 	}
 	

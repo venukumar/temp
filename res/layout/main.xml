@@ -116,14 +116,16 @@
             android:background="@drawable/rounded_corner" >
 
             <Button
-                android:id="@+id/button_my_venues"
+                android:id="@+id/button_settings"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="140dp"
                 android:layout_height="84dp"
-                android:drawableTop="@drawable/icon_favorites"
+                android:drawableTop="@drawable/icon_settings"
+                android:gravity="center_vertical|center_horizontal"
                 android:padding="@dimen/activity_vertical_margin"
-                android:text="My Rewards"
+                android:text="My Profile"
                 android:textSize="14sp" />
+
         </FrameLayout>
 
         <FrameLayout
@@ -142,7 +144,9 @@
                 android:gravity="center_vertical|center_horizontal"
                 android:padding="@dimen/activity_vertical_margin"
                 android:text="My Notifications"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
+
         </FrameLayout>
 
         <FrameLayout
@@ -153,15 +157,16 @@
             android:background="@drawable/rounded_corner" >
 
             <Button
-                android:id="@+id/button_settings"
+                android:id="@+id/button_my_venues"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="140dp"
                 android:layout_height="84dp"
-                android:drawableTop="@drawable/icon_settings"
-                android:gravity="center_vertical|center_horizontal"
+                android:drawableTop="@drawable/icon_favorites"
                 android:padding="@dimen/activity_vertical_margin"
-                android:text="My Profile"
-                android:textSize="14sp" />
+                android:text="My Rewards"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
         </FrameLayout>
     </GridLayout>
 
@@ -169,7 +174,8 @@
         android:layout_width="fill_parent"
         android:layout_height="40dp"
         android:layout_margin="@dimen/activity_vertical_margin"
-        android:background="@drawable/rounded_corner" >
+        android:background="@drawable/rounded_corner"
+        android:visibility="gone" >
 
         <Button
             android:id="@+id/button_feedback"

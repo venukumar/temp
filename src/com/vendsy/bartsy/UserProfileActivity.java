@@ -74,8 +74,6 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						((TextView) findViewById(R.id.view_profile_first_name)).getText());
 			if (person.hasDescription())
 				((TextView) findViewById(R.id.view_profile_description)).setText(person.getDescription());
-			if (person.hasLogin()) 
-				((TextView) findViewById(R.id.view_profile_email)).setText(person.getLogin());
 			if (person.hasImagePath()) 
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
 				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
@@ -85,10 +83,27 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				if (person.getGender().equalsIgnoreCase("female"))
 					((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
 			}
+			
+			if (person.hasPassword()) {
+				((EditText) findViewById(R.id.view_profile_password)).setText(person.getPassword());
+				((EditText) findViewById(R.id.view_profile_password_confirm)).setText(person.getPassword());
+			}
 		}
+		
 
+		// If we have FB or G+ login, don't show password field, otherwise don't show password checkbox
+		if (person != null && (person.hasFacebookUsername() || person.hasGoogleUsername())) {
+			findViewById(R.id.view_profile_password_view).setVisibility(View.GONE);
+			if (person.hasEmail()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());	
+		} else {
+			findViewById(R.id.view_profile_account_view).setVisibility(View.GONE);			
+			if (person.hasLogin()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getLogin());	
+		}
 		
 		// Set up image controllers
+		findViewById(R.id.view_profile_account_checkbox).setOnClickListener(this);
 		findViewById(R.id.view_profile_checkbox_details).setOnClickListener(this);
 		findViewById(R.id.view_profile_user_image).setOnClickListener(this);
 		findViewById(R.id.view_profile_button_cancel).setOnClickListener(this);
@@ -110,6 +125,13 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 
 		switch (arg0.getId()) {
 		
+		case R.id.view_profile_account_checkbox:
+			Log.v(TAG, "Account checkbox");
+			if (((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked())
+				findViewById(R.id.view_profile_password_view).setVisibility(View.VISIBLE);
+			else
+				findViewById(R.id.view_profile_password_view).setVisibility(View.GONE);
+			break;
 		case R.id.view_profile_user_image:
 			Log.v(TAG, "Clicked on image");
 			Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -312,32 +334,55 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		Log.v(TAG, "validateProfileData()");
 		
 		UserProfile user = new UserProfile();
+		boolean create_bartsy_account = false;
 		
-		// Make sure there is a login/email and password
+		// See if we're creating or already have an account - require password
+		if (((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked() ||
+				(mApp.mUserProfileActivityInput != null && mApp.mUserProfileActivityInput.hasLogin())) {
+			create_bartsy_account = true;
+		}
+		
+		
 		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
-		if (email.length() > 0) {
-			user.setLogin(email);
+		
+		if (create_bartsy_account) {
+
+			// Make sure there is a login/email and password if logging in with Bartsy
+			if (email.length() > 0) {
+				user.setLogin(email);
+			} else {
+				Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
+				return null;
+			}
+			
+			// Verify password matches and exists
+			String password =  ((TextView) findViewById(R.id.view_profile_password)).getText().toString();
+			if (password.length() < 6) {
+				Toast.makeText(this, "Please create a password that's at least 6 characters long", Toast.LENGTH_SHORT).show();
+				return null;			
+			}
+			String password_confirm =  ((TextView) findViewById(R.id.view_profile_password_confirm)).getText().toString();
+			if (password.compareTo(password_confirm) != 0) {
+				Toast.makeText(this, "Password confirmation mismatch.", Toast.LENGTH_SHORT).show();
+				return null;						
+			}
+			user.setPassword(password);
+
+			// Also set email to be the same as the login info
+			user.setEmail(email);
+			
 		} else {
-			Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
-			return null;
+
+			// If we've logged in with a social network, email is not required, so don't fail if it's not present
+			if (email.length() > 0)
+				user.setEmail(email);
 		}
-		String password =  ((TextView) findViewById(R.id.view_profile_password)).getText().toString();
-		if (password.length() < 6) {
-			Toast.makeText(this, "Please create a password that's at least 6 characters long", Toast.LENGTH_SHORT).show();
-			return null;			
-		}
-		String password_confirm =  ((TextView) findViewById(R.id.view_profile_password_confirm)).getText().toString();
-		if (password.compareTo(password_confirm) != 0) {
-			Toast.makeText(this, "Password confirmation mismatch.", Toast.LENGTH_SHORT).show();
-			return null;						
-		}
-		user.setPassword(password);
 
 		// Set social network fields if present
 		if( mApp.mUserProfileActivityInput != null){
-			Log.v(TAG, "Setting profile up from social netowrk with username ID " + mApp.mUserProfileActivityInput.getUserId());
 			user.setFacebookUsername(mApp.mUserProfileActivityInput.getFacebookUsername());
 			user.setFacebookId(mApp.mUserProfileActivityInput.getFacebookId());
+			user.setGoogleUsername(mApp.mUserProfileActivityInput.getGoogleUsername());
 			user.setGoogleId(mApp.mUserProfileActivityInput.getGoogleId());
 		} 
 

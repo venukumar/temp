@@ -95,8 +95,7 @@ public class OrdersSectionFragment extends Fragment {
 		new Thread() {
 
 			public void run() {
-				String response = WebServices.getUserOrdersList(mApp
-						.getApplicationContext());
+				String response = WebServices.getUserOrdersList(mApp);
 
 				Log.v(TAG, "oreders " + response);
 

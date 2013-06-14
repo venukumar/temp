@@ -700,13 +700,13 @@ public class ConnectivityService extends Service implements AppObserver {
 
         	
         	// Skip if there is no profile
-        	if (mApp.mProfile == null || mApp.mProfile.image == null) {
+        	if (mApp.mProfile == null || !mApp.mProfile.hasImage()) {
         		Log.d(TAG, "Profile not found, skipping commmand...");
         		return;
         	}
         	
         	// Encode image into a compressed JPEG stream
-        	Bitmap bm = mApp.mProfile.image;
+        	Bitmap bm = mApp.mProfile.getImage();
         	ByteArrayOutputStream baos = new ByteArrayOutputStream();  
         	bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object   
         	byte[] b = baos.toByteArray();

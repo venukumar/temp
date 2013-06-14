@@ -33,6 +33,7 @@ public class DrinkDialogFragment extends DialogFragment {
 	public MenuDrink drink;
 	public UserProfile profile;
 	public String tipPercentageValue;
+	private View view;
 
 	/*
 	 * The activity that creates an instance of this dialog fragment must
@@ -63,8 +64,6 @@ public class DrinkDialogFragment extends DialogFragment {
 		}
 	}
 
-	DialogInterface dialog = null;
-	private View view;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -140,11 +139,11 @@ public class DrinkDialogFragment extends DialogFragment {
 	private void updateProfileView(UserProfile profile) {
 		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));
 		
-		if (profile.image == null) {
+		if (!profile.hasImage()) {
 			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile,
 					profileImageView);
 		} else {
-			profileImageView.setImageBitmap(profile.image);
+			profileImageView.setImageBitmap(profile.getImage());
 		}
 		((TextView) view.findViewById(R.id.view_user_dialog_info))
 		.setText(profile.getNickname());	

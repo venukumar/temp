@@ -149,14 +149,14 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 				JSONArray array = peopleData.getJSONArray("checkedInUsers");
 				for (int i = 0; i < array.length(); i++) {
 					String name = null, gender = null, imagepath = null;
-					int bartsyID = 0;
+					String bartsyID = null;
 					JSONObject json = array.getJSONObject(i);
 					if (json.has("nickName"))
 						name = json.getString("nickName");
 					if (json.has("gender"))
 						gender = json.getString("gender");
 					if (json.has("bartsyId"))
-						bartsyID = json.getInt("bartsyId");
+						bartsyID = json.getString("bartsyId");
 					if (json.has("userImagePath")) {
 						imagepath = json.getString("userImagePath");
 					}
@@ -165,7 +165,7 @@ public class PeopleSectionFragment extends Fragment implements OnClickListener {
 					UserProfile profile = null;
 					boolean found = false;
 					for (UserProfile p : knownPeople) {
-						if (p.bartsyId == bartsyID && p.image != null) {
+						if (p.getBartsyId().equalsIgnoreCase(bartsyID) && p.hasImage()) {
 							// Found the profile and it has an image. Shamelessly reuse it
 							Log.v(TAG, "Reusing image for profile " + bartsyID);
 							profile = p;

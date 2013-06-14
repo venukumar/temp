@@ -24,6 +24,12 @@ public class Constants {
 	public static final String URL_LIST_OF_USER_ORDERS = DOMAIN_NAME
 			+ PROJECT_NAME + "data/getUserOrders";
 	
+	// Get user profile from login information
+	public static final String URL_GET_USER_PROFILE = DOMAIN_NAME + PROJECT_NAME
+			+ "user/getUserProfile";
+	// Get user profile from login information
+	public static final String URL_SYNC_USER_DETAILS = DOMAIN_NAME + PROJECT_NAME
+			+ "user/syncUserDetails";
 	// This is the url for posting the Profiles Data to server
 	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME
 			+ PROJECT_NAME + "user/saveUserProfile";

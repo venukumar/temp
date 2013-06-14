@@ -710,7 +710,7 @@ public class VenueActivity extends FragmentActivity implements
 					+ order.description + "</argument>" + "<argument>"
 					+ order.total + "</argument>"
 					+ "<argument>" // Image +
-					+ "</argument>" + "<argument>" + mApp.mProfile.bartsyId
+					+ "</argument>" + "<argument>" + mApp.mProfile.getBartsyId()
 					+ "</argument>" +
 					// Each order contains the profile of the sender (and
 					// later the profile of the person that should pick it up)
@@ -728,7 +728,7 @@ public class VenueActivity extends FragmentActivity implements
 			
 		} else {
 			// Web service call - the response in handled asynchronously in processOrderDataHandler()
-			if (WebServices.postOrderTOServer(VenueActivity.this, order, mApp.mActiveVenue.getId(),
+			if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
 					processOrderDataHandler))
 				// Failed to place syscall due to internal error
 				Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
@@ -808,7 +808,7 @@ public class VenueActivity extends FragmentActivity implements
 																// this end
 				"<argument>" + order.serverID + "</argument>" + // arg(1)
 				"<argument>" + order.clientID + "</argument>" + // arg(2)
-				"<argument>" + order.orderSender.bartsyId + "</argument>" + // arg(3)
+				"<argument>" + order.orderSender.getBartsyId() + "</argument>" + // arg(3)
 				"</command>");
 
 		// Update tab title with the number of open orders
@@ -827,7 +827,7 @@ public class VenueActivity extends FragmentActivity implements
 
 		// Because with Alljoyn every connected client gets a command, we make
 		// sure this command is for us
-		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.bartsyId))
+		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.getBartsyId()))
 			return true;
 
 		mApp.updateOrder(command.arguments.get(1), command.arguments.get(0));

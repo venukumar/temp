@@ -47,6 +47,9 @@ import com.google.android.gms.plus.PlusClient.OnAccessRevokedListener;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.dialog.DrinkDialogFragment;
+import com.vendsy.bartsy.dialog.LoginDialogFragment;
+import com.vendsy.bartsy.dialog.LoginDialogFragment.LoginDialogListener;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
@@ -56,7 +59,7 @@ import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends FragmentActivity implements
-		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener {
+		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener, LoginDialogListener {
 
 	private static final String TAG = "InitActivity";
 
@@ -125,7 +128,7 @@ public class InitActivity extends FragmentActivity implements
 
 	@Override
 	public void onClick(View v) {
-		Log.d(TAG, "Connecting to Google+...");
+		Log.d(TAG, "Clicked on a button");
 
 		switch (v.getId()) {
 		case R.id.sign_in_button:
@@ -166,9 +169,60 @@ public class InitActivity extends FragmentActivity implements
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 
 			break;
+			
+		case R.id.view_init_sign_in:
+
+			new LoginDialogFragment().show(getSupportFragmentManager(),"Please log in to Bartsy");
+			
+			break;
 		}
 	}
 
+	
+	
+	@Override
+	public void onDialogPositiveClick(LoginDialogFragment dialog) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "Login with username " + dialog.username, Toast.LENGTH_SHORT).show();
+		
+		// Create a new thread to handle getting a response from the host
+		
+		final UserProfile user = new UserProfile();
+		user.setLogin(dialog.username);
+		user.setPassword(dialog.password);
+		
+		new Thread() {
+			public void run() {
+				UserProfile profile = WebServices.getUserProfile(mApp.getApplicationContext(), user);
+
+				// If there was an error, Toast it and do nothing more.
+				if (profile == null) {
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(mActivity, "Could not log in. Please try again.", Toast.LENGTH_SHORT).show();
+						}
+					});
+					return;
+				}
+
+				// We got a new user. Start profile edit activity using this user and the input
+				mApp.mUserProfileActivityInput = profile;
+				Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+				mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+			};
+		}.start();
+	}
+
+	@Override
+	public void onDialogNegativeClick(LoginDialogFragment dialog) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "Cancel login", Toast.LENGTH_SHORT).show();
+		
+	}
+
+	
+	
 	@Override
 	protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
 		
@@ -363,7 +417,7 @@ public class InitActivity extends FragmentActivity implements
 
 			new Thread() {
 				public void run() {
-					int bartsyUserId=0;
+					String bartsyUserId = null;
 					
 					try {
 						// Service call for post profile data to server
@@ -383,21 +437,21 @@ public class InitActivity extends FragmentActivity implements
 								}
 								
 								if (resultJson.has("bartsyId")) {
-									bartsyUserId = resultJson.getInt("bartsyId");
+									bartsyUserId = resultJson.getString("bartsyId");
 
 									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
 								} else {
 									Log.e(TAG, "BartsyID " + "bartsyUserId not found");
 								}
 								
-								final int bartsyId = bartsyUserId;
+								final String bartsyId = bartsyUserId;
 								// To check whether user is checkedIn or not. If user already checkedIn then it 
 								// should navigate to VenueActivity, otherwise it should navigate to MainActivity
 								
 								mHandler.post(new Runnable() {
 									public void run() {
 										// Save profile in the global application structure and in preferences
-										userProfile.bartsyId = bartsyId;
+										userProfile.setBartsyId(bartsyId);
 										
 										mApp.saveUserProfile(userProfile);
 										
@@ -555,6 +609,12 @@ public class InitActivity extends FragmentActivity implements
 				// Set up create account button
 				Button bt = (Button) v.findViewById(R.id.view_init_create_account);
 				bt.setOnClickListener(mActivity);
+				
+				// Set up create account button
+				bt = (Button) v.findViewById(R.id.view_init_sign_in);
+				bt.setOnClickListener(mActivity);
+				
+				
 				break;
 			}
 			collection.addView(v);
@@ -618,4 +678,5 @@ public class InitActivity extends FragmentActivity implements
 			return null;
 		}
 	}
+
 }

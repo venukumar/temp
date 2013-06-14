@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
@@ -33,6 +34,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
+	MainActivity mActivity = null;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 
 
@@ -43,21 +45,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
+		mActivity = this;
 		
-		
-		// If the user profile is not set, start the init activity
-		if (mApp.mProfile == null) {
-			Intent intent = new Intent().setClass(this, InitActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			finish();
-			return;
-		} 
 		
 		setContentView(R.layout.main);
 
 		if (mApp.mActiveVenue == null) {
-
+			
 			// No active venue - hide active menu UI
 			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
 			
@@ -140,14 +134,21 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			// For now don't do anything
 			break;
 		case R.id.button_settings:
-			mApp.mUserProfileActivityInput = mApp.mProfile;
+			
+			Log.v(TAG, "User profile button");
+			
+			mApp.mUserProfileActivityInput = null;
+			
+			if (mApp.mProfile != null) {
+
+				// We have a profile, use username/password and get the rest of the details from the server
+				
+				// For now just use our saved profile
+				mApp.mUserProfileActivityInput = mApp.mProfile;			
+			} 
+			
 			intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
-/*
-			intent = new Intent().setClass(this, SettingsActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			this.startActivity(intent);
-*/
 			break;
 		}
 	}

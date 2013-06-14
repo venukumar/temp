@@ -1,5 +1,7 @@
 package com.vendsy.bartsy.utils;
 
+import io.card.payment.CreditCard;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,11 +45,13 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
 
 public class WebServices {
@@ -103,7 +107,7 @@ public class WebServices {
 		postData.put("apiVersion", Constants.API_VERSION);
 		String data = postData.toString();
 		
-		Log.v(TAG, "postRequest(" + url + ", " + data + ")");
+		Log.v(TAG, "Post request: " + url + ", " + data + ")");
 
 		try {
 			boolean status = isNetworkAvailable(context);
@@ -120,6 +124,9 @@ public class WebServices {
 
 					String responseofmain = EntityUtils.toString(httpResponse.getEntity());
 					response = responseofmain.toString();
+					
+					Log.v(TAG, "request response: " + response);
+					
 				} catch (Exception e) {
 					Log.e("log_tag", "Error in http connection" + e.toString());
 					Log.v(TAG, "Exception found ::: " + e.getMessage());
@@ -141,7 +148,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String userCheckInOrOut (final Context context, int bartsyID, String venueId, String url) {
+	public static String userCheckInOrOut (final Context context, String bartsyID, String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
@@ -214,19 +221,19 @@ public class WebServices {
 	 * @return	true	- failed to send syscall
 	 * 			false	- successfully sent syscall
 	 */
-	public static boolean postOrderTOServer(final Context context, final Order order, 
+	public static boolean postOrderTOServer(final BartsyApplication app, final Order order, 
 			String venueID, final Handler processOrderDataHandler) {
+		final Context context = app.getApplicationContext();
 		final JSONObject orderData = order.getPlaceOrderJSON();
-		Resources r = context.getResources();
-		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
+		
+		String bartsyId = app.loadBartsyId();
 
 		// Prepare syscall 
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
 			if(order.orderReceiver!=null){
-				orderData.put("recieverBartsyId", order.orderReceiver.bartsyId);
+				orderData.put("recieverBartsyId", order.orderReceiver.getBartsyId());
 			}
 			orderData.put("specialInstructions", "");
 
@@ -309,19 +316,23 @@ public class WebServices {
 			// added apiVersion
 			json.put("apiVersion", Constants.API_VERSION);
 			
-			// Make sure the profile has username/password and add them
-			if (!user.hasLogin()) {
-				Log.e(TAG, "Missing login");
-				return null;
-			} else {
+/*
+ 			// Make sure the profile has login information and add it
+			if (user.hasLogin() && user.hasPassword()) {
 				json.put("bartsyLogin", user.getLogin());
-			}
-			if (!user.hasPassword()) {
-				Log.e(TAG, "Missing password");
-				return null;
-			} else {
 				json.put("bartsyPassword", user.getPassword());
+				return null;
+			} else if (user.hasFacebookUsername() && user.hasFacebookId()) {
+				json.put("facebookUserName", user.getFacebookUsername());
+				json.put("facebookId", user.getFacebookId());
+			} else if (user.hasGoogleUsername() && user.hasGoogleId()) {
+				json.put("googleUserName", user.getGoogleUsername());
+				json.put("googleId", user.getGoogleId());
+			} else {
+				Log.e(TAG, "Missing all login information");
+				return null;				
 			}
+*/
 
 			// Required parameters (user)
 			if (!user.hasNickname()) {
@@ -332,15 +343,23 @@ public class WebServices {
 			}
 
 			// Set up social network connections
+			if (user.hasLogin()) 
+				json.put("bartsyLogin", user.getLogin());
+			if (user.hasPassword()) 
+				json.put("bartsyPassword", user.getPassword());
 			if (user.hasFacebookUsername())
-				json.put("userName", user.getFacebookUsername());
+				json.put("facebookUserName", user.getFacebookUsername());
 			if (user.hasFacebookId()) 
 				json.put("facebookId", user.getFacebookId());
+			if (user.hasGoogleUsername()) 
+				json.put("googleUserName", user.getGoogleUsername());
 			if (user.hasGoogleId()) 
 				json.put("googleId", user.getGoogleId());
 
 			
 			// Optional parameters (user)
+			if (user.hasEmail())
+				json.put("email", user.getEmail());
 			if (user.hasVisibility())
 				json.put("showProfile", user.getVisibility());
 			if (user.hasName())
@@ -470,18 +489,14 @@ public class WebServices {
 	 * @return ordersList
 	 */
 
-	public static String getUserOrdersList(Context context) {
-		Resources r = context.getResources();
-		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
-		int bartsyId = sharedPref.getInt(r.getString(R.string.config_user_bartsyId), 0);
+	public static String getUserOrdersList(BartsyApplication app) {
 
 		String response = null;
 		try {
 
 			JSONObject postData = new JSONObject();
-			postData.put("bartsyId", bartsyId);
-			response = WebServices.postRequest(
-					Constants.URL_LIST_OF_USER_ORDERS, postData, context);
+			postData.put("bartsyId", app.loadBartsyId());
+			response = WebServices.postRequest(Constants.URL_LIST_OF_USER_ORDERS, postData, app.getApplicationContext());
 
 		} catch (Exception e) {
 			Log.v(TAG, "getUserOdersList Exception found " + e.getMessage());
@@ -532,11 +547,148 @@ public class WebServices {
 			json.put("orderStatus", order.status);
 			response = postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, context);
 		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
 
 		return response;
 	}
 
+	
+	/**
+	 * Get user profile using username/password or one of the social network ID's as the key. If present, 
+	 * username password take priority. 
+	 * 
+	 * @param context 
+	 * @param venueID
+	 * @param userProfile: this is used for username/password or one of the social network ID's 
+	 * 
+	 * Return either a new profile with the parameters returned from the host or null if an error occurred or the
+	 * profile doesn't exist
+	 */
+	public static UserProfile getUserProfile(Context context, UserProfile login) {
+
+		Log.v(TAG, "userLogin()");
+
+		try {
+
+			JSONObject json = new JSONObject();
+			
+			// Setup call parameters
+			if (login.hasLogin() && login.hasPassword()) {
+				// Login with username/password
+				json.put("bartsyLogin", login.getLogin());
+				json.put("bartsyPassword", login.getPassword());
+			} else if (login.hasFacebookUsername() && login.hasFacebookId()) {
+				json.put("facebookUserName", login.getFacebookUsername());
+				json.put("facebookId", login.getFacebookId());
+			} else if (login.hasGoogleUsername() && login.hasGoogleId()) {
+				json.put("googleUserName", login.getGoogleId());
+				json.put("googleId", login.getGoogleId());
+			} else if (login.hasLogin() && login.hasBartsyId()) {
+				json.put("bartyLogin", login.getLogin());
+				json.put("bartsyId", login.getBartsyId());
+			} 
+
+			// Place API call and check for errors
+			JSONObject result = new JSONObject(postRequest(Constants.URL_GET_USER_PROFILE, json, context));
+			String errorCode = result.getString("errorCode");
+
+			// Parse response if no error
+			if (errorCode.equalsIgnoreCase("0")) {
+				UserProfile user = new UserProfile();
+				
+				if (result.has("bartsyId"))
+					user.setBartsyId(result.getString("bartsyId"));
+				if (result.has("bartsyLogin"))
+					user.setLogin(result.getString("bartsyLogin"));
+				if (result.has("bartsyPassword"))
+					user.setPassword(result.getString("bartsyPassword"));
+				if (result.has("dateofbirth"))
+					user.setBirthday(result.getString("dateofbirth"));
+				if (result.has("description"))
+					user.setDescription(result.getString("description"));
+				if (result.has("gender"))
+					user.setGender(result.getString("gender"));
+				if (result.has("nickname"))
+					user.setNickname(result.getString("nickname"));
+				if (result.has("orientation"))
+					user.setOrientation(result.getString("orientation"));
+				if (result.has("showProfile"))
+					user.setVisibility(result.getString("showProfile"));
+				if (result.has("status"))
+					user.setStatus(result.getString("status"));
+				if (result.has("userImage"))
+					user.setImagePath(Constants.DOMAIN_NAME + result.getString("userImage"));
+					
+				return user;
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		return null;
+	}
+
+	
+
+	/**
+	 * Get user profile using username/password or one of the social network ID's as the key. If present, 
+	 * username password take priority. 
+	 * 
+	 * @param context 
+	 * @param venueID
+	 * @param userProfile: this is used for username/password or one of the social network ID's 
+	 * 
+	 * Return either a new profile with the parameters returned from the host or null if an error occurred or the
+	 * profile doesn't exist
+	 */
+	public static Venue syncUserDetails(Context context, UserProfile user) {
+
+		Log.v(TAG, "userLogin()");
+
+		try {
+
+			JSONObject json = new JSONObject();
+			
+			// Required system parameter
+			SharedPreferences settings = context.getSharedPreferences(GCMIntentService.REG_ID, 0);
+			json.put("deviceType", String.valueOf(Constants.DEVICE_Type));
+			json.put("deviceToken", settings.getString("RegId", ""));
+			
+			
+			if (user.hasBartsyId())
+				json.put("bartsyId", user.getBartsyId());
+			if (user.hasLogin())
+				json.put("bartsyLogin", user.getLogin());
+
+			// Set the syscall type
+			json.put("type", "login");
+			
+			// Place API call and check for errors
+			JSONObject result = new JSONObject(postRequest(Constants.URL_SYNC_USER_DETAILS, json, context));
+			String errorCode = result.getString("errorCode");
+
+			// Parse response if no error
+			if (errorCode.equalsIgnoreCase("0")) {
+
+				if (result.has("venueId") && result.has("venueName")) {
+					// We are checked in - return the venue details
+					
+					Venue venue = new Venue();
+					venue.setId(result.getString("venueId"));
+					venue.setName(result.getString("venueName"));
+					return venue;
+				}
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		return null;
+	}
+
+	
+	
 	/**
 	 * @methodName : downloadImage
 	 * 

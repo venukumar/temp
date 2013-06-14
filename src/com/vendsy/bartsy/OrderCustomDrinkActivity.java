@@ -205,7 +205,7 @@ public class OrderCustomDrinkActivity extends Activity{
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(this, order, mApp.mActiveVenue.getId(),
+		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
 							processOrderDataHandler))
 		// Failed to place syscall due to internal error
 		Toast.makeText(this, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();

@@ -25,27 +25,29 @@ public class UserProfile {
 
 	static final String TAG = "Profile";
 	
-	// User record ID
-	public int bartsyId ;				// Unique ID enforced by Bartsy server
 
 	// User login information
-	private String login  = null; 		// required and doubles as email for the user
-	private String password = null;		// required
+	private String login  = null; 			// required and doubles as email for the user
+	private String bartsyId ;				// Unique ID enforced by Bartsy server
+	private String password = null;			// required
 			
-	// Optional social network parameters
-	public String googleId = null; 		// Google user id
-	private String sdf = null;
+	// Optional Google login parameters
+	private String googleUsername = null;	
+	private String googleId = null; 		// Google user id
+
+	// Optional Facebook login parameters
+	private String facebookUsername = null;	// user's Facebook username
 	private String facebookId = null;
-	public String facebookUsername = null;		// user's Facebook username
 	
 	// Required user information
-	public Bitmap image = null;			// user's main profile image
+	private Bitmap image = null;			// user's main profile image
 	private String imagePath = null;
 	private String nickname = null;
+	private String email = null;
 
 	// Optional user information
-	public String location = null;		// use string for now
-	public String info = null;			// info string
+	public String location = null;			// use string for now
+	public String info = null;				// info string
 	public String description = null;
 	private String name = null;
 	private String gender  = null;
@@ -56,9 +58,9 @@ public class UserProfile {
 	private String visibility = null;	
 	private String firstName = null;
 	private String lastName = null;
-	private String birthday  = null;	// MM/DD/YYYY
-	private String status = null; 		// relationship status ("single", "attached", 
-	private String orientation = null;  // sexual orientation
+	private String birthday  = null;		// MM/DD/YYYY
+	private String status = null; 			// relationship status ("single", "attached", 
+	private String orientation = null;  	// sexual orientation
 
 	// The view of a particular user in the people list (expects a layout type of user_item.xml)
 	public View view = null; 	
@@ -86,33 +88,6 @@ public class UserProfile {
 	
 	
 	/*
-	 * Constructor to set some basic profile information
-	 * 
-	 * @param userid
-	 * @param username
-	 * @param location
-	 * @param info
-	 * @param description
-	 * @param image
-	 * @param imagePath
-	 */
-	
-	/*
-	public UserProfile(int bartsyID, String userid, String username, String location,
-			String info, String description, Bitmap image, String imagePath) {
-		this.bartsyID = bartsyID;
-		this.image = image;
-		this.userID = userid;
-		this.username = username;
-		this.location = location;
-		this.info = info;
-		this.description = description;
-		this.image = image;
-		this.imagePath = imagePath;
-	}
-	*/
-	
-	/*
 	 * Constructor using Google+ profile as a base.  
 	 * 
 	 * @param person
@@ -120,10 +95,13 @@ public class UserProfile {
 	 */
 	public UserProfile (Person person, String email) {
 		
-		login = email;
+		// Setup Google login parameters
+		googleUsername = email;
 		googleId = person.getId();
-		name = person.getDisplayName();
 
+		name = person.getDisplayName();
+		this.email = email;
+		
 		if (person.hasGender()) {
 			switch (person.getGender()) {
 			case Person.Gender.MALE:
@@ -183,15 +161,21 @@ public class UserProfile {
 			e1.printStackTrace();
 		}
 		
-		if(person.has("first_name"))
+		if (person.has("first_name"))
 			try {
 				setFirstName(person.getString("first_name"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-		if(person.has("last_name"))
+		if (person.has("last_name"))
 			try {
 				setLastName(person.getString("last_name"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		if (person.has("email"))
+			try {
+				setLastName(person.getString("email"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -229,17 +213,17 @@ public class UserProfile {
 	 */
 	
 	public boolean hasBartsyId() {
-		if (bartsyId == -1)
+		if (bartsyId == null || bartsyId.equalsIgnoreCase(""))
 			return false;
 		else 
 			return true;
 	}
 
-	public int getBartsyId() {
+	public String getBartsyId() {
 		return bartsyId;
 	}
 
-	public void setBartsyId(int bartsyID) {
+	public void setBartsyId(String bartsyID) {
 		this.bartsyId = bartsyID;
 	}
 
@@ -286,6 +270,21 @@ public class UserProfile {
 
 	public void setGoogleId(String googleId) {
 		this.googleId = googleId;
+	}
+
+	public boolean hasGoogleUsername() {
+		if (googleUsername == null || googleUsername.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getGoogleUsername() {
+		return googleUsername;
+	}
+
+	public void setGoogleUsername(String googleUsername) {
+		this.googleUsername = googleUsername;
 	}
 
 	public boolean hasName() {
@@ -363,6 +362,21 @@ public class UserProfile {
 		this.nickname = name;
 	}
 
+	public boolean hasEmail() {
+		if (email == null || email.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setEmail(String name) {
+		this.email = name;
+	}
+
 	public boolean hasGender() {
 		if (gender == null || gender.equalsIgnoreCase(""))
 			return false;
@@ -376,21 +390,6 @@ public class UserProfile {
 
 	public void setGender(String gender) {
 		this.gender = gender;
-	}
-
-	public boolean hasUserId() {
-		if (googleId == null || googleId.equalsIgnoreCase(""))
-			return false;
-		else 
-			return true;
-	}
-
-	public String getUserId() {
-		return googleId;
-	}
-
-	public void setUserId(String userId) {
-		this.googleId = userId;
 	}
 
 	public boolean hasPassword() {

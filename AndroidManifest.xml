@@ -74,6 +74,18 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name">
 
+        <activity 
+            android:name=".SplashActivity"            
+            android:theme="@android:style/Theme.Holo.NoActionBar"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
         <!-- Activities responsible for gathering payment info -->
         <activity
             android:name="io.card.payment.CardIOActivity"
@@ -132,15 +144,8 @@
         
         <activity
             android:name=".MainActivity"
-            android:icon="@drawable/ic_launcher"
-            android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <receiver
