@@ -91,13 +91,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 			message = processPushNotification(message);
 		
 		// notifies user
-		if (message != null) {
+		if (message != null)
 			generateNotification(context, message, count);
-			Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-			Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
-			if (ringtone != null) 
-				ringtone.play();
-		}
 	}
 
 	/**
@@ -127,8 +122,24 @@ public class GCMIntentService extends GCMBaseIntentService {
 					
 					Log.v(TAG, "Heartbeat" + json);
 					
+					// Bartsy ID mismatch - don't send response for now
+					if (app.loadBartsyId() == null ||
+							!app.loadBartsyId().equalsIgnoreCase(json.getString("bartsyId"))) {
+						Log.e(TAG, "Received hearbeat for user " + json.getString("bartsyId") + " instead of local user: " + app.loadBartsyId());
+						return null;
+					}
+					
+					
+					// Update venue, order and people counts
+					if (json.has("venueId"))
+						app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"), json.getInt("orderCount"));
+					else {
+						// We don't have an active venue - make sure we don't and delete local references
+						app.userCheckOut();
+					}
+					
 					// Send reply to host
-					WebServices.postHeartbeatResponse(app.getApplicationContext(), "" + app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
+					WebServices.postHeartbeatResponse(app.getApplicationContext(), app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
 					messageTypeMSG = null;
 				}else if(json.getString("messageType").equals("DrinkOffered")){
 					// To display offer drink dialog
@@ -194,17 +205,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		}
-		notificationManager.notify(0, notification);
 
 		notification.defaults = Notification.DEFAULT_ALL;
-		// int count1 = Integer.parseInt(count);
-
-		// // Play default notification sound
-		// notification.defaults |= Notification.DEFAULT_SOUND;
-		//
-		// // Vibrate if vibrate is enabled
-		// notification.defaults |= Notification.DEFAULT_VIBRATE;
-		// notificationManager.notify(0, notification);
+		notificationManager.notify(0, notification);
 	}
 
 }
