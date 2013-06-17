@@ -98,7 +98,7 @@
         <activity
             android:name="com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:label="Contacts Client"
+            android:label="@string/app_name"
             android:screenOrientation="portrait" >
         </activity>
 
