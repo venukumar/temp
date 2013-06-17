@@ -138,7 +138,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			
 
 			// Setup visibility preference
-			if (person.getVisibility()!=null && person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
+			if (person.hasVisibility() && person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
 
 				((CheckBox) findViewById(R.id.view_profile_checkbox_details)).setChecked(true);
 				findViewById(R.id.view_profile_details).setVisibility(View.VISIBLE);
