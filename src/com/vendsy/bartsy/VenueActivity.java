@@ -125,7 +125,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
+
 		Log.v(TAG, "onCreate()");
 		
 		// Set base view for the activity
@@ -181,6 +181,11 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		 * from other components.
 		 */
 		mApp.addObserver(this);
+		
+		// Load the active venue which we will save onDestroy. This is so we don't get into situations where we
+		// are in the activity and the application is killed without setting up an active venue
+		mApp.loadActiveVenue();
+		
 
 	}
 
@@ -254,9 +259,13 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	}
 
+	@Override
 	public void onStop() {
 		super.onStop();
 		Log.v(TAG, "onStop()");
+		
+		// Save active venue
+		mApp.saveActiveVenue();
 	}
 
 	@Override
@@ -369,7 +378,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		for (int i= 0 ; i < mTabs.length ; i++) {
 			if (mTabs[i] == R.string.title_drink_orders) {
 				// Found the right tab - update it
-				getSupportActionBar().getTabAt(i).setText("Orders (" + mApp.mOrders.size() + ")");
+				getSupportActionBar().getTabAt(i).setText("Orders (" + mApp.mActiveVenue.getOrderCount() + ")");
 				return;
 			}
 		}
@@ -384,7 +393,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		for (int i= 0 ; i < mTabs.length ; i++) {
 			if (mTabs[i] == R.string.title_people) {
 				// Found the right tab - update it
-				getSupportActionBar().getTabAt(i).setText("People (" + mApp.mPeople.size() + ")");
+				getSupportActionBar().getTabAt(i).setText("People (" +  mApp.mActiveVenue.getUserCount() + ")");
 				return;
 			}
 		}
@@ -806,9 +815,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				// Increment the local order count
 				mApp.mOrderIDs++;
 
-				// Update tab title with the number of open orders
-				updateOrdersCount();
-				
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE:
