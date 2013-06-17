@@ -45,47 +45,69 @@ public class SplashActivity extends Activity {
 
 		// If the user profile is not set, start the init activity
 		if (mApp.mProfile == null) {
+			Log.e(TAG, "No saved profile found - load init activity");
+			
 			Intent intent = new Intent().setClass(this, InitActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
 			return;
 		} 
-		   
+
+		Log.e(TAG, "Previously saved profiled found, try to log in: " + mApp.mProfile);
+		
+		// We have saved profile information from preferences. Get latest profile info from host and also get user status
 		new AsyncLoadXMLFeed().execute();
-	   }
+	}
 
-	   private class AsyncLoadXMLFeed extends AsyncTask<Void, Void, Void>{
-	      @Override
-	      protected void onPreExecute(){
-	            // show your progress dialog
-	      }
-
-	      @Override
-	      protected Void doInBackground(Void... Voids){
-	            // load your xml feed asynchronously
-	    	  
-
-				Venue venue = WebServices.syncUserDetails(mApp.getApplicationContext(), mApp.mProfile);
-
-				// If venue found - set it up as the active venue
-				if (venue != null) {
-					Log.v(TAG, "Active venue found: " + venue.getName());
-					mApp.userCheckIn(venue);
-					
-				}
+	private class AsyncLoadXMLFeed extends AsyncTask<Void, Void, Void>{
+		@Override
+		protected void onPreExecute(){
+			         // show your progress dialog
+		}
+		
+		@Override
+		protected Void doInBackground(Void... Voids) {
+		    // load your xml feed asynchronously
+		  
+			
+			UserProfile user = WebServices.getUserProfile(getApplicationContext(), mApp.mProfile);
+			if (user == null) {
+				// Could not get user details - erase our user locally and of course, don't check anybody in
+				Log.v(TAG, "Could not load user profile");
+				mApp.eraseUserProfile();
 				return null;
-	      }
-
-	      @Override
-	      protected void onPostExecute(Void params){
-	            // dismiss your dialog
-	            // launch your News activity
-				Toast.makeText(mActivity, "Synced with server", Toast.LENGTH_SHORT).show();
-				Intent intent = new Intent().setClass(SplashActivity.this, MainActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				finish();
-	      }
+			} else {
+				// Got a valid profile - save it locally 
+				Log.v(TAG, "Found profile: " + user);
+				mApp.saveUserProfile(user);
+			}
+			
+			Venue venue = WebServices.syncUserDetails(mApp, user);
+		
+			// If venue found - set it up as the active venue
+			if (venue != null) {
+				Log.v(TAG, "Active venue found: " + venue.getName());
+				mApp.userCheckIn(venue);
+				
+			} else {
+				// 
+				Log.v(TAG, "Active venue not found");
+				mApp.userCheckOut();
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void params){
+			// dismiss your dialog
+			// launch your News activity
+			if (mApp.mProfile != null)
+				Toast.makeText(mActivity, "Logged in as " + mApp.mProfile.getNickname(), Toast.LENGTH_SHORT).show();
+			Intent intent = new Intent().setClass(SplashActivity.this, MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			finish();
+		}
 	}
 }
