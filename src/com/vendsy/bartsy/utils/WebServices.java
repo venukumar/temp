@@ -336,10 +336,12 @@ public class WebServices {
 			}
 
 			// Set up social network connections
-			if (user.hasLogin()) 
-				json.put("bartsyLogin", user.getLogin());
+			if (user.hasBartsyLogin()) 
+				json.put("bartsyLogin", user.getBartsyLogin());
 			if (user.hasPassword()) 
 				json.put("bartsyPassword", user.getPassword());
+			if (user.hasBartsyId()) 
+				json.put("bartsyId", user.getBartsyId());
 			if (user.hasFacebookUsername())
 				json.put("facebookUserName", user.getFacebookUsername());
 			if (user.hasFacebookId()) 
@@ -371,11 +373,12 @@ public class WebServices {
 				json.put("description", user.getDescription());
 			if (user.hasGender()) 
 				json.put("gender", user.getGender());
-			if (user.hasCreditCard()) {
-				json.put("creditCardNumber", user.getCreditCard().cardNumber);
-				json.put("expMonth", Integer.toString(user.getCreditCard().expiryMonth));
-				json.put("expYear", Integer.toString(user.getCreditCard().expiryYear));				
-			}
+			if (user.hasCreditCardNumber()) 
+				json.put("creditCardNumber", user.getCreditCardNumber());
+			if (user.hasExpMonth())
+				json.put("expMonth", user.getExpMonth());
+			if (user.hasExpYear())	
+				json.put("expYear", user.getExpYear());
 			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
@@ -567,19 +570,20 @@ public class WebServices {
 			JSONObject json = new JSONObject();
 			
 			// Setup call parameters
-			if (login.hasLogin() && login.hasPassword()) {
+			if (login.hasBartsyId())
+				json.put("BartsyId", login.getBartsyId());
+			if (login.hasBartsyLogin() && login.hasPassword()) {
 				// Login with username/password
-				json.put("bartsyLogin", login.getLogin());
+				json.put("bartsyLogin", login.getBartsyLogin());
 				json.put("bartsyPassword", login.getPassword());
-			} else if (login.hasFacebookUsername() && login.hasFacebookId()) {
+			} 
+			if (login.hasFacebookUsername() && login.hasFacebookId()) {
 				json.put("facebookUserName", login.getFacebookUsername());
 				json.put("facebookId", login.getFacebookId());
-			} else if (login.hasGoogleUsername() && login.hasGoogleId()) {
-				json.put("googleUserName", login.getGoogleId());
+			}
+			if (login.hasGoogleUsername() && login.hasGoogleId()) {
+				json.put("googleUserName", login.getGoogleUsername());
 				json.put("googleId", login.getGoogleId());
-			} else if (login.hasLogin() && login.hasBartsyId()) {
-				json.put("bartyLogin", login.getLogin());
-				json.put("bartsyId", login.getBartsyId());
 			} 
 
 			// Place API call and check for errors
@@ -589,13 +593,34 @@ public class WebServices {
 			// Parse response if no error
 			if (errorCode.equalsIgnoreCase("0")) {
 				UserProfile user = new UserProfile();
+
 				
+				if (result.has("bartsyLogin"))
+					user.setBartsyLogin(result.getString("bartsyLogin"));
+				if (result.has("bartsyPassword"))
+					user.setBartsyPassword(result.getString("bartsyPassword"));
 				if (result.has("bartsyId"))
 					user.setBartsyId(result.getString("bartsyId"));
-				if (result.has("bartsyLogin"))
-					user.setLogin(result.getString("bartsyLogin"));
-				if (result.has("bartsyPassword"))
-					user.setPassword(result.getString("bartsyPassword"));
+
+				if (result.has("googleUserName"))
+					user.setGoogleUsername(result.getString("googleUserName"));
+				if (result.has("googleId"))
+					user.setGoogleId(result.getString("googleId"));
+
+				if (result.has("facebookUserName"))
+					user.setFacebookUsername(result.getString("googleUserName"));
+				if (result.has("facebookId"))
+					user.setFacebookId(result.getString("facebookId"));
+
+				
+				if (result.has("name"))
+					user.setName(result.getString("name"));
+				if (result.has("firstName"))
+					user.setFirstName(result.getString("firstName"));
+				if (result.has("lastNSame"))
+					user.setLastName(result.getString("lastNname"));
+				if (result.has("dateofbirth"))
+					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("dateofbirth"))
 					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("description"))
@@ -611,7 +636,13 @@ public class WebServices {
 				if (result.has("status"))
 					user.setStatus(result.getString("status"));
 				if (result.has("userImage"))
-					user.setImagePath(Constants.DOMAIN_NAME + result.getString("userImage"));
+					user.setImagePath(result.getString("userImage"));
+				if (result.has("creditCardNumber"))
+					user.setCreditCardNumber(result.getString("creditCardNumber"));
+				if (result.has("expMonth"))
+					user.setExpMonth(result.getString("expMonth"));
+				if (result.has("expYear"))
+					user.setExpYear(result.getString("expYear"));
 					
 				return user;
 			}
@@ -635,10 +666,14 @@ public class WebServices {
 	 * Return either a new profile with the parameters returned from the host or null if an error occurred or the
 	 * profile doesn't exist
 	 */
-	public static Venue syncUserDetails(Context context, UserProfile user) {
+	public static Venue syncUserDetails(BartsyApplication context, UserProfile user) {
 
 		Log.v(TAG, "userLogin()");
 
+		// For now only load the venue from preference as this syscall is BROKEN!!!
+		return context.loadActiveVenue();
+		
+		/*
 		try {
 
 			JSONObject json = new JSONObject();
@@ -649,11 +684,17 @@ public class WebServices {
 			json.put("deviceToken", settings.getString("RegId", ""));
 			
 			
+			// Setup call parameters
 			if (user.hasBartsyId())
-				json.put("bartsyId", user.getBartsyId());
-			if (user.hasLogin())
-				json.put("bartsyLogin", user.getLogin());
-
+				json.put("BartsyId", user.getBartsyId());
+			if (user.hasBartsyLogin() && user.hasPassword()) {
+				json.put("userName", user.getBartsyLogin());
+			} else if (user.hasFacebookUsername() && user.hasFacebookId()) {
+				json.put("userName", user.getFacebookUsername());
+			} else if (user.hasGoogleUsername() && user.hasGoogleId()) {
+				json.put("userName", user.getGoogleUsername());
+			} 
+			
 			// Set the syscall type
 			json.put("type", "login");
 			
@@ -670,6 +711,13 @@ public class WebServices {
 					Venue venue = new Venue();
 					venue.setId(result.getString("venueId"));
 					venue.setName(result.getString("venueName"));
+					
+					if (result.has("orderCount"))
+						venue.setOrderCount(result.getInt("orderCount"));
+					
+					if (result.has("userCount"))
+						venue.setUserCount(result.getInt("userCount"));
+
 					return venue;
 				}
 			}
@@ -678,6 +726,8 @@ public class WebServices {
 		}
 
 		return null;
+		
+		*/
 	}
 
 	
