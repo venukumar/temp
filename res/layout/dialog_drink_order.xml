@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="#eeeeee"
+    android:background="@drawable/rounded_corner_dark"
     android:orientation="vertical"
     android:padding="@dimen/activity_vertical_margin" >
 
@@ -18,7 +18,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:background="@drawable/rounded_corner_dark"
+            android:background="@drawable/rounded_corner"
             android:gravity="center"
             android:padding="@dimen/activity_vertical_margin"
             android:text="Sambuca on the rocks"
@@ -37,20 +37,15 @@
                 android:padding="@dimen/activity_vertical_margin" >
 
                 <RelativeLayout
-                    android:layout_width="60dp"
-                    android:layout_height="60dp" >
-					<ImageView
-                        android:id="@+id/ImageView03"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/rounded_corner" />
+                    android:layout_width="80dp"
+                    android:layout_height="80dp" >
+
                     <ImageView
                         android:id="@+id/view_user_dialog_image_resource"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
+                        android:background="@drawable/rounded_corner_dark"
                         android:scaleType="fitXY" />
-
                     
                 </RelativeLayout>
 
@@ -62,16 +57,28 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" >
 
                         <TextView
                             android:id="@+id/view_user_dialog_info"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="0dp"
                             android:layout_gravity="center_vertical"
                             android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:layout_weight="2"
                             android:text=""
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                        <TextView
+                            android:id="@+id/TextView01"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="Click on the picture to change the recipient for this order (send drinks to to others!)"
+                            android:textAppearance="?android:attr/textAppearanceSmall"
+                            android:textSize="10sp" />
+
                     </LinearLayout>
 
                     <LinearLayout
@@ -82,23 +89,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="1dp" >
-
-                            <ImageView
-                                android:id="@+id/ImageView11"
-                                android:layout_width="17dp"
-                                android:layout_height="17dp"
-                                android:scaleType="fitXY"
-                                android:src="@drawable/location" />
                         </FrameLayout>
-
-                        <TextView
-                            android:id="@+id/TextView09"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                            android:text="Santa Monica, CA"
-                            android:textAppearance="?android:attr/textAppearanceSmall" />
                     </LinearLayout>
 
                     <LinearLayout

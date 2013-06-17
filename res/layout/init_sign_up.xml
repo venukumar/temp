@@ -22,55 +22,56 @@
         android:padding="@dimen/activity_vertical_margin" >
 
         <Button
-            android:id="@+id/button_active_venue"
+            android:id="@+id/view_init_create_account"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/arrowexpand_light"
             android:gravity="left|center_vertical"
-            android:hint="Active venue"
+            android:text="Sign up with Bartsy"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <Button
+            android:id="@+id/view_init_google"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/arrowexpand_light"
+            android:gravity="left|center_vertical"
+            android:text="Sign up with Google"
             android:textAppearance="?android:attr/textAppearanceLargeInverse" />
 
         <Button
-            android:id="@+id/button_checkin"
+            android:id="@+id/view_init_facebook"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:drawableLeft="@drawable/arrowexpand_light"
             android:gravity="left|center_vertical"
-            android:text="Nearby venues"
-            android:textAppearance="?android:attr/textAppearanceLargeInverse" />
+            android:text="Sign up with Facebook"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <Button
-            android:id="@+id/button_notifications"
+            android:id="@+id/view_init_toggle_sign_in"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:drawableLeft="@drawable/arrowexpand_light"
             android:gravity="left|center_vertical"
-            android:text="My notifications"
-            android:textAppearance="?android:attr/textAppearanceLargeInverse" />
+            android:text="Sign in..."
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <Button
-            android:id="@+id/button_my_profile"
+            android:id="@+id/view_init_help"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/arrowexpand_light"
             android:gravity="left|center_vertical"
-            android:text="My profile"
-            android:textAppearance="?android:attr/textAppearanceLargeInverse" />
-
-        <Button
-            android:id="@+id/button_logout"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/arrowexpand_light"
-            android:gravity="left|center_vertical"
-            android:text=" Log out"
-            android:textAppearance="?android:attr/textAppearanceLargeInverse" />
-
+            android:text="Help"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
     <LinearLayout

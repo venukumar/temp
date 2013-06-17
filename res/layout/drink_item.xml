@@ -24,18 +24,15 @@
                 android:id="@+id/view_drink_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#000000"
                 android:text="Drink title"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="15sp" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
                 android:id="@+id/view_drink_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="12sp" />
+                android:text="Subtitle"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
         </LinearLayout>
 
@@ -55,7 +52,6 @@
                 android:text="$0"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="#995555"
-                android:textSize="18sp"
                 android:textStyle="bold" />
 
 <!--  

@@ -11,7 +11,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="right"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:background="#dddddd"
         android:gravity="center_horizontal"
         android:orientation="vertical" >
         
@@ -19,12 +18,15 @@
 		    android:layout_width="match_parent"
         	android:layout_height="wrap_content">
         	
-			<TextView android:layout_width="match_parent" 
-			      android:layout_height="wrap_content" 
-			      android:text="@string/customDrinkLabel"
-			      android:textSize="20sp" 
-			      android:padding="10dp" 
-			      android:layout_marginLeft="20dp"/>
+			<TextView
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content"
+			    android:layout_marginLeft="20dp"
+			    android:padding="10dp"
+			    android:text="@string/customDrinkLabel"
+			    android:textColor="#bbbbbb"
+			    android:textSize="20sp" />
+
 		</LinearLayout>
         <ExpandableListView
             android:id="@+id/view_drinks_for_me_list"

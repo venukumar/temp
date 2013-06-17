@@ -3,104 +3,57 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="1dp"
-    android:background="#ffffff"
+    android:background="@drawable/rounded_corner_dark"
     android:padding="@dimen/activity_vertical_margin" >
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-
-        <RelativeLayout
-            android:layout_width="60dp"
-            android:layout_height="60dp" >
-
-            <ImageView
-                android:id="@+id/ImageView21"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="2dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/finnmccools" />
-
-            <ImageView
-                android:id="@+id/ImageView23"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:scaleType="fitXY"
-                android:src="@drawable/frame" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical"
         android:layout_weight="2"
         android:orientation="vertical"
         android:paddingLeft="@dimen/activity_horizontal_margin" >
 
-        <TextView
-            android:id="@+id/tittle"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Finn Mc&apos;Cool&apos;s"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="1dp" >
-
-                <ImageView
-                    android:id="@+id/ImageView22"
-                    android:layout_width="17dp"
-                    android:layout_height="17dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/location" />
-            </FrameLayout>
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/address"
+                android:id="@+id/tittle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="2435 Main St, Santa Monica, CA 90405"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:text="Finn Mc&apos;Cool&apos;s"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="2435 Main St, Santa Monica, CA 90405"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="1dp" >
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="1dp" >
-
-                <ImageView
-                    android:id="@+id/ImageView27"
-                    android:layout_width="17dp"
-                    android:layout_height="17dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/wifi" />
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/TextView27"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:text="WiFi available"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -110,7 +63,8 @@
 
         <RelativeLayout
             android:layout_width="60dp"
-            android:layout_height="60dp" >
+            android:layout_height="60dp"
+            android:background="@drawable/rounded_corner" >
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -125,16 +79,12 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:gravity="center_horizontal"
+                    android:padding="@dimen/activity_vertical_margin"
                     android:text="Within check-in distance"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
-            </LinearLayout>
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="10sp" />
 
-            <ImageView
-                android:id="@+id/ImageView24"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleType="fitXY"
-                android:src="@drawable/frame" />
+            </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
 
