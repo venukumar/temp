@@ -155,34 +155,66 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * Set the active venue to null and remove orders and people from the global
 	 * data structures. Assumes the views will be updated from elsewhere
 	 */
+	
+
+	public void updateActiveVenue(String venueId, String venueName, int userCount, int orderCount) {
+
+		Log.v(TAG, "updateActiveVenue(" + venueId + ", " + venueName + ", " + userCount + ", " + orderCount);
+		
+		if (mActiveVenue == null) {
+			// Server thinks we're checked in but we have no active venue - check user in
+			Log.e(TAG, "Active venue updated to " + venueName);
+			userCheckIn(venueId, venueName, userCount, orderCount);
+			return;
+		} 
+		
+		if (mActiveVenue.getUserCount() != userCount) {
+			Log.e(TAG, "Updating user count from " + mActiveVenue.getUserCount() + " to " + userCount);
+			mActiveVenue.setUserCount(userCount);
+			notifyObservers(PEOPLE_UPDATED);
+		}
+		
+		if (mActiveVenue.getOrderCount() != orderCount) {
+			Log.e(TAG, "Updating order count from " + mActiveVenue.getOrderCount() + " to " + orderCount);
+			mActiveVenue.setOrderCount(orderCount);
+			notifyObservers(ORDERS_UPDATED);
+		}
+		
+		// Save the new venue to preferences
+		saveActiveVenue();
+	}
+	
 
 	public void userCheckOut() {
 
-		Log.v(TAG, "userCheckOut()");
+		Log.w(TAG, "userCheckOut()");
 
-		mActiveVenue = null;
-		mOrders.clear();
-		mPeople.clear();
-		eraseSavedActiveVenue();
+		eraseActiveVenue();
 	}
 
-	public void userCheckIn(String venueId, String venueName) {
+	public void userCheckIn(String venueId, String venueName, int userCount, int orderCount) {
 		
-		Log.v(TAG, "userCheckIn(" + venueId + ", " + venueName + ")");
+		Log.w(TAG, "userCheckIn(" + venueId + ", " + venueName + ")");
 		
 		mActiveVenue = new Venue();
 		mActiveVenue.setId(venueId);
 		mActiveVenue.setName(venueName);
+		mActiveVenue.setUserCount(userCount);
+		mActiveVenue.setOrderCount(orderCount);
 
 		mOrders.clear();
 		mPeople.clear();
 		
 		saveActiveVenue();
+		
+		notifyObservers(PEOPLE_UPDATED);
+		notifyObservers(ORDERS_UPDATED);
+
 	}
 	
 	public void userCheckIn(Venue venue) {
 		
-		Log.v(TAG, "userCheckIn2(" + venue.getId() + ", " + venue.getName() + ")" );
+		Log.w(TAG, "userCheckIn(" + venue + ")" );
 		
 		mActiveVenue = venue;
 
@@ -190,16 +222,19 @@ public class BartsyApplication extends Application implements AppObservable {
 		mPeople.clear();
 		
 		saveActiveVenue();
+		
+		notifyObservers(PEOPLE_UPDATED);
+		notifyObservers(ORDERS_UPDATED); 
 	}
 	
-	private void loadActiveVenue () {
+	public Venue loadActiveVenue () {
 		
-		Log.v(TAG, "loadActiveVenue()");
+		Log.e(TAG, "loadActiveVenue()");
 		
 		if (mActiveVenue != null) {
 			Log.v(TAG, "Venue already loaded");
 			saveActiveVenue(); // make sure the active venue is saved
-			return; 
+			return mActiveVenue; 
 		}
 		
 		mActiveVenue = null;
@@ -208,39 +243,64 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		String venueID = Utilities.loadPref(this, R.string.venueId, null);
 		String venueName = Utilities.loadPref(this, R.string.venueName, null);
+		int orderCount = Utilities.loadPref(this, R.string.venueOrderCount, 0);
+		int userCount = Utilities.loadPref(this, R.string.venueUserCount, 0);
 
 		if (venueID == null || venueName == null) {
 			Log.v(TAG, "No active venue found");
-			return;
+			return null;
 		}
 		
 		mActiveVenue = new Venue();
 		mActiveVenue.setId(venueID);
 		mActiveVenue.setName(venueName);
+		mActiveVenue.setOrderCount(orderCount);
+		mActiveVenue.setUserCount(userCount);
 		
-		Log.v(TAG, "Active venue: " + venueID + ", " + venueName);
+		Log.e(TAG, "Active venue loaded: " + mActiveVenue);
+		
+		return mActiveVenue;
 	}
 	
-	private void saveActiveVenue() {
+	public void saveActiveVenue() {
 		
-		Log.v(TAG, "saveActiveVenue()");
+		Log.e(TAG, "saveActiveVenue(" + mActiveVenue + ")");
 
 		if (mActiveVenue == null) {
 			Log.v(TAG, "Active venue doesn't exist");
-			eraseSavedActiveVenue();
+			eraseActiveVenue();
 		} else {
 			Log.v(TAG, "Venue saved:  (" + mActiveVenue.getId() + ", " + mActiveVenue.getName() + ")");
 			Utilities.savePref(this, R.string.venueId, mActiveVenue.getId());
 			Utilities.savePref(this, R.string.venueName, mActiveVenue.getName());
+			Utilities.savePref(this, R.string.venueOrderCount, mActiveVenue.getOrderCount());
+			Utilities.savePref(this, R.string.venueUserCount, mActiveVenue.getUserCount());
 		}
 	}
 	
-	private void eraseSavedActiveVenue() {
+	private void eraseActiveVenue() {
 
-		Log.v(TAG, "eraseSavedActiveVenue()");
+		Log.e(TAG, "eraseActiveVenue(" + mActiveVenue + ")");
+		
+		// Delete active venue in memory
+		mActiveVenue = null;
+		mOrders.clear();
+		mPeople.clear();
 
-		Utilities.savePref(this, R.string.venueId, null);
-		Utilities.savePref(this, R.string.venueName, null);
+
+		// Delete active venue in saved preferences
+		
+		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		Resources r = getResources();
+		
+		editor.remove(r.getString(R.string.venueId));
+		editor.remove(r.getString(R.string.venueName));
+		editor.remove(r.getString(R.string.venueOrderCount));
+		editor.remove(r.getString(R.string.venueUserCount));
+
+		editor.commit();		
+
 	}
 	
 	
@@ -257,12 +317,11 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	// These two fields are only used to pass information to and from the UserProfileActivity from InitActivity
 	public UserProfile mUserProfileActivityInput = null; 
-	public UserProfile mUserProfileActivityOutput = null;
 
 
 	void loadUserProfile() {
 		
-		Log.v(TAG, "loadUserProfile()");
+		Log.e(TAG, "loadUserProfile()");
 
 		// Initialize the profile structure
 		mProfile = null;
@@ -277,15 +336,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		Bitmap image = loadUserProfileImage();
 		if (image == null) {
 			Log.d(TAG, "Could not load profile image");
-			return;
 		}
 		
 		// Profile name and image were found. Create a user profile.
 		mProfile = new UserProfile();
 		
 		// Bartsy login
-		mProfile.setLogin(Utilities.loadPref(this, R.string.config_user_login, null));
-		mProfile.setPassword(Utilities.loadPref(this, R.string.config_user_password, null));
+		mProfile.setBartsyLogin(Utilities.loadPref(this, R.string.config_user_login, null));
+		mProfile.setBartsyPassword(Utilities.loadPref(this, R.string.config_user_password, null));
 		mProfile.setBartsyId(Utilities.loadPref(this, R.string.config_user_bartsyId, null)); 
 
 		// Facebook Login
@@ -300,11 +358,16 @@ public class BartsyApplication extends Application implements AppObservable {
 		mProfile.setNickname(Utilities.loadPref(this, R.string.config_user_nickname, null));
 		mProfile.setImage(image);
 
-		Log.v(TAG, "Profile loaded: " + loadBartsyId() + " (" + mProfile.getNickname() + ")");
+		Log.v(TAG, "Profile loaded: " +  mProfile);
 	}
 	
 	void saveUserProfile(UserProfile profile) {
 
+		// First remove any saved profile data to avoid saving bits of different profiles
+		eraseUserProfile();
+
+		Log.e(TAG, "saveUserProfile(" + profile + ")");
+				
 		// Save in memory
 		mProfile = profile;
 		
@@ -313,22 +376,36 @@ public class BartsyApplication extends Application implements AppObservable {
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
 
-		editor.putString(r.getString(R.string.config_user_login), profile.getLogin());
-		editor.putString(r.getString(R.string.config_user_password), profile.getPassword());
-		editor.putString(r.getString(R.string.config_user_bartsyId), profile.getBartsyId());
-
-		editor.putString(r.getString(R.string.config_facebook_username), profile.getFacebookUsername());
-		editor.putString(r.getString(R.string.config_facebook_id), profile.getFacebookId());
-		
-		editor.putString(r.getString(R.string.config_google_username), profile.getGoogleUsername());
-		editor.putString(r.getString(R.string.config_google_id), profile.getGoogleId());
-		
-		editor.putString(r.getString(R.string.config_user_nickname), profile.getNickname());
+		if (profile.hasBartsyLogin())
+			editor.putString(r.getString(R.string.config_user_login), profile.getBartsyLogin());
+		if (profile.hasPassword())
+				editor.putString(r.getString(R.string.config_user_password), profile.getPassword());
+		if (profile.hasBartsyId())
+			editor.putString(r.getString(R.string.config_user_bartsyId), profile.getBartsyId());
+		if (profile.hasFacebookUsername())
+			editor.putString(r.getString(R.string.config_facebook_username), profile.getFacebookUsername());
+		if (profile.hasFacebookId())
+			editor.putString(r.getString(R.string.config_facebook_id), profile.getFacebookId());
+		if (profile.hasGoogleUsername())
+			editor.putString(r.getString(R.string.config_google_username), profile.getGoogleUsername());
+		if (profile.hasGoogleId())
+			editor.putString(r.getString(R.string.config_google_id), profile.getGoogleId());
+		if (profile.hasNickname())
+			editor.putString(r.getString(R.string.config_user_nickname), profile.getNickname());
+		if (profile.hasImagePath())
+			editor.putString(r.getString(R.string.config_user_image_path), profile.getImagePath());			
 		editor.commit();
-		saveUserProfileImage(profile.getImage());
+		if (profile.hasImage())
+			saveUserProfileImage(profile.getImage());
+			
 	}
 
 	void eraseUserProfile() {
+		
+		Log.e(TAG, "eraseUserProfile()");
+
+		mProfile = null;
+		
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
@@ -344,18 +421,27 @@ public class BartsyApplication extends Application implements AppObservable {
 		editor.remove(r.getString(R.string.config_google_id));
 
 		editor.remove(r.getString(R.string.config_user_nickname));
+		editor.remove(r.getString(R.string.config_user_image_path));
 		editor.commit();		
 		eraseUserProfileImage();
 	}
 	
 	
 	public String loadBartsyId() {
+
+
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = getResources();
-		return sharedPref.getString(r.getString(R.string.config_user_bartsyId), null);
+		String id = sharedPref.getString(r.getString(R.string.config_user_bartsyId), null);
+
+		Log.e(TAG, "loadBartsyId(" + id + ")");
+
+		return id;
 	}
 	
 	public void saveBartsyID(String bartsyUserId) {
+		
+		Log.e(TAG, "saveBartsyId(" + bartsyUserId + ")");
 
 		// Save the unique bartsy ID in the user profile
 		if (mProfile != null) 
@@ -372,7 +458,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	public void saveUserProfileImage(Bitmap bitmap) {
 		// Save bitmap to file
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.v(TAG, "Saving user profile image to " + file);
+		Log.e(TAG, "Saving user profile image to " + file);
 
 		try {
 			FileOutputStream out = new FileOutputStream(file);
@@ -385,7 +471,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	Bitmap loadUserProfileImage() {
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.d(TAG, "Loading user profile from " + file);
+		Log.e(TAG, "Loading user profile from " + file);
 		Bitmap image = null;
 		try {
 			image = BitmapFactory.decodeFile(file);
@@ -397,6 +483,9 @@ public class BartsyApplication extends Application implements AppObservable {
 	}
 	
 	void eraseUserProfileImage() {
+		
+		Log.e(TAG, "Erase profile image");
+		
 		File file = new File(getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture));
 		file.delete();
 	}
@@ -423,11 +512,12 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * Called when we have a new person check in a venue
 	 */
 
-	void addPerson(UserProfile profile) {
+	public void addPerson(UserProfile profile) {
 		Log.v(TAG, "New user checked in: " + profile.getName() + " (" + profile.getBartsyId() + ")");
 
 		mPeople.add(profile);
-		notifyObservers(PEOPLE_UPDATED);
+		mActiveVenue.setUserCount(mPeople.size());
+//		notifyObservers(PEOPLE_UPDATED);
 	}
 
 	
@@ -448,16 +538,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	long mOrderIDs = 0;
 
-	/*
-	 * This adds a new order after verifying the person placing it is currently
-	 * checked in this venue
-	 */
 
-	public void addOrder(Order order) {
-		// Add the order to the list of orders
-		mOrders.add(order);
-		notifyObservers(ORDERS_UPDATED);
-	}
 
 	/**********
 	 * 
@@ -466,11 +547,41 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * as the user navigates in different screens.
 	 * 
 	 */
-
-	public ArrayList<Order> mOrders = new ArrayList<Order>();
-
+	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
+	private ArrayList<Order> mOrders = new ArrayList<Order>();
+	
+	public ArrayList<Order> getOrdersCopy() {
+			return (ArrayList<Order>) mOrders.clone();
+	}
 
+	public void clearOrders() {
+		mOrders.clear();
+		mActiveVenue.setOrderCount(0);
+	}
+
+	public void addOrder(Order order) {
+		// Add the order to the list of orders
+		mOrders.add(order);
+		mActiveVenue.setOrderCount(mOrders.size());
+		notifyObservers(ORDERS_UPDATED);
+	}
+
+	public void addOrderNoUI(Order order) {
+		// Add the order to the list of orders
+		mOrders.add(order);
+		mActiveVenue.setOrderCount(mOrders.size());
+	}
+
+	public void removeOrder(Order order) {
+		// Add the order to the list of orders
+		mOrders.remove(order);
+		mActiveVenue.setOrderCount(mOrders.size());
+		notifyObservers(ORDERS_UPDATED);
+	}
+
+
+	
 	/*
 	 * This updates the status of the order locally based on the status changed
 	 * reported from the server
@@ -526,6 +637,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Update the orders tab view and title
 
+		mActiveVenue.setOrderCount(mOrders.size());
 		notifyObservers(ORDERS_UPDATED);
 	}
 	
