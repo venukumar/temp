@@ -27,9 +27,9 @@ public class UserProfile {
 	
 
 	// User login information
-	private String login  = null; 			// required and doubles as email for the user
+	private String bartsyLogin  = null; 	// required and doubles as email for the user
 	private String bartsyId ;				// Unique ID enforced by Bartsy server
-	private String password = null;			// required
+	private String bartsyPassword = null;	// required
 			
 	// Optional Google login parameters
 	private String googleUsername = null;	
@@ -51,8 +51,9 @@ public class UserProfile {
 	public String description = null;
 	private String name = null;
 	private String gender  = null;
-	ArrayList<UserProfile> likes  = null;
-	ArrayList<UserProfile> favorites  = null;
+	private String creditCardNumber = null;
+	private String expMonth = null;
+	private String expYear = null;
 
 	// Advanced fields for "dating" profiles
 	private String visibility = null;	
@@ -68,7 +69,8 @@ public class UserProfile {
 	public static final String VISIBLE = "ON"; // show user profile and see other profiles
 	public static final String HIDDEN = "OFF"; // don't show user profile and don't see other profiles
 	
-	private CreditCard cc = null;
+	ArrayList<UserProfile> likes  = null;
+	ArrayList<UserProfile> favorites  = null;
 
 	
 	/**
@@ -78,7 +80,36 @@ public class UserProfile {
 
 	}
 
-	
+	@Override
+	public String toString() {
+		
+		
+		return  "{" +
+				(!hasBartsyLogin() ? "" : "bartsyLogin: " + bartsyLogin) + 
+				(!hasBartsyId() ? "" : ", bartsyId: " + bartsyId) +
+				(!hasPassword() ? "" : ", bartsyPassword: " + bartsyPassword) +
+				(!hasGoogleUsername() ? "" : ", googleUsername: " + googleUsername) +
+				(!hasGoogleId() ? "" : ", googleId: " + googleId) +
+				(!hasFacebookUsername() ? "" : ", facebookUsername: " + facebookUsername) +
+				(!hasFacebookId() ? "" : ", facebookId: " + facebookId) +
+				(!hasImage() ? "" : ", Image: <available>") +
+				(!hasImagePath() ? "" : ", imagePath: " + imagePath) +
+				(!hasNickname() ? "" : ", nickname: " + nickname) +
+				(!hasEmail() ? "" : ", email: " + email) +
+				(!hasDescription() ? "" : ", description: " + description) +
+				(!hasName() ? "" : ", name: " + name) +
+				(!hasGender() ? "" : ", gender: " + gender) +
+				(!hasCreditCardNumber() ? "" : ", creditCardNumber: " + creditCardNumber) +
+				(!hasExpMonth() ? "" : ", expMonth: " + expMonth) +
+				(!hasExpYear() ? "" : ", expYear: " + expYear) +
+				(!hasVisibility() ? "" : ", visibility: " + visibility) +
+				(!hasFirstName() ? "" : ", firstName: " + firstName) +
+				(!hasLastName() ? "" : ", lastName: " + lastName) +
+				(!hasBirthday() ? "" : ", birthday : " + birthday) +
+				(!hasStatus() ? "" : ", status: " + status) +
+				(!hasOrientation() ? "" : ", orientation: " + orientation) +
+				"}";
+	}
 	
 	/**
 	 * 
@@ -93,14 +124,14 @@ public class UserProfile {
 	 * @param person
 	 * @return
 	 */
-	public UserProfile (Person person, String email) {
+	public UserProfile (Person person, String accountName) {
 		
 		// Setup Google login parameters
-		googleUsername = email;
+		googleUsername = accountName;
 		googleId = person.getId();
 
 		name = person.getDisplayName();
-		this.email = email;
+		email = accountName;
 		
 		if (person.hasGender()) {
 			switch (person.getGender()) {
@@ -188,7 +219,7 @@ public class UserProfile {
 			}
 		if (person.has("email"))
 			try {
-				setLogin(person.getString("email"));
+				setBartsyLogin(person.getString("email"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -227,19 +258,19 @@ public class UserProfile {
 		this.bartsyId = bartsyID;
 	}
 
-	public boolean hasLogin() {
-		if (login == null || login.equalsIgnoreCase(""))
+	public boolean hasBartsyLogin() {
+		if (bartsyLogin == null || bartsyLogin.equalsIgnoreCase(""))
 			return false;
 		else 
 			return true;
 	}
 
-	public String getLogin() {
-		return login;
+	public String getBartsyLogin() {
+		return bartsyLogin;
 	}
 
-	public void setLogin(String login) {
-		this.login = login;
+	public void setBartsyLogin(String login) {
+		this.bartsyLogin = login;
 	}
 
 	public boolean hasFacebookId() {
@@ -392,19 +423,64 @@ public class UserProfile {
 		this.gender = gender;
 	}
 
+	public boolean hasCreditCardNumber() {
+		if (creditCardNumber == null || creditCardNumber.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getCreditCardNumber() {
+		return creditCardNumber;
+	}
+
+	public void setCreditCardNumber(String creditCardNumber) {
+		this.creditCardNumber = creditCardNumber;
+	}
+
+	public boolean hasExpMonth() {
+		if (expMonth == null || expMonth.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getExpMonth() {
+		return expMonth;
+	}
+
+	public void setExpMonth(String expMonth) {
+		this.expMonth = expMonth;
+	}
+
+	public boolean hasExpYear() {
+		if (expYear == null || expYear.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	
+	public String getExpYear() {
+		return expYear;
+	}
+
+	public void setExpYear(String expYear) {
+		this.expYear = expYear;
+	}
+
 	public boolean hasPassword() {
-		if (password == null || password.equalsIgnoreCase(""))
+		if (bartsyPassword == null || bartsyPassword.equalsIgnoreCase(""))
 			return false;
 		else 
 			return true;
 	}
 		
 	public String getPassword() {
-		return password;
+		return bartsyPassword;
 	}
 
-	public void setPassword(String email) {
-		this.password = email;
+	public void setBartsyPassword(String email) {
+		this.bartsyPassword = email;
 	}
 
 	public boolean hasFacebookUsername () {
@@ -518,21 +594,6 @@ public class UserProfile {
 		this.image = image;
 	}
 
-	public boolean hasCreditCard() {
-		if (cc == null)
-			return false;
-		else 
-			return true;
-	}
-	
-	public CreditCard getCreditCard() {
-		return cc;
-	}
-
-	public void setCreditCard(CreditCard cc) {
-		this.cc = cc;
-	}
-
 	public void updateView(OnClickListener listener) {
 
 		((ImageView) view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(getImage());
@@ -542,8 +603,7 @@ public class UserProfile {
 				.findViewById(R.id.ImageView16);
 
 		if (image == null) {
-			WebServices.downloadImage(Constants.DOMAIN_NAME + imagePath, this,
-					profileImageView);
+			WebServices.downloadImage(Constants.DOMAIN_NAME + imagePath, this, profileImageView);
 		} else {
 			profileImageView.setImageBitmap(image);
 		}
