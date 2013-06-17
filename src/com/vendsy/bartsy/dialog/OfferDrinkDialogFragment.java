@@ -86,8 +86,14 @@ public class OfferDrinkDialogFragment extends SherlockDialogFragment {
 	/**
 	 * Sys call for update Offered Drink Status
 	 */
-	protected void updateOfferedDrinkStatusSysCall(int orderStatus) {
-		String response = WebServices.updateOfferDrinkStatus(getActivity(), mApp.mActiveVenue.getId(), mApp.drinkOffered, orderStatus, mApp.mProfile.getBartsyId());
+	protected void updateOfferedDrinkStatusSysCall(final int orderStatus) {
+		new Thread(){
+			@Override
+			public void run() {
+				String response = WebServices.updateOfferDrinkStatus(getActivity(), mApp.mActiveVenue.getId(), mApp.drinkOffered, orderStatus, mApp.mProfile.getBartsyId());
+			}
+		}.start();
+		
 		//TODO Require to handle response
 	}
 	/**
