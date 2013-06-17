@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 public class Category {
 	
-	public static final String SPIRITS_TYPE = "spirit"; 
-	public static final String MIXER_TYPE = "mixer";
+	public static final String SPIRITS_TYPE = "Spirit"; 
+	public static final String MIXER_TYPE = "Mixer";
 	public static final String COCKTAILS_TYPE = "Cocktails";
 			
 	private String name;

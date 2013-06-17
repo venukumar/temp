@@ -67,6 +67,8 @@ public class Order {
 	public static final int ORDER_STATUS_INCOMPLETE = 6;
 	public static final int ORDER_STATUS_CANCELLED = 7;
 	public static final int ORDER_STATUS_COUNT = 8;
+	
+	public String type = "Custom";
 
 	// The states are implemented in a status variable and each state transition
 	// has an associated time

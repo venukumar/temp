@@ -111,14 +111,14 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 					if(jsonObject.has("typeName")){
 						String type = jsonObject.getString("typeName");
 						// To parse spirits categories
-						if(type.equals(Category.SPIRITS_TYPE) && jsonObject.has("categories")){
+						if(type.equalsIgnoreCase(Category.SPIRITS_TYPE) && jsonObject.has("categories")){
 							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
 							if(categoriesArray!=null && categoriesArray.length()>0){
 								updateCategoriesAndIngredients(categoriesArray, mApp.spirits);
 							}
 						}
 						// To parse mixers categories
-						else if(type.equals(Category.MIXER_TYPE) && jsonObject.has("categories")){
+						else if(type.equalsIgnoreCase(Category.MIXER_TYPE) && jsonObject.has("categories")){
 							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
 							if(categoriesArray!=null && categoriesArray.length()>0){
 								updateCategoriesAndIngredients(categoriesArray, mApp.mixers);

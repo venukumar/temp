@@ -4,9 +4,13 @@ import java.util.ArrayList;
 
 import com.vendsy.bartsy.adapter.CustomDrinksListViewAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
+import com.vendsy.bartsy.dialog.PeopleSectionDialog;
+import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
@@ -22,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -53,13 +58,16 @@ public class OrderCustomDrinkActivity extends Activity{
 	
 	private float totalAmount;
 	private TextView priceText;
-
+	public UserProfile profile;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_drinks_order_main);
 		
 		mApp = (BartsyApplication)getApplication();
+		
+		profile = mApp.mProfile;
 		
 		// To setup order view
 		LinearLayout ordersLayoutView = (LinearLayout) findViewById(R.id.ordersView);
@@ -119,6 +127,45 @@ public class OrderCustomDrinkActivity extends Activity{
 		updateMixerList(0);
 		categoriesSpinner.requestFocus();
 		updatePrice();
+		
+		if(profile!=null){
+			updateProfileView(profile);
+		}
+	}
+	
+	private void updateProfileView(UserProfile profile) {
+		ImageView profileImageView = ((ImageView)ordersView.findViewById(R.id.view_user_dialog_image_resource));
+		
+		if (!profile.hasImage()) {
+			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile,
+					profileImageView);
+		} else {
+			profileImageView.setImageBitmap(profile.getImage());
+		}
+		((TextView) ordersView.findViewById(R.id.view_user_dialog_info))
+		.setText(profile.getNickname());	
+		
+		
+		
+		// To pick more user profiles when user pressed on the image view
+		profileImageView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				PeopleSectionDialog dialog = new PeopleSectionDialog(OrderCustomDrinkActivity.this){
+					@Override
+					protected void selectedProfile(UserProfile userProfile) {
+						// Update profile with new selected profile
+						OrderCustomDrinkActivity.this.profile = userProfile;
+						updateProfileView(userProfile);
+						super.selectedProfile(userProfile);
+					}
+				};
+				dialog.show();
+			}
+		});
+		
+		
 	}
 	
 	/**
@@ -200,8 +247,8 @@ public class OrderCustomDrinkActivity extends Activity{
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
 				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		
-		// for now, it will not support to send drinks to other people
-		order.orderReceiver = mApp.mProfile;
+		// it will support to send drinks to other people
+		order.orderReceiver = profile;
 		
 		// invokePaypalPayment(); // To enable paypal payment
 
