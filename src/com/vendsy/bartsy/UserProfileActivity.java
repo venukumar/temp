@@ -12,13 +12,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,29 +41,40 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 	private static final String TAG = "UserProfileActivity";
 	
 	BartsyApplication mApp = null ; // pointer to the application used as an input/output buffer to this activity
+	UserProfileActivity mActivity = this;
+	Handler mHandler = new Handler();
 	
 	EditText locuId, paypal, wifiName, wifiPassword,orderTimeOut;
 	
 	// Progress dialog
 	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some random unique number
 
+	
+	/*
+	 * TODO - Create view
+	 * 
+	 * (non-Javadoc)
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
+	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 		
-		Log.v(TAG, "onCreate()");
 		
 		// Set up pointer to activity used as an input/output buffer
 		mApp = (BartsyApplication) getApplication();
 		UserProfile person = mApp.mUserProfileActivityInput;
 
+		Log.v(TAG, "onCreate(" + person + ")");
+		
 		// Set the base view then pre-populate it with any existing values found in the application input buffer (mUser)
 		setContentView(R.layout.user_profile);
 
 		
-		// Pre-populate fields if there is a user object already
+		// Pre-populate fields if there is a user object already 
 		if (person != null) {
 			// Set first name, last name, nickname, description, email, user image
 			if(person.hasFirstName())
@@ -72,35 +87,106 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				// If no Nickname, use the peron's first name
 				((TextView) findViewById(R.id.view_profile_nickname)).setText(
 						((TextView) findViewById(R.id.view_profile_first_name)).getText());
-			if (person.hasDescription())
-				((TextView) findViewById(R.id.view_profile_description)).setText(person.getDescription());
-			if (person.hasImagePath()) 
+
+			if (person.hasImage())
+				((ImageView) findViewById(R.id.view_profile_user_image)).setImageBitmap(person.getImage());
+			else if (person.hasImagePath()) {
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
-				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
-			if (person.hasGender()) {
-				if (person.getGender().equalsIgnoreCase("male"))
-					((RadioButton) findViewById(R.id.view_profile_gender_male)).setChecked(true);
-				if (person.getGender().equalsIgnoreCase("female"))
-					((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
+//				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
+				WebServices.downloadImage(Constants.DOMAIN_NAME + person.getImagePath(), person, (ImageView) findViewById(R.id.view_profile_user_image));
 			}
+			
+			if (person.hasEmail()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());	
+
+			if (person.hasBartsyLogin()) 
+				((TextView) findViewById(R.id.view_profile_email)).setText(person.getBartsyLogin());	
 			
 			if (person.hasPassword()) {
 				((EditText) findViewById(R.id.view_profile_password)).setText(person.getPassword());
 				((EditText) findViewById(R.id.view_profile_password_confirm)).setText(person.getPassword());
 			}
+
+			// If we have FB or G+ login, don't show password field, otherwise don't show password checkbox
+			if (person.hasFacebookUsername() || person.hasGoogleUsername()) {
+				findViewById(R.id.view_profile_password_view).setVisibility(View.GONE);
+				findViewById(R.id.view_profile_account_view).setVisibility(View.VISIBLE);			
+			} else {
+				findViewById(R.id.view_profile_password_view).setVisibility(View.VISIBLE);
+				findViewById(R.id.view_profile_account_view).setVisibility(View.GONE);			
+			}
+
+			// Setup credit card info if available
+			if (person.hasCreditCardNumber() && person.hasExpMonth() && person.hasExpYear()) {
+				((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(person.getCreditCardNumber()));
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(person.getCreditCardNumber());
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(person.getCreditCardNumber());
+				((TextView) findViewById(R.id.view_profile_cc_month)).setText(person.getExpMonth());
+				((TextView) findViewById(R.id.view_profile_cc_year)).setText(person.getExpYear());
+				findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
+				findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
+			}
+			
+			
+
+			// Setup visibility preference
+			if (person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
+
+				((CheckBox) findViewById(R.id.view_profile_checkbox_details)).setChecked(true);
+				findViewById(R.id.view_profile_details).setVisibility(View.VISIBLE);
+				
+				// Set up description
+				if (person.hasDescription())
+					((TextView) findViewById(R.id.view_profile_description)).setText(person.getDescription());
+
+				// Set up gender
+				if (person.hasGender()) {
+					if (person.getGender().equalsIgnoreCase("Male"))
+						((RadioButton) findViewById(R.id.view_profile_gender_male)).setChecked(true);
+					if (person.getGender().equalsIgnoreCase("Female"))
+						((RadioButton) findViewById(R.id.view_profile_gender_female)).setChecked(true);
+				}
+
+				// Display birthday
+				if (person.hasBirthday())
+					((TextView) findViewById(R.id.view_profile_birthday)).setText(person.getBirthday());
+				
+				// Setup status based on checkboxes
+				if (person.hasStatus()) {
+					if (person.getStatus().equalsIgnoreCase("Singles/Friends")) {
+					((CheckBox) findViewById(R.id.view_profile_status_singles)).setChecked(true);
+					((CheckBox) findViewById(R.id.view_profile_status_friends)).setChecked(true);
+				} else if (person.getStatus().equalsIgnoreCase("Singles")) 
+					((CheckBox) findViewById(R.id.view_profile_status_singles)).setChecked(true);
+				else if (person.getStatus().equalsIgnoreCase("Friends")) 
+					((CheckBox) findViewById(R.id.view_profile_status_friends)).setChecked(true);
+				}
+				
+				// Setup orientation
+				if (person.hasOrientation()) {
+					if (person.getOrientation().equalsIgnoreCase("Straight"))
+						((RadioButton) findViewById(R.id.view_profile_orientation_straight)).setChecked(true);
+					if (person.getOrientation().equalsIgnoreCase("Gay"))
+						((RadioButton) findViewById(R.id.view_profile_orientation_gay)).setChecked(true);
+					if (person.getOrientation().equalsIgnoreCase("Bisexual"))
+						((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).setChecked(true);
+				}
+				
+			} else {
+				
+				((CheckBox) findViewById(R.id.view_profile_checkbox_details)).setChecked(false);
+				findViewById(R.id.view_profile_details).setVisibility(View.GONE);
+
+			}
+		} else {
+			// No current user - don't show option not to add password or credit card
+			findViewById(R.id.view_profile_account_view).setVisibility(View.GONE);
+			findViewById(R.id.view_profile_has_cc).setVisibility(View.GONE);
+			findViewById(R.id.view_profile_no_cc).setVisibility(View.VISIBLE);
+
 		}
 		
 
-		// If we have FB or G+ login, don't show password field, otherwise don't show password checkbox
-		if (person != null && (person.hasFacebookUsername() || person.hasGoogleUsername())) {
-			findViewById(R.id.view_profile_password_view).setVisibility(View.GONE);
-			if (person.hasEmail()) 
-				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());	
-		} else {
-			findViewById(R.id.view_profile_account_view).setVisibility(View.GONE);			
-			if (person.hasLogin()) 
-				((TextView) findViewById(R.id.view_profile_email)).setText(person.getLogin());	
-		}
 		
 		// Set up image controllers
 		findViewById(R.id.view_profile_account_checkbox).setOnClickListener(this);
@@ -111,6 +197,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		findViewById(R.id.view_profile_button_cc_add).setOnClickListener(this);
 		findViewById(R.id.view_profile_button_cc_replace).setOnClickListener(this);
 		findViewById(R.id.view_profile_button_cc_delete).setOnClickListener(this);
+		
 		
 	}
 
@@ -147,13 +234,13 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			}
 			break;
 		case R.id.view_profile_button_cc_add:
-			// For now directly call card.io. This should be separate activity
-			// that allows to edit credit cards
+		case R.id.view_profile_button_cc_replace:
+
+			// Get credit card number using card.io
 			Intent scanIntent = new Intent(this, CardIOActivity.class);
 
 			// required for authentication with card.io
-			scanIntent.putExtra(CardIOActivity.EXTRA_APP_TOKEN, getResources()
-					.getString(R.string.config_cardio_token));
+			scanIntent.putExtra(CardIOActivity.EXTRA_APP_TOKEN, getResources().getString(R.string.config_cardio_token));
 
 			// customize these values to suit your needs.
 			scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true);
@@ -176,20 +263,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.view_profile_button_submit:
 			// Check and save modifications. If all goes well, finish activity, if not stay.
-			UserProfile profile = processProfileData();
-	
-			if (profile != null) {
-				// The new form contains valid data - accept it and return with result OK
-				Log.v(TAG, "Form valid - save profile data");
-				mApp.mUserProfileActivityOutput = profile;
-				this.setResult(InitActivity.RESULT_OK);
-				finish();
-			}
-			else {
-				// Something is invalide and the user has been warned - don't go anywhere
-				Log.v(TAG, "Error in profile form");
-			}			
-			return;
+			processProfileData();
 		}
 		
         return;
@@ -251,15 +325,13 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					}
 					
 					// Display credit card info
-					((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(scanResult.getFormattedCardNumber()));
+					((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(scanResult.cardNumber));
 					((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(scanResult.getRedactedCardNumber());
+					((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(scanResult.cardNumber);
 					((TextView) findViewById(R.id.view_profile_cc_month)).setText(Integer.toString(scanResult.expiryMonth));
 					((TextView) findViewById(R.id.view_profile_cc_year)).setText(Integer.toString(scanResult.expiryYear));
 					findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 					findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
-					
-					// Setup the credit card result object in the view
-					findViewById(R.id.view_profile_has_cc).setTag(scanResult);
 					
 				} else {
 					Toast.makeText(this, "Credit card scan was cancelled", Toast.LENGTH_SHORT).show();
@@ -327,46 +399,39 @@ public class UserProfileActivity extends Activity implements OnClickListener {
     }
 	
 	/**
-	 * Invokes this method when the user clicks on the Submit Button
+	 * TODO - Invokes this method when the user clicks on the Submit Button
 	 */
-	private UserProfile processProfileData() {
+	private void processProfileData() {
 		
-		Log.v(TAG, "validateProfileData()");
+		Log.v(TAG, "validateProfileData(" + (mApp.mUserProfileActivityInput == null ? "null" : mApp.mUserProfileActivityInput.toString()) + ")");
 		
 		UserProfile user = new UserProfile();
-		boolean create_bartsy_account = false;
-		
-		// See if we're creating or already have an account - require password
-		if (((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked() ||
-				(mApp.mUserProfileActivityInput != null && mApp.mUserProfileActivityInput.hasLogin())) {
-			create_bartsy_account = true;
-		}
-		
 		
 		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
 		
-		if (create_bartsy_account) {
+		if ( mApp.mUserProfileActivityInput == null || ((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked() ||
+				(mApp.mUserProfileActivityInput != null && mApp.mUserProfileActivityInput.hasBartsyLogin())) {
 
 			// Make sure there is a login/email and password if logging in with Bartsy
 			if (email.length() > 0) {
-				user.setLogin(email);
+				user.setBartsyLogin(email);
 			} else {
 				Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
-				return null;
+				return;
 			}
 			
 			// Verify password matches and exists
 			String password =  ((TextView) findViewById(R.id.view_profile_password)).getText().toString();
 			if (password.length() < 6) {
 				Toast.makeText(this, "Please create a password that's at least 6 characters long", Toast.LENGTH_SHORT).show();
-				return null;			
+				return;			
 			}
 			String password_confirm =  ((TextView) findViewById(R.id.view_profile_password_confirm)).getText().toString();
 			if (password.compareTo(password_confirm) != 0) {
 				Toast.makeText(this, "Password confirmation mismatch.", Toast.LENGTH_SHORT).show();
-				return null;						
+				return;						
 			}
-			user.setPassword(password);
+			user.setBartsyPassword(password);
 
 			// Also set email to be the same as the login info
 			user.setEmail(email);
@@ -378,8 +443,9 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				user.setEmail(email);
 		}
 
-		// Set social network fields if present
+		// Set social network connectivity fields if present
 		if( mApp.mUserProfileActivityInput != null){
+			user.setBartsyId(mApp.mUserProfileActivityInput.getBartsyId());
 			user.setFacebookUsername(mApp.mUserProfileActivityInput.getFacebookUsername());
 			user.setFacebookId(mApp.mUserProfileActivityInput.getFacebookId());
 			user.setGoogleUsername(mApp.mUserProfileActivityInput.getGoogleUsername());
@@ -392,7 +458,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			user.setNickname(nickname);
 		} else {
 			Toast.makeText(this, "Nickname is required", Toast.LENGTH_SHORT).show();
-			return null;			
+			return;			
 		}
 			
 
@@ -414,67 +480,193 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					user.setLastName(last_name);
 			
 			//Extract card details 	
-			user.setCreditCard((CreditCard) findViewById(R.id.view_profile_has_cc).getTag());
+			user.setCreditCardNumber((String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag());
+			user.setExpMonth(((TextView) findViewById(R.id.view_profile_cc_month)).getText().toString());
+			user.setExpYear(((TextView) findViewById(R.id.view_profile_cc_year)).getText().toString());
+
 		}
 		
-		
-		// Setup visibility preference
-		if (((CheckBox) findViewById(R.id.view_profile_checkbox_details)).isChecked())
-			user.setVisibility(UserProfile.VISIBLE);
-		else
-			user.setVisibility(UserProfile.HIDDEN);
-		
-		// Validate birthday format
-		String bd = ((TextView) findViewById(R.id.view_profile_birthday)).getText().toString();
-		if (bd.length() > 0) {
-			try {
-				DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
-				Date date = df.parse(bd);
-				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
-				bd = sdf.format(date);
-			} catch (Exception e) {
-				Toast.makeText(this, "Birthday format is invalid", Toast.LENGTH_SHORT).show();
-				return null;			
-			}
-			user.setBirthday(bd);
-		}
-		
-		// Setup status based on checkboxes
-		Boolean singles = ((CheckBox) findViewById(R.id.view_profile_status_singles)).isChecked();
-		Boolean friends = ((CheckBox) findViewById(R.id.view_profile_status_friends)).isChecked();
-		if (friends && singles) 
-			user.setStatus("Singles/Friends");
-		else if (friends)
-			user.setStatus("Friends");
-		else if (singles)
-			user.setStatus("Singles");
-		
-		// Setup orientation
-		if (((RadioButton) findViewById(R.id.view_profile_orientation_straight)).isChecked())
-			user.setOrientation("Straight");
-		if (((RadioButton) findViewById(R.id.view_profile_orientation_gay)).isChecked())
-			user.setOrientation("Gay");
-		if (((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).isChecked())
-			user.setOrientation("Bisexual");
-		
+
 		// Make sure we have a valid image and save it
 		Bitmap image = (Bitmap) findViewById(R.id.view_profile_user_image).getTag();
 		if (image == null) {
 			// we only set the tag when we get a valid image, so null indicates that the image is invalid
 			Toast.makeText(this, "User picture is required", Toast.LENGTH_SHORT).show();
-			return null;	
+			return;	
 		}
 		user.setImage(image);
 		
-		// Extract description
-		user.setDescription( ((TextView) findViewById(R.id.view_profile_description)).getText().toString() );
+		
+		// Setup visibility preference
+		if (((CheckBox) findViewById(R.id.view_profile_checkbox_details)).isChecked()) {
+			user.setVisibility(UserProfile.VISIBLE);
+			user.setDescription(((TextView) findViewById(R.id.view_profile_description)).getText().toString());
+			if (((RadioButton) findViewById(R.id.view_profile_gender_male)).isChecked())
+				user.setGender("Male");
+			else if (((RadioButton) findViewById(R.id.view_profile_gender_female)).isChecked())
+				user.setGender("Female");
+			
+			// Validate birthday format
+			String bd = ((TextView) findViewById(R.id.view_profile_birthday)).getText().toString();
+			if (bd.length() > 0) {
+				try {
+					DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+					Date date = df.parse(bd);
+					SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+					bd = sdf.format(date);
+				} catch (Exception e) {
+					Toast.makeText(this, "Birthday format is invalid", Toast.LENGTH_SHORT).show();
+					return;			
+				}
+				user.setBirthday(bd);
+			}
+
+			// Extract description
+			user.setDescription( ((TextView) findViewById(R.id.view_profile_description)).getText().toString() );
+			
+			// Setup status based on checkboxes
+			Boolean singles = ((CheckBox) findViewById(R.id.view_profile_status_singles)).isChecked();
+			Boolean friends = ((CheckBox) findViewById(R.id.view_profile_status_friends)).isChecked();
+			if (friends && singles) 
+				user.setStatus("Singles/Friends");
+			else if (friends)
+				user.setStatus("Friends");
+			else if (singles)
+				user.setStatus("Singles");
+			
+			// Setup orientation
+			if (((RadioButton) findViewById(R.id.view_profile_orientation_straight)).isChecked())
+				user.setOrientation("Straight");
+			if (((RadioButton) findViewById(R.id.view_profile_orientation_gay)).isChecked())
+				user.setOrientation("Gay");
+			if (((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).isChecked())
+				user.setOrientation("Bisexual");
+
+			
+		} else {
+			user.setVisibility(UserProfile.HIDDEN);
+			user.setDescription(null);
+			user.setBirthday(null);
+			user.setStatus(null);
+			user.setOrientation(null);
+		}
 		
 		
 		
-		return user;
+		
+		
+		Log.v(TAG, "New user created: " + user);
+		
+		processUserProfile(user);
+	
 	}
 	
 
+
+	
+	/**
+	 * TODO 
+	 * THis function is called when the user has accepted the profile in the profile activity. It saves the user
+	 * details locally. If the user is checked in according to the server, the function also checks the user in
+	 * locally. This function will either terminate the activity and start a new one or leave the user in this 
+	 * activity with a Toast asking them to retry their login.
+	 * 
+	 * The function uses the mUser parameters passed through the application as assumes they are set up
+	 */
+	
+	public void processUserProfile(final UserProfile userProfile) {
+		
+		Log.i(TAG, "processUserProfileData()");
+		
+		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
+		String deviceToken = settings.getString("RegId", "");
+		if (deviceToken.trim().length() > 0) {
+			
+			// Send profile data to server in background
+
+			new Thread() {
+				public void run() {
+					String bartsyUserId = null;
+					
+					try {
+						// Service call for post profile data to server
+						JSONObject resultJson = WebServices.postProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+
+						// Process web service response
+						
+						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
+
+							final String userCheckedInOrNot = resultJson.getString("userCheckedIn");
+							// Error handling
+								// if user checkedIn is true
+								if ( userCheckedInOrNot!=null && userCheckedInOrNot.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
+								{
+									// Check the user in locally 
+									mApp.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"), resultJson.getInt("userCount"), resultJson.getInt("orderCount"));
+								} else {
+									// Check user out
+									mApp.userCheckOut();
+								}
+								
+								if (resultJson.has("bartsyId")) {
+									bartsyUserId = resultJson.getString("bartsyId");
+
+									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
+								} else {
+									Log.e(TAG, "BartsyID " + "bartsyUserId not found");
+								}
+								
+								final String bartsyId = bartsyUserId;
+								// To check whether user is checkedIn or not. If user already checkedIn then it 
+								// should navigate to VenueActivity, otherwise it should navigate to MainActivity
+								
+								mHandler.post(new Runnable() {
+									public void run() {
+
+										// Save profile in the global application structure and in preferences
+										userProfile.setBartsyId(bartsyId);
+										mApp.saveUserProfile(userProfile);
+										
+										// Return to calling activity with success code 
+										mActivity.setResult(InitActivity.RESULT_OK);
+										finish();
+									}
+								});
+								
+						}else{
+							// Error creating user. Ask parent to post Toast.
+							mHandler.post(new Runnable() {
+								@Override
+								public void run() {
+									Toast.makeText(mActivity, "Could not save profile, check your connection and try again....", Toast.LENGTH_SHORT).show();
+									finish();
+								}
+							});
+							return;
+						}
+					} catch (JSONException e) {
+						e.printStackTrace();
+
+						// Error creating user. Ask parent to post Toast.
+						mHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
+								finish();
+							}
+						});
+						return;
+					}
+				}
+			}.start();
+
+		} else {
+			Toast.makeText(this, "Please try again....", Toast.LENGTH_LONG).show();
+			finish();
+		}
+	}
+	
+	
 	/* 
 	 * Downloads an image for the mUser structure and displays it in a given view when done.
 	 */
@@ -495,20 +687,20 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			url = mApp.mUserProfileActivityInput.getImagePath();
 			
 			try {
-				Log.d("Bartsy", "About to decode image for dialog from URL: " + url);
+				Log.v(TAG, "About to decode image from URL: " + url);
 
 				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url).getContent());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
-				Log.d("Bartsy", "Bad URL: " + mApp.mUserProfileActivityInput.getImagePath());
+				Log.d(TAG, "Bad URL: " + mApp.mUserProfileActivityInput.getImagePath());
 				return null;
 			} catch (IOException e) {
 				e.printStackTrace();
-				Log.d("Bartsy", "Could not download image from URL: " + url);
+				Log.d(TAG, "Could not download image from URL: " + url);
 				return null;
 			}
 
-			Log.d("Bartsy", "Image decompress successfully for dialog: " + url);
+			Log.v(TAG, "Image decompress successfully: " + url);
 
 			return bitmap;
 		}
@@ -520,9 +712,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 
 		// This is called when doInBackground() is finished
 		protected void onPostExecute(Bitmap result) {
-			// showNotification("Downloaded " + result + " bytes");
+			Log.v(TAG, "onPostExecute()");
 //			mProfileImage = result;
 			if (view != null) {
+				Log.v(TAG, "Saving and displaying image...");
 				view.setImageBitmap(result);
 				view.setTag(result);
 			}
