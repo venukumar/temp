@@ -187,7 +187,7 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 					}
 					
 					// Add profile (new or old) to the existing people list
-					mApp.mPeople.add(profile);
+					mApp.addPerson(profile);
 				}
 
 				// Call UI thread and display checkedIn people list
