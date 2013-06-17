@@ -93,7 +93,15 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			else if (person.hasImagePath()) {
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
 //				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
-				WebServices.downloadImage(Constants.DOMAIN_NAME + person.getImagePath(), person, (ImageView) findViewById(R.id.view_profile_user_image));
+				String imagePath;
+				
+				if(person.getImagePath().contains("http://") || person.getImagePath().contains("https://")){
+					imagePath = person.getImagePath();
+				}else{
+					imagePath = Constants.DOMAIN_NAME + person.getImagePath();
+				}
+				
+				WebServices.downloadImage(imagePath, person, (ImageView) findViewById(R.id.view_profile_user_image));
 			}
 			
 			if (person.hasEmail()) 
@@ -130,7 +138,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			
 
 			// Setup visibility preference
-			if (person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
+			if (person.getVisibility()!=null && person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
 
 				((CheckBox) findViewById(R.id.view_profile_checkbox_details)).setChecked(true);
 				findViewById(R.id.view_profile_details).setVisibility(View.VISIBLE);
