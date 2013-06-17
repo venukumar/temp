@@ -540,7 +540,7 @@ public class WebServices {
 			json.put("venueId", venueID);
 			json.put("orderId", order.serverID);
 			json.put("bartsyId", barstyId);
-			json.put("orderStatus", orderStatus);
+			json.put("orderStatus", String.valueOf(orderStatus));
 			response = postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, context);
 		} catch (Exception e1) {
 			e1.printStackTrace();
