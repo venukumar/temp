@@ -237,7 +237,7 @@ public class MapActivity extends Activity implements LocationListener,
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
-		} else if (mApp.mOrders.size() > 0) {
+		} else if (mApp.mActiveVenue.getOrderCount() > 0) {
 			// We already have a local active venue different than the one selected
 			userCheckOutAlert("You are already checked-in an have open orders placed at" + mApp.mActiveVenue.getName() +
 					". If you checkout they will be cancelled and you will still be charged. Are you sure you want to check out?", venue);
@@ -299,7 +299,7 @@ public class MapActivity extends Activity implements LocationListener,
 			public void run() {
 				
 				// Load the venue paramenter from the local parameter buffer
-				final Venue venue = mVenue;
+				Venue venue = mVenue;
 				
 				// Invoke the user checkin syscall
 				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyId(), venue.getId(), Constants.URL_USER_CHECK_IN);
@@ -314,11 +314,18 @@ public class MapActivity extends Activity implements LocationListener,
 							
 							// Host checked user in successfully. Check the user in locally too.
 
+							if (json.has("userCount"))
+								venue.setUserCount(json.getInt("userCount"));
+
+							// Check into the venue locally
+							mApp.userCheckIn(venue);
+
+							
+							final Venue venuefinal = venue;
+							
 							handler.post(new Runnable() {
 								public void run() {
 									
-									// Check into the venue locally
-									mApp.userCheckIn(venue);
 
 									// Start venue activity and finish this activity
 									Intent intent = new Intent(activity, VenueActivity.class);
@@ -330,6 +337,8 @@ public class MapActivity extends Activity implements LocationListener,
 						} else {
 							
 							// An error has occurred and the user was not checked in - Toast it
+							
+							mApp.userCheckOut();
 
 							handler.post(new Runnable() {
 								public void run() {
