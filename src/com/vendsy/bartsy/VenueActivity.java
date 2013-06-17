@@ -14,9 +14,11 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -49,6 +51,7 @@ import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Section;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
@@ -287,34 +290,37 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	 * 
 	 */
 	
+	MenuItem checkOut = null;
+	
 	 @Override
 	 public boolean onCreateOptionsMenu(Menu menu) {
 
-	        menu.add("Search")
-	            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+        checkOut = menu.add("Check out...");
+        
+        checkOut.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-	       
+        
 
-	        return true;
+		// Calling super after populating the menu is necessary here to ensure that the
+		// action bar helpers have a chance to handle this event.
+		boolean retValue = super.onCreateOptionsMenu(menu);
+
+
+		return retValue;
 	 }
 	 
 	
-//	
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//
-//		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.menu_main, menu);
-//
-//		// Calling super after populating the menu is necessary here to ensure that the
-//		// action bar helpers have a chance to handle this event.
-//		boolean retValue = super.onCreateOptionsMenu(menu);
-//
-//		return retValue;
-//	}
-//
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+
+		
+		if (item == checkOut) {
+			// Check out from the venue
+			checkOutFromVenue(mApp.mActiveVenue);
+			return super.onOptionsItemSelected(item);
+		}
+		
+		
 		switch (item.getItemId()) {
 		
 		case android.R.id.home:
@@ -322,7 +328,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			Intent intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
-			return true;
+			return super.onOptionsItemSelected(item);
 
 		case R.id.action_settings:
 			Intent settingsActivity = new Intent(getBaseContext(),
@@ -337,9 +343,158 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		default:
 			break;
 		}
+		
 		return super.onOptionsItemSelected(item);
 	}
 
+	
+	
+
+	/**
+	 * Invokes when the venue selected in the list view
+	 * 
+	 * @param venue
+	 */
+
+	// We're using this variable as a message buffer with the background service checking user in
+	Venue mVenue = null;
+	
+	protected void checkOutFromVenue(Venue venue) {
+		
+		Log.v(TAG, "venueSelectedAction(" + venue.getId() + ")");
+
+		// Initialize message buffer for alertBox() and userCheckinAction()
+		mVenue = venue;
+
+		// Check user into venue after confirmation
+		
+		if (mApp.mActiveVenue == null) {
+			// Not checked in apparently. just end activity
+			Intent intent = new Intent(this, MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			finish();
+		} else if (mApp.mActiveVenue.getOrderCount() > 0) {
+			// We already have a local active venue different than the one selected
+			userCheckOutAlert("You have OPEN ORDERS at " + mApp.mActiveVenue.getName() +
+					". If you checkout they will be cancelled and you will still be charged.\n\nAre you sure?", venue);
+		} else if (mApp.mActiveVenue != null) {
+			// Require to ask confirmation to check in to new venue
+			userCheckOutAlert("Are you sure you want to check out from " + mApp.mActiveVenue.getName() + "?", venue);
+		}
+	}
+	
+
+	/**
+	 * To display confirmation alert box when the user selects venue in the list
+	 * view
+	 * 
+	 * @param message
+	 * @param venue
+	 */
+	private void userCheckOutAlert(String message, final Venue venue) {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(VenueActivity.this);
+		builder.setCancelable(true);
+		builder.setTitle("Check out?");
+		builder.setInverseBackgroundForced(true);
+		builder.setMessage(message);
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				dialog.dismiss();
+				invokeUserCheckOutSyscall();
+
+			}
+		});
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+
+	}
+
+	/**
+	 * Invokes this action when the user selects on the venue and calls check in
+	 * web service
+	 * 
+	 * @param Uses a local variable "mVenue" as a parameter buffer
+	 * 
+	 */
+	
+	String errorMessage = null;
+	Handler mHandler = new Handler();
+	
+	protected void invokeUserCheckOutSyscall() {
+		new Thread() {
+			public void run() {
+				
+				// Load the venue paramenter from the local parameter buffer
+				Venue venue = mVenue;
+				
+				// Invoke the user checkin syscall
+				String response = WebServices.userCheckInOrOut(VenueActivity.this, mApp.loadBartsyId(), venue.getId(), Constants.URL_USER_CHECK_OUT);
+
+				if (response != null) {
+					try {
+						JSONObject json = new JSONObject(response);
+						String errorCode = json.getString("errorCode");
+						errorMessage = json.has("errorMessage") ? json.getString("errorMessage") : "";
+
+						if (errorCode.equalsIgnoreCase("0")) {
+							
+							// Host checked user out successfully. Check the user out locally too.
+
+
+							// Check into the venue locally
+							mApp.userCheckOut();
+
+							
+							final Venue venuefinal = venue;
+							
+							mHandler.post(new Runnable() {
+								public void run() {
+									
+									Toast.makeText(VenueActivity.this, "Checked out from " + mVenue.getName(), Toast.LENGTH_SHORT).show();
+
+
+									// Start venue activity and finish this activity
+									Intent intent = new Intent(mActivity, MainActivity.class);
+									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									startActivity(intent);
+									finish();
+								}
+							});
+						} else {
+							
+							// An error has occurred and the user was not checked in - Toast it
+							
+							mApp.userCheckOut();
+
+							mHandler.post(new Runnable() {
+								public void run() {
+									Toast.makeText(VenueActivity.this, "Error checking out. Please try again or restart application.", Toast.LENGTH_SHORT).show();
+								}
+							});
+						}
+
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+		}.start();
+	}
+
+	
+	
+	
+	
 	
 	private void updateActionBarStatus() {
 
