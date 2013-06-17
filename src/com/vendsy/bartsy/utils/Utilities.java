@@ -117,6 +117,15 @@ public final class Utilities {
 		editor.commit();
 	}
 	
+	public static void savePref(Context context, int key, int value) {
+
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putInt(r.getString(key), value);
+		editor.commit();
+	}
+	
 	public static String loadPref(Context context, String key, String defaultValue) {
 		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources()
 				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
@@ -130,6 +139,12 @@ public final class Utilities {
 		return sharedPref.getString(r.getString(key), defaultValue);
 	}
 	
+	public static int loadPref(Context context, int key, int defaultValue) {
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources()
+				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+		return sharedPref.getInt(r.getString(key), defaultValue);
+	}
 	
 	/**
 	 * To save venue details in shared preferences
