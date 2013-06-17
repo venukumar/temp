@@ -183,6 +183,7 @@ public class PeopleSectionFragment extends SherlockFragment implements OnClickLi
 					
 					// Add profile (new or old) to the existing people list
 					mApp.mPeople.add(profile);
+					mApp.mActiveVenue.setUserCount(mApp.mPeople.size());
 				}
 
 				// Call UI thread and display checkedIn people list

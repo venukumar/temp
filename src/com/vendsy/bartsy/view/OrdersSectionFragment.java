@@ -77,7 +77,8 @@ public class OrdersSectionFragment extends SherlockFragment {
 			return;
 		
 		// For now remove list of orders
-		mApp.mOrders.clear();
+		mApp.clearOrders();
+			
 		// Load the orders currently present in the Bartsy user
 		loadUserOrders();
 
@@ -118,7 +119,7 @@ public class OrdersSectionFragment extends SherlockFragment {
 					for (int i = 0; i < listOfOrders.length(); i++) {
 						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
 						Order order = new Order(orderJson);
-						mApp.mOrders.add(order);
+						mApp.addOrderNoUI(order);
 					}
 					// To call UI thread and display checkedIn people list
 					handler.post(new Runnable() {
@@ -154,11 +155,11 @@ public class OrdersSectionFragment extends SherlockFragment {
 	
 	private void displayOrders() {
 
-		Log.v(TAG, "mApp.mOrders list size = " + mApp.mOrders.size());
+		Log.v(TAG, "mApp.mOrders list size = " + mApp.mActiveVenue.getOrderCount());
 
 		// Use a swallow copy of the global structure to be able to remove orders from the global structure in the iterator
-		ArrayList<Order> orders = (ArrayList<Order>) mApp.mOrders.clone();
-
+		ArrayList<Order> orders = mApp.getOrdersCopy();
+		
 		// Update people count in people tab
 		mActivity.updateOrdersCount();
 
@@ -254,12 +255,12 @@ public class OrdersSectionFragment extends SherlockFragment {
 	}
 
 
-	public void removeOrder(Order order) {
+	public void removeOrders(Order order) {
 		if (mOrderListView != null)
 			mOrderListView.removeView(order.view);
 		// ((ViewGroup) order.view.getParent()).removeView(order.view);
 		order.view = null;
-		mApp.mOrders.remove(order);
+		mApp.removeOrder(order);
 	}
 
 }
