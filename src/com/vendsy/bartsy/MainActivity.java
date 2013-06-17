@@ -6,14 +6,16 @@ import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-
+import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -31,55 +33,65 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
+
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
 		
 		
 		setContentView(R.layout.main);
+		
 
-		if (mApp.mActiveVenue == null) {
+		if (mApp.loadActiveVenue() == null) {
 			
 			// No active venue - hide active menu UI
-			findViewById(R.id.view_active_venue).setVisibility(View.GONE);
+			findViewById(R.id.button_active_venue).setVisibility(View.GONE);
 			
 		} else {
 			// Active venue exists - set up the active venue view. For now just show it
 
-			findViewById(R.id.view_active_venue).setVisibility(View.VISIBLE);
-			findViewById(R.id.check_out).setVisibility(View.VISIBLE);
+			findViewById(R.id.button_active_venue).setVisibility(View.VISIBLE);
 
 			// Set up checkout button
 			Button b = (Button) findViewById(R.id.button_active_venue);
-			Button checkOut = (Button) findViewById(R.id.check_out);
-			checkOut.setOnClickListener(this);
 
 			// Setup text for the view
-			if (mApp.mOrders.size() == 0) {
-				b.setText("Checked in at: " + mApp.mActiveVenue.getName()
-						+ "\nClick to order drinks and see who's here...");
-			} else {
-				b.setText("Checked in at: " + mApp.mActiveVenue.getName() + "\n"
-						+ mApp.mOrders.size() + " open orders. Click for more...");
-			}
+			b.setText(mApp.mActiveVenue.getName() + "\n" +
+					  mApp.mActiveVenue.getUserCount() + (mApp.mActiveVenue.getUserCount() == 1 ? " person, " : " people, ") + 
+					  mApp.mActiveVenue.getOrderCount() + " orders");
 		}
 
 		// Set up button listeners
 		
 		((Button) findViewById(R.id.button_checkin)).setOnClickListener(this);
-		((Button) findViewById(R.id.button_settings)).setOnClickListener(this);
+		((Button) findViewById(R.id.button_my_profile)).setOnClickListener(this);
 		((View) findViewById(R.id.button_active_venue)).setOnClickListener(this);
 		((View) findViewById(R.id.button_notifications)).setOnClickListener(this);
-		((View) findViewById(R.id.button_profile)).setOnClickListener(this);
-		((View) findViewById(R.id.button_profile_dismiss)).setOnClickListener(this);
-		((View) findViewById(R.id.button_my_venues)).setOnClickListener(this);
+		((View) findViewById(R.id.button_logout)).setOnClickListener(this);
 
 		// Hide action bar
 		getSupportActionBar().hide();
 	}
 
+	
+	@Override
+	public void onStop() {
+		super.onStop();
+		Log.v(TAG, "onStop()");
+		
+		// Save active venue
+		mApp.saveActiveVenue();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 
+		Log.v(TAG, "onDestroy()");
+
+	}
+	
+	
 	@Override
 	public void onClick(View v) {
 		Log.d("Bartsy", "Clicked on a button");
@@ -88,11 +100,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 		switch (v.getId()) {
 
-		case R.id.check_out:
-
-			checkOutUser();
-
-			break;
 
 		case R.id.button_active_venue:
 
@@ -100,48 +107,78 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
-		case R.id.button_profile:
+		case R.id.button_logout:
 			mApp.eraseUserProfile();
 			finish();
 			intent = new Intent().setClass(this, InitActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
-		case R.id.button_profile_dismiss:
-			// For now simply modify the UI. This should open a dialog with
-			// choices: remind again, don't remind again
-			((View) v.getParent()).setVisibility(View.GONE);
-			break;
 		case R.id.button_checkin:
 			intent = new Intent().setClass(this, MapActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
-		case R.id.button_my_venues:
-			break;
 		case R.id.button_notifications:
 			// For now don't do anything
 			break;
-		case R.id.button_settings:
+		case R.id.button_my_profile:
 			
 			Log.v(TAG, "User profile button");
-			
-			mApp.mUserProfileActivityInput = null;
-			
+						
 			if (mApp.mProfile != null) {
 
-				// We have a profile, use username/password and get the rest of the details from the server
-				
-				// For now just use our saved profile
-				mApp.mUserProfileActivityInput = mApp.mProfile;			
+				// We have saved profile information from preferences. Get latest profile info from host and also get user status
+				new AsyncLoadXMLFeed().execute();
+				return;
 			} 
 			
+			mApp.mUserProfileActivityInput = null;
 			intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 			break;
 		}
+
 	}
 
+	
+	
+	private class AsyncLoadXMLFeed extends AsyncTask<Void, Void, Void>{
+		@Override
+		protected void onPreExecute(){
+			         // show your progress dialog
+		}
+		
+		@Override
+		protected Void doInBackground(Void... Voids) {
+		    // load your xml feed asynchronously
+		  
+			
+			UserProfile user = WebServices.getUserProfile(getApplicationContext(), mApp.mProfile);
+			if (user == null) {
+				// Could not get user details - erase our user locally and of course, don't check anybody in
+				mApp.eraseUserProfile();
+			} else {
+				// Got a valid profile - save it locally 
+				mApp.saveUserProfile(user);
+			}
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void params){
+			// dismiss your dialog
+			// launch your News activity
+			if (mApp.mProfile == null) {
+				Toast.makeText(mActivity, "Could not load profile, starting fresh", Toast.LENGTH_SHORT).show();				
+			} else {
+				Toast.makeText(mActivity, "Loaded profile", Toast.LENGTH_SHORT).show();
+				mApp.mUserProfileActivityInput = mApp.mProfile;
+				Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+				startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+			}
+		}
+	}
 
 	/**
 	 * To checkout user from the active venue
@@ -149,7 +186,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	 */
 	private void checkOutUser() {
 		// For now it will ask confirmation dialog
-		if (mApp.mActiveVenue != null && mApp.mOrders.size() > 0) {
+		if (mApp.mActiveVenue != null && mApp.mActiveVenue.getOrderCount() > 0) {
 			alertBox("You have open orders placed at "
 					+ mApp.mActiveVenue.getName()
 					+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from "
@@ -211,7 +248,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 										@Override
 										public void run() {
 											mApp.userCheckOut();
-											findViewById(R.id.view_active_venue).setVisibility(View.GONE);
+											findViewById(R.id.button_active_venue).setVisibility(View.GONE);
 										}
 									});
 								} catch (JSONException e) {
@@ -237,15 +274,37 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 	}
 
-	/* This method is used by Card.io to process the credit card numbers 
-	 * (non-Javadoc)
-	 * @see android.support.v4.app.FragmentActivity#onActivityResult(int, int, android.content.Intent)
-	 */
 	
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
+	protected void onActivityResult(int requestCode, int responseCode, Intent data) {
+		
+		super.onActivityResult(requestCode, responseCode, data);
 
-		// else handle other activity results
+
+		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
+
+		switch (requestCode) {
+		case REQUEST_CODE_USER_PROFILE:
+			switch (responseCode) {
+			case RESULT_OK:
+				// We got a response from the user profile activity. Process the user profile and start
+				// the right activity if successful
+				Log.v(TAG, "Profile saved - process results");
+				Toast.makeText(this, "Profile saved", Toast.LENGTH_SHORT).show();
+				break;
+			default:
+				// No profile was created 
+				Log.v(TAG, "Profile not saved");
+				Toast.makeText(this, "Profile could not be saved to the server. Please try again", Toast.LENGTH_LONG).show();
+				break;
+			}
+
+			// Reset parameters passed as inputs using the application object 
+			Log.d(TAG, "Resetting application user input/output buffers");
+			mApp.mUserProfileActivityInput = null;
+			
+			break;
+		}
+		
 	}
 }
