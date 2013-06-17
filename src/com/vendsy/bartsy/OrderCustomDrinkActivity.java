@@ -118,6 +118,7 @@ public class OrderCustomDrinkActivity extends Activity{
 		
 		updateMixerList(0);
 		categoriesSpinner.requestFocus();
+		updatePrice();
 	}
 	
 	/**

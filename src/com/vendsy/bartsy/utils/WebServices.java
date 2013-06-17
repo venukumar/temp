@@ -227,6 +227,8 @@ public class WebServices {
 			orderData.put("venueId", venueID);
 			if(order.orderReceiver!=null){
 				orderData.put("recieverBartsyId", order.orderReceiver.getBartsyId());
+			}else{
+				orderData.put("recieverBartsyId", bartsyId);
 			}
 			orderData.put("specialInstructions", "");
 
