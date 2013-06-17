@@ -573,7 +573,7 @@ public class WebServices {
 			
 			// Setup call parameters
 			if (login.hasBartsyId())
-				json.put("BartsyId", login.getBartsyId());
+				json.put("bartsyId", login.getBartsyId());
 			if (login.hasBartsyLogin() && login.hasPassword()) {
 				// Login with username/password
 				json.put("bartsyLogin", login.getBartsyLogin());
@@ -673,9 +673,9 @@ public class WebServices {
 		Log.v(TAG, "userLogin()");
 
 		// For now only load the venue from preference as this syscall is BROKEN!!!
-		return context.loadActiveVenue();
+//		return context.loadActiveVenue();
 		
-		/*
+		
 		try {
 
 			JSONObject json = new JSONObject();
@@ -688,7 +688,7 @@ public class WebServices {
 			
 			// Setup call parameters
 			if (user.hasBartsyId())
-				json.put("BartsyId", user.getBartsyId());
+				json.put("bartsyId", user.getBartsyId());
 			if (user.hasBartsyLogin() && user.hasPassword()) {
 				json.put("userName", user.getBartsyLogin());
 			} else if (user.hasFacebookUsername() && user.hasFacebookId()) {
@@ -729,7 +729,7 @@ public class WebServices {
 
 		return null;
 		
-		*/
+		
 	}
 
 	

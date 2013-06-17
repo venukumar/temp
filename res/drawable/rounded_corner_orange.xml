@@ -22,5 +22,5 @@
     <stroke android:width="1dp" 
         android:color="#c9765a" />
     <solid android:color="#e9967a" />
-    <corners android:radius="6dp" />
+    <corners android:radius="0dp" />
 </shape>

@@ -66,4 +66,7 @@ public class Constants {
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION="1";
+	
+	// For now use card-coded value of tax
+	public static final float taxRate = (float) (9.0) / (float) (100.0);
 }

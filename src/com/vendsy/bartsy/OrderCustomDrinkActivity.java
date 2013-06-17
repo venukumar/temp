@@ -56,6 +56,8 @@ public class OrderCustomDrinkActivity extends Activity{
 	private ArrayList<Ingredient> selectedMixers= new ArrayList<Ingredient>();
 	private Order order;
 	
+	private float baseAmount;
+	private float tipAmount;
 	private float totalAmount;
 	private TextView priceText;
 	public UserProfile profile;
@@ -233,9 +235,10 @@ public class OrderCustomDrinkActivity extends Activity{
 		}
 		
 		tipPercentageValue = tipPercentageValue.replace("%", "");
+		float tipAmount = 0;
 		
 		try {
-			order.tipAmount = Float.valueOf(tipPercentageValue);
+			tipAmount = Float.valueOf(tipPercentageValue) / 100 * totalAmount;
 		} catch (NumberFormatException e) {
 		}
 
@@ -243,7 +246,8 @@ public class OrderCustomDrinkActivity extends Activity{
 				null, 									// arg(1) - This order still doesn't have a server-assigned ID
 				mApp.selectedSpirit.getName(), 						// arg(2) - Title
 				"", 				// arg(3) - Description
-				String.valueOf(totalAmount), 						// arg(4) - Price
+				baseAmount, 						// arg(4) - Price
+				tipAmount,
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
 				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		

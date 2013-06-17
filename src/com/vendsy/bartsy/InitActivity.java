@@ -112,8 +112,17 @@ public class InitActivity extends SherlockFragmentActivity implements
 	protected void onStop() {
 		super.onStop();
 		mPlusClient.disconnect();
+
+		if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
+			mConnectionProgressDialog.dismiss();
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+	}
+	
 	void signUpListeners() {
 		setContentView(R.layout.init_sign_up);
 		findViewById(R.id.view_init_create_account).setOnClickListener(this);

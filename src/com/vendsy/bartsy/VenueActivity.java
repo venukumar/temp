@@ -80,14 +80,8 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	public static final String TAG = "VenueActivity";
 	public DrinksSectionFragment mDrinksFragment = null;
-	public OrdersSectionFragment mOrdersFragment = null; // make sure to set
-															// this to null when
-															// fragment is
-															// destroyed
-	public PeopleSectionFragment mPeopleFragment = null; // make sure to set
-															// this to null when
-															// fragment is
-															// destroyed
+	public OrdersSectionFragment mOrdersFragment = null; 
+	public PeopleSectionFragment mPeopleFragment = null; 
 
 
 	public void appendStatus(String status) {
@@ -873,17 +867,22 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		}
 		
 		order = new Order();
+
 		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
 		String tipPercentageValue = tip.replace("%", "");
-		order.tipAmount = Float.valueOf(tipPercentageValue);
+		Float tipAmount = Float.valueOf(tipPercentageValue)/100 * Float.valueOf(drink.getPrice());
 
 		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order  ID
 				null, 									// arg(1) - This order still doesn't have a server-assigned ID
 				drink.getTitle(), 						// arg(2) - Title
 				drink.getDescription(), 				// arg(3) - Description
-				drink.getPrice(), 						// arg(4) - Price
+				Float.valueOf(drink.getPrice()), 						// arg(4) - Price
+				tipAmount,
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
 				mApp.mProfile);
+		
+
+		
 		order.orderReceiver = ((DrinkDialogFragment) dialog).profile;
 		// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		order.itemId = drink.getDrinkId();
@@ -897,45 +896,11 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		
 	private void processOrderData() {
 
-		if (Constants.USE_ALLJOYN) {
-
-			// Send order to server
-			mApp.newLocalUserMessage("<command><opcode>order</opcode>"
-					+ "<argument>"
-					+ mApp.mOrderIDs
-					+ "</argument>"
-					+ // client order ID
-					"<argument>"
-					+ mApp.mOrderIDs
-					+ "</argument>"
-					+ // server order ID
-					"<argument>" + order.title + "</argument>" + "<argument>"
-					+ order.description + "</argument>" + "<argument>"
-					+ order.total + "</argument>"
-					+ "<argument>" // Image +
-					+ "</argument>" + "<argument>" + mApp.mProfile.getBartsyId()
-					+ "</argument>" +
-					// Each order contains the profile of the sender (and
-					// later the profile of the person that should pick it up)
-					"</command>");
-			appendStatus("Placed drink order");
-
-			// Add order to the list and update views
-			mApp.addOrder(order);
-
-			// Increment the local order count
-			mApp.mOrderIDs++;
-
-			// Update tab title with the number of open orders
-			updateOrdersCount();
-			
-		} else {
-			// Web service call - the response in handled asynchronously in processOrderDataHandler()
-			if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
-					processOrderDataHandler))
-				// Failed to place syscall due to internal error
-				Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
-		}
+		// Web service call - the response in handled asynchronously in processOrderDataHandler()
+		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
+				processOrderDataHandler))
+			// Failed to place syscall due to internal error
+			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 	}
 
 	
