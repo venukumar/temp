@@ -8,7 +8,41 @@ public class Venue {
 	private String longitude;
 	private String address;
 	private String payPalId;
+	private int orderCount;
+	private int userCount;
 
+	@Override
+	public String toString() {
+
+		return "{" +
+				"id: " + id +
+				" name: " + name +
+				" orderCount: " + orderCount +
+				" userCount: " + userCount +
+				" latitude: " + latitude +
+				" longitude: " + longitude +
+				" address: " + address +
+				" payPalId: " + payPalId +
+				"}";
+		
+	}
+	
+	public int getOrderCount() {
+		return orderCount;
+	}
+
+	public void setOrderCount(int orderCount) {
+		this.orderCount = orderCount;
+	}
+	
+	public int getUserCount() {
+		return userCount;
+	}
+
+	public void setUserCount(int userCount) {
+		this.userCount = userCount;
+	}
+	
 	public String getAddress() {
 		return address;
 	}
