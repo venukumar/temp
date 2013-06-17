@@ -45,19 +45,16 @@ import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
 import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
 import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends SherlockFragmentActivity implements
-		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, ProfileDialogListener, OnClickListener, LoginDialogListener {
+		ConnectionCallbacks, OnConnectionFailedListener, OnPersonLoadedListener, OnClickListener, LoginDialogListener {
 
 	private static final String TAG = "InitActivity";
 
-	private ViewPager pager;
-	private static int NUM_VIEWS = 2;
-	private InitAdapter adapter;
 	private PlusClient mPlusClient;
-	// private ProgressDialog mConnectionProgressDialog;
 	final Context context = this;
 	private ConnectionResult mConnectionResult = null;
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
@@ -80,19 +77,14 @@ public class InitActivity extends SherlockFragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
-		setContentView(R.layout.init_main);
+
 
 		// Setup pointers
 		mApp = (BartsyApplication) getApplication();
+		mActivity = this;
 		
 		// Hide action bar
 		getSupportActionBar().hide();
-
-		// Initialize the startup screen tabs
-		adapter = new InitAdapter();
-		pager = (ViewPager) findViewById(R.id.awesomepager);
-		pager.setAdapter(adapter);
 
 		// Initialize Google sign in framework
 		mPlusClient = new PlusClient.Builder(this, this, this)
@@ -103,6 +95,11 @@ public class InitActivity extends SherlockFragmentActivity implements
 		mConnectionProgressDialog = new ProgressDialog(this);
 		mConnectionProgressDialog.setMessage("Connecting");
 
+		if (mApp.loadBartsyId() == null) 
+			signUpListeners();
+		else
+			signInListeners();
+					
 	}
 
 	@Override
@@ -117,16 +114,33 @@ public class InitActivity extends SherlockFragmentActivity implements
 		mPlusClient.disconnect();
 	}
 
+	void signUpListeners() {
+		setContentView(R.layout.init_sign_up);
+		findViewById(R.id.view_init_create_account).setOnClickListener(this);
+		findViewById(R.id.view_init_toggle_sign_in).setOnClickListener(this);
+		findViewById(R.id.view_init_google).setOnClickListener(this);
+		findViewById(R.id.view_init_facebook).setOnClickListener(this);
+	}
+	
+	void signInListeners() {
+		setContentView(R.layout.init_sign_in);
+		findViewById(R.id.view_init_sign_in).setOnClickListener(this);
+		findViewById(R.id.view_init_toggle_sign_up).setOnClickListener(this);
+		findViewById(R.id.view_init_google).setOnClickListener(this);
+		findViewById(R.id.view_init_facebook).setOnClickListener(this);
+	}
+	
 	@Override
 	public void onClick(View v) {
 		Log.d(TAG, "Clicked on a button");
 
 		switch (v.getId()) {
-		case R.id.sign_in_button:
+		case R.id.view_init_google:
 			if (!mPlusClient.isConnected()) {
 				mPlusClient.connect();
 				if (mConnectionResult == null) {
-					mConnectionProgressDialog.show();
+					if (!mConnectionProgressDialog.isShowing())
+						mConnectionProgressDialog.show();
 				} else {
 					try {
 						mConnectionResult.startResolutionForResult(mActivity, REQUEST_CODE_RESOLVE_ERR);
@@ -144,7 +158,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 				mPlusClient.connect();
 			}
 			break;
-		case R.id.button_disconnect:
+		case R.id.view_init_facebook:
 
 			mConnectionProgressDialog.show();
 
@@ -166,28 +180,41 @@ public class InitActivity extends SherlockFragmentActivity implements
 			new LoginDialogFragment().show(getSupportFragmentManager(),"Please log in to Bartsy");
 			
 			break;
+			
+		case R.id.view_init_toggle_sign_in:
+			setContentView(R.layout.init_sign_in);
+			signInListeners();
+			break;
+		case R.id.view_init_toggle_sign_up:
+			setContentView(R.layout.init_sign_up);
+			signUpListeners();
+			break;
 		}
 	}
 
 	
+	/**
+	 * This function is called by the user login dialog. The dialog provides a username/password and this function 
+	 * gets the rest of the information for the user profile or diplays a Toast if the username/password are incorrect
+	 */
 	
 	@Override
 	public void onDialogPositiveClick(LoginDialogFragment dialog) {
 		// TODO Auto-generated method stub
-		Toast.makeText(this, "Login with username " + dialog.username, Toast.LENGTH_SHORT).show();
 		
 		// Create a new thread to handle getting a response from the host
 		
 		final UserProfile user = new UserProfile();
-		user.setLogin(dialog.username);
-		user.setPassword(dialog.password);
-		
+		user.setBartsyLogin(dialog.username);
+		user.setBartsyPassword(dialog.password);
+
 		new Thread() {
 			public void run() {
 				UserProfile profile = WebServices.getUserProfile(mApp.getApplicationContext(), user);
 
-				// If there was an error, Toast it and do nothing more.
 				if (profile == null) {
+	
+					// Could not log in
 					mHandler.post(new Runnable() {
 						@Override
 						public void run() {
@@ -195,16 +222,41 @@ public class InitActivity extends SherlockFragmentActivity implements
 						}
 					});
 					return;
-				}
+				} else {
+	
+					// Logged in successfully and obtained user information. Do the next step.
+					mApp.saveUserProfile(profile);
+					
+					// Synch user check-in status
+					Venue venue = WebServices.syncUserDetails(mApp, profile);				
+					if (venue != null) {
+						Log.v(TAG, "Active venue found: " + venue.getName());
+						mApp.userCheckIn(venue);
+					} else {
+						// No venue - delete any local references
+						mApp.userCheckOut();
+					}
+					
+					
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							
+							Toast.makeText(mActivity, "Logged in as " + user.getBartsyLogin(), Toast.LENGTH_SHORT).show();
 
-				// We got a new user. Start profile edit activity using this user and the input
-				mApp.mUserProfileActivityInput = profile;
-				Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
-				mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
+							// We got an existing user. Start profile edit activity using this user and the input
+							Intent intent = new Intent().setClass(InitActivity.this, MainActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(intent);
+							mActivity.finish();
+						}
+					});
+				}
 			};
 		}.start();
 	}
-
+	
+	
 	@Override
 	public void onDialogNegativeClick(LoginDialogFragment dialog) {
 		// TODO Auto-generated method stub
@@ -217,6 +269,8 @@ public class InitActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
 		
+		super.onActivityResult(requestCode, responseCode, intent);
+
 		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
 
 		switch (requestCode) {
@@ -276,7 +330,10 @@ public class InitActivity extends SherlockFragmentActivity implements
 				// We got a response from the user profile activity. Process the user profile and start
 				// the right activity if successful
 				Log.v(TAG, "Profile saved - process results");
-				processUserProfile(mApp.mUserProfileActivityOutput);
+				Intent action = new Intent().setClass(InitActivity.this, MainActivity.class);
+				action.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(action);
+				finish();
 				break;
 			default:
 				// No profile was created - dismiss the dialog
@@ -289,7 +346,6 @@ public class InitActivity extends SherlockFragmentActivity implements
 			// Reset parameters passed as inputs using the application object 
 			Log.d(TAG, "Resetting application user input/output buffers");
 			mApp.mUserProfileActivityInput = null;
-			mApp.mUserProfileActivityOutput = null;
 			
 			break;
 		}
@@ -324,178 +380,72 @@ public class InitActivity extends SherlockFragmentActivity implements
 
 		Log.v(TAG, "onPersonLoaded()");
 
-		
 		if (status.getErrorCode() == ConnectionResult.SUCCESS) {
 
 			Log.v(TAG, "Person Loaded successfully");
-
-			// Download and save profile picture in the background
-			if (mPerson.hasImage() && mPerson.hasName() && mPerson.hasBirthday() && !mPerson.getBirthday().substring(0,4).equalsIgnoreCase("0000")) {
-				new DownloadAndSaveUserProfileImageTask().execute(mPerson.getImage().getUrl(), getResources().getString(R.string.config_user_profile_picture));
-
-				// Show dialog and on exit start Bartsy (there should be an option to change the profile)
-				ProfileDialogFragment dialog = new ProfileDialogFragment();
-				dialog.mUser = mPerson;
-				dialog.show(getSupportFragmentManager(), "Your profile");
-
-				Toast.makeText(mActivity, "Downloaded your Google profile, please verify it...", Toast.LENGTH_SHORT).show();
-				
-				Log.d(TAG, mPerson.getAgeRange().toString());
-				return;
-				
-			} else {
-				// Incomplete profile
-				Log.d(TAG, "Incomplete profile - starting blank user edit activity");
-//				Toast.makeText(mActivity, "Your Google profile could use some adding too...", Toast.LENGTH_SHORT).show();
-			}
-		} else {
-			Log.d(TAG, "Error loading person - starting blank user edit activity");
-			Toast.makeText(mActivity, "Could not download profile, please create one...", Toast.LENGTH_SHORT).show();
-		}
-		
-		// If the profile is incomplete or couldn't be downloaded, start the profile edit activity
-		mApp.mUserProfileActivityInput = new UserProfile(mPerson, mAccountName); // use the application as a buffer to pass the message to the new activity
-		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
-		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);		
-		
-	}
-
-	
-
-	@Override
-	public void onUserDialogPositiveClick(final DialogFragment dialog) {
-		// User accepted the profile, launch main activity
-		
-		Log.v(TAG, "onUserDialogPositiveClick()");
-		
-		// Create a profile for the person
-		Person person = ((ProfileDialogFragment) dialog).mUser;
-		UserProfile profile = new UserProfile(person, this.mAccountName);
-		profile.setImage(mApp.loadUserProfileImage());
-		processUserProfile(profile);
-	}
-	
-	
-	@Override 
-	public void onUserDialogNegativeClick(final DialogFragment dialog) {
-		// Start user profile activity and pass it a pointer to the user object saved in the global application structure for convenience
-		Person person = ((ProfileDialogFragment) dialog).mUser;
-		mApp.mUserProfileActivityInput = new UserProfile(person, mAccountName); // use the application as a buffer to pass the message to the new activity
-		Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
-		this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
-		finish();
-	}
-	
-	
-	/**
-	 * THis function is called when the user has accepted the profile in the profile activity. It saves the user
-	 * details locally. If the user is checked in according to the server, the function also checks the user in
-	 * locally. This function will either terminate the activity and start a new one or leave the user in this 
-	 * activity with a Toast asking them to retry their login.
-	 * 
-	 * The function uses the mUser parameters passed through the application as assumes they are set up
-	 */
-	
-	public void processUserProfile(final UserProfile userProfile) {
-		
-		Log.i(TAG, "processUserProfileData()");
-		
-		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
-		String deviceToken = settings.getString("RegId", "");
-		if (deviceToken.trim().length() > 0) {
 			
-			// Send profile data to server in background
+			// Try to log the user in
+
+			final UserProfile user = new UserProfile(mPerson, mAccountName);;
 
 			new Thread() {
 				public void run() {
-					String bartsyUserId = null;
 					
-					try {
-						// Service call for post profile data to server
-						JSONObject resultJson = WebServices.postProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+					// User log-in syscall
+					UserProfile profile = WebServices.getUserProfile(mApp.getApplicationContext(), user);
 
-						// Process web service response
-						
-						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
-
-							final String userCheckedInOrNot = resultJson.getString("userCheckedIn");
-							// Error handling
-								// if user checkedIn is true
-								if ( userCheckedInOrNot!=null && userCheckedInOrNot.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
-								{
-									// Check the user in locally 
-									mApp.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"));
-								}
-								
-								if (resultJson.has("bartsyId")) {
-									bartsyUserId = resultJson.getString("bartsyId");
-
-									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
-								} else {
-									Log.e(TAG, "BartsyID " + "bartsyUserId not found");
-								}
-								
-								final String bartsyId = bartsyUserId;
-								// To check whether user is checkedIn or not. If user already checkedIn then it 
-								// should navigate to VenueActivity, otherwise it should navigate to MainActivity
-								
-								mHandler.post(new Runnable() {
-									public void run() {
-										// Save profile in the global application structure and in preferences
-										userProfile.setBartsyId(bartsyId);
-										
-										mApp.saveUserProfile(userProfile);
-										
-										if (userCheckedInOrNot.equalsIgnoreCase("0")) {
-											// User profile saved successfully and user checked in
-											startActivity(new Intent().setClass(mActivity, VenueActivity.class));
-										} else {
-											// User profile saved successfully and user in not checked in
-											startActivity(new Intent().setClass(mActivity, MainActivity.class));
-										}
-										
-										// Stop the parent activity of this thread (initactivity) as we just started a new one
-										mActivity.finish();
-									}
-								});
-								
-						}else{
-							// Error creating user. Ask parent to post Toast.
-							mHandler.post(new Runnable() {
-								@Override
-								public void run() {
-									Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
-									if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
-										mConnectionProgressDialog.dismiss();
-								}
-							});
-							return;
-						}
-					} catch (JSONException e) {
-						e.printStackTrace();
-
-						// Error creating user. Ask parent to post Toast.
+					if (profile == null) {
+		
+						// Could not log in. We need to create a new profile based on the information obtained.
 						mHandler.post(new Runnable() {
 							@Override
 							public void run() {
-								Toast.makeText(mActivity, "Please try again....", Toast.LENGTH_LONG).show();
-								if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
-									mConnectionProgressDialog.dismiss();
+								mApp.mUserProfileActivityInput = user; // use the application as a buffer to pass the message to the new activity
+								Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+								mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);		
 							}
 						});
 						return;
-					
 					}
-				}
+
+					// Got profile - save it
+					mApp.saveUserProfile(profile);
+
+					// Synch user check-in status
+					Venue venue = WebServices.syncUserDetails(mApp, profile);				
+					if (venue != null) {
+						Log.v(TAG, "Active venue found: " + venue.getName());
+						mApp.userCheckIn(venue);
+					} else {
+						// No venue - delete any local references
+						mApp.userCheckOut();
+					}
+					
+					// Save user profile as the active profile and start main activity.
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(mActivity, "Logged in as " + user.getGoogleUsername(), Toast.LENGTH_SHORT).show();
+							Intent intent = new Intent().setClass(InitActivity.this, MainActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(intent);
+							finish();
+						}
+					});
+
+				};
 			}.start();
 
 		} else {
-			Toast.makeText(this, "Please try again....", Toast.LENGTH_LONG).show();
-			if (mConnectionProgressDialog != null && mConnectionProgressDialog.isShowing())
-				mConnectionProgressDialog.dismiss();
-			return;
+			
+			// Could not load a user profile. Start a blank profile
+			mApp.mUserProfileActivityInput = null;
+			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
+			mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 		}
 	}
+
+	
 
 
 	@Override
@@ -540,134 +490,6 @@ public class InitActivity extends SherlockFragmentActivity implements
 
 			return bitmap;
 		}
-
 	}
-
-	/****************************
-	 * 
-	 * 
-	 * 
-	 * TODO - View handling
-	 * 
-	 * @author peterkellis
-	 * 
-	 */
-
-	private class InitAdapter extends PagerAdapter {
-
-		@Override
-		public int getCount() {
-			return NUM_VIEWS;
-		}
-
-		/**
-		 * Create the page for the given position. The adapter is responsible
-		 * for adding the view to the container given here, although it only
-		 * must ensure this is done by the time it returns from
-		 * {@link #finishUpdate(android.view.ViewGroup)}.
-		 * 
-		 * @param collection
-		 *            The containing View in which the page will be shown.
-		 * @param position
-		 *            The page position to be instantiated.
-		 * @return Returns an Object representing the new page. This does not
-		 *         need to be a View, but can be some other container of the
-		 *         page.
-		 */
-		@Override
-		public Object instantiateItem(ViewGroup collection, int position) {
-
-			View v = null;
-
-			switch (position) {
-			case 0:
-				v = getLayoutInflater().inflate(R.layout.init_page_0, null);
-				break;
-			case 1:
-				v = getLayoutInflater().inflate(R.layout.init_page_1, null);
-
-				// Setup sign-in button to start Google sign in
-				SignInButton button = (SignInButton) v
-						.findViewById(R.id.sign_in_button);
-				button.setStyle(SignInButton.SIZE_WIDE, SignInButton.COLOR_DARK);
-				button.setOnClickListener(mActivity);
-
-				// Set up Facebook button to disconnect (DEBUG)
-				ImageButton b = (ImageButton) v
-						.findViewById(R.id.button_disconnect);
-				b.setOnClickListener(mActivity);
-
-				// Set up create account button
-				Button bt = (Button) v.findViewById(R.id.view_init_create_account);
-				bt.setOnClickListener(mActivity);
-				
-				// Set up create account button
-				bt = (Button) v.findViewById(R.id.view_init_sign_in);
-				bt.setOnClickListener(mActivity);
-				
-				
-				break;
-			}
-			collection.addView(v);
-			return v;
-		}
-
-		/**
-		 * Remove a page for the given position. The adapter is responsible for
-		 * removing the view from its container, although it only must ensure
-		 * this is done by the time it returns from
-		 * {@link #finishUpdate(android.view.ViewGroup)}.
-		 * 
-		 * @param collection
-		 *            The containing View from which the page will be removed.
-		 * @param position
-		 *            The page position to be removed.
-		 * @param view
-		 *            The same object that was returned by
-		 *            {@link #instantiateItem(android.view.View, int)}.
-		 */
-		@Override
-		public void destroyItem(ViewGroup collection, int position, Object view) {
-			collection.removeView((View) view);
-		}
-
-		/**
-		 * Determines whether a page View is associated with a specific key
-		 * object as returned by instantiateItem(ViewGroup, int). This method is
-		 * required for a PagerAdapter to function properly.
-		 * 
-		 * @param view
-		 *            Page View to check for association with object
-		 * @param object
-		 *            Object to check for association with view
-		 * @return
-		 */
-		@Override
-		public boolean isViewFromObject(View view, Object object) {
-			return (view == object);
-		}
-
-		/**
-		 * Called when the a change in the shown pages has been completed. At
-		 * this point you must ensure that all of the pages have actually been
-		 * added or removed from the container as appropriate.
-		 * 
-		 * @param arg0
-		 *            The containing View which is displaying this adapter's
-		 *            page views.
-		 */
-		@Override
-		public void finishUpdate(ViewGroup arg0) {
-		}
-
-		@Override
-		public void restoreState(Parcelable arg0, ClassLoader arg1) {
-		}
-
-		@Override
-		public Parcelable saveState() {
-			return null;
-		}
-	}
-
+	
 }
