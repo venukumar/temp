@@ -127,7 +127,8 @@ public class PeopleSectionDialog extends Dialog{
 	private void processCheckedInUsersResponse(String response) {
 
 		// Save the list of people and use it as an image cache, resetting the global structure
-		ArrayList<UserProfile> knownPeople = (ArrayList<UserProfile>) mApp.mPeople.clone();
+		ArrayList<UserProfile> knownPeople = mApp.mPeople;
+
 		mApp.mPeople = new ArrayList<UserProfile>();
 
 		try {
@@ -165,10 +166,7 @@ public class PeopleSectionDialog extends Dialog{
 					}
 					
 					// If an existing profile was not found, create one
-					if (found) {
-						// Profile found. Remove it from known people list
-						knownPeople.remove(profile);
-					} else {
+					if (!found) {
 						// Create new instance for profile - this is for now incomplete!!
 
 						profile = new UserProfile();
@@ -224,10 +222,9 @@ public class PeopleSectionDialog extends Dialog{
 
 		} catch (JSONException e) {
 			e.printStackTrace();
+			// Reset as previous
+			mApp.mPeople = knownPeople;
 		}
-
-		// Cleanup
-		knownPeople.clear();
 	}
 	
 	

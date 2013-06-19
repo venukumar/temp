@@ -136,107 +136,104 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 	private void processCheckedInUsersResponse(String response) {
 
 		// Save the list of people and use it as an image cache, resetting the global structure
-		ArrayList<UserProfile> knownPeople = (ArrayList<UserProfile>) mApp.mPeople.clone();
-		mApp.mPeople = new ArrayList<UserProfile>();
+				ArrayList<UserProfile> knownPeople = mApp.mPeople;
 
-		try {
-			JSONObject peopleData = new JSONObject(response);
+				mApp.mPeople = new ArrayList<UserProfile>();
 
-			if (peopleData.has("checkedInUsers")) {
-				
-				// Get list of people from API call. If a person is known, copy known version as an optimization
-				JSONArray array = peopleData.getJSONArray("checkedInUsers");
-				for (int i = 0; i < array.length(); i++) {
-					String nickName = null, gender = null, imagepath = null;
-					String bartsyID = null;
-					JSONObject json = array.getJSONObject(i);
-					if (json.has("nickName"))
-						nickName = json.getString("nickName");
-					if (json.has("gender"))
-						gender = json.getString("gender");
-					if (json.has("bartsyId"))
-						bartsyID = json.getString("bartsyId");
-					if (json.has("userImagePath")) {
-						imagepath = json.getString("userImagePath");
-					}
-					
-					// Go over the list of people in the global structure looking for images
-					UserProfile profile = null;
-					boolean found = false;
-					for (UserProfile p : knownPeople) {
-						if (p.getBartsyId().equalsIgnoreCase(bartsyID) && p.hasImage()) {
-							// Found the profile and it has an image. Shamelessly reuse it
-							Log.v(TAG, "Reusing image for profile " + bartsyID);
-							profile = p;
-							found = true;
-							break;
-						}
-					}
-					
-					// If an existing profile was not found, create one
-					if (found) {
-						// Profile found. Remove it from known people list
-						knownPeople.remove(profile);
-					} else {
-						// Create new instance for profile - this is for now incomplete!!
+				try {
+					JSONObject peopleData = new JSONObject(response);
 
-						profile = new UserProfile();
-						profile.setBartsyId(bartsyID);
-						profile.setNickname(nickName);
-						profile.setImagePath(imagepath);
-					}
-					
-					// Add profile (new or old) to the existing people list
-					mApp.addPerson(profile);
-				}
-
-				// Call UI thread and display checkedIn people list
-				handler.post(new Runnable() {
-
-					@Override
-					public void run() {
+					if (peopleData.has("checkedInUsers")) {
 						
-						// Avoid null pointer exceptions...
-						if (mPeopleListView == null) {
-							Log.e(TAG, "Called processCheckedInUsers() with a null mPeopleListView");
-							return;
-						}
-						
-						// Make sure the list view is empty
-						mPeopleListView.removeAllViews();
-
-						// Add any existing people in the layout, one by one
-						
-						Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
-
-						for (UserProfile profile : mApp.mPeople) {
-							Log.v(TAG, "Adding a user item to the layout");
-							profile.view = mInflater.inflate(R.layout.user_item, null);
-							profile.updateView(new OnClickListener() {
-								
-								@Override
-								public void onClick(View v) {
-									selectedProfile((UserProfile)v.getTag());
+						// Get list of people from API call. If a person is known, copy known version as an optimization
+						JSONArray array = peopleData.getJSONArray("checkedInUsers");
+						for (int i = 0; i < array.length(); i++) {
+							String nickName = null, gender = null, imagepath = null;
+							String bartsyID = null;
+							JSONObject json = array.getJSONObject(i);
+							if (json.has("nickName"))
+								nickName = json.getString("nickName");
+							if (json.has("gender"))
+								gender = json.getString("gender");
+							if (json.has("bartsyId"))
+								bartsyID = json.getString("bartsyId");
+							if (json.has("userImagePath")) {
+								imagepath = json.getString("userImagePath");
+							}
+							
+							// Go over the list of people in the global structure looking for images
+							UserProfile profile = null;
+							boolean found = false;
+							for (UserProfile p : knownPeople) {
+								if (p.getBartsyId().equalsIgnoreCase(bartsyID) && p.hasImage()) {
+									// Found the profile and it has an image. Shamelessly reuse it
+									Log.v(TAG, "Reusing image for profile " + bartsyID);
+									profile = p;
+									found = true;
+									break;
 								}
-							}); 
-							// sets up view specifics and sets listener to this
-							mPeopleListView.addView(profile.view);
-						};
+							}
+							
+							// If an existing profile was not found, create one
+							if (!found) {
+								// Create new instance for profile - this is for now incomplete!!
 
+								profile = new UserProfile();
+								profile.setBartsyId(bartsyID);
+								profile.setNickname(nickName);
+								profile.setImagePath(imagepath);
+							}
+							
+							// Add profile (new or old) to the existing people list
+							mApp.addPerson(profile);
+						}
+
+						// Call UI thread and display checkedIn people list
+						handler.post(new Runnable() {
+
+							@Override
+							public void run() {
+								
+								// Avoid null pointer exceptions...
+								if (mPeopleListView == null) {
+									Log.e(TAG, "Called processCheckedInUsers() with a null mPeopleListView");
+									return;
+								}
+								
+								// Make sure the list view is empty
+								mPeopleListView.removeAllViews();
+
+								// Add any existing people in the layout, one by one
+								
+								Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
+
+								for (UserProfile profile : mApp.mPeople) {
+									Log.v(TAG, "Adding a user item to the layout");
+									profile.view = mInflater.inflate(R.layout.user_item, null);
+									profile.updateView(new View.OnClickListener() {
+										
+										@Override
+										public void onClick(View v) {
+											selectedProfile((UserProfile)v.getTag());
+										}
+									}); 
+									// sets up view specifics and sets listener to this
+									mPeopleListView.addView(profile.view);
+								};
+
+							}
+						});
+
+					} else {
+
+						Log.v(TAG, "checked in users not found !!!! ");
 					}
-				});
 
-			} else {
-
-				Log.v(TAG, "checked in users not found !!!! ");
-			}
-
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Cleanup
-		knownPeople.clear();
+				} catch (JSONException e) {
+					e.printStackTrace();
+					// Reset as previous
+					mApp.mPeople = knownPeople;
+				}
 	}
 	
 	
