@@ -5,29 +5,18 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -35,18 +24,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
 import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.plus.PlusClient;
 import com.google.android.gms.plus.PlusClient.OnPersonLoadedListener;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.LoginDialogFragment;
 import com.vendsy.bartsy.dialog.LoginDialogFragment.LoginDialogListener;
-import com.vendsy.bartsy.dialog.ProfileDialogFragment;
-import com.vendsy.bartsy.dialog.ProfileDialogFragment.ProfileDialogListener;
-import com.vendsy.bartsy.facebook.AndroidFacebookConnectActivity;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends SherlockFragmentActivity implements
@@ -172,7 +156,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 			mConnectionProgressDialog.show();
 
 			// Start Face book connection
-			Intent fbIntent = new Intent(InitActivity.this, AndroidFacebookConnectActivity.class);
+			Intent fbIntent = new Intent(InitActivity.this, FacebookActivity.class);
 			startActivityForResult(fbIntent, REQUEST_CODE_USER_FB);
 			
 			break;
@@ -303,25 +287,16 @@ public class InitActivity extends SherlockFragmentActivity implements
 			switch (responseCode) {
 			case RESULT_OK:
 				Log.v(TAG, "Received Facebook information");
-				String response  = intent.getStringExtra(InitActivity.REQUEST_CODE_USER_FB_RESULT);
 				
-				// Reset the user profile activity input buffer
-				mApp.mUserProfileActivityInput = null;
+				// Stop Progress dialog
+				if (mConnectionProgressDialog.isShowing())
+					mConnectionProgressDialog.dismiss();
 				
-				try {
-					JSONObject fbProfileData = new JSONObject(response);
-					UserProfile p = new UserProfile(fbProfileData);
-
-					// If the Facebook response was parsed correctly, start the profile activity with a FB user
-					mApp.mUserProfileActivityInput = p;
-				} catch (JSONException e) {
-					e.printStackTrace();
-					if (mConnectionProgressDialog.isShowing())
-						mConnectionProgressDialog.dismiss();
+				if(mApp.mUserProfileActivityInput == null){
 					Toast.makeText(this, "Could not download Facebook information", Toast.LENGTH_SHORT).show();
 					return;
 				}
-				 
+				
 				Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
 				this.startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);		
 				break;

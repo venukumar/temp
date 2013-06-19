@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.model.GraphUser;
 import com.google.android.gms.plus.model.people.Person;
 import com.google.android.gms.plus.model.people.Person.Emails;
 import com.vendsy.bartsy.R;
@@ -169,6 +170,30 @@ public class UserProfile {
 		
 		if (person.hasImage())
 			setImagePath(person.getImage().getUrl());
+			
+	}
+	
+	/**
+	 * Constructor using Facebook profile as a base.  
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public UserProfile (GraphUser user) {
+		
+		// Set all the user details
+		
+		setFacebookUsername(user.getUsername());
+		
+		setFacebookId(user.getId());
+		
+		setFirstName(user.getFirstName());
+		
+		setLastName(user.getLastName());
+		
+		setBirthday(user.getBirthday());
+		
+		this.setImagePath(Constants.FB_PICTURE+user.getId()+"/picture");
 			
 	}
 	
