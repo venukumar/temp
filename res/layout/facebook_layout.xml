@@ -6,46 +6,4 @@
     android:orientation="vertical" >
 
 
-    <!-- Facebook Login Button -->
-
-    <Button
-        android:id="@+id/btn_fblogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dip"
-        android:text="Login with Facebook" />
-
-    <!-- Facebook Post to Wall Button -->
-
-    <Button
-        android:id="@+id/btn_fb_post_to_wall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dip"
-        android:text="Post to Wall"
-        android:visibility="gone" />
-    <!-- Facebook Logout Button -->
-
-    <Button
-        android:id="@+id/btn_get_profile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dip"
-        android:text="Get Profile Data"
-        android:visibility="gone" />
-
-    <!-- Button to show access tokens -->
-
-    <Button
-        android:id="@+id/btn_show_access_tokens"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dip"
-        android:text="Show Access Tokens"
-        android:visibility="gone" />
-
 </LinearLayout>

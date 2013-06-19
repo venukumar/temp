@@ -2,6 +2,9 @@
 <resources>
 
     <string name="app_name">Bartsy</string>
+    
+    <!-- Facebook ID -->
+    <string name="fb_app_id">381352825303290</string>
 
     <!-- Config items -->
     <string name="config_shared_preferences_name">bartsy_preferences</string>
