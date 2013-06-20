@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#eeeeee"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_vertical_margin" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" >
+
+            <Button
+                android:id="@+id/view_user_dialog_name"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_weight="2"
+                android:background="@drawable/rounded_corner_dark"
+                android:text="Emily"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+ 
+        <LinearLayout 
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_weight="2"
+            android:orientation="horizontal" >
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:background="@drawable/rounded_corner"
+                android:padding="@dimen/activity_vertical_margin" >
+
+                <RelativeLayout
+                    android:layout_width="80dp"
+                    android:layout_height="80dp" >
+
+                    <ImageView
+                        android:id="@+id/view_user_dialog_image_resource"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY" />
+
+                    <ImageView
+                        android:id="@+id/ImageView03"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/frame" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="1dp" >
+
+                            <ImageView
+                                android:id="@+id/ImageView05"
+                                android:layout_width="17dp"
+                                android:layout_height="17dp"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/vitals" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/view_user_dialog_info"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="20&apos;s / F / Straight / Single"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="1dp" >
+
+                            <ImageView
+                                android:id="@+id/ImageView11"
+                                android:layout_width="17dp"
+                                android:layout_height="17dp"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/location" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/TextView09"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="Santa Monica, CA"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="1dp" >
+                        </FrameLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="1dp" >
+
+                            <ImageView
+                                android:id="@+id/ImageView07"
+                                android:layout_width="17dp"
+                                android:layout_height="17dp"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/heart" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/TextView13"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="You like each other"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <FrameLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="1dp" >
+
+                            <ImageView
+                                android:id="@+id/ImageView01"
+                                android:layout_width="17dp"
+                                android:layout_height="17dp"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/message" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/TextView06"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="Messages"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:visibility="gone" >
+
+            <Button
+                android:id="@+id/Button02"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="8dp"
+                android:layout_weight="2"
+                android:background="@drawable/rounded_corner"
+                android:drawableLeft="@drawable/likechecked"
+                android:text=" Like"
+                android:textColor="#aaaaaa"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/Button03"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="8dp"
+                android:layout_weight="2"
+                android:background="@drawable/rounded_corner"
+                android:drawableLeft="@drawable/messageschecked"
+                android:text="Message"
+                android:textColor="#aaaaaa"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/button1"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="2"
+                android:background="@drawable/rounded_corner"
+                android:drawableLeft="@android:drawable/ic_menu_share"
+                android:text="Share"
+                android:textColor="#aaaaaa"
+                android:textSize="14sp" />
+
+            <RatingBar
+                android:id="@+id/ratingBar1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:max="1"
+                android:numStars="1"
+                android:progress="1"
+                android:rating="1"
+                android:stepSize="1" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/view_user_dialog_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:background="@drawable/rounded_corner"
+            android:padding="@dimen/activity_vertical_margin"
+            android:text="I like long walks on the beach and dirty martinis, but you can start by buying me a drink. "
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    </LinearLayout>
+
