@@ -148,6 +148,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 						messageTypeMSG = json.getString("body");
 					}
 				}
+				// When other person accept offer drink
+				else if(json.getString("messageType").equals("DrinkOfferAccepted")){
+					if(json.has("body")){
+						messageTypeMSG = json.getString("body");
+					}
+				}
+				// When other person reject offer drink
+				else if(json.getString("messageType").equals("DrinkOfferRejected")){
+					if(json.has("body")){
+						messageTypeMSG = json.getString("body");
+					}
+				}
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
