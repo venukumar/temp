@@ -3,9 +3,10 @@ package com.vendsy.bartsy.utils;
 public class Constants {
 
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+//	public static final String DOMAIN_NAME = "http://bartsy.techvedika.com/"; // prod
 
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/"; // amazon server
-
+	
 	public static final String PROJECT_NAME = "Bartsy/";
 
 	public static final boolean USE_ALLJOYN = false;
