@@ -131,7 +131,7 @@ public class MapActivity extends Activity implements LocationListener,
 	 */
 	protected void loadVenuesFromServer(final ListView venueList) {
 
-		String response = WebServices.getVenueList(MapActivity.this);
+		String response = WebServices.getVenueList(MapActivity.this, mApp.loadBartsyId());
 		if (response != null) {
 			venues = getVenueListResponse(response);
 			// Handler for UI thread

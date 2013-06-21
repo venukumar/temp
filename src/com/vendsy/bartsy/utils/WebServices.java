@@ -100,7 +100,7 @@ public class WebServices {
 		postData.put("apiVersion", Constants.API_VERSION);
 		String data = postData.toString();
 		
-		Log.v(TAG, "Post request: " + url + ", " + data + ")");
+		Log.i(TAG,"===> postRequest("+ url  + ", " + data + ")");
 
 		try {
 			boolean status = isNetworkAvailable(context);
@@ -118,22 +118,24 @@ public class WebServices {
 					String responseofmain = EntityUtils.toString(httpResponse.getEntity());
 					response = responseofmain.toString();
 					
-					Log.v(TAG, "request response: " + response);
+					Log.i(TAG,"<=== postRequest response:"+ response);
 					
 				} catch (Exception e) {
-					Log.e("log_tag", "Error in http connection" + e.toString());
+					Log.e(TAG, "Error in http connection" + e.toString());
 					Log.v(TAG, "Exception found ::: " + e.getMessage());
 
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-
+			Log.e(TAG, "Error in http connection" + e.toString());
+			Log.e(TAG, "Error in http connection" + e.toString());
 		}
+		
 		return response;
-
 	}
 
+	
 	/**
 	 * Service call for user check in and check out
 	 * 
@@ -344,15 +346,14 @@ public class WebServices {
 				json.put("bartsyPassword", user.getPassword());
 			if (user.hasBartsyId()) 
 				json.put("bartsyId", user.getBartsyId());
-			if (user.hasFacebookUsername())
+			if (user.hasFacebookUsername() && user.hasFacebookId()) {
 				json.put("facebookUserName", user.getFacebookUsername());
-			if (user.hasFacebookId()) 
 				json.put("facebookId", user.getFacebookId());
-			if (user.hasGoogleUsername()) 
+			}
+			if (user.hasGoogleUsername() && user.hasGoogleId()) {
 				json.put("googleUserName", user.getGoogleUsername());
-			if (user.hasGoogleId()) 
 				json.put("googleId", user.getGoogleId());
-
+			}
 			
 			// Optional parameters (user)
 			if (user.hasEmail())
@@ -393,7 +394,7 @@ public class WebServices {
 			if (user.hasImage()) {
 				// Image found - converting it to a byte array and adding to syscall
 
-				Log.v(TAG, "Syscall (with image): " + json);
+				Log.i(TAG,"===> postRequestMultipart("+ url  + ", " + json + ")");
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				user.getImage().compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -402,7 +403,7 @@ public class WebServices {
 
 			} else {
 				// Could not find image
-				Log.v(TAG, "Syscall (no image): " + json);
+				Log.i(TAG,"===> postRequest("+ url  + ", " + json + ")");
 			}
 
 			// String details = URLEncoder.encode(json.toString(), "UTF-8");
@@ -418,6 +419,7 @@ public class WebServices {
 				babFirst = new ByteArrayBody(dataFirst, "userImage" + ".jpg");
 
 			MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+			
 
 			// added profile image into MultipartEntity
 
@@ -435,6 +437,10 @@ public class WebServices {
 				String responseofmain = EntityUtils.toString(responses.getEntity());
 				Log.v(TAG, "postProfileResponseChecking " + responseofmain);
 				JSONObject resultJson = new JSONObject(responseofmain);
+				
+				Log.i(TAG,"<=== postRequest response: " + resultJson);
+
+				
 				return resultJson;
 			}
 
@@ -454,10 +460,11 @@ public class WebServices {
 	 * @param context
 	 * @return list of venues
 	 */
-	public static String getVenueList(final Context context) {
+	public static String getVenueList(final Context context, String string) {
 		String response = null;
 		try {
 			JSONObject json = new JSONObject();
+			json.put("bartsyId", string);
 			response = WebServices.postRequest(Constants.URL_GET_VENU_LIST, json, context);
 		} catch (Exception e) {
 			Log.v(TAG, "Error venu list " + e.getMessage());
@@ -617,10 +624,10 @@ public class WebServices {
 				
 				if (result.has("name"))
 					user.setName(result.getString("name"));
-				if (result.has("firstName"))
-					user.setFirstName(result.getString("firstName"));
-				if (result.has("lastNSame"))
-					user.setLastName(result.getString("lastNname"));
+				if (result.has("firstname"))
+					user.setFirstName(result.getString("firstname"));
+				if (result.has("lastname"))
+					user.setLastName(result.getString("lastname"));
 				if (result.has("dateofbirth"))
 					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("dateofbirth"))
