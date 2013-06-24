@@ -526,7 +526,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * 
 	 */
 
-	long mOrderIDs = 0;
+	public long mOrderIDs = 0;
 
 
 
@@ -551,9 +551,13 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public synchronized void addOrder(Order order) {
 		// Add the order to the list of orders
-		if (order == null) {
-			// Debug - trying to catch adding a null order
-			Log.e(TAG, "Bad order: " + order.serverID);
+		if (order == null || order.serverID == null) {
+			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
+			Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
+			Log.e(TAG, "Invalid order being added to the orders list");
+			this.notifyObservers(APPLICATION_QUIT_EVENT);
+			mActiveVenue = null;
+			mProfile = null;
 			return;
 		}
 		mOrders.add(order);

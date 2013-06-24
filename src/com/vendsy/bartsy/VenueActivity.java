@@ -770,7 +770,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		dialog.show(getSupportFragmentManager(),"displayOfferDrink");
 	}
 	
-	private Order order;
 
 	private void alljoynError() {
 		if (mApp.getErrorModule() == BartsyApplication.Module.GENERAL
@@ -857,7 +856,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			return;
 		}
 		
-		order = new Order();
+		Order order = new Order();
 
 		Float tipAmount = ((DrinkDialogFragment) dialog).tipAmount;
 
@@ -878,15 +877,14 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 		// invokePaypalPayment(); // To enable paypal payment
 
-		processOrderData(); // bypass PayPal for now for testing
+		processOrderData(order); // bypass PayPal for now for testing
 
 	}
 		
-	private void processOrderData() {
+	private void processOrderData(Order order) {
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
-				processOrderDataHandler))
+		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(), processOrderDataHandler))
 			// Failed to place syscall due to internal error
 			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 	}
@@ -917,12 +915,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
 				// The order was placed successfully 
 				
-				// Add order to the list and update views
-				mApp.addOrder(order);
-
-				// Increment the local order count
-				mApp.mOrderIDs++;
-
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE:

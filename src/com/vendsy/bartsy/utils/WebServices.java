@@ -259,6 +259,13 @@ public class WebServices {
 						response = "success";
 						order.serverID = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
+						
+						// Add order to the list and update views. This is a synchronized operation in case multiple threads are stepping on each other
+						app.addOrder(order);
+
+						// Increment the local order count
+						app.mOrderIDs++;
+						
 					} else if (errorCode.equalsIgnoreCase("1")) {
 						// Error code 1 means the venue doesn't accept orders.
 						response = json.getString("errorMessage");
