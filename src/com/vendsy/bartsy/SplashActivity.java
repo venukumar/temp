@@ -1,5 +1,10 @@
 package com.vendsy.bartsy;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.WebServices;
@@ -83,6 +88,8 @@ public class SplashActivity extends Activity {
 				mApp.saveUserProfile(user);
 			}
 			
+			// Sync user details
+			
 			Venue venue = WebServices.syncUserDetails(mApp, user);
 		
 			// If venue found - set it up as the active venue
@@ -95,6 +102,11 @@ public class SplashActivity extends Activity {
 				Log.v(TAG, "Active venue not found");
 				mApp.userCheckOut();
 			}
+			
+			
+			// Finally, load active orders
+			loadUserOrders();
+
 			return null;
 		}
 		
@@ -110,4 +122,54 @@ public class SplashActivity extends Activity {
 			finish();
 		}
 	}
+	
+	
+	/**
+	 * To get user orders from the server
+	 */
+	private void loadUserOrders() {
+		// Service call for get menu list in background
+		new Thread() {
+
+			public void run() {
+				String response = WebServices.getUserOrdersList(mApp);
+
+				Log.v(TAG, "oreders " + response);
+
+				userOrdersResponseHandling(response);
+			};
+
+		}.start();
+	}
+
+	
+	/**
+	 * User orders web service Response handling
+	 * 
+	 * @param response
+	 */
+
+	private void userOrdersResponseHandling(String response) {
+		if (response != null) {
+			try {
+				JSONObject orders = new JSONObject(response);
+				JSONArray listOfOrders = orders.has("orders") ? orders
+						.getJSONArray("orders") : null;
+				if (listOfOrders != null) {
+
+					// Start by clearning orders as there is a new loggin
+					mApp.clearOrders();
+					
+					for (int i = 0; i < listOfOrders.length(); i++) {
+						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
+						Order order = new Order(orderJson);
+						mApp.addOrderNoUI(order);
+					}
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 }
