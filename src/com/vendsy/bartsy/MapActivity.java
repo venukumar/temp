@@ -15,6 +15,8 @@
 package com.vendsy.bartsy;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -58,7 +60,7 @@ import com.vendsy.bartsy.utils.WebServices;
  */
 public class MapActivity extends Activity implements LocationListener,
 		OnClickListener {
-	private List<Venue> venues;
+	private ArrayList<Venue> venues = new ArrayList<Venue>();
 	private GoogleMap mMap = null;
 	private LocationManager locationManager;
 	private static final long MIN_TIME = 400;
@@ -72,6 +74,8 @@ public class MapActivity extends Activity implements LocationListener,
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// Set the view
 		setContentView(R.layout.maps_main);
 
 		// Set the action bar to enable back navigation
@@ -98,31 +102,25 @@ public class MapActivity extends Activity implements LocationListener,
 		mMap.setMyLocationEnabled(true);
 
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationManager.requestLocationUpdates(
-				LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
-
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
+		
+		
 		// To obtain list view from the SupportMapFragment.
 		final ListView venueList = (ListView) findViewById(R.id.checkInListView);
 		venueList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				// It will invoke when the venue list item selected
 				Venue venue = venues.get(arg2);
 				venueSelectedAction(venue);
 			}
 		});
 
-		// To call web service in background
-		new Thread() {
-
-			public void run() {
-				loadVenuesFromServer(venueList);
-			}
-		}.start();
-
+		// Load venues in the background
+		loadVenuesFromServer(venueList);
 	}
+
 
 	/**
 	 * To load venues information from the server
@@ -130,20 +128,28 @@ public class MapActivity extends Activity implements LocationListener,
 	 * @param venueList
 	 */
 	protected void loadVenuesFromServer(final ListView venueList) {
+		new Thread() {
+			public void run() {
+				String response = WebServices.getVenueList(MapActivity.this, mApp.loadBartsyId());
+				if (response != null) {
+					venues = getVenueListResponse(response);
+					// Handler for UI thread
+					handler.post(new Runnable() {
+		
+						@Override
+						public void run() {
+							updateListView(venueList);
 
-		String response = WebServices.getVenueList(MapActivity.this, mApp.loadBartsyId());
-		if (response != null) {
-			venues = getVenueListResponse(response);
-			// Handler for UI thread
-			handler.post(new Runnable() {
+							onLocationChanged(locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
 
-				@Override
-				public void run() {
-					updateListView(venueList);
+						}
+					});
 				}
-			});
-		}
+			}
+		}.start();
+
 	}
+	
 	
 	/**
 	 * To parse JSON format to list of venues
@@ -151,32 +157,46 @@ public class MapActivity extends Activity implements LocationListener,
 	 * @param response
 	 * @return
 	 */
-	private List<Venue> getVenueListResponse(String response) {
-		List<Venue> list = new ArrayList<Venue>();
+	private ArrayList<Venue> getVenueListResponse(String response) {
+
+		ArrayList<Venue> list = new ArrayList<Venue>();
+		
+		JSONArray array;
 		try {
-			JSONArray array = new JSONArray(response);
-			for (int i = 0; i < array.length(); i++) {
-				JSONObject venueObject = array.getJSONObject(i);
-				String venueName = venueObject.has("venueName") ? venueObject
-						.getString("venueName") : "";
-				String venueId = venueObject.getString("venueId");
-				String latitude = venueObject.getString("latitude");
-				String longitude = venueObject.getString("longitude");
-				String address = venueObject.getString("address");
-
-				// To set all information to the venue object
-				Venue venueProfile = new Venue();
-				venueProfile.setId(venueId);
-				venueProfile.setName(venueName);
-				venueProfile.setLatitude(latitude);
-				venueProfile.setLongitude(longitude);
-				venueProfile.setAddress(address);
-				list.add(venueProfile);
-			}
-
+			array = new JSONArray(response);
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return null;
 		}
+			
+		for (int i = 0; i < array.length(); i++) {
+
+			try {
+
+				JSONObject json = array.getJSONObject(i);
+
+				Venue venue = new Venue();
+				venue.setId(json.getString("venueId"));
+				venue.setName(json.getString("venueName"));
+				venue.setLatitude(json.getString("latitude"));
+				venue.setLongitude(json.getString("longitude"));
+				venue.setAddress(json.getString("address"));
+				venue.setUserCount(json.getInt("checkedInUsers"));
+				if (json.getInt("wifiPresent") != 0) {
+					venue.setWifiName(json.getString("wifiName"));
+					venue.setWifiPassword(json.getString("wifiPassword"));
+					venue.SetWifiTypeOfAuthentication(json.getString("typeOfAuthentication"));
+				}
+				venue.setStatus(json.getString("venueStatus"));
+
+				list.add(venue);
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+		}
+
 		return list;
 	}
 
@@ -194,7 +214,7 @@ public class MapActivity extends Activity implements LocationListener,
 		}
 		// To set the adapter to the list view
 		VenueListViewAdapter customAdapter = new VenueListViewAdapter(
-				MapActivity.this, R.layout.map_list_item, venues);
+				MapActivity.this, R.layout.map_list_item, venues, locationManager);
 
 		venueList.setAdapter(customAdapter);
 
@@ -202,10 +222,10 @@ public class MapActivity extends Activity implements LocationListener,
 		for (int i = 0; i < venues.size(); i++) {
 			Venue venue = venues.get(i);
 
-			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()),
-					Float.valueOf(venue.getLongitude()));
-			mMap.addMarker(new MarkerOptions().position(coord)
-					.title(venue.getName()).snippet("People checked in: " + i));
+			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()), Float.valueOf(venue.getLongitude()));
+			mMap.addMarker(new MarkerOptions().position(coord).title(venue.getName())
+					.snippet(venue.getUserCount() == 1 ? "person" : "people" + 
+							" checked in: " + venue.getUserCount()));
 		}
 	}
 
@@ -221,6 +241,10 @@ public class MapActivity extends Activity implements LocationListener,
 	protected void venueSelectedAction(Venue venue) {
 		
 		Log.v(TAG, "venueSelectedAction(" + venue.getId() + ")");
+		
+		// Don't do anything if the venue is closed
+		if (venue.getStatus().equalsIgnoreCase("CLOSED"))
+			return;
 
 		// Initialize message buffer for alertBox() and userCheckinAction()
 		mVenue = venue;
@@ -237,7 +261,7 @@ public class MapActivity extends Activity implements LocationListener,
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
-		} else if (mApp.mActiveVenue.getOrderCount() > 0) {
+		} else if (mApp.getOrderCount() > 0) {
 			// We already have a local active venue different than the one selected
 			userCheckOutAlert("You are already checked-in an have open orders placed at" + mApp.mActiveVenue.getName() +
 					". If you checkout they will be cancelled and you will still be charged. Are you sure you want to check out?", venue);
@@ -372,13 +396,45 @@ public class MapActivity extends Activity implements LocationListener,
 
 	@Override
 	public void onLocationChanged(Location location) {
-		LatLng latLng = new LatLng(location.getLatitude(),
-				location.getLongitude());
-		CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng,
-				15);
+		LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+		CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
 		mMap.animateCamera(cameraUpdate);
 		locationManager.removeUpdates(this);
+
+		// Sort the venues by distance
+		if (venues != null)
+			Collections.sort(venues, new VenueSorter(location));
+		
+		// Invalidate the venue list view so that it get redrawn with the new location used to compute distances
+		((ListView) findViewById(R.id.checkInListView)).invalidate();
 	}
+	
+	Location currentLocation;
+	
+	public class VenueSorter implements Comparator<Venue>
+	{
+		Location currentLocation;
+		VenueSorter (Location currentLocation) {
+			this.currentLocation = currentLocation;
+		}
+		
+		@Override
+		public int compare(Venue arg0, Venue arg1) {
+			
+			Location loc0 = new Location(LocationManager.NETWORK_PROVIDER);
+			loc0.setLatitude(Double.parseDouble(arg0.getLatitude()));
+			loc0.setLongitude(Double.parseDouble(arg0.getLongitude()));
+			Float d0 = loc0.distanceTo(currentLocation);
+
+			Location loc1 = new Location(LocationManager.NETWORK_PROVIDER);
+			loc1.setLatitude(Double.parseDouble(arg1.getLatitude()));
+			loc1.setLongitude(Double.parseDouble(arg1.getLongitude()));
+			Float d1 = loc1.distanceTo(currentLocation);
+
+			return d0.compareTo(d1);
+		}
+	}
+
 
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {

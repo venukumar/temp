@@ -119,7 +119,7 @@
         </activity>
         <activity
             android:name=".MapActivity"
-            android:label="Bartsy Service Stations"
+            android:label="Check in at a Bartsy venue..."
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Sherlock" 
 		>
