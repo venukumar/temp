@@ -2,6 +2,7 @@ package com.vendsy.bartsy.adapter;
 /**
  * @author Seenu malireddy
  */
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -63,9 +64,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 		if( textView != null )
 			textView.setText( c.getDescription() );
 
+		DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(2);
+		df.setMinimumFractionDigits(2);
+
 		TextView rgb = (TextView)view.findViewById( R.id.view_drink_price );
 		if( rgb != null )
-			rgb.setText( "$"+c.getPrice() );
+			rgb.setText( "$"+df.format(c.getPrice()) );
 		
         return view;
     }
