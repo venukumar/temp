@@ -58,7 +58,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			// Setup text for the view
 			b.setText(mApp.mActiveVenue.getName() + "\n" +
 					  mApp.mActiveVenue.getUserCount() + (mApp.mActiveVenue.getUserCount() == 1 ? " person, " : " people, ") + 
-					  mApp.mActiveVenue.getOrderCount() + " orders");
+					  mApp.getOrderCount() + " orders");
 		}
 
 		// Set up button listeners
@@ -186,7 +186,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	 */
 	private void checkOutUser() {
 		// For now it will ask confirmation dialog
-		if (mApp.mActiveVenue != null && mApp.mActiveVenue.getOrderCount() > 0) {
+		if (mApp.mActiveVenue != null && mApp.getOrderCount() > 0) {
 			alertBox("You have open orders placed at "
 					+ mApp.mActiveVenue.getName()
 					+ ". If you checkout they will be cancelled and you will still be charged for it.Do you want to checkout from "
