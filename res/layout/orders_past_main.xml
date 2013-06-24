@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/rounded_corner_dark"
+        android:orientation="horizontal"
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp" >
+
+        <TextView
+            android:id="@+id/dateCreated"
+            android:layout_width="42dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="2dp"
+            android:text="Time" />
+
+        <TextView
+            android:id="@+id/orderId"
+            android:layout_width="54dp"
+            android:layout_height="wrap_content"
+            android:text="Order" />
+
+        <TextView
+            android:id="@+id/orderStatus"
+            android:layout_width="42dp"
+            android:layout_height="wrap_content"
+            android:text="State" />
+
+        <TextView
+            android:id="@+id/itemName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Title" />
+
+        <TextView
+            android:id="@+id/totalPrice"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:text="Total" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:id="@+id/pastordersLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:divider="?android:dividerHorizontal"
+            android:orientation="vertical"
+            android:showDividers="middle" >
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
