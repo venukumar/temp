@@ -11,6 +11,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +34,10 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -604,44 +609,59 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						
 						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
 
-							final String userCheckedInOrNot = resultJson.getString("userCheckedIn");
-							// Error handling
-								// if user checkedIn is true
-								if ( userCheckedInOrNot!=null && userCheckedInOrNot.equalsIgnoreCase("0") && resultJson.has("venueId") && resultJson.has("venueName"))
-								{
-									// Check the user in locally 
-									mApp.userCheckIn(resultJson.getString("venueId"), resultJson.getString("venueName"), resultJson.getInt("userCount"), resultJson.getInt("orderCount"));
-								} else {
-									// Check user out
-									mApp.userCheckOut();
-								}
-								
-								if (resultJson.has("bartsyId")) {
-									bartsyUserId = resultJson.getString("bartsyId");
+							// Syscall successful - process response 
 
-									Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
-								} else {
-									Log.e(TAG, "BartsyID " + "bartsyUserId not found");
-								}
-								
-								final String bartsyId = bartsyUserId;
-								// To check whether user is checkedIn or not. If user already checkedIn then it 
-								// should navigate to VenueActivity, otherwise it should navigate to MainActivity
-								
+							if (resultJson.has("bartsyId")) {
+								bartsyUserId = resultJson.getString("bartsyId");
+	
+								Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
+							} else {
+								Log.e(TAG, "bartsyId " + bartsyUserId + " not found");
 								mHandler.post(new Runnable() {
 									public void run() {
-
-										// Save profile in the global application structure and in preferences
-										userProfile.setBartsyId(bartsyId);
-										mApp.saveUserProfile(userProfile);
-										
-										// Return to calling activity with success code 
-										mActivity.setResult(InitActivity.RESULT_OK);
+										Toast.makeText(mActivity, "Server rejected login request. Try a different login.", Toast.LENGTH_LONG).show();
 										finish();
 									}
 								});
+								return;
 								
+							}
+	
+							// Sync user details
+							
+							Venue venue = WebServices.syncUserDetails(mApp, userProfile);
+						
+							// If venue found - set it up as the active venue
+							if (venue != null) {
+								Log.v(TAG, "Active venue found: " + venue.getName());
+								mApp.userCheckIn(venue);
+								
+							} else {
+								// 
+								Log.v(TAG, "Active venue not found");
+								mApp.userCheckOut();
+							}
+
+							// Finally, load the open orders this user has to be stored in the application object that will stick around 
+							loadUserOrders();
+
+							// AFter processing profile return back to calling activity with success code
+							
+							final String bartsyId = bartsyUserId;
+							mHandler.post(new Runnable() {
+								public void run() {
+
+									// Save profile in the global application structure and in preferences
+									userProfile.setBartsyId(bartsyId);
+									mApp.saveUserProfile(userProfile);
+									
+									// Return to calling activity with success code 
+									mActivity.setResult(InitActivity.RESULT_OK);
+									finish();
+								}
+							});
 						}else{
+							
 							// Error creating user. Ask parent to post Toast.
 							mHandler.post(new Runnable() {
 								@Override
@@ -674,6 +694,57 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		}
 	}
 	
+	
+	
+
+	/**
+	 * To get user orders from the server
+	 */
+	private void loadUserOrders() {
+		// Service call for get menu list in background
+		new Thread() {
+
+			public void run() {
+				String response = WebServices.getUserOrdersList(mApp);
+
+				Log.v(TAG, "oreders " + response);
+
+				userOrdersResponseHandling(response);
+			};
+
+		}.start();
+	}
+
+	
+	/**
+	 * User orders web service Response handling
+	 * 
+	 * @param response
+	 */
+
+	private void userOrdersResponseHandling(String response) {
+		if (response != null) {
+			try {
+				JSONObject orders = new JSONObject(response);
+				JSONArray listOfOrders = orders.has("orders") ? orders
+						.getJSONArray("orders") : null;
+				if (listOfOrders != null) {
+
+					// Start by clearning orders as there is a new loggin
+					mApp.clearOrders();
+					
+					for (int i = 0; i < listOfOrders.length(); i++) {
+						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
+						Order order = new Order(orderJson);
+						mApp.addOrderNoUI(order);
+					}
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	
 	/* 
 	 * Downloads an image for the mUser structure and displays it in a given view when done.
