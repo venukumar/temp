@@ -34,6 +34,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.model.AppObservable;
@@ -157,14 +158,14 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 	
 
-	public void updateActiveVenue(String venueId, String venueName, int userCount, int orderCount) {
+	public void updateActiveVenue(String venueId, String venueName, int userCount) {
 
-		Log.v(TAG, "updateActiveVenue(" + venueId + ", " + venueName + ", " + userCount + ", " + orderCount);
+		Log.v(TAG, "updateActiveVenue(" + venueId + ", " + venueName + ", " + userCount);
 		
 		if (mActiveVenue == null) {
 			// Server thinks we're checked in but we have no active venue - check user in
 			Log.e(TAG, "Active venue updated to " + venueName);
-			userCheckIn(venueId, venueName, userCount, orderCount);
+			userCheckIn(venueId, venueName, userCount);
 			return;
 		} 
 		
@@ -172,12 +173,6 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.e(TAG, "Updating user count from " + mActiveVenue.getUserCount() + " to " + userCount);
 			mActiveVenue.setUserCount(userCount);
 			notifyObservers(PEOPLE_UPDATED);
-		}
-		
-		if (mActiveVenue.getOrderCount() != orderCount) {
-			Log.e(TAG, "Updating order count from " + mActiveVenue.getOrderCount() + " to " + orderCount);
-			mActiveVenue.setOrderCount(orderCount);
-			notifyObservers(ORDERS_UPDATED);
 		}
 		
 		// Save the new venue to preferences
@@ -192,7 +187,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		eraseActiveVenue();
 	}
 
-	public void userCheckIn(String venueId, String venueName, int userCount, int orderCount) {
+	public void userCheckIn(String venueId, String venueName, int userCount) {
 		
 		Log.w(TAG, "userCheckIn(" + venueId + ", " + venueName + ")");
 		
@@ -200,7 +195,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		mActiveVenue.setId(venueId);
 		mActiveVenue.setName(venueName);
 		mActiveVenue.setUserCount(userCount);
-		mActiveVenue.setOrderCount(orderCount);
 
 		mOrders.clear();
 		mPeople.clear();
@@ -243,7 +237,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		String venueID = Utilities.loadPref(this, R.string.venueId, null);
 		String venueName = Utilities.loadPref(this, R.string.venueName, null);
-		int orderCount = Utilities.loadPref(this, R.string.venueOrderCount, 0);
 		int userCount = Utilities.loadPref(this, R.string.venueUserCount, 0);
 
 		if (venueID == null || venueName == null) {
@@ -254,7 +247,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		mActiveVenue = new Venue();
 		mActiveVenue.setId(venueID);
 		mActiveVenue.setName(venueName);
-		mActiveVenue.setOrderCount(orderCount);
 		mActiveVenue.setUserCount(userCount);
 		
 		Log.e(TAG, "Active venue loaded: " + mActiveVenue);
@@ -273,7 +265,6 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.v(TAG, "Venue saved:  (" + mActiveVenue.getId() + ", " + mActiveVenue.getName() + ")");
 			Utilities.savePref(this, R.string.venueId, mActiveVenue.getId());
 			Utilities.savePref(this, R.string.venueName, mActiveVenue.getName());
-			Utilities.savePref(this, R.string.venueOrderCount, mActiveVenue.getOrderCount());
 			Utilities.savePref(this, R.string.venueUserCount, mActiveVenue.getUserCount());
 		}
 	}
@@ -296,7 +287,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		editor.remove(r.getString(R.string.venueId));
 		editor.remove(r.getString(R.string.venueName));
-		editor.remove(r.getString(R.string.venueOrderCount));
 		editor.remove(r.getString(R.string.venueUserCount));
 
 		editor.commit();		
@@ -557,88 +547,119 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public void clearOrders() {
 		mOrders.clear();
-		mActiveVenue.setOrderCount(0);
 	}
 
-	public void addOrder(Order order) {
+	public synchronized void addOrder(Order order) {
 		// Add the order to the list of orders
+		if (order == null) {
+			// Debug - trying to catch adding a null order
+			Log.e(TAG, "Bad order: " + order.serverID);
+			return;
+		}
 		mOrders.add(order);
-		mActiveVenue.setOrderCount(mOrders.size());
 		notifyObservers(ORDERS_UPDATED);
 	}
 
-	public void addOrderNoUI(Order order) {
+	public synchronized void addOrderNoUI(Order order) {
 		// Add the order to the list of orders
 		mOrders.add(order);
-		mActiveVenue.setOrderCount(mOrders.size());
 	}
 
-	public void removeOrder(Order order) {
+	public synchronized void removeOrder(Order order) {
 		// Add the order to the list of orders
 		mOrders.remove(order);
-		mActiveVenue.setOrderCount(mOrders.size());
 		notifyObservers(ORDERS_UPDATED);
 	}
 
-
+	public int getOrderCount() {
+		return mOrders.size();
+	}
 	
 	/*
 	 * This updates the status of the order locally based on the status changed
 	 * reported from the server
 	 */
 
-	void updateOrder(String order_server_id, String remote_order_status) {
+	synchronized String updateOrder(String order_server_id, String remote_order_status) {
 
 		Log.v(TAG, "Update for remote code " + order_server_id);
 
 		int remote_status = Integer.parseInt(remote_order_status);
+		String message = null;
 
 		Order localOrder = null;
 		for (Order order : mOrders) {
-			if (order.serverID.equalsIgnoreCase(order_server_id)) {
+			if (order_server_id.equalsIgnoreCase(order.serverID)) {
 				localOrder = order;
 			}
 		}
 
 		if (localOrder == null) {
-			return;
+			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER
+			Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
+			Log.e(TAG, "order " + order_server_id + " not found!");
+			this.notifyObservers(APPLICATION_QUIT_EVENT);
+			mActiveVenue = null;
+			mProfile = null;
+			return "Received an update for a non existing order! Please restart Bartsy";
 		}
 
-		// Update the status of the local order based on that of the remote
-		// order and return on error
+		Log.e(TAG, "order " + order_server_id + " updated from status " + localOrder.status + " to status " + remote_order_status);
+
+		// Update the status of the local order based on that of the remote order and return on error
 		switch (remote_status) {
 		case Order.ORDER_STATUS_IN_PROGRESS:
-			// The order has been accepted remotely. Set the server_id on this
-			// order and update status and view
-			if (localOrder.status != Order.ORDER_STATUS_NEW)
-				return;
+			// The order has been accepted remotely. Set the server_id on this order and update status and view
+			if (localOrder.status != Order.ORDER_STATUS_NEW) {
+				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
+				this.notifyObservers(APPLICATION_QUIT_EVENT);
+				mActiveVenue = null;
+				mProfile = null;
+				return "Order state missmatch. Please restart the application";
+			}
+			message = "Order " + localOrder.serverID + " was accepted by the bartender.";
 			localOrder.nextPositiveState();
 			break;
 		case Order.ORDER_STATUS_READY:
-			// Remote order ready. Notify client with a notification and update
-			// status/view
-			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
-				return;
+			// Remote order ready. Notify client with a notification and update status/view
+			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS) {
+				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
+				this.notifyObservers(APPLICATION_QUIT_EVENT);
+				mActiveVenue = null;
+				mProfile = null;
+				return "Order state missmatch. Please restart the application";
+			}
+			message = "Order " + localOrder.serverID + " is ready! Please please it up promptly to avoid charges.";
 			localOrder.nextPositiveState();
 			break;
 		case Order.ORDER_STATUS_COMPLETE:
 			// Order completed. Remove from the order list for now.
-			if (localOrder.status != Order.ORDER_STATUS_READY)
-				return;
+			if (localOrder.status != Order.ORDER_STATUS_READY) {
+				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
+				this.notifyObservers(APPLICATION_QUIT_EVENT);
+				mActiveVenue = null;
+				mProfile = null;
+				return "Order state missmatch. Please restart the application";
+			}
+			message = "Order " + localOrder.serverID + " was picked up (hopefully by you).";
+			Toast.makeText(this, "Your order was picked up. You can view a log of orders in the past orders tab", Toast.LENGTH_SHORT);
+			
+			// Move the order to the next state (
 			localOrder.nextPositiveState();
 			mOrders.remove(localOrder);
+			message =  "Order " + localOrder.serverID + " was picked up. If you didn't pick it up please see your bartender.";
 			break;
-			// Order cancelled. Remove from the order list for now.
 		case Order.ORDER_STATUS_CANCELLED:
-			mOrders.remove(localOrder);
+			// Order cancelled. Notify the user and keep it in the list until acknowledged
+			localOrder.cancelledState();
+			message = "Order " + localOrder.serverID + " is taking too long! Please check with your bartender.";
 			break;
-			
 		}
 
 		// Update the orders tab view and title
 
-		mActiveVenue.setOrderCount(mOrders.size());
 		notifyObservers(ORDERS_UPDATED);
+		return remote_order_status;
 	}
 	
 	public static final String DRINK_OFFERED = "DRINK_OFFERED";
