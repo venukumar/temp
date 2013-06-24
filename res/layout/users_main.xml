@@ -12,16 +12,14 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:divider="@drawable/div_light_grey"
         android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:showDividers="middle|end" >
+        android:orientation="vertical" >
 
         <LinearLayout
             android1:id="@+id/view_singles"
             android1:layout_width="fill_parent"
             android1:layout_height="wrap_content"
-            android1:background="@drawable/div_light_grey"
+            android1:divider="?android:dividerHorizontal"
             android1:orientation="vertical"
             android1:showDividers="beginning|middle|end" >
 
@@ -31,7 +29,6 @@
             android1:id="@+id/friends"
             android1:layout_width="match_parent"
             android1:layout_height="wrap_content"
-            android1:background="@drawable/div_light_grey"
             android1:orientation="vertical" >
         </LinearLayout>
 

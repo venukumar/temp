@@ -11,17 +11,21 @@ import org.json.JSONObject;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 
 public class Order {
 
+	private static final String TAG = "Order";
+	
 	// Each order has an ID that is unique within a session number
 	public String clientID; // this is the client-side managed ID used to
 							// identify an order when status is received
@@ -38,8 +42,11 @@ public class Order {
 	// quantity, fee and tax
 
 	public int image_resource;
+	
+	// Dates
 	public String updatedDate;
 	public String orderDate;
+	public String createdDate;
 
 	
 	// Fees: total = base + tax + fee + tip
@@ -65,9 +72,9 @@ public class Order {
 	public View view = null;
 
 	// Order states
-	// (received) -> NEW -> (accepted) -> IN_PROGRESS -> (completed) -> READY ->
-	// (picked_up) -> COMPLETE -> (timed out, error, etc) -> CANCELLED
-	// (rejected) -> REJECTED (failed) -> FAILED (forgotten) -> INCOMPLETE
+	// (received) -> NEW -> (accepted) -> IN_PROGRESS -> (completed) -> READY -> (picked_up) -> COMPLETE 
+	//			  -> (timed out, error, etc) -> CANCELLED
+	// 						(rejected) -> REJECTED (failed) -> FAILED (forgotten) -> INCOMPLETE
 
 	public static final int ORDER_STATUS_NEW = 0;
 	public static final int ORDER_STATUS_REJECTED = 1;
@@ -99,8 +106,8 @@ public class Order {
 		this.description = description;
 
 		
-		this.baseAmount = Float.valueOf(baseAmount);
-		this.tipAmount = Float.valueOf(tipAmount);
+		this.baseAmount = baseAmount;
+		this.tipAmount = tipAmount;
 		this.taxAmount = baseAmount * Constants.taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
 		
@@ -136,7 +143,6 @@ public class Order {
 			orderData.put("totalPrice", String.valueOf(totalAmount));
 			orderData.put("orderStatus", ORDER_STATUS_NEW);
 			orderData.put("description", description);
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -154,21 +160,41 @@ public class Order {
 	 */
 	public Order(JSONObject json) {
 
+		String sender = null;
+		String receiver = null;
+		
 		try {
 			status = Integer.valueOf(json.getString("orderStatus"));
 			state_transitions[status] = new Date(); // For now just use current date. the date should come in the syscall 
 			title = json.getString("itemName");
-			orderDate = json.getString("orderTime");
+			
 			baseAmount = Float.valueOf(json.getString("basePrice"));
 			serverID = json.getString("orderId");
 			tipAmount = Float.valueOf(json.getString("tipPercentage"));
 			totalAmount = Float.valueOf(json.getString("totalPrice"));
 			taxAmount = baseAmount * Constants.taxRate;
 			description = json.getString("description");
-			itemId = json.getString("itemId");
-			updatedDate = json.getString("updateTime");
+
+			if (json.has("itemId"))
+				itemId = json.getString("itemId");
+
+			if (json.has("senderBartsyId"))
+				sender = json.getString("senderBartsyId");
+			receiver = json.getString("recieverBartsyId");
 			
+			if (json.has("description"))
+				description = json.getString("description");
 			
+			if (json.has("orderTime"))
+				updatedDate = json.getString("orderTime");
+			if (json.has("dateCreated"))
+			  createdDate = json.getString("dateCreated");
+			
+			if (json.has("orderStatus"))
+				status = Integer.parseInt(json.getString("orderStatus"));
+
+			if (json.has("dateCreated"))
+				  createdDate = json.getString("dateCreated");
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
@@ -176,7 +202,7 @@ public class Order {
 		}
 
 		this.taxAmount = totalAmount - tipAmount - baseAmount;
-		
+
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
 
@@ -202,16 +228,25 @@ public class Order {
 		state_transitions[status] = new Date();
 	}
 
+	public void cancelledState() {
+	
+		status = ORDER_STATUS_CANCELLED;
+		state_transitions[status] = new Date();
+	}
 
 
 	public View updateView(LayoutInflater inflater, ViewGroup container) {
 
-		view = (View) inflater.inflate(R.layout.order_item, container, false);
+		Log.v(TAG, "updateView()");
+		Log.v(TAG, "Order sender   :" + orderSender);
+		Log.v(TAG, "Order receiver :" + orderReceiver);
+		
+		view = (View) inflater.inflate(R.layout.orders_current_row, container, false);
 		
 		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
 		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
-		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
-		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[status]));
+//		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
+//		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[status]));
 
 		((TextView) view.findViewById(R.id.view_order_price)).setText(df.format(baseAmount));
 
@@ -221,36 +256,33 @@ public class Order {
 
 		((TextView) view.findViewById(R.id.view_order_item_number)).setText("" + serverID);
 
-		if (orderReceiver != null) {
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(orderReceiver.getBartsyId());
-			if (orderReceiver.hasImage())
-				((ImageView) view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(orderReceiver.getImage());
-		} else if (orderSender != null){
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(orderSender.getBartsyId());
-			if (orderSender.hasImage())
-				((ImageView) view.findViewById(R.id.view_order_profile_picture)).setImageBitmap(orderSender.getImage());
 			
-		}
-		
 		
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Waiting for bartender to accept");
-			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_red);
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_light);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Bartender accepted the order");
-			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_orange);
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_orange_light);
 			break;
 		case ORDER_STATUS_READY:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is ready for pickup!");
-			((View) view.findViewById(R.id.view_order_header)).setBackgroundResource(R.drawable.rounded_corner_green);
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_light);
 			break;
+		case ORDER_STATUS_CANCELLED:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Your order timed out because the bartender was taking too long. You were not charged. Please check with bartender then place a new order.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
 		}
 		
 		return view;
 
 	}
+
 	
 	public View getMiniView(LayoutInflater inflater, ViewGroup container ) {
 		
@@ -262,5 +294,6 @@ public class Order {
 		
 		return view;
 	}
+
 
 }

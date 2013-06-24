@@ -2,107 +2,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_corner_dark"
+    android:divider="?android:dividerHorizontal"
+	android:descendantFocusability="beforeDescendants"
+	android:focusableInTouchMode="true"
     android:orientation="vertical"
-    android:padding="@dimen/activity_vertical_margin" >
-
+    android:showDividers="middle" >
+    
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:layout_weight="2"
-        android:orientation="vertical" >
+        android:layout_weight="2" >
 
-        <TextView
-            android:id="@+id/view_dialog_drink_title"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:background="@drawable/rounded_corner"
-            android:gravity="center"
-            android:padding="@dimen/activity_vertical_margin"
-            android:text="Sambuca on the rocks"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#ffffff"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-    
-    <LinearLayout
-                android:layout_width="match_parent"
+        <RelativeLayout
+            android:layout_width="100dp"
+            android:layout_height="100dp" >
+
+            <ImageView
+                android:id="@+id/view_user_dialog_image_resource"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:clickable="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/profile" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/rounded_corner"
-                android:padding="@dimen/activity_vertical_margin" >
-
-                <RelativeLayout
-                    android:layout_width="80dp"
-                    android:layout_height="80dp" >
-
-                    <ImageView
-                        android:id="@+id/view_user_dialog_image_resource"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:background="@drawable/rounded_corner_dark"
-                        android:scaleType="fitXY" />
-                    
-                </RelativeLayout>
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="#66000000"
+                android:gravity="center"
+                android:text="Change recipient"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+        </RelativeLayout>
 
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:orientation="vertical"
                     android:paddingLeft="@dimen/activity_horizontal_margin" >
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/TextView01"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" >
+                        android:layout_marginBottom="@dimen/abs__action_bar_icon_vertical_padding"
+                        android:text="This order is for:"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                        <TextView
-                            android:id="@+id/view_user_dialog_info"
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                            android:layout_weight="2"
-                            android:text=""
-                            android:textAppearance="?android:attr/textAppearanceMedium" />
+                    <TextView
+                        android:id="@+id/view_user_dialog_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="2"
+                        android:text="Peter"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                        <TextView
-                            android:id="@+id/TextView01"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                            android:text="Click on the picture to change the recipient for this order (send drinks to to others!)"
-                            android:textAppearance="?android:attr/textAppearanceSmall"
-                            android:textSize="10sp" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
-
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:padding="1dp" >
-                        </FrameLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
-
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:padding="1dp" >
-                        </FrameLayout>
-                    </LinearLayout>
                 </LinearLayout>
+
             </LinearLayout>
 
     <LinearLayout
@@ -167,123 +126,139 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_weight="2"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:padding="@dimen/abs__action_bar_icon_vertical_padding" >
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="2"
-            android:background="@drawable/rounded_corner"
-            android:padding="@dimen/activity_vertical_margin" >
+            android:gravity="center_vertical"
+            android:orientation="vertical" >
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
+            <TextView
+                android:id="@+id/view_dialog_drink_title"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="left|center_vertical"
+                android:text="Sambuca on the rocks"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/view_dialog_drink_description"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="* 1 shot Sambuca\n* Rocks\n* 3 coffee beans for good luck"
-                    android:textSize="12sp" />
-           
-            </LinearLayout>
+            <TextView
+                android:id="@+id/view_dialog_drink_description"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center_vertical" />
+
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:background="@drawable/rounded_corner"
             android:gravity="center_vertical|center_horizontal"
-            android:orientation="vertical"
-            android:padding="3dp" >
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/TextView02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$ "
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/view_dialog_drink_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="$6"
+                android:layout_marginRight="4dp"
+                android:text="6.00"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="#995555"
-                android:textSize="22sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="2" >
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
         android:layout_weight="2"
-        android:background="@drawable/rounded_corner"
-        android:gravity="center_vertical" >
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin" >
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="Tip:"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textSize="12sp" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="2"
+            android:gravity="center_vertical" >
 
-        <RadioGroup
-            android:id="@+id/tipPercentage"
-            android:layout_width="wrap_content"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content" >
-
-            <RadioButton
-                android:id="@+id/RadioButton02"
+            <TextView
+                android:id="@+id/textView1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="10%"
+                android:text="Tip:"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="12sp" />
 
-            <RadioButton
-                android:id="@+id/RadioButton01"
+            <RadioGroup
+                android:id="@+id/view_dialog_drink_tip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="15%"
-                android:textSize="12sp" />
+                android:orientation="horizontal" >
 
-            <RadioButton
-                android:id="@+id/radioButton1"
+                <RadioButton
+                    android:id="@+id/view_dialog_order_tip_10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10%"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/view_dialog_order_tip_15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15%"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/view_dialog_order_tip_20"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="20%"
+                    android:textSize="12sp" />
+            </RadioGroup>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2" >
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="20%"
-                android:textSize="12sp" />
+                android:text="$"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <RadioButton
-                android:id="@+id/radioButton2"
+            <EditText
+                android:id="@+id/view_dialog_drink_tip_amount"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </RadioGroup>
-
-        <EditText
-            android:id="@+id/editTextPercentage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            android:ems="10"
-            android:inputType="numberDecimal"
-            android:textSize="12sp" >
-
-            <requestFocus />
-        </EditText>
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:text="1.00"
+                android:textAppearance="?android:attr/textAppearanceMedium" >
+            </EditText>
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

@@ -624,8 +624,7 @@ public class UserProfile {
 		((ImageView) view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(getImage());
 		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
 
-		ImageView profileImageView = (ImageView) view
-				.findViewById(R.id.ImageView16);
+		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
 
 		if (image == null) {
 			WebServices.downloadImage(Constants.DOMAIN_NAME + imagePath, this, profileImageView);

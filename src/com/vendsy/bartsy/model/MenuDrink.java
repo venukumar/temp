@@ -17,9 +17,10 @@ public class MenuDrink {
 	private String title;
 	private String image;
 	private String description;
-	private String price;
+	private float price;
 	private String price_special;
 	private String venueId;
+	public String valid = null;
 
 	private Section section;
 	
@@ -48,11 +49,13 @@ public class MenuDrink {
 				this.description = object.getString("description");
 			}
 			if (object.has("price")) {
-				this.price = object.getString("price");
+				this.price = Float.parseFloat(object.getString("price"));
 			}
 			if (object.has("id")) {
 				this.drinkId = object.getString("id");
 			}
+			
+			valid = "yes";
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -124,9 +127,9 @@ public class MenuDrink {
 	}
 
 	/**
-	 * @return the price
+	 * @return float the price
 	 */
-	public String getPrice() {
+	public float getPrice() {
 		return price;
 	}
 
@@ -134,7 +137,7 @@ public class MenuDrink {
 	 * @param price
 	 *            the price to set
 	 */
-	public void setPrice(String price) {
+	public void setPrice(float price) {
 		this.price = price;
 	}
 

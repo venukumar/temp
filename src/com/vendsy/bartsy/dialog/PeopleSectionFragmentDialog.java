@@ -61,6 +61,7 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 		mApp = (BartsyApplication) getActivity().getApplication();
 		
 		builder.setView(mRootView);
+		builder.setTitle("Select order recipient");
 		
 		updatePeopleView();
 		

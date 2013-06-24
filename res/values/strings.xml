@@ -29,7 +29,6 @@
 
     <string name="venueId">venueId</string>
     <string name="venueName">venueName</string>
-    <string name="venueOrderCount">venueOrderCount</string>
     <string name="venueUserCount">venueUserCount</string>
     
     <!-- Action bar items -->
@@ -58,9 +57,10 @@
     <!-- Tabs -->
 
     <string name="title_people">People</string>
-    <string name="title_drinks">Drinks</string>
-    <string name="title_drink_orders">Orders (0)</string>
-
+    <string name="title_menu">Menu</string>
+    <string name="title_orders">Orders</string>
+    <string name="title_past_orders">Past orders</string>
+    
     <!-- P2P -->
 
     <string name="finding_service">Finding local services</string>

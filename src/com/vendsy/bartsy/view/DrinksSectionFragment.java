@@ -272,10 +272,8 @@ public class DrinksSectionFragment extends SherlockFragment {
 							for (int k = 0; k < contents.length(); k++) {
 								MenuDrink menuDrink = new MenuDrink(contents.getJSONObject(k));
 								// Try to parse price to decimal. if it is succeeded then drink will be added to the subsection list otherwise it will not add the list 
-								try {
-									Float.parseFloat(menuDrink.getPrice());
+								if (menuDrink.valid != null) {
 									subsection_contents.add(menuDrink);
-								} catch (NumberFormatException e) {
 								}
 							}
 							

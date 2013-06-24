@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -28,7 +29,7 @@ import com.vendsy.bartsy.utils.WebServices;
  * @author peterkellis
  * 
  */
-public class OrdersSectionFragment extends SherlockFragment {
+public class OpenOrdersSectionFragment extends SherlockFragment implements OnClickListener {
 
 	private View mRootView = null;
 	public LinearLayout mOrderListView = null;
@@ -55,13 +56,13 @@ public class OrdersSectionFragment extends SherlockFragment {
 
 		mInflater = inflater;
 		mContainer = container;
-		mRootView = mInflater.inflate(R.layout.orders_main, mContainer, false);
+		mRootView = mInflater.inflate(R.layout.orders_open_main, mContainer, false);
 		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
 		mActivity = (VenueActivity) getActivity();
-		((VenueActivity) getActivity()).mOrdersFragment = this;
+		((VenueActivity) getActivity()).mOpenOrdersFragment = this;
 		updateOrdersView();
 
 		return mRootView;
@@ -77,77 +78,15 @@ public class OrdersSectionFragment extends SherlockFragment {
 			return;
 		
 		// For now remove list of orders
-		mApp.clearOrders();
+//		mApp.clearOrders();
 			
-		// Load the orders currently present in the Bartsy user
-		loadUserOrders();
+		// Load the orders currently present in the Bartsy server
+//		loadUserOrders();
+		
+		displayOrders();
 
 	}
 
-	/**
-	 * To get user orders from the server
-	 */
-	private void loadUserOrders() {
-		// Service call for get menu list in background
-		new Thread() {
-
-			public void run() {
-				String response = WebServices.getUserOrdersList(mApp);
-
-				Log.v(TAG, "oreders " + response);
-
-				userOrdersResponseHandling(response);
-			};
-
-		}.start();
-	}
-
-	/**
-	 * User orders web service Response handling
-	 * 
-	 * @param response
-	 */
-
-	private void userOrdersResponseHandling(String response) {
-		if (response != null) {
-			try {
-				JSONObject orders = new JSONObject(response);
-				JSONArray listOfOrders = orders.has("orders") ? orders
-						.getJSONArray("orders") : null;
-				if (listOfOrders != null) {
-
-					for (int i = 0; i < listOfOrders.length(); i++) {
-						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
-						Order order = new Order(orderJson);
-						mApp.addOrderNoUI(order);
-					}
-					// To call UI thread and display checkedIn people list
-					handler.post(new Runnable() {
-
-						@Override
-						public void run() {
-
-							displayOrders();
-						}
-					});
-				}
-				else
-				{
-					handler.post(new Runnable() {
-						
-						@Override
-						public void run() {
-							// Make sure the list view is empty
-							mOrderListView.removeAllViews();
-						}
-					});
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
 
 	/*
 	 * Displays the orders from the order list into the view, bundled by state
@@ -155,7 +94,7 @@ public class OrdersSectionFragment extends SherlockFragment {
 	
 	private void displayOrders() {
 
-		Log.v(TAG, "mApp.mOrders list size = " + mApp.mActiveVenue.getOrderCount());
+		Log.v(TAG, "mApp.mOrders list size = " + mApp.getOrderCount());
 
 		// Use a swallow copy of the global structure to be able to remove orders from the global structure in the iterator
 		ArrayList<Order> orders = mApp.getOrdersCopy();
@@ -209,6 +148,11 @@ public class OrdersSectionFragment extends SherlockFragment {
 					Log.v(TAG, "All orders of status " + order.status + " have been displayed. Skipping order " + order.serverID);					
 				}
 				break;
+			case Order.ORDER_STATUS_CANCELLED:
+				// Always display cancelled orders individually
+				Log.v(TAG, "Display timed-out order " + order.serverID);
+				next = Order.ORDER_STATUS_CANCELLED;
+				break;
 			default:
 				Log.d(TAG, "Unexpected order status");
 				break;
@@ -220,14 +164,19 @@ public class OrdersSectionFragment extends SherlockFragment {
 				Log.v(TAG, "Showing master order " + order.serverID);
 				
 				// Display header view with current order
-				mOrderListView.addView(order.updateView(mInflater, mContainer));
+				View view = order.updateView(mInflater, mContainer);
+				view.findViewById(R.id.view_order_notification_button).setOnClickListener(this);
+				mOrderListView.addView(view);
+
 				
 				// If there are any more orders of the same type display them as mini views
 				
 				for (int j = i+1 ; j < orders.size(); j++)
 				{
 					Order mini = orders.get(j);
-					if (mini.status == next) {
+					if (mini.status == next && next 
+							!= Order.ORDER_STATUS_CANCELLED)  // Never bundle cancelled orders...
+					{
 						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
 						((LinearLayout)order.view.findViewById(R.id.view_order_mini))
 							.addView(mini.getMiniView(mInflater, mContainer));
@@ -237,6 +186,15 @@ public class OrdersSectionFragment extends SherlockFragment {
 		}
 	}
 	
+
+	@Override
+	public void onClick(View arg0) {
+		switch (arg0.getId()) {
+		case R.id.view_order_notification_button:
+			mApp.removeOrder((Order) arg0.getTag());
+			break;
+		}
+	}
 	
 	@Override
 	public void onDestroy() {
@@ -251,7 +209,7 @@ public class OrdersSectionFragment extends SherlockFragment {
 
 		// Because the fragment may be destroyed while the activity persists,
 		// remove pointer from activity
-		((VenueActivity) getActivity()).mOrdersFragment = null;
+		((VenueActivity) getActivity()).mOpenOrdersFragment = null;
 	}
 
 
