@@ -129,7 +129,7 @@ public class PeopleSectionFragment extends SherlockFragment implements OnClickLi
 	 * 
 	 * @param response
 	 */
-	private void processCheckedInUsersResponse(String response) {
+	private synchronized void processCheckedInUsersResponse(String response) {
 		// Save the list of people and use it as an image cache, resetting the global structure
 				ArrayList<UserProfile> knownPeople = mApp.mPeople;
 
