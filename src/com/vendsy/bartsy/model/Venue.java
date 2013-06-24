@@ -8,8 +8,11 @@ public class Venue {
 	private String longitude;
 	private String address;
 	private String payPalId;
-	private int orderCount;
 	private int userCount;
+	private String wifiName;
+	private String wifiPassword;
+	private String wifiTypeOfAuthentication;
+	private String status;
 
 	@Override
 	public String toString() {
@@ -17,7 +20,6 @@ public class Venue {
 		return "{" +
 				"id: " + id +
 				" name: " + name +
-				" orderCount: " + orderCount +
 				" userCount: " + userCount +
 				" latitude: " + latitude +
 				" longitude: " + longitude +
@@ -27,12 +29,36 @@ public class Venue {
 		
 	}
 	
-	public int getOrderCount() {
-		return orderCount;
+	public String getStatus() {
+		return status;
+	}
+	
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
-	public void setOrderCount(int orderCount) {
-		this.orderCount = orderCount;
+	public String getWifiName() {
+		return wifiName;
+	}
+	
+	public void setWifiName(String wifiName) {
+		this.wifiName = wifiName;
+	}
+	
+	public String getWifiPassword() {
+		return wifiPassword;
+	}
+	
+	public void setWifiPassword(String wifiPassword) {
+		this.wifiPassword = wifiPassword;
+	}
+	
+	public String getWifiTypeOfAuthentication() {
+		return wifiTypeOfAuthentication;
+	}
+	
+	public void SetWifiTypeOfAuthentication(String wifiTypeOfAuthentication) {
+		this.wifiTypeOfAuthentication = wifiTypeOfAuthentication;
 	}
 	
 	public int getUserCount() {
