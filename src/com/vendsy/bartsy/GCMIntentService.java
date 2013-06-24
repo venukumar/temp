@@ -84,7 +84,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String message = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
 		String count = (String) intent.getExtras().get("badgeCount");
 
-		Log.v(TAG, "message: " + message);
+		Log.i(TAG, "<=== pushNotification(" + message + ")");
 		
 		// Process notification
 		if (message != null)
@@ -105,18 +105,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 		BartsyApplication app = (BartsyApplication) getApplication();
 		String messageTypeMSG = "";
 		try {
-			Log.v(TAG, "push message " + message);
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")) {
 
 				if (json.getString("messageType").equals("updateOrderStatus")) {
 					// Handle updateOrderStatus from Push Notification
-					app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));
-					messageTypeMSG = "Your order status changed";
+					messageTypeMSG = app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));;
 				} else if(json.getString("messageType").equals("orderTimeout")) {
 					// Handle orderTimeout from Push Notification. Time Out is based on venue configuration
-					app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));
-					messageTypeMSG = "Your order timed out";
+					messageTypeMSG = app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));;
 				} else if (json.getString("messageType").equals("heartBeat")) {
 					// Handle heart beat ping. 
 					
@@ -132,7 +129,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					
 					// Update venue, order and people counts
 					if (json.has("venueId"))
-						app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"), json.getInt("orderCount"));
+						app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
 					else {
 						// We don't have an active venue - make sure we don't and delete local references
 						app.userCheckOut();
