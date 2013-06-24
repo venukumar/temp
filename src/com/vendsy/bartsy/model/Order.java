@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 
 public class Order {
 
@@ -255,9 +256,12 @@ public class Order {
 		((TextView) view.findViewById(R.id.view_order_total_amount)).setText(df.format(totalAmount));
 
 		((TextView) view.findViewById(R.id.view_order_item_number)).setText("" + serverID);
-
-			
 		
+		// To display order receiver profile information in orders view
+		if(orderReceiver!=null){
+			updateProfileView(orderReceiver);
+		}
+
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Waiting for bartender to accept");
@@ -281,6 +285,25 @@ public class Order {
 		
 		return view;
 
+	}
+	/**
+	 * To update profile information in orders view
+	 * 
+	 * @param profile
+	 */
+	private void updateProfileView(UserProfile profile) {
+		
+		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_order_profile_picture));
+		// Set profile image
+		if (!profile.hasImage() && profileImageView!=null) {
+			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile, profileImageView);
+		} else {
+			profileImageView.setImageBitmap(profile.getImage());
+		}
+		
+	
+		// Show the username of the recipient
+		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(profile.getNickname());	
 	}
 
 	

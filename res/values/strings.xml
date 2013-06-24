@@ -5,7 +5,15 @@
     
     <!-- Facebook ID -->
     <string name="fb_app_id">451948571568667</string>
-
+    
+    <!-- NDA agreements -->
+    <string name="confirm_agreements">Please confirm that you have read and understand the following agreements</string>
+    <string name="beta_participant_agreement">Beta Participant Agreement</string>
+    <string name="end_user_agreement">End User Licence Agreement</string>
+    <string name="terms_of_use">Terms of Use</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="check_agreement">By checking this box I verify that I have read and agree to be bound by the above agreements.</string>
+    
     <!-- Config items -->
     <string name="config_shared_preferences_name">bartsy_preferences</string>
 

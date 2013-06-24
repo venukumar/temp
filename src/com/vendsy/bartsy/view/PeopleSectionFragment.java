@@ -56,6 +56,7 @@ public class PeopleSectionFragment extends SherlockFragment{
 			@Override
 			protected void selectedUserProfile(UserProfile profile) {
 				// For now, there is no action for profile selection
+				
 			}
 		};
 		

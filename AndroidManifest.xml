@@ -118,6 +118,14 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".NDAActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".WebViewActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".MapActivity"
             android:label="Check in at a Bartsy venue..."
             android:screenOrientation="portrait"
@@ -174,16 +182,16 @@
             android:name="com.paypal.android.MEP.PayPalActivity"
             android:configChanges="keyboardHidden|orientation"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
+		
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCgZRYaiDOrJp9hNO6xu1UracE_dOhgmRI" />
-
-         <!--
+	    <!-- 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" />
-        -->
+            android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" /> 
+          -->
+          
          <!-- Start of Crittercism.com Code -->
         <activity android:name="com.crittercism.NotificationActivity" />
 
