@@ -2,26 +2,16 @@ package com.vendsy.bartsy;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Locale;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
-
-
-import android.app.Activity;
-
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,34 +25,26 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
-import com.paypal.android.MEP.PayPal;
-import com.paypal.android.MEP.PayPalActivity;
-import com.paypal.android.MEP.PayPalPayment;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.OfferDrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
-import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.model.Section;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
-import com.vendsy.bartsy.view.OrdersSectionFragment;
+import com.vendsy.bartsy.view.OpenOrdersSectionFragment;
+import com.vendsy.bartsy.view.PastOrdersSectionFragment;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
@@ -80,7 +62,8 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	public static final String TAG = "VenueActivity";
 	public DrinksSectionFragment mDrinksFragment = null;
-	public OrdersSectionFragment mOrdersFragment = null; 
+	public OpenOrdersSectionFragment mOpenOrdersFragment = null; 
+	public PastOrdersSectionFragment mPastOrdersFragment= null; 
 	public PeopleSectionFragment mPeopleFragment = null; 
 
 
@@ -142,10 +125,8 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
-		// Create the adapter that will return a fragment for each of the
-		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+		// Create the adapter that will return a fragment for each of the primary sections of the app.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -154,13 +135,12 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		// When swiping between different sections, select the corresponding
 		// tab. We can also use ActionBar.Tab#select() to do this if we have
 		// a reference to the Tab.
-		mViewPager
-				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-					@Override
-					public void onPageSelected(int position) {
-						actionBar.setSelectedNavigationItem(position);
-					}
-				});
+		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+				@Override
+				public void onPageSelected(int position) {
+					actionBar.setSelectedNavigationItem(position);
+				}
+			});
 
 		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
@@ -193,15 +173,24 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 		Log.v(TAG, "initializeFragments()");
 
-		// Initialize bartender fragment - the fragment may still exist even
-		// though the activity has restarted
-		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drink_orders);
+		// Initialize orders fragment - the fragment may still exist even though the activity has restarted
+		OpenOrdersSectionFragment f = (OpenOrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_orders);
 		if (f == null) {
-			Log.v(TAG, "Bartender fragment not found. Creating one.");
-			mOrdersFragment = new OrdersSectionFragment();
+			Log.v(TAG, "Orders fragment not found. Creating one.");
+			mOpenOrdersFragment = new OpenOrdersSectionFragment();
 		} else {
-			Log.v(TAG, "Bartender fragment found.");
-			mOrdersFragment = f;
+			Log.v(TAG, "Orders fragment found.");
+			mOpenOrdersFragment = f;
+		}
+
+		// Initialize past orders fragment - the fragment may still exist even though the activity has restarted
+		PastOrdersSectionFragment po = (PastOrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_past_orders);
+		if (f == null) {
+			Log.v(TAG, "Past orders fragment not found. Creating one.");
+			mPastOrdersFragment = new PastOrdersSectionFragment();
+		} else {
+			Log.v(TAG, "Past orders fragment found.");
+			mPastOrdersFragment = po;
 		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
@@ -215,7 +204,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
-		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_drinks);
+		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_menu);
 		if (mDrinksFragment == null) {
 			Log.v(TAG, "Drinks fragment not found. Creating one.");
 			mDrinksFragment = new DrinksSectionFragment();
@@ -368,7 +357,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
-		} else if (mApp.mActiveVenue.getOrderCount() > 0) {
+		} else if (mApp.getOrderCount() > 0) {
 			// We already have a local active venue different than the one selected
 			userCheckOutAlert("You have OPEN ORDERS at " + mApp.mActiveVenue.getName() +
 					". If you checkout they will be cancelled and you will still be charged.\n\nAre you sure?", venue);
@@ -525,9 +514,9 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	public void updateOrdersCount() {
 		for (int i= 0 ; i < mTabs.length ; i++) {
-			if (mTabs[i] == R.string.title_drink_orders) {
+			if (mTabs[i] == R.string.title_orders) {
 				// Found the right tab - update it
-				getSupportActionBar().getTabAt(i).setText("Orders (" + mApp.mActiveVenue.getOrderCount() + ")");
+				getSupportActionBar().getTabAt(i).setText("Orders (" + mApp.getOrderCount() + ")");
 				return;
 			}
 		}
@@ -584,7 +573,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	 */
 	VenueActivity main_activity = this;
 
-	private int mTabs[] = { R.string.title_drinks, R.string.title_drink_orders, R.string.title_people };
+	private int mTabs[] = { R.string.title_people, R.string.title_menu, R.string.title_orders, R.string.title_past_orders };
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -595,9 +584,11 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			switch (mTabs[position]) {
-			case R.string.title_drink_orders: // The order tab (for bar owners)
-				return (mOrdersFragment);
-			case R.string.title_drinks: // The drinks tab allows to order drinks
+			case R.string.title_orders: // The order tab (for bar owners)
+				return (mOpenOrdersFragment);
+			case R.string.title_past_orders: // The order tab (for bar owners)
+				return (mPastOrdersFragment);
+			case R.string.title_menu: // The drinks tab allows to order drinks
 										// from previous orders, favorites, menu
 										// items, drink guides or completely
 										// custom.
@@ -745,9 +736,9 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				break;
 			case HANDLE_ORDERS_UPDATED_EVENT:
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
-				if (mOrdersFragment != null) {
+				if (mOpenOrdersFragment != null) {
 					Log.v(TAG, "Updating orders view and count...");
-					mOrdersFragment.updateOrdersView();
+					mOpenOrdersFragment.updateOrdersView();
 					updateOrdersCount();
 				}
 				break;
@@ -868,9 +859,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		
 		order = new Order();
 
-		String tip = ((DrinkDialogFragment) dialog).tipPercentageValue;
-		String tipPercentageValue = tip.replace("%", "");
-		Float tipAmount = Float.valueOf(tipPercentageValue)/100 * Float.valueOf(drink.getPrice());
+		Float tipAmount = ((DrinkDialogFragment) dialog).tipAmount;
 
 		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order  ID
 				null, 									// arg(1) - This order still doesn't have a server-assigned ID
@@ -892,7 +881,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		processOrderData(); // bypass PayPal for now for testing
 
 	}
-
 		
 	private void processOrderData() {
 

@@ -721,9 +721,6 @@ public class WebServices {
 					venue.setId(result.getString("venueId"));
 					venue.setName(result.getString("venueName"));
 					
-					if (result.has("orderCount"))
-						venue.setOrderCount(result.getInt("orderCount"));
-					
 					if (result.has("userCount"))
 						venue.setUserCount(result.getInt("userCount"));
 
@@ -739,6 +736,34 @@ public class WebServices {
 		
 	}
 
+	
+	/**
+	 * To get past orders based on venue profile
+	 * 
+	 * @param context
+	 * @param venueID
+	 * @return
+	 */
+	public static String getPastOrders(Context context, String bartsyId, String venueID){
+
+		JSONObject postData = new JSONObject();
+		String response = null;
+		try {
+			postData.put("bartsyId", bartsyId);
+			postData.put("venueId", venueID);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			response = WebServices.postRequest(
+					Constants.URL_GET_PAST_ORDERS, postData,
+					context);
+		} catch (Exception e) {
+		}
+		
+		return response;
+	}
 	
 	
 	/**
