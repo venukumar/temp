@@ -78,6 +78,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 					JSONObject postData = new JSONObject();
 					try {
 						postData.put("venueId", mApp.mActiveVenue.getId());
+						postData.put("bartsyId", mApp.mProfile.getBartsyId());
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
