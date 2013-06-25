@@ -3,8 +3,8 @@ package com.vendsy.bartsy.utils;
 public class Constants {
 
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
-//	public static final String DOMAIN_NAME = "http://bartsy.techvedika.com/"; // prod
+//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+	public static final String DOMAIN_NAME = "http://bartsy.techvedika.com/"; // prod
 
 	
 	public static final String PROJECT_NAME = "Bartsy/";
@@ -71,6 +71,8 @@ public class Constants {
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION="1";
+	
+	public static final String ASSETS_PATH = "file:///android_asset/";
 	
 	// For now use card-coded value of tax
 	public static final float taxRate = (float) (9.0) / (float) (100.0);

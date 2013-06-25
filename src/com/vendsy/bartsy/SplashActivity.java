@@ -52,7 +52,7 @@ public class SplashActivity extends Activity {
 		if (mApp.mProfile == null) {
 			Log.e(TAG, "No saved profile found - load init activity");
 			
-			Intent intent = new Intent().setClass(this, InitActivity.class);
+			Intent intent = new Intent().setClass(this, NDAActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
@@ -134,7 +134,7 @@ public class SplashActivity extends Activity {
 			public void run() {
 				String response = WebServices.getUserOrdersList(mApp);
 
-				Log.v(TAG, "oreders " + response);
+				Log.v(TAG, "orders " + response);
 
 				userOrdersResponseHandling(response);
 			};
