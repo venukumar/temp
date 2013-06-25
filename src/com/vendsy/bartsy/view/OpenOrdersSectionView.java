@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -27,9 +28,10 @@ import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
+ * @author Seenu Malireddy
  * 
  */
-public class OpenOrdersSectionFragment extends SherlockFragment implements OnClickListener {
+public class OpenOrdersSectionView extends LinearLayout{
 
 	private View mRootView = null;
 	public LinearLayout mOrderListView = null;
@@ -37,36 +39,29 @@ public class OpenOrdersSectionFragment extends SherlockFragment implements OnCli
 	ViewGroup mContainer = null;
 	public BartsyApplication mApp = null;
 	private VenueActivity mActivity = null;
-	private Handler handler = new Handler();
 	
 	static final String TAG = "OrdersSectionFragment";
 
 	// private String mDBText = "";
 
-	/*
-	 * Creates a map view, which is for now a mock image. Listen for clicks on
-	 * the image and toggle the bar details image
-	 */
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public OpenOrdersSectionView(Activity activity) {
+		super(activity);
+		
+		Log.v(TAG, "OpenOrdersSectionView() - Constructor");
+		
+		// Setup application pointer
+		mActivity = (VenueActivity) activity;
+		mApp = (BartsyApplication) mActivity.getApplication();
 
 		Log.d("Bartsy", "OrdersSectionFragment.onCreateView()");
 
-		mInflater = inflater;
-		mContainer = container;
+		mInflater = activity.getLayoutInflater();
 		mRootView = mInflater.inflate(R.layout.orders_open_main, mContainer, false);
 		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 
-		// Make sure the fragment pointed to by the activity is accurate
-		mApp = (BartsyApplication) getActivity().getApplication();
-		mActivity = (VenueActivity) getActivity();
-		((VenueActivity) getActivity()).mOpenOrdersFragment = this;
 		updateOrdersView();
 
-		return mRootView;
-
+		addView(mRootView);
 	}
 
 	public void updateOrdersView() {
@@ -165,7 +160,13 @@ public class OpenOrdersSectionFragment extends SherlockFragment implements OnCli
 				
 				// Display header view with current order
 				View view = order.updateView(mInflater, mContainer);
-				view.findViewById(R.id.view_order_notification_button).setOnClickListener(this);
+				view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						mApp.removeOrder((Order) v.getTag());
+					}
+				});
 				mOrderListView.addView(view);
 
 				
@@ -186,32 +187,6 @@ public class OpenOrdersSectionFragment extends SherlockFragment implements OnCli
 		}
 	}
 	
-
-	@Override
-	public void onClick(View arg0) {
-		switch (arg0.getId()) {
-		case R.id.view_order_notification_button:
-			mApp.removeOrder((Order) arg0.getTag());
-			break;
-		}
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		Log.d("Bartsy", "OrdersSectionFragment.onDestroy()");
-
-		mRootView = null;
-		mOrderListView = null;
-		mInflater = null;
-		mContainer = null;
-
-		// Because the fragment may be destroyed while the activity persists,
-		// remove pointer from activity
-		((VenueActivity) getActivity()).mOpenOrdersFragment = null;
-	}
-
 
 	public void removeOrders(Order order) {
 		if (mOrderListView != null)

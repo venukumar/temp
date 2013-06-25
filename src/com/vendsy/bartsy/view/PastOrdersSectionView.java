@@ -6,26 +6,28 @@ package com.vendsy.bartsy.view;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.app.Activity;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.LinearLayout;
-import com.actionbarsherlock.app.SherlockFragment;
+import android.widget.TextView;
+
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
+ * @author Seenu Malireddy
  * 
  */
-public class PastOrdersSectionFragment extends SherlockFragment {
+public class PastOrdersSectionView extends LinearLayout {
 	
 	String TAG = "PastOrdersSectionFragment";
 
@@ -39,25 +41,29 @@ public class PastOrdersSectionFragment extends SherlockFragment {
 	private LinearLayout ordersTableLayout = null;
 
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-		Log.v(TAG, "onCreateView()");
+	public PastOrdersSectionView(Activity activity) {
+		super(activity);
+		
+		Log.v(TAG, "PastOrdersSectionView() - Constructor");
 		
 		// Setup application pointer
-		mActivity = (VenueActivity) getActivity();
+		mActivity = (VenueActivity) activity;
 		mApp = (BartsyApplication) mActivity.getApplication();
-
+		
+		// Set parameters for linear layout
+		LayoutParams params = new LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+		setLayoutParams(params);
+		setOrientation(LinearLayout.VERTICAL);
+		
 		// Set up views
-		mInflater = inflater;
-		mContainer = container;
-		mRootView = inflater.inflate(R.layout.orders_past_main, container, false);
+		mInflater = activity.getLayoutInflater();
+		mRootView = mInflater.inflate(R.layout.orders_past_main, null);
 		ordersTableLayout = (LinearLayout) mRootView.findViewById(R.id.pastordersLayout);
 		
 		// Set up layout in the background
 		new PastOrders().execute("params");
 
-		return mRootView;
+		addView(mRootView);
 	}
 
 	
@@ -162,17 +168,6 @@ public class PastOrdersSectionFragment extends SherlockFragment {
 		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + order.totalAmount));
 
 		ordersTableLayout.addView(itemView, 0);
-	}
-	
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		Log.v(TAG, "onDestroy()");
-		
-		// Because the fragment may be destroyed while the activity persists, remove pointer from activity
-		((VenueActivity) getActivity()).mDrinksFragment = null;
 	}
 
 }

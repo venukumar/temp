@@ -41,8 +41,9 @@ import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
-import com.vendsy.bartsy.view.OpenOrdersSectionFragment;
-import com.vendsy.bartsy.view.PastOrdersSectionFragment;
+import com.vendsy.bartsy.view.OpenOrdersSectionView;
+import com.vendsy.bartsy.view.OrdersSectionFragment;
+import com.vendsy.bartsy.view.PastOrdersSectionView;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.Menu;
@@ -62,8 +63,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	public static final String TAG = "VenueActivity";
 	public DrinksSectionFragment mDrinksFragment = null;
-	public OpenOrdersSectionFragment mOpenOrdersFragment = null; 
-	public PastOrdersSectionFragment mPastOrdersFragment= null; 
+	public OrdersSectionFragment mOrdersFragment = null; 
 	public PeopleSectionFragment mPeopleFragment = null; 
 
 
@@ -174,24 +174,24 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		Log.v(TAG, "initializeFragments()");
 
 		// Initialize orders fragment - the fragment may still exist even though the activity has restarted
-		OpenOrdersSectionFragment f = (OpenOrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_orders);
+		OrdersSectionFragment f = (OrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_orders);
 		if (f == null) {
 			Log.v(TAG, "Orders fragment not found. Creating one.");
-			mOpenOrdersFragment = new OpenOrdersSectionFragment();
+			mOrdersFragment = new OrdersSectionFragment();
 		} else {
 			Log.v(TAG, "Orders fragment found.");
-			mOpenOrdersFragment = f;
+			mOrdersFragment = f;
 		}
 
-		// Initialize past orders fragment - the fragment may still exist even though the activity has restarted
-		PastOrdersSectionFragment po = (PastOrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_past_orders);
-		if (f == null) {
-			Log.v(TAG, "Past orders fragment not found. Creating one.");
-			mPastOrdersFragment = new PastOrdersSectionFragment();
-		} else {
-			Log.v(TAG, "Past orders fragment found.");
-			mPastOrdersFragment = po;
-		}
+//		// Initialize past orders fragment - the fragment may still exist even though the activity has restarted
+//		PastOrdersSectionFragment po = (PastOrdersSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_past_orders);
+//		if (f == null) {
+//			Log.v(TAG, "Past orders fragment not found. Creating one.");
+//			mPastOrdersFragment = new PastOrdersSectionFragment();
+//		} else {
+//			Log.v(TAG, "Past orders fragment found.");
+//			mPastOrdersFragment = po;
+//		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
 		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_people);
@@ -573,7 +573,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	 */
 	VenueActivity main_activity = this;
 
-	private int mTabs[] = { R.string.title_people, R.string.title_menu, R.string.title_orders, R.string.title_past_orders };
+	private int mTabs[] = { R.string.title_people, R.string.title_menu, R.string.title_orders};
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -585,9 +585,9 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		public Fragment getItem(int position) {
 			switch (mTabs[position]) {
 			case R.string.title_orders: // The order tab (for bar owners)
-				return (mOpenOrdersFragment);
-			case R.string.title_past_orders: // The order tab (for bar owners)
-				return (mPastOrdersFragment);
+				return (mOrdersFragment);
+//			case R.string.title_past_orders: // The order tab (for bar owners)
+//				return (mPastOrdersFragment);
 			case R.string.title_menu: // The drinks tab allows to order drinks
 										// from previous orders, favorites, menu
 										// items, drink guides or completely
@@ -736,9 +736,9 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				break;
 			case HANDLE_ORDERS_UPDATED_EVENT:
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_ORDERS_UPDATED_EVENT");
-				if (mOpenOrdersFragment != null) {
+				if (mOrdersFragment != null) {
 					Log.v(TAG, "Updating orders view and count...");
-					mOpenOrdersFragment.updateOrdersView();
+					mOrdersFragment.updateOrdersView();
 					updateOrdersCount();
 				}
 				break;
