@@ -14,25 +14,25 @@
         android:textColor="#cccccc" />
     <Button
         android:id="@+id/betaAgreement"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/beta_participant_agreement" />
     <Button
         android:id="@+id/endUserAgreement"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/end_user_agreement" />
     <Button
         android:id="@+id/termsOfUse"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/terms_of_use" />
     <Button
         android:id="@+id/privacyPolicy"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/privacy_policy" />
