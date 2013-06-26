@@ -783,8 +783,7 @@ public class WebServices {
 	 * @param model
 	 * @param imageView
 	 */
-	public static void downloadImage(final String fileUrl, final Object model,
-			final ImageView imageView) {
+	public static void downloadImage(final String fileUrl, final Object model, final ImageView imageView) {
 
 		new AsyncTask<String, Void, Bitmap>() {
 			Bitmap bmImg;
@@ -815,19 +814,26 @@ public class WebServices {
 
 				} catch (IOException e) {
 					e.printStackTrace();
+					bmImg = null;
 				}
 
 				return bmImg;
 			}
 
 			protected void onPostExecute(Bitmap result) {
-				if (model!=null && model instanceof UserProfile) {
-					UserProfile profile = (UserProfile) model;
-					profile.setImage(result);
+				
+				// Make sure we got an image
+				if (result != null) {
+
+					if (model!=null && model instanceof UserProfile) {
+						UserProfile profile = (UserProfile) model;
+						profile.setImage(result);
+					}
+					
+					imageView.setImageBitmap(result);
+					// Set bitmap image to profile image view
+					imageView.setTag(result);
 				}
-				// Set bitmap image to profile image view
-				imageView.setImageBitmap(result);
-				imageView.setTag(result);
 			}
 
 		}.execute();
