@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
@@ -52,6 +53,11 @@ public class OpenOrdersSectionView extends LinearLayout{
 		// Setup application pointer
 		mActivity = (VenueActivity) activity;
 		mApp = (BartsyApplication) mActivity.getApplication();
+		
+		// Set parameters for linear layout
+		LayoutParams params = new LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+		setLayoutParams(params);
+		setOrientation(LinearLayout.VERTICAL);
 
 		mInflater = activity.getLayoutInflater();
 		mRootView = mInflater.inflate(R.layout.orders_open_main, mContainer, false);
