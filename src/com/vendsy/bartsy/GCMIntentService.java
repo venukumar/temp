@@ -111,12 +111,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 				if (json.getString("messageType").equals("updateOrderStatus")) {
 					// Handle updateOrderStatus from Push Notification
 					messageTypeMSG = app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));;
+					
 				} else if(json.getString("messageType").equals("orderTimeout")) {
 					// Handle orderTimeout from Push Notification. Time Out is based on venue configuration
 					messageTypeMSG = app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));;
+					
 				} else if (json.getString("messageType").equals("heartBeat")) {
 					// Handle heart beat ping. 
-					
 					Log.v(TAG, "Heartbeat" + json);
 					
 					// Bartsy ID mismatch - don't send response for now
@@ -125,7 +126,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 						Log.e(TAG, "Received hearbeat for user " + json.getString("bartsyId") + " instead of local user: " + app.loadBartsyId());
 						return null;
 					}
-					
 					
 					// Update venue, order and people counts
 					if (json.has("venueId"))
@@ -138,6 +138,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					// Send reply to host
 					WebServices.postHeartbeatResponse(app.getApplicationContext(), app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
 					messageTypeMSG = null;
+					
 				}else if(json.getString("messageType").equals("DrinkOffered")){
 					// To display offer drink dialog
 					app.displayOfferDrink(new Order(json),json.getString("senderBartsyId"));
@@ -145,6 +146,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 						messageTypeMSG = json.getString("body");
 					}
 				}
+				
 				// When other person accept offer drink
 				else if(json.getString("messageType").equals("DrinkOfferAccepted")){
 					if(json.has("body")){
