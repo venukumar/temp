@@ -5,27 +5,17 @@ package com.vendsy.bartsy.view;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
-import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis

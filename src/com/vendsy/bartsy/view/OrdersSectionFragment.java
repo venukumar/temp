@@ -30,9 +30,8 @@ public class OrdersSectionFragment extends SherlockFragment{
 	public BartsyApplication mApp = null;
 	private VenueActivity mActivity = null;
 	
-	private LinearLayout mOpenOrderView;
-	private LinearLayout mPastOrderView;
 	private OpenOrdersSectionView mOpenOrdersListView;
+	private PastOrdersSectionView mPastOrdersListView;
 	
 	static final String TAG = "OrdersSectionFragment";
 
@@ -59,13 +58,14 @@ public class OrdersSectionFragment extends SherlockFragment{
 		((VenueActivity) getActivity()).mOrdersFragment = this;
 		
 		// Try to get content layouts
-		mOpenOrderView = (LinearLayout) mRootView.findViewById(R.id.view_orders_open);
-		mPastOrderView = (LinearLayout) mRootView.findViewById(R.id.view_orders_past);
+		final LinearLayout mOpenOrderView = (LinearLayout) mRootView.findViewById(R.id.view_orders_open);
+		final LinearLayout mPastOrderView = (LinearLayout) mRootView.findViewById(R.id.view_orders_past);
 		
 		// Add Open orders and past orders to the layouts
 		mOpenOrdersListView = new OpenOrdersSectionView(mActivity);
+		mPastOrdersListView = new PastOrdersSectionView(mActivity);
 		mOpenOrderView.addView(mOpenOrdersListView);
-		mPastOrderView.addView(new PastOrdersSectionView(mActivity));
+		mPastOrderView.addView(mPastOrdersListView);
 		
 		// Try to get buttons from the layout
 		Button openOrdersButton = (Button) mRootView.findViewById(R.id.view_orders_button_open);
@@ -89,6 +89,8 @@ public class OrdersSectionFragment extends SherlockFragment{
 			public void onClick(View v) {
 				mPastOrderView.setVisibility(View.VISIBLE);
 				mOpenOrderView.setVisibility(View.GONE);
+				
+				mPastOrdersListView.loadPastOrders();
 
 				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_open)).setChecked(false);
 				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_past)).setChecked(true);

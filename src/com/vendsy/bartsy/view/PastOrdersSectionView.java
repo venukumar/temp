@@ -60,10 +60,12 @@ public class PastOrdersSectionView extends LinearLayout {
 		mRootView = mInflater.inflate(R.layout.orders_past_main, null);
 		ordersTableLayout = (LinearLayout) mRootView.findViewById(R.id.pastordersLayout);
 		
+		addView(mRootView);
+	}
+	
+	public void loadPastOrders(){
 		// Set up layout in the background
 		new PastOrders().execute("params");
-
-		addView(mRootView);
 	}
 
 	
