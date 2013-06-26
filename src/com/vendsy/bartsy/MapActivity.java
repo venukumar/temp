@@ -396,6 +396,9 @@ public class MapActivity extends Activity implements LocationListener,
 
 	@Override
 	public void onLocationChanged(Location location) {
+
+		Log.v(TAG, "onLocationChanged()");
+		
 		try {
 			LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 			CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
@@ -409,7 +412,7 @@ public class MapActivity extends Activity implements LocationListener,
 			// Invalidate the venue list view so that it get redrawn with the new location used to compute distances
 			((ListView) findViewById(R.id.checkInListView)).invalidate();
 		} catch (Exception e) {
-			
+			Log.e(TAG, "Could not update new location " + location);
 		}
 	}
 	
