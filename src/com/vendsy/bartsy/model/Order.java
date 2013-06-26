@@ -328,9 +328,15 @@ public class Order {
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
 			break;
 		case ORDER_STATUS_REJECTED:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Your order was rejected. Please check with the venue. You werent' charged.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			break;
 		case ORDER_STATUS_FAILED:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order was rejected, check with the venue. You werent' charged.");
+					"Your order failed. Please check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
@@ -345,7 +351,7 @@ public class Order {
 			break;
 		case ORDER_STATUS_INCOMPLETE:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"You . You werent' charged.");
+					"Your order was not picked up. Check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);

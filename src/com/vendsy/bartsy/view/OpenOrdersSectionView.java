@@ -41,7 +41,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 	public BartsyApplication mApp = null;
 	private VenueActivity mActivity = null;
 	
-	static final String TAG = "OrdersSectionFragment";
+	static final String TAG = "OrdersSectionView";
 
 	// private String mDBText = "";
 
@@ -149,9 +149,25 @@ public class OpenOrdersSectionView extends LinearLayout{
 				break;
 			case Order.ORDER_STATUS_CANCELLED:
 				// Always display cancelled orders individually
-				Log.v(TAG, "Display timed-out order " + order.serverID);
+				Log.v(TAG, "Display cancelled order " + order.serverID);
 				next = Order.ORDER_STATUS_CANCELLED;
 				break;
+			case Order.ORDER_STATUS_TIMEOUT:
+				// Always display timed out orders individually
+				Log.v(TAG, "Display timed-out order " + order.serverID);
+				next = Order.ORDER_STATUS_TIMEOUT;
+				break;
+			case Order.ORDER_STATUS_REJECTED:
+				Log.v(TAG, "Display rejected order " + order.serverID);
+				next = Order.ORDER_STATUS_REJECTED;
+				break;
+			case Order.ORDER_STATUS_FAILED:
+				Log.v(TAG, "Display failed order " + order.serverID);
+				next = Order.ORDER_STATUS_FAILED;
+				break;
+			case Order.ORDER_STATUS_INCOMPLETE:
+				Log.v(TAG, "Display incomplete order " + order.serverID);
+				next = Order.ORDER_STATUS_INCOMPLETE;
 			default:
 				Log.d(TAG, "Unexpected order status");
 				break;
@@ -179,12 +195,15 @@ public class OpenOrdersSectionView extends LinearLayout{
 				for (int j = i+1 ; j < orders.size(); j++)
 				{
 					Order mini = orders.get(j);
-					if (mini.status == next && next 
-							!= Order.ORDER_STATUS_CANCELLED)  // Never bundle cancelled orders...
+					if (mini.status == next && 
+							next != Order.ORDER_STATUS_REJECTED		&&
+							next != Order.ORDER_STATUS_FAILED		&&
+							next != Order.ORDER_STATUS_INCOMPLETE	&&
+							next != Order.ORDER_STATUS_TIMEOUT		&&
+							next != Order.ORDER_STATUS_CANCELLED)  
 					{
 						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
-						((LinearLayout)order.view.findViewById(R.id.view_order_mini))
-							.addView(mini.getMiniView(mInflater, mContainer));
+						((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
 					}
 				}
 			}
