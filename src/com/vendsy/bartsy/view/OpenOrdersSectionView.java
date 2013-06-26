@@ -179,6 +179,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 				});
 				mOrderListView.addView(view);
 
+				float taxAmt = order.taxAmount;
+				float tipAmt = order.tipAmount;
+				float totalAmt = order.totalAmount;
 				
 				// If there are any more orders of the same type display them as mini views
 				
@@ -192,6 +195,15 @@ public class OpenOrdersSectionView extends LinearLayout{
 							next != Order.ORDER_STATUS_TIMEOUT		&&
 							next != Order.ORDER_STATUS_CANCELLED)  
 					{
+						// To update bundled price calculations to parent order object
+						
+//						feeAmount+=mini.feeAmount;
+						taxAmt+=mini.taxAmount;
+						tipAmt+=mini.tipAmount;
+						totalAmt+=mini.totalAmount;
+						// To update prices(tipAmt,taxAmt,totalAmt) in the View
+						order.updatePrice(tipAmt,taxAmt,totalAmt);
+						
 						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
 						((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
 					}

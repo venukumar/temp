@@ -416,6 +416,18 @@ public class Order {
 		return view;
 
 	}
+	
+	/**
+	 * To update latest calculated price amounts(tip, tax and totals) in the view
+	 */
+	public void updatePrice(float tipAmount,float taxAmount,float totalAmount){
+		if(view!=null){
+			((TextView) view.findViewById(R.id.view_order_tip_amount)).setText(df.format(tipAmount));
+			((TextView) view.findViewById(R.id.view_order_tax_amount)).setText(df.format(taxAmount));
+			((TextView) view.findViewById(R.id.view_order_total_amount)).setText(df.format(totalAmount));
+		}
+	}
+	
 	/**
 	 * To update profile information in orders view
 	 * 
