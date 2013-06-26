@@ -109,8 +109,9 @@ public class OrdersSectionFragment extends SherlockFragment{
 	public void updateOrdersView() {
 
 		Log.v(TAG, "About to add orders list to the View");
-
-		mOpenOrdersListView.updateOrdersView();
+		if(mOpenOrdersListView!=null){
+			mOpenOrdersListView.updateOrdersView();
+		}
 	}
 	
 	@Override
