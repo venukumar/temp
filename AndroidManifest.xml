@@ -99,6 +99,8 @@
 
         <service android:name="ConnectivityService" >
         </service>
+        <service android:name="com.vendsy.bartsy.venue.service.BackgroundService" >
+        </service>
         
         <!-- Facebook -->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/fb_app_id"/>
