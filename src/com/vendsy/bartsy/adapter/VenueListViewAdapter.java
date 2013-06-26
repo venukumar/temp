@@ -68,7 +68,10 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 		Location venueLocation = new Location(LocationManager.NETWORK_PROVIDER);
 		venueLocation.setLatitude(Double.parseDouble(venue.getLatitude()));
 		venueLocation.setLongitude(Double.parseDouble(venue.getLongitude()));
-		float distance = venueLocation.distanceTo(currentLocation) * (float) 0.00062137;
+		float distance=-1;
+		if(currentLocation!=null){
+			distance = venueLocation.distanceTo(currentLocation) * (float) 0.00062137;
+		}
 
 		// Format distance
 		DecimalFormat df = new DecimalFormat();
@@ -76,7 +79,11 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 		df.setMinimumFractionDigits(2);
 
 		// Display distance
-		((TextView) view.findViewById(R.id.view_map_distance)).setText(df.format(distance));
+		if(distance==-1){
+			((TextView) view.findViewById(R.id.view_map_distance)).setText("UN KNOWN");
+		}else{
+			((TextView) view.findViewById(R.id.view_map_distance)).setText(df.format(distance));
+		}
 
 		return view;
 	}

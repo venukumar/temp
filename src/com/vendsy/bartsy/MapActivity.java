@@ -396,17 +396,21 @@ public class MapActivity extends Activity implements LocationListener,
 
 	@Override
 	public void onLocationChanged(Location location) {
-		LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-		CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
-		mMap.animateCamera(cameraUpdate);
-		locationManager.removeUpdates(this);
+		try {
+			LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+			CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
+			mMap.animateCamera(cameraUpdate);
+			locationManager.removeUpdates(this);
 
-		// Sort the venues by distance
-		if (venues != null)
-			Collections.sort(venues, new VenueSorter(location));
-		
-		// Invalidate the venue list view so that it get redrawn with the new location used to compute distances
-		((ListView) findViewById(R.id.checkInListView)).invalidate();
+			// Sort the venues by distance
+			if (venues != null)
+				Collections.sort(venues, new VenueSorter(location));
+			
+			// Invalidate the venue list view so that it get redrawn with the new location used to compute distances
+			((ListView) findViewById(R.id.checkInListView)).invalidate();
+		} catch (Exception e) {
+			
+		}
 	}
 	
 	Location currentLocation;
