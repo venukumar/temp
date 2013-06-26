@@ -35,6 +35,8 @@
         android:layout_width="45dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="4dp"
+        android:gravity="right"
+        android:paddingRight="2dp"
         android:text="Total" />
  
 </LinearLayout>

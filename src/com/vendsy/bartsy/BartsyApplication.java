@@ -43,6 +43,7 @@ import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.service.BackgroundService;
 import com.vendsy.bartsy.service.ConnectivityService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
@@ -101,8 +102,16 @@ public class BartsyApplication extends Application implements AppObservable {
 		PACKAGE_NAME = getApplicationContext().getPackageName();
 		Log.v(TAG, "onCreate()");
 
+		
+		// Start background ConnectionCheckingService
+		Intent intent = new Intent(this, BackgroundService.class);
+		mRunningService = startService(intent);
+		if (mRunningService == null) {
+			Log.e(TAG, "onCreate(): failed to startService()");
+		}
+
 		if (Constants.USE_ALLJOYN) {
-			Intent intent = new Intent(this, ConnectivityService.class);
+			intent = new Intent(this, ConnectivityService.class);
 			mRunningService = startService(intent);
 			if (mRunningService == null) {
 				Log.e(TAG, "onCreate(): failed to startService()");
@@ -223,7 +232,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	public Venue loadActiveVenue () {
 		
-		Log.e(TAG, "loadActiveVenue()");
+		Log.w(TAG, "loadActiveVenue()");
 		
 		if (mActiveVenue != null) {
 			Log.v(TAG, "Venue already loaded");
@@ -249,14 +258,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		mActiveVenue.setName(venueName);
 		mActiveVenue.setUserCount(userCount);
 		
-		Log.e(TAG, "Active venue loaded: " + mActiveVenue);
+		Log.w(TAG, "Active venue loaded: " + mActiveVenue);
 		
 		return mActiveVenue;
 	}
 	
 	public void saveActiveVenue() {
 		
-		Log.e(TAG, "saveActiveVenue(" + mActiveVenue + ")");
+		Log.w(TAG, "saveActiveVenue(" + mActiveVenue + ")");
 
 		if (mActiveVenue == null) {
 			Log.v(TAG, "Active venue doesn't exist");
@@ -271,7 +280,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	private void eraseActiveVenue() {
 
-		Log.e(TAG, "eraseActiveVenue(" + mActiveVenue + ")");
+		Log.w(TAG, "eraseActiveVenue(" + mActiveVenue + ")");
 		
 		// Delete active venue in memory
 		mActiveVenue = null;
@@ -311,7 +320,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void loadUserProfile() {
 		
-		Log.e(TAG, "loadUserProfile()");
+		Log.w(TAG, "loadUserProfile()");
 
 		// Initialize the profile structure
 		mProfile = null;
@@ -356,7 +365,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		// First remove any saved profile data to avoid saving bits of different profiles
 		eraseUserProfile();
 
-		Log.e(TAG, "saveUserProfile(" + profile + ")");
+		Log.w(TAG, "saveUserProfile(" + profile + ")");
 				
 		// Save in memory
 		mProfile = profile;
@@ -392,7 +401,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void eraseUserProfile() {
 		
-		Log.e(TAG, "eraseUserProfile()");
+		Log.w(TAG, "eraseUserProfile()");
 
 		mProfile = null;
 		
@@ -424,14 +433,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		Resources r = getResources();
 		String id = sharedPref.getString(r.getString(R.string.config_user_bartsyId), null);
 
-		Log.e(TAG, "loadBartsyId(" + id + ")");
+		Log.w(TAG, "loadBartsyId(" + id + ")");
 
 		return id;
 	}
 	
 	public void saveBartsyID(String bartsyUserId) {
 		
-		Log.e(TAG, "saveBartsyId(" + bartsyUserId + ")");
+		Log.w(TAG, "saveBartsyId(" + bartsyUserId + ")");
 
 		// Save the unique bartsy ID in the user profile
 		if (mProfile != null) 
@@ -448,7 +457,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	public void saveUserProfileImage(Bitmap bitmap) {
 		// Save bitmap to file
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.e(TAG, "Saving user profile image to " + file);
+		Log.w(TAG, "Saving user profile image to " + file);
 
 		try {
 			FileOutputStream out = new FileOutputStream(file);
@@ -461,7 +470,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	Bitmap loadUserProfileImage() {
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.e(TAG, "Loading user profile from " + file);
+		Log.w(TAG, "Loading user profile from " + file);
 		Bitmap image = null;
 		try {
 			image = BitmapFactory.decodeFile(file);
@@ -474,7 +483,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	void eraseUserProfileImage() {
 		
-		Log.e(TAG, "Erase profile image");
+		Log.w(TAG, "Erase profile image");
 		
 		File file = new File(getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture));
 		file.delete();
@@ -578,6 +587,31 @@ public class BartsyApplication extends Application implements AppObservable {
 	public int getOrderCount() {
 		return mOrders.size();
 	}
+
+	/**
+	 * 
+	 * This handles a local order timeout. This scenario should be rare and only if WIFI is long irreparably. This in itself is pretty 
+	 * catastrophic, but regardless, we don't want orders to stick around forever in the local display so some time after the server timeout
+	 * (the additional time is indicated by the Constants.timeoutDelay value) we expire the orders locally 
+	 * 
+	 */
+	
+	public synchronized void updateOrderTimers() {
+
+		for (Order order : mOrders) {
+
+			// The additional timeout when we check for local timeouts gives the server the opportunity to always time out an order first. This 
+			long duration  = Constants.timoutDelay + order.timeOut - ((System.currentTimeMillis() - (order.state_transitions[order.status]).getTime()))/60000;
+			
+			if (duration <= 0) {
+				// Order time out - set it to that state and update UI
+				order.setTimeoutState();
+			}
+		}
+		
+		notifyObservers(ORDERS_UPDATED);
+	}
+	
 	
 	/*
 	 * This updates the status of the order locally based on the status changed
@@ -655,15 +689,21 @@ public class BartsyApplication extends Application implements AppObservable {
 			break;
 		case Order.ORDER_STATUS_CANCELLED:
 			// Order cancelled. Notify the user and keep it in the list until acknowledged
-			localOrder.cancelledState();
+			localOrder.setCancelledState();
 			message = "Order " + localOrder.serverID + " is taking too long! Please check with your bartender.";
+			break;
+		case Order.ORDER_STATUS_REJECTED:
+		case Order.ORDER_STATUS_FAILED:
+		case Order.ORDER_STATUS_INCOMPLETE:
+			localOrder.nextNegativeState("Your order was rejected");
+			message = "Order " +localOrder.serverID + " rejected by the venue.";
 			break;
 		}
 
 		// Update the orders tab view and title
 
 		notifyObservers(ORDERS_UPDATED);
-		return remote_order_status;
+		return message;
 	}
 	
 	public static final String DRINK_OFFERED = "DRINK_OFFERED";

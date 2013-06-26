@@ -3,8 +3,8 @@ package com.vendsy.bartsy.utils;
 public class Constants {
 
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
-//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
-	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+//	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	
 	public static final String PROJECT_NAME = "Bartsy/";
@@ -76,4 +76,9 @@ public class Constants {
 	
 	// For now use card-coded value of tax
 	public static final float taxRate = (float) (9.0) / (float) (100.0);
+	
+	public static final long monitorFrequency = 10000 ; // frequency in which to run the background service, in ms
+	public static final int timoutDelay = 2; // how many more minutes to delay a local timeout from the server timeout
+
+
 }

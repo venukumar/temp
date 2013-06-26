@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.service.BackgroundService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -85,14 +86,19 @@ public class Order {
 	public static final int ORDER_STATUS_COMPLETE = 5;
 	public static final int ORDER_STATUS_INCOMPLETE = 6;
 	public static final int ORDER_STATUS_CANCELLED = 7;
-	public static final int ORDER_STATUS_COUNT = 8;
+	public static final int ORDER_STATUS_TIMEOUT = 8;
+	public static final int ORDER_STATUS_COUNT = 9;
 	
 	public String type = "Custom";
 
 	// The states are implemented in a status variable and each state transition
 	// has an associated time
 	public int status;
+	public int last_status;	// the previous status of this order (needed for timeouts in particular)
+	public int timeOut;			// time in minutes this order has before it times out (from the last updated state)
 	public Date[] state_transitions = new Date[ORDER_STATUS_COUNT];
+	private String errorReason = ""; // used to send an error reason for negative order states
+
 
 	/**
 	 * When an order is initialized the state transition times are undefined
@@ -215,12 +221,15 @@ public class Order {
 	public void nextPositiveState() {
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
+			last_status = status;
 			this.status = ORDER_STATUS_IN_PROGRESS;
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
+			last_status = status;
 			this.status = ORDER_STATUS_READY;
 			break;
 		case ORDER_STATUS_READY:
+			last_status = status;
 			this.status = ORDER_STATUS_COMPLETE;
 			break;
 		}
@@ -229,27 +238,78 @@ public class Order {
 		state_transitions[status] = new Date();
 	}
 
-	public void cancelledState() {
-	
+	public void setCancelledState() {
+		
+		last_status = status;
 		status = ORDER_STATUS_CANCELLED;
 		state_transitions[status] = new Date();
 	}
 
+	public void setTimeoutState() {
+		
+		// Don't change orders that have already this status because their last_status would get lost
+		if (status == ORDER_STATUS_TIMEOUT ||
+				status == ORDER_STATUS_REJECTED ||
+				status == ORDER_STATUS_FAILED ||
+				status == ORDER_STATUS_INCOMPLETE) 
+			return;
+		
+		last_status = status;
+		status = ORDER_STATUS_CANCELLED;
+		state_transitions[status] = new Date();
+	}
 
+	/**
+	 * To process next negative state for the order
+	 */
+	
+	public void nextNegativeState(String errorReason) {
+		
+		
+		int oldStatus = status;
+		
+		switch (status) {
+		case ORDER_STATUS_NEW:
+			last_status = status;
+			status = ORDER_STATUS_REJECTED;
+			break;
+		case ORDER_STATUS_IN_PROGRESS:
+			last_status = status;
+			status = ORDER_STATUS_FAILED;
+			break;
+		case ORDER_STATUS_READY:
+			last_status = status;
+			status = ORDER_STATUS_INCOMPLETE;
+			break;
+		}
+		
+		// Log the state change and update the order with an error reason
+		Log.i(TAG, "Order " + serverID + " changed status from " + oldStatus + " to " + status + " for reason: "  + errorReason);
+		this.errorReason = errorReason;
+		
+		// Mark the time of the state transition in the timetable
+		state_transitions[status] = new Date();
+	}
+	
+	
 	public View updateView(LayoutInflater inflater, ViewGroup container) {
 
 		Log.v(TAG, "updateView()");
 		Log.v(TAG, "Order sender   :" + orderSender);
 		Log.v(TAG, "Order receiver :" + orderReceiver);
 		
-		view = (View) inflater.inflate(R.layout.orders_current_row, container, false);
+		view = (View) inflater.inflate(R.layout.orders_open_item_list, container, false);
 		
 		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
-		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
-//		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
+		if (description != null || description.equalsIgnoreCase(""))
+			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
+		else
+			((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
+
+		//		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
 //		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[status]));
 
-		((TextView) view.findViewById(R.id.view_order_price)).setText(df.format(baseAmount));
+		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
 
 		((TextView) view.findViewById(R.id.view_order_tip_amount)).setText(df.format(tipAmount));
 		((TextView) view.findViewById(R.id.view_order_tax_amount)).setText(df.format(taxAmount));
@@ -264,24 +324,88 @@ public class Order {
 
 		switch (this.status) {
 		case ORDER_STATUS_NEW:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Waiting for bartender to accept");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_light);
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is waiting to be accepted.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+			break;
+		case ORDER_STATUS_REJECTED:
+		case ORDER_STATUS_FAILED:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Your order was rejected, check with the venue. You werent' charged.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Bartender accepted the order");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_orange_light);
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was accepted and is being worked on.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_orange_dark);
 			break;
 		case ORDER_STATUS_READY:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is ready for pickup!");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_light);
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
+			break;
+		case ORDER_STATUS_INCOMPLETE:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"You . You werent' charged.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_CANCELLED:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order timed out because the bartender was taking too long. You were not charged. Please check with bartender then place a new order.");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+					"Your order was taking too long and it expired. You weren't charged.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			break;
+		case ORDER_STATUS_TIMEOUT:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Connectivity issues. Check with the venue immediately.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			break;
 		}
+		
+		
+		/*		
+
+		// Compute timers
+		long timeout_ms	 = timeOut * 60000;
+		long elapsed_ms;
+		if (state_transitions[last_status] != null)
+			elapsed_ms = System.currentTimeMillis() - (state_transitions[last_status]).getTime();
+		else
+			// For now don't bother resetting timers in the case we just uninstalled and reinstalled the app
+			elapsed_ms = 0;
+		long left_ms     = timeout_ms - elapsed_ms;
+		long elapsed_min = elapsed_ms / 60000;
+		long left_min    = left_ms / 60000;
+		
+		// Set the background color of the order depending on how much time has elapsed as a percent of the timeout green->orange->red
+		if (elapsed_ms <= timeout_ms / 3.0)
+			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_green_dark);
+		else if (elapsed_ms <=  timeout_ms * 2.0 / 3.0)
+			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_orange_dark);
+		else
+			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_red_dark);
+
+
+		// Update timer since last state
+		((TextView) view.findViewById(R.id.view_order_timer)).setText(String.valueOf(elapsed_min)+" min");
+
+		// Update timout counter		
+		if (left_min > 0) 
+			((TextView) view.findViewById(R.id.view_order_timeout)).setText(String.valueOf(left_min)+" min");
+		else
+			((TextView) view.findViewById(R.id.view_order_timeout)).setText("0 min");
+
+		((Button) view.findViewById(R.id.view_order_button_positive)).setText(positive);
+		((Button) view.findViewById(R.id.view_order_button_positive)).setTag(this);
+		((Button) view.findViewById(R.id.view_order_button_negative)).setText(negative);
+		((Button) view.findViewById(R.id.view_order_button_negative)).setTag(this);
+		((Button) view.findViewById(R.id.view_order_button_remove)).setTag(this);
+	
+*/		
 		
 		return view;
 
@@ -309,7 +433,7 @@ public class Order {
 	
 	public View getMiniView(LayoutInflater inflater, ViewGroup container ) {
 		
-		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.order_item_mini, container, false);
+		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
 		
 		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
 		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);

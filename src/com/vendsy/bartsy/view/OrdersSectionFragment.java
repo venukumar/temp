@@ -11,6 +11,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ToggleButton;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
@@ -76,6 +77,9 @@ public class OrdersSectionFragment extends SherlockFragment{
 			public void onClick(View v) {
 				mOpenOrderView.setVisibility(View.VISIBLE);
 				mPastOrderView.setVisibility(View.GONE);
+				
+				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_open)).setChecked(true);
+				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_past)).setChecked(false);
 			}
 		});
 		
@@ -85,6 +89,9 @@ public class OrdersSectionFragment extends SherlockFragment{
 			public void onClick(View v) {
 				mPastOrderView.setVisibility(View.VISIBLE);
 				mOpenOrderView.setVisibility(View.GONE);
+
+				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_open)).setChecked(false);
+				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_past)).setChecked(true);
 			}
 		});
 		

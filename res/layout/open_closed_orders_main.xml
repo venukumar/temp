@@ -1,35 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
-	<LinearLayout
-        android:layout_width="match_parent"
+
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
 
-        <Button
+        <ToggleButton
             android:id="@+id/view_orders_button_open"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:checked="true"
-            android:text="Open orders"/>
+            android:textOff="Open orders"
+            android:textOn="Open orders" />
 
-        <Button
+        <ToggleButton
             android:id="@+id/view_orders_button_past"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:text="Past orders"/>
-     </LinearLayout>
+            android:textOff="Past orders"
+            android:textOn="Past orders" />
+    </LinearLayout>
         
         <LinearLayout
             android:id="@+id/view_orders_open"
             android:name="com.vendsy.bartsy.view.OpenOrdersSectionView"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
             android:layout_weight="2" />
 

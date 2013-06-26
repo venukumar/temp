@@ -49,10 +49,7 @@ public class MenuDrink {
 				this.description = object.getString("description");
 			}
 			if (object.has("price")) {
-				try {
-					this.price = Float.parseFloat(object.getString("price"));
-				} catch (NumberFormatException e) {
-				}
+				this.price = Float.parseFloat(object.getString("price"));
 			}
 			if (object.has("id")) {
 				this.drinkId = object.getString("id");
@@ -60,7 +57,7 @@ public class MenuDrink {
 			
 			valid = "yes";
 
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
