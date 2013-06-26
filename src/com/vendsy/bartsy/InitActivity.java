@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -31,6 +32,8 @@ import com.vendsy.bartsy.dialog.LoginDialogFragment;
 import com.vendsy.bartsy.dialog.LoginDialogFragment.LoginDialogListener;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends SherlockFragmentActivity implements
@@ -79,11 +82,30 @@ public class InitActivity extends SherlockFragmentActivity implements
 		mConnectionProgressDialog = new ProgressDialog(this);
 		mConnectionProgressDialog.setMessage("Connecting");
 
+		setContentView(R.layout.init_main);
+		
+		findViewById(R.id.view_init_create_account).setOnClickListener(this);
+		findViewById(R.id.view_init_toggle_sign_in).setOnClickListener(this);
+		findViewById(R.id.view_init_google).setOnClickListener(this);
+		findViewById(R.id.view_init_facebook).setOnClickListener(this);
+		findViewById(R.id.view_init_sign_in).setOnClickListener(this);
+		findViewById(R.id.view_init_toggle_sign_up).setOnClickListener(this);
+		
 		if (mApp.loadBartsyId() == null) 
 			signUpListeners();
 		else
 			signInListeners();
-					
+
+		// Check and set development environment display
+		if (Constants.DOMAIN_NAME.equalsIgnoreCase("http://54.235.76.180:8080/") && 
+				Utilities.SENDER_ID.equalsIgnoreCase("605229245886")) 
+			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("Server: DEV");
+		else if (Constants.DOMAIN_NAME.equalsIgnoreCase("http://app.bartsy.vendsy.com/") && 
+				Utilities.SENDER_ID.equalsIgnoreCase("560663323691")) 
+			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("Server: PROD");
+		else 
+			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("** INCONSISTENT DEPLOYMENT **");
+		
 	}
 
 	@Override
@@ -108,19 +130,25 @@ public class InitActivity extends SherlockFragmentActivity implements
 	}
 	
 	void signUpListeners() {
-		setContentView(R.layout.init_sign_up);
-		findViewById(R.id.view_init_create_account).setOnClickListener(this);
-		findViewById(R.id.view_init_toggle_sign_in).setOnClickListener(this);
-		findViewById(R.id.view_init_google).setOnClickListener(this);
-		findViewById(R.id.view_init_facebook).setOnClickListener(this);
+		findViewById(R.id.view_init_create_account).setVisibility(View.VISIBLE);
+		findViewById(R.id.view_init_toggle_sign_in).setVisibility(View.VISIBLE);
+
+		findViewById(R.id.view_init_sign_in).setVisibility(View.GONE);
+		findViewById(R.id.view_init_toggle_sign_up).setVisibility(View.GONE);
+		
+		((TextView) findViewById(R.id.view_init_google)).setText("Sign up with Google");
+		((TextView) findViewById(R.id.view_init_facebook)).setText("Sign up with Facebook");
 	}
 	
 	void signInListeners() {
-		setContentView(R.layout.init_sign_in);
-		findViewById(R.id.view_init_sign_in).setOnClickListener(this);
-		findViewById(R.id.view_init_toggle_sign_up).setOnClickListener(this);
-		findViewById(R.id.view_init_google).setOnClickListener(this);
-		findViewById(R.id.view_init_facebook).setOnClickListener(this);
+		findViewById(R.id.view_init_create_account).setVisibility(View.GONE);
+		findViewById(R.id.view_init_toggle_sign_in).setVisibility(View.GONE);
+
+		findViewById(R.id.view_init_sign_in).setVisibility(View.VISIBLE);
+		findViewById(R.id.view_init_toggle_sign_up).setVisibility(View.VISIBLE);
+
+		((TextView) findViewById(R.id.view_init_google)).setText("Sign in with Google");
+		((TextView) findViewById(R.id.view_init_facebook)).setText("Sign in with Facebook");
 	}
 	
 	@Override
@@ -175,11 +203,9 @@ public class InitActivity extends SherlockFragmentActivity implements
 			break;
 			
 		case R.id.view_init_toggle_sign_in:
-			setContentView(R.layout.init_sign_in);
 			signInListeners();
 			break;
 		case R.id.view_init_toggle_sign_up:
-			setContentView(R.layout.init_sign_up);
 			signUpListeners();
 			break;
 		}
