@@ -78,6 +78,8 @@ public class OrdersSectionFragment extends SherlockFragment{
 				mOpenOrderView.setVisibility(View.VISIBLE);
 				mPastOrderView.setVisibility(View.GONE);
 				
+				mOpenOrdersListView.updateOrdersView();
+				
 				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_open)).setChecked(true);
 				((ToggleButton) mRootView.findViewById(R.id.view_orders_button_past)).setChecked(false);
 			}
