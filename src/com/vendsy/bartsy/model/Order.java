@@ -299,23 +299,20 @@ public class Order {
 		Log.v(TAG, "Order receiver :" + orderReceiver);
 		
 		view = (View) inflater.inflate(R.layout.orders_open_item_list, container, false);
-		
+
+		// Update header
+		((TextView) view.findViewById(R.id.view_order_item_number)).setText("" + serverID);
+
+		// Update item details
+		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
 		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
 		if (description != null || description.equalsIgnoreCase(""))
 			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
 		else
 			((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
 
-		//		((TextView) view.findViewById(R.id.view_order_time)).setText(DateFormat.getTimeInstance().format(this.state_transitions[status]));
-//		((TextView) view.findViewById(R.id.view_order_date)).setText(DateFormat.getDateInstance().format(this.state_transitions[status]));
-
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
-
-		((TextView) view.findViewById(R.id.view_order_tip_amount)).setText(df.format(tipAmount));
-		((TextView) view.findViewById(R.id.view_order_tax_amount)).setText(df.format(taxAmount));
-		((TextView) view.findViewById(R.id.view_order_total_amount)).setText(df.format(totalAmount));
-
-		((TextView) view.findViewById(R.id.view_order_item_number)).setText("" + serverID);
+		// Update the order's tip, tax and total
+		updateTipTaxTotalView(tipAmount, taxAmount, totalAmount);
 		
 		// To display order receiver profile information in orders view
 		if(orderReceiver!=null){
@@ -418,16 +415,16 @@ public class Order {
 	}
 	
 	/**
-	 * To update latest calculated price amounts(tip, tax and totals) in the view
+	 * Update the view of the order only with the given tip, tax and total amounts 
 	 */
-	public void updatePrice(float tipAmount,float taxAmount,float totalAmount){
+	public void updateTipTaxTotalView(float tipAmount,float taxAmount,float totalAmount){
 		if(view!=null){
 			((TextView) view.findViewById(R.id.view_order_tip_amount)).setText(df.format(tipAmount));
 			((TextView) view.findViewById(R.id.view_order_tax_amount)).setText(df.format(taxAmount));
 			((TextView) view.findViewById(R.id.view_order_total_amount)).setText(df.format(totalAmount));
 		}
 	}
-	
+
 	/**
 	 * To update profile information in orders view
 	 * 
@@ -453,10 +450,13 @@ public class Order {
 		
 		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
 		
+		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
 		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
-		((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount)); // use int for now
-		
+		if (description != null || description.equalsIgnoreCase(""))
+			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
+		else
+			((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
+
 		return view;
 	}
 
