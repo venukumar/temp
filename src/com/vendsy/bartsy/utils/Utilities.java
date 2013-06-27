@@ -146,11 +146,5 @@ public final class Utilities {
 		Resources r = context.getResources();
 		return sharedPref.getInt(r.getString(key), defaultValue);
 	}
-	
-	/**
-	 * To save venue details in shared preferences
-	 * 
-	 * @param venue
-	 */
 
 }
