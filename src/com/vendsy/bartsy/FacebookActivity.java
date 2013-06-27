@@ -45,10 +45,15 @@ public class FacebookActivity extends Activity {
             	
   				Intent result = new Intent();
   				setResult(InitActivity.RESULT_OK, result);
-  				finish();
+  				
               }
+              finish();
             }
+            
+            
           });
+        }else{
+        	finish();
         }
       }
     });
