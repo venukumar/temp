@@ -81,18 +81,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onMessage(Context context, Intent intent) {
-		String message = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
+		String GCMmessage = (String) intent.getExtras().get(Utilities.EXTRA_MESSAGE);
 		String count = (String) intent.getExtras().get("badgeCount");
 
-		Log.i(TAG, "<=== pushNotification(" + message + ")");
+		Log.i(TAG, "<=== pushNotification(" + GCMmessage + ")");
 		
+		String message = null;
 		// Process notification
-		if (message != null)
-			message = processPushNotification(message);
+		if (GCMmessage != null)
+			message = processPushNotification(GCMmessage);
 		
 		// notifies user
-		if (message != null)
-			generateNotification(context, message, count);
+		if (message != null && GCMmessage!=null)
+			generateNotification(context, message, GCMmessage, count);
 	}
 
 	/**
@@ -193,7 +194,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * @param count
 	 * @param count
 	 */
-	private static void generateNotification(Context context, String message,
+	private static void generateNotification(Context context, String message, String GCMMessage,
 			String count) {
 		int icon = R.drawable.ic_launcher;
 		long when = System.currentTimeMillis();
@@ -202,12 +203,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Notification notification = new Notification(icon, message, when);
 		String title = context.getString(R.string.app_name);
 
-		Intent notificationIntent = new Intent(context, MainActivity.class);
+		Intent notificationIntent = new Intent(context, VenueActivity.class);
+		notificationIntent.putExtra(Utilities.EXTRA_MESSAGE, GCMMessage);
+		
 		// set intent so it does not start a new activity
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent intent = PendingIntent.getActivity(context, 0,
-				notificationIntent, 0);
+				notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		notification.setLatestEventInfo(context, title, message, intent);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		try {

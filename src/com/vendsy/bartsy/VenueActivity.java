@@ -1,5 +1,7 @@
 package com.vendsy.bartsy;
 
+import static com.vendsy.bartsy.utils.Utilities.SENDER_ID;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Locale;
@@ -38,6 +40,7 @@ import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.CommandParser;
 import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
@@ -163,6 +166,33 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		// are in the activity and the application is killed without setting up an active venue
 		mApp.loadActiveVenue();
 		
+		try {
+			String message = getIntent().getExtras().getString(Utilities.EXTRA_MESSAGE, "");
+			
+			Log.v(TAG, "gcm message ::: " + message);
+			
+			if(message!=null){
+				processPushNotification(message);
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Error in gcm message ::: " + e.getMessage());
+		}
+
+	}
+	
+	/**
+	 * Process push notification when the user selects on the PN message
+	 * 
+	 * @param message
+	 */
+	public void processPushNotification(String message){
+		try {
+			JSONObject json = new JSONObject(message);
+			if (json.has("messageType") && json.getString("messageType").equals("DrinkOffered")) {
+				mApp.displayOfferDrink(new Order(json),json.getString("senderBartsyId"));
+			}
+		}catch (JSONException e) {
+		}
 
 	}
 
@@ -642,6 +672,28 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(0, mBuilder.build());
+
+	}
+	
+	/**
+	 * It will call when the user selects on the GCM message when it is in VenueActivity
+	 */
+	@Override 
+	protected void onNewIntent(Intent intent) {
+
+		super.onNewIntent(intent);
+
+		try {
+			String message = getIntent().getExtras().getString(Utilities.EXTRA_MESSAGE, "");
+			
+			Log.v(TAG, "gcm message ::: " + message);
+			
+			if(message!=null){
+				processPushNotification(message);
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Error in gcm message - onNewIntent() ::: " + e.getMessage());
+		}
 
 	}
 
