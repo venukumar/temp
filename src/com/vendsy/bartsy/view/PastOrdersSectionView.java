@@ -3,6 +3,12 @@
  */
 package com.vendsy.bartsy.view;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -133,8 +139,24 @@ public class PastOrdersSectionView extends LinearLayout {
 	private void addNewOrderRow(Order order) {
 		
 		final View itemView = mInflater.inflate(R.layout.orders_past_row, null);
-
-		((TextView) itemView.findViewById(R.id.dateCreated)).setText(order.createdDate.substring(11, 16));
+		
+		// Extract tiem from UTC field
+		String inputText = order.createdDate.replace("T", " ").replace("Z", ""); // example: 2013-06-27 10:20:15
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
+        Date date;
+        String time = "";
+        try {
+			date = inputFormat.parse(inputText);
+			time = outputFormat.format(date);
+		} catch (ParseException e) {
+			// Bad date format - leave time blank
+			e.printStackTrace();
+			Log.e(TAG, "Bad date format in getPastOrders syscall");
+		} 
+		
+		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
 		((TextView) itemView.findViewById(R.id.orderId)).setText(order.serverID);
 		
 		String status = "?";
@@ -169,7 +191,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		((TextView) itemView.findViewById(R.id.itemName)).setText(order.title);
 		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + order.totalAmount));
 
-		ordersTableLayout.addView(itemView, 0);
+		ordersTableLayout.addView(itemView);
 	}
 
 }
