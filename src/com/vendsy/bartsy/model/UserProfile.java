@@ -100,9 +100,9 @@ public class UserProfile {
 				(!hasDescription() ? "" : ", description: " + description) +
 				(!hasName() ? "" : ", name: " + name) +
 				(!hasGender() ? "" : ", gender: " + gender) +
-				(!hasCreditCardNumber() ? "" : ", creditCardNumber: " + creditCardNumber) +
-				(!hasExpMonth() ? "" : ", expMonth: " + expMonth) +
-				(!hasExpYear() ? "" : ", expYear: " + expYear) +
+				(!hasCreditCardNumber() ? "" : ", creditCardNumber: ****" + creditCardNumber.substring(12)) +
+				(!hasExpMonth() ? "" : ", expMonth: **") +
+				(!hasExpYear() ? "" : ", expYear: **") +
 				(!hasVisibility() ? "" : ", visibility: " + visibility) +
 				(!hasFirstName() ? "" : ", firstName: " + firstName) +
 				(!hasLastName() ? "" : ", lastName: " + lastName) +

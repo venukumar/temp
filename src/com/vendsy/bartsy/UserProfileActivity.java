@@ -133,10 +133,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			// Setup credit card info if available
 			if (person.hasCreditCardNumber() && person.hasExpMonth() && person.hasExpYear()) {
 				((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(person.getCreditCardNumber()));
-				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(person.getCreditCardNumber());
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText("****" + person.getCreditCardNumber().substring(12));
 				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(person.getCreditCardNumber());
-				((TextView) findViewById(R.id.view_profile_cc_month)).setText(person.getExpMonth());
-				((TextView) findViewById(R.id.view_profile_cc_year)).setText(person.getExpYear());
+				((TextView) findViewById(R.id.view_profile_cc_month)).setText("**");
+				((TextView) findViewById(R.id.view_profile_cc_year)).setText("**");
 				findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 				findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
 			}
