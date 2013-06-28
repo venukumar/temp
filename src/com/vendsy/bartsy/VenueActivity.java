@@ -966,7 +966,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			switch (msg.what) {
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
 				// The order was placed successfully 
-				
+				Toast.makeText(mActivity, "Your order was placed.", Toast.LENGTH_SHORT).show();
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE:
