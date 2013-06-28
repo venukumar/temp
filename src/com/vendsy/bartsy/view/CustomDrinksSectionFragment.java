@@ -65,6 +65,7 @@ public class CustomDrinksSectionFragment extends SherlockFragment {
 				mApp.selectedSpirit = category.getIngredients().get(position);
 				// Proceed to order screen
 				startActivity(new Intent().setClass(getActivity(), OrderCustomDrinkActivity.class));
+				getActivity().finish(); // finish parent
 					
 			}
 		});
