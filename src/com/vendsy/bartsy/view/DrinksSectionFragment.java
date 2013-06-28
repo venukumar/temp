@@ -200,7 +200,9 @@ public class DrinksSectionFragment extends SherlockFragment {
 	private String downloadAndDisplayMenu() {
 
 		Log.v(TAG, "downloadAndDisplayMenu()");
-
+		if(mApp.mActiveVenue==null){
+			return null;
+		}
 		// Step 1 - get the web service response and display the results in the view
 		String response = WebServices.getMenuList(mActivity.getApplicationContext(), mApp.mActiveVenue.getId());
 		if (response == null) {
