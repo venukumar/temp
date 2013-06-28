@@ -235,7 +235,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		Log.w(TAG, "loadActiveVenue()");
 		
 		if (mActiveVenue != null) {
-			Log.v(TAG, "Venue already loaded");
+			Log.v(TAG, "Venue already loaded: " + mActiveVenue);
 			saveActiveVenue(); // make sure the active venue is saved
 			return mActiveVenue; 
 		}
@@ -322,6 +322,12 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		Log.w(TAG, "loadUserProfile()");
 
+		// If we already have a profile, don't load one
+		if (mProfile != null) {
+			Log.v(TAG, "Profile already exists: " + mProfile);
+			return;
+		}
+		
 		// Initialize the profile structure
 		mProfile = null;
 
@@ -605,11 +611,13 @@ public class BartsyApplication extends Application implements AppObservable {
 			
 			if (duration <= 0) {
 				// Order time out - set it to that state and update UI
-				order.setTimeoutState();
+//				order.setTimeoutState(); *************************** ONLY FOR ALPHA *******
 			}
 		}
 		
-		notifyObservers(ORDERS_UPDATED);
+		// If there are any orders, update the view that includes the timer updates
+		if (mOrders.size() > 0)
+			notifyObservers(ORDERS_UPDATED);
 	}
 	
 	
