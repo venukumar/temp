@@ -158,6 +158,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 			case Order.ORDER_STATUS_INCOMPLETE:
 				Log.v(TAG, "Display incomplete order " + order.serverID);
 				next = Order.ORDER_STATUS_INCOMPLETE;
+				break;
 			default:
 				Log.d(TAG, "Unexpected order status");
 				break;
