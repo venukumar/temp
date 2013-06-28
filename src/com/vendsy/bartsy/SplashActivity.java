@@ -7,9 +7,11 @@ import org.json.JSONObject;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,6 +35,7 @@ public class SplashActivity extends Activity {
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
 	SplashActivity mActivity = null;
+	private ProgressDialog mProgressDialog;
 
 	
 	@Override
@@ -47,6 +50,10 @@ public class SplashActivity extends Activity {
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
+
+		// To display progress dialog
+		mProgressDialog = Utilities.progressDialog(this, "Loading..");
+		mProgressDialog.show();
 
 		// If the user profile is not set, start the init activity
 		if (mApp.mProfile == null) {
