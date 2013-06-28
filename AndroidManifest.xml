@@ -97,9 +97,7 @@
             android:name="io.card.payment.DataEntryActivity"
             android:screenOrientation="portrait" />
 
-        <service android:name="ConnectivityService" >
-        </service>
-        <service android:name="com.vendsy.bartsy.venue.service.BackgroundService" >
+        <service android:name="com.vendsy.bartsy.service.BackgroundService" >
         </service>
         
         <!-- Facebook -->
@@ -150,9 +148,11 @@
 			>
         </activity>
         <activity android:name=".CustomDrinksActivity"
+            android:label="Select a base spirit"
             android:screenOrientation="portrait">
         </activity>
         <activity android:name=".OrderCustomDrinkActivity"
+            android:label="Customize and order..."
             android:screenOrientation="portrait">
         </activity>
         <activity android:name="com.vendsy.bartsy.FacebookActivity"/>
