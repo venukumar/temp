@@ -121,7 +121,8 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			}
 
 			// If we have FB or G+ login, don't show password field, otherwise don't show password checkbox
-			if (person.hasFacebookUsername() || person.hasGoogleUsername()) {
+			if ((person.hasFacebookUsername() || person.hasGoogleUsername()) && 
+					!person.hasPassword()) {
 				findViewById(R.id.view_profile_password_view).setVisibility(View.GONE);
 				findViewById(R.id.view_profile_account_view).setVisibility(View.VISIBLE);			
 			} else {
