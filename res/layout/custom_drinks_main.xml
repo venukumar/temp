@@ -7,17 +7,18 @@
 
     <LinearLayout
         android:id="@+id/view_drinks_list"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="match_parent"
         android:layout_gravity="right"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:background="#dddddd"
         android:gravity="center_horizontal"
         android:orientation="vertical" >
+
        <ListView
-        android:id="@+id/drinksListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+           android:id="@+id/drinksListView"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content" >
+
        </ListView>
     </LinearLayout>
 

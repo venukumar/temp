@@ -62,30 +62,34 @@ public class OrderCustomDrinkActivity extends Activity{
 	private TextView priceText;
 	public UserProfile profile;
 	
+	private View addOnsView;
+	private View submitButton;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.custom_drinks_order_main);
+		
+		addOnsView = findViewById(R.id.custom_order_add_ons);
+		submitButton = findViewById(R.id.orderButton);
 		
 		mApp = (BartsyApplication)getApplication();
 		
 		profile = mApp.mProfile;
 		
 		// To setup order view
-		LinearLayout ordersLayoutView = (LinearLayout) findViewById(R.id.ordersView);
-		ordersView = getLayoutInflater().inflate(R.layout.custom_drink_order, null);
-		// Customize dialog for this drink
-		((TextView) ordersView.findViewById(R.id.drinkTitle))
-						.setText(mApp.selectedSpirit.getName());
+		ordersView = (LinearLayout) findViewById(R.id.ordersView);
 		
+		// Customize dialog for this drink
+		((TextView) ordersView.findViewById(R.id.drinkTitle)).setText(mApp.selectedSpirit.getName());
 		priceText = ((TextView) ordersView.findViewById(R.id.view_dialog_drink_price));
-		priceText.setText("$"+ mApp.selectedSpirit.getPrice());
+		priceText.setText("$ "+ mApp.selectedSpirit.getPrice());
+		 
+		// Set price for base spirit
+		((TextView) ordersView.findViewById(R.id.view_custom_order_drink_base_price))
+			.setText("$ " + mApp.selectedSpirit.getPrice());
 		
 		mixerLayout = (LinearLayout) ordersView.findViewById(R.id.mixersLayout);
-		
-		
-		
-		ordersLayoutView.addView(ordersView);
 		
 		// Setup mixers list view
 		mixersListView = (ListView)findViewById(R.id.mixersListView);
@@ -99,11 +103,13 @@ public class OrderCustomDrinkActivity extends Activity{
 		
 		categoriesSpinner.setAdapter(adapter);
 		// To setup order button
-		Button orderButton = (Button) ordersView.findViewById(R.id.orderButton);
+		final Button orderButton = (Button) ordersView.findViewById(R.id.orderButton);
 		orderButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
+				
+				orderButton.setVisibility(View.GONE);
 				proceedOrder();
 			}
 		});
@@ -176,7 +182,7 @@ public class OrderCustomDrinkActivity extends Activity{
 	private void addMixerLayout(final Ingredient ingredient){
 		
 		
-		final View mixerView = getLayoutInflater().inflate(R.layout.order_mini, null);
+		final View mixerView = getLayoutInflater().inflate(R.layout.custom_drink_modifier, null);
 		// Set name values for text view
 		TextView titleView = (TextView) mixerView.findViewById(R.id.view_order_title);
 		titleView.setText(ingredient.getName());
@@ -195,6 +201,8 @@ public class OrderCustomDrinkActivity extends Activity{
 				mixerLayout.removeView(mixerView);
 				selectedMixers.remove(ingredient);
 				updatePrice();
+				
+				addOnsView.setVisibility(View.VISIBLE);
 			}
 		});
 		
@@ -221,18 +229,18 @@ public class OrderCustomDrinkActivity extends Activity{
 	private void proceedOrder(){
 		order = new Order();
 		
-		final RadioGroup tipPercentage = (RadioGroup) ordersView.findViewById(R.id.tipPercentage);
+		final RadioGroup tipPercentage = (RadioGroup) ordersView.findViewById(R.id.view_dialog_drink_tip);
 		int selected = tipPercentage.getCheckedRadioButtonId();
-		final EditText percentage = (EditText) ordersView.findViewById(R.id.editTextPercentage);
+//		final EditText percentage = (EditText) ordersView.findViewById(R.id.view_dialog_drink_tip_amount);
 		
 		// Gets a reference to our "selected" radio button
 		RadioButton b = (RadioButton) tipPercentage.findViewById(selected);
 		String tipPercentageValue;
-		if (b.getText().toString().trim().length() == 0) {
-			tipPercentageValue = percentage.getText().toString();
-		} else {
+//		if (b.getText().toString().trim().length() == 0) {
+//			tipPercentageValue = percentage.getText().toString();
+//		} else {
 			tipPercentageValue = b.getText().toString();
-		}
+//		}
 		
 		tipPercentageValue = tipPercentageValue.replace("%", "");
 		float tipAmount = 0;
@@ -242,14 +250,19 @@ public class OrderCustomDrinkActivity extends Activity{
 		} catch (NumberFormatException e) {
 		}
 
-		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order  ID
-				null, 									// arg(1) - This order still doesn't have a server-assigned ID
-				mApp.selectedSpirit.getName(), 						// arg(2) - Title
-				"", 				// arg(3) - Description
-				baseAmount, 						// arg(4) - Price
+		String mixers = "";
+		for (Ingredient i : selectedMixers) {
+			mixers += i.getName() + ", ";
+		}
+		
+		order.initialize(Long.toString(mApp.mOrderIDs), 
+				null, 
+				mApp.selectedSpirit.getName(),
+				mixers,
+				totalAmount, 						
 				tipAmount,
-				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
-				mApp.mProfile); 						// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
+				Integer.toString(R.drawable.drinks), 	
+				mApp.mProfile);
 		
 		// it will support to send drinks to other people
 		order.orderReceiver = profile;
@@ -322,6 +335,9 @@ public class OrderCustomDrinkActivity extends Activity{
 				// It will invoke when the custom drink list item selected
 				
 				addMixerLayout(selectedCategory.getIngredients().get(position));
+				
+				addOnsView.setVisibility(View.GONE);
+
 			}
 		});
 	}

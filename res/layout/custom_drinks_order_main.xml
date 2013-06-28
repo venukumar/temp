@@ -1,50 +1,393 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="match_parent" >
 
     <LinearLayout
         android:id="@+id/view_drinks_list"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="match_parent"
         android:layout_gravity="right"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:background="#dddddd"
-        
         android:gravity="center_horizontal"
         android:orientation="vertical" >
 
-        <ScrollView 
-            android:layout_width="match_parent"
-            android:layout_height="220dp" 
-            android:fillViewport="true">
-            
-            <LinearLayout android:id="@+id/ordersView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal">
-                
-            </LinearLayout>
-        </ScrollView>
-		
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <Spinner android:layout_width="match_parent"
-            android:layout_height="wrap_content" 
-            android:id="@+id/categoriesSpinner"
-            android:background="#AAAAAA"
-            android:padding="10dp"
-            />
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true" >
 
-            <ListView
-                android:id="@+id/mixersListView"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-            </ListView>
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:id="@+id/ordersView"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal" >
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:orientation="vertical" >
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:orientation="vertical" >
+
+                            <LinearLayout
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2" >
+
+                                <RelativeLayout
+                                    android:layout_width="100dp"
+                                    android:layout_height="100dp" >
+
+                                    <ImageView
+                                        android:id="@+id/view_user_dialog_image_resource"
+                                        android:layout_width="fill_parent"
+                                        android:layout_height="fill_parent"
+                                        android:clickable="true"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/profile" />
+
+                                    <TextView
+                                        android:id="@+id/textView2"
+                                        android:layout_width="fill_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_alignParentBottom="true"
+                                        android:layout_centerHorizontal="true"
+                                        android:background="#66000000"
+                                        android:gravity="center"
+                                        android:text="Change recipient"
+                                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                                </RelativeLayout>
+
+                                <LinearLayout
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                                    android:orientation="vertical"
+                                    android:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                                    <TextView
+                                        android:id="@+id/TextView04"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="@dimen/abs__action_bar_icon_vertical_padding"
+                                        android:text="This order is for:"
+                                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                                    <TextView
+                                        android:id="@+id/view_user_dialog_info"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="0dp"
+                                        android:layout_weight="2"
+                                        android:text="Peter"
+                                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                                android:layout_weight="2"
+                                android:visibility="gone" >
+
+                                <Button
+                                    android:id="@+id/Button02"
+                                    style="?android:attr/borderlessButtonStyle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="35dp"
+                                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                    android:layout_marginTop="8dp"
+                                    android:layout_weight="2"
+                                    android:background="@drawable/rounded_corner"
+                                    android:drawableLeft="@drawable/like"
+                                    android:text=" Like"
+                                    android:textColor="#aaaaaa"
+                                    android:textSize="14sp" />
+
+                                <Button
+                                    android:id="@+id/Button03"
+                                    style="?android:attr/borderlessButtonStyle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="35dp"
+                                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                    android:layout_marginTop="8dp"
+                                    android:layout_weight="2"
+                                    android:background="@drawable/rounded_corner"
+                                    android:drawableLeft="@drawable/comment"
+                                    android:text=" Comment"
+                                    android:textColor="#aaaaaa"
+                                    android:textSize="14sp" />
+
+                                <Button
+                                    android:id="@+id/button1"
+                                    style="?android:attr/borderlessButtonStyle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="35dp"
+                                    android:layout_marginTop="8dp"
+                                    android:layout_weight="2"
+                                    android:background="@drawable/rounded_corner"
+                                    android:drawableLeft="@android:drawable/ic_menu_share"
+                                    android:text="Share"
+                                    android:textColor="#aaaaaa"
+                                    android:textSize="14sp" />
+
+                                <RatingBar
+                                    android:id="@+id/ratingBar1"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="42dp"
+                                    android:layout_weight="2"
+                                    android:max="1"
+                                    android:numStars="1"
+                                    android:progress="1"
+                                    android:rating="1"
+                                    android:stepSize="1" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/TextView05"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/activity_vertical_margin"
+                                android:layout_weight="2"
+                                android:text="Base spirit"
+                                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_weight="2"
+                                android:background="@android:color/holo_blue_light" >
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:orientation="horizontal"
+                                android:padding="@dimen/activity_vertical_margin" >
+
+                                <TextView
+                                    android:id="@+id/drinkTitle"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="2"
+                                    android:text="Title"
+                                    android:textAppearance="?android:attr/textAppearanceMedium"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/view_custom_order_drink_base_price"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="$6"
+                                    android:textAppearance="?android:attr/textAppearanceMedium"
+                                    android:textColor="@android:color/holo_blue_light"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/TextView01"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="Add-ons and modifications"
+                            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/holo_blue_light" >
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:id="@+id/mixersLayout"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:orientation="vertical" >
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/custom_order_add_ons"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/activity_vertical_margin"
+                            android:background="@drawable/rounded_corner_dark"
+                            android:orientation="vertical" >
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical" >
+
+                                <TextView
+                                    android:id="@+id/textView1"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="fill_parent"
+                                    android:layout_marginLeft="4dp"
+                                    android:gravity="center_vertical"
+                                    android:text="Select: "
+                                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                                <Spinner
+                                    android:id="@+id/categoriesSpinner"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
+                            </LinearLayout>
+
+                            <ListView
+                                android:id="@+id/mixersListView"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content" >
+                            </ListView>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/TextView03"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="Drink total"
+                            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/holo_blue_light" >
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:padding="@dimen/activity_vertical_margin" >
+
+                            <FrameLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2" >
+
+                            </FrameLayout>
+
+                            <TextView
+                                android:id="@+id/textView3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Drink total: "
+                                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                            <TextView
+                                android:id="@+id/view_dialog_drink_price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="$6"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:textColor="@android:color/holo_blue_light"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/TextView06"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="Tip and order"
+                            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/holo_blue_light" >
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:orientation="vertical"
+                            android:paddingLeft="@dimen/activity_horizontal_margin" >
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="fill_parent"
+                                android:layout_gravity="right"
+                                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                android:layout_weight="2"
+                                android:gravity="center_vertical" >
+
+                                <TextView
+                                    android:id="@+id/TextView02"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Tip:"
+                                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                                <RadioGroup
+                                    android:id="@+id/view_dialog_drink_tip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal" >
+
+                                    <RadioButton
+                                        android:id="@+id/view_dialog_order_tip_10"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="10%" />
+
+                                    <RadioButton
+                                        android:id="@+id/view_dialog_order_tip_15"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="15%" />
+
+                                    <RadioButton
+                                        android:id="@+id/view_dialog_order_tip_20"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:checked="true"
+                                        android:text="20%" />
+                                </RadioGroup>
+
+                                <FrameLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="2" >
+                                </FrameLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/orderButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:text="Order" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
     </LinearLayout>
 
 </LinearLayout>
