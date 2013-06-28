@@ -33,9 +33,10 @@ public class BackgroundService extends Service {
 		
 		mApp = (BartsyApplication)getApplication();
 
-		Log.i(TAG, "ConnectionCheckingService Service created...");
+		Log.i(TAG, "Background Service started...");
 		isRunning = true;
-		// Intiate NetworkThread
+
+		// Initiate NetworkThread
 		thread = new Thread(new NetworkThread());
 		thread.start();
 	}
@@ -79,13 +80,21 @@ public class BackgroundService extends Service {
 				
 				try {
 					
+					// Print log 
+					if (mApp.mProfile != null)
+						Log.d(TAG, ">>> Active profile: " + mApp.mProfile);
+					if (mApp.mActiveVenue != null)
+						Log.d(TAG, ">>> Active venue: " + mApp.mActiveVenue);
+					if (mApp.getOrderCount() > 0)
+						Log.d(TAG, ">>> Open orders:  " + mApp.getOrderCount());
+					
 					
 					// refresh the UI to update the timers in the order
 					mApp.updateOrderTimers();
 											
 					// Send heartbeat for as long as we're checked in
 					if (WebServices .isNetworkAvailable(BackgroundService.this) && mApp.mActiveVenue != null ) {			
-//						WebServices.postHeartbeatResponse(mApp.getApplicationContext(), mApp.loadBartsyId(), mApp.mActiveVenue.getId());
+						WebServices.postHeartbeatResponse(mApp.getApplicationContext(), mApp.loadBartsyId(), mApp.mActiveVenue.getId());
 					}
 				} catch (Exception e) {
 					Log.w(TAG, " ******************************** Exception ***********************************\n"
