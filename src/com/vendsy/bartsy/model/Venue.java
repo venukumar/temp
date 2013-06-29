@@ -8,11 +8,12 @@ public class Venue {
 	private String longitude;
 	private String address;
 	private String payPalId;
-	private int userCount;
+	private int    userCount;
 	private String wifiName;
 	private String wifiPassword;
 	private String wifiTypeOfAuthentication;
 	private String status;
+	private int	   orderTimeout;
 
 	@Override
 	public String toString() {
@@ -21,6 +22,7 @@ public class Venue {
 				"id: " + id +
 				" name: " + name +
 				" userCount: " + userCount +
+				" orderTimeout: " + orderTimeout + 
 				" latitude: " + latitude +
 				" longitude: " + longitude +
 				" address: " + address +
@@ -117,4 +119,12 @@ public class Venue {
 		this.payPalId = payPalId;
 	}
 
+	public int getOrderTimeout() {
+		return orderTimeout;
+	}
+	
+	public void setOrderTimeout(int orderTimeout) {
+		this.orderTimeout = orderTimeout;
+	}
+	
 }

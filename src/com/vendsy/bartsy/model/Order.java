@@ -1,28 +1,21 @@
 package com.vendsy.bartsy.model;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.zip.Inflater;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.service.BackgroundService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.utils.Utilities;
 
 public class Order {
 
@@ -125,6 +118,7 @@ public class Order {
 
 		// Orders starts in the "NEW" status
 		this.status = ORDER_STATUS_NEW;
+		this.last_status = this.status;
 		this.state_transitions[this.status] = new Date();
 
 		df.setMaximumFractionDigits(2);
@@ -192,16 +186,48 @@ public class Order {
 			if (json.has("description"))
 				description = json.getString("description");
 			
-			if (json.has("orderTime"))
-				updatedDate = json.getString("orderTime");
-			if (json.has("dateCreated"))
-			  createdDate = json.getString("dateCreated");
-			
+			// Setup the order status if it exists or set it to NEW_ORDER if it doesn't
 			if (json.has("orderStatus"))
 				status = Integer.parseInt(json.getString("orderStatus"));
+			else 
+				status = ORDER_STATUS_NEW;
+			
+			// Used only by the getPastOrders syscall
+			if (json.has("dateCreated")) 
+				createdDate = json.getString("dateCreated");
 
-			if (json.has("dateCreated"))
-				  createdDate = json.getString("dateCreated");
+			// Setup created date (time the order was placed)
+			if (json.has("orderTime")) {
+				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
+				createdDate = json.getString("orderTime");
+				state_transitions[ORDER_STATUS_NEW] = parseWeirdDate(createdDate);
+			} else {
+				// If no created date use current date for the creation state
+				state_transitions[ORDER_STATUS_NEW] = new Date();
+			}
+
+			// Setup last updated date (time the order was updated last)  *** MAKE SURE to have updated status before getting here ***
+			if (json.has("updateTime")) {
+				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
+				updatedDate = json.getString("updateTime");
+				state_transitions[status] = parseWeirdDate(json.getString("updateTime"));
+			} else {
+				// If no created date use current date for the update time
+				state_transitions[status] = new Date();
+			}
+
+			// Set up last status based on current status
+			switch (status) {
+			case ORDER_STATUS_NEW:
+				last_status = status;
+				break;
+			case ORDER_STATUS_IN_PROGRESS:
+				last_status = ORDER_STATUS_READY;
+				break;
+			case ORDER_STATUS_READY:
+				last_status = ORDER_STATUS_IN_PROGRESS;
+				break;
+			}
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
@@ -215,6 +241,15 @@ public class Order {
 
 	}
 
+	
+	Date parseWeirdDate(String date) {
+		Date d = Utilities.getLocalDateFromGTMString(createdDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+		if (d == null)
+			d = Utilities.getLocalDateFromGTMString(createdDate, "d MMM yyyy HH:mm:ss 'GMT'");
+		return d;
+	}
+
+	
 	/**
 	 * To process next positive state for the 0rder
 	 */
@@ -370,45 +405,36 @@ public class Order {
 		}
 		
 		
-		/*		
-
-		// Compute timers
-		long timeout_ms	 = timeOut * 60000;
-		long elapsed_ms;
-		if (state_transitions[last_status] != null)
-			elapsed_ms = System.currentTimeMillis() - (state_transitions[last_status]).getTime();
-		else
-			// For now don't bother resetting timers in the case we just uninstalled and reinstalled the app
-			elapsed_ms = 0;
-		long left_ms     = timeout_ms - elapsed_ms;
-		long elapsed_min = elapsed_ms / 60000;
-		long left_min    = left_ms / 60000;
+		// Compute timers. Placed shows the time since the order was placed. Expires shows the time left in the current state until timeout.
+		double current_ms	= System.currentTimeMillis() ;
+		double timeout_ms	= timeOut * 60000;
+		double elapsed_ms	= current_ms - state_transitions[ORDER_STATUS_NEW].getTime();
+		double left_ms     	= timeout_ms - (current_ms - state_transitions[status].getTime());
+		double elapsed_min 	= elapsed_ms / (double) 60000;
+		double left_min    	= Math.ceil(left_ms / (double) 60000);
 		
-		// Set the background color of the order depending on how much time has elapsed as a percent of the timeout green->orange->red
-		if (elapsed_ms <= timeout_ms / 3.0)
-			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_green_dark);
-		else if (elapsed_ms <=  timeout_ms * 2.0 / 3.0)
-			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_orange_dark);
-		else
-			view.findViewById(R.id.view_order_header).setBackgroundResource(android.R.color.holo_red_dark);
 
+		// Update timer since the order was placed
+		((TextView) view.findViewById(R.id.view_order_timer)).setText(String.valueOf((int)elapsed_min)+" min");
 
-		// Update timer since last state
-		((TextView) view.findViewById(R.id.view_order_timer)).setText(String.valueOf(elapsed_min)+" min");
+		// Handle timeout views
+		if (status == ORDER_STATUS_CANCELLED || status == ORDER_STATUS_TIMEOUT) {
 
-		// Update timout counter		
-		if (left_min > 0) 
-			((TextView) view.findViewById(R.id.view_order_timeout)).setText(String.valueOf(left_min)+" min");
-		else
-			((TextView) view.findViewById(R.id.view_order_timeout)).setText("0 min");
+			// Update timeout counter to always be expired even if there is some left (due to clock inconsistencies between local and server)
+			((TextView) view.findViewById(R.id.view_order_timeout_value)).setText("Expired");
+			view.findViewById(R.id.view_order_expires_text).setVisibility(View.GONE);
+			
+		} else {
 
-		((Button) view.findViewById(R.id.view_order_button_positive)).setText(positive);
-		((Button) view.findViewById(R.id.view_order_button_positive)).setTag(this);
-		((Button) view.findViewById(R.id.view_order_button_negative)).setText(negative);
-		((Button) view.findViewById(R.id.view_order_button_negative)).setTag(this);
-		((Button) view.findViewById(R.id.view_order_button_remove)).setTag(this);
+			// Update timeout counter		
+			if (left_min > 0) 
+				((TextView) view.findViewById(R.id.view_order_timeout_value)).setText("< " + String.valueOf((int)left_min)+" min");
+			else {
+				((TextView) view.findViewById(R.id.view_order_timeout_value)).setText("Expriring...");
+				view.findViewById(R.id.view_order_expires_text).setVisibility(View.GONE);
+			}
+		}
 	
-*/		
 		
 		return view;
 
@@ -462,3 +488,4 @@ public class Order {
 
 
 }
+ 

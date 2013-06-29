@@ -161,12 +161,14 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public Venue mActiveVenue = null;
 
-	/*
-	 * Set the active venue to null and remove orders and people from the global
-	 * data structures. Assumes the views will be updated from elsewhere
-	 */
-	
+	public boolean hasActiveVenue() {
+		return mActiveVenue != null;
+	}
 
+	public boolean noActiveVenue() {
+		return mActiveVenue == null;
+	}
+	
 	public void updateActiveVenue(String venueId, String venueName, int userCount) {
 
 		Log.v(TAG, "updateActiveVenue(" + venueId + ", " + venueName + ", " + userCount);
@@ -566,6 +568,13 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public synchronized void addOrder(Order order) {
 		// Add the order to the list of orders
+		addOrderNoUI(order);
+		notifyObservers(ORDERS_UPDATED);
+	}
+
+	public synchronized void addOrderNoUI(Order order) {
+
+		// Make sure we have a valid order
 		if (order == null || order.serverID == null) {
 			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
 			Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
@@ -575,11 +584,21 @@ public class BartsyApplication extends Application implements AppObservable {
 			mProfile = null;
 			return;
 		}
-		mOrders.add(order);
-		notifyObservers(ORDERS_UPDATED);
-	}
 
-	public synchronized void addOrderNoUI(Order order) {
+		// Make sure we have a valid venue
+		if (mActiveVenue == null) {
+			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
+			Toast.makeText(this, "You need to be checked in to do that! Please restart Bartsy.", Toast.LENGTH_LONG);
+			Log.e(TAG, "Adding order " + order.serverID + " with no active venue");
+			this.notifyObservers(APPLICATION_QUIT_EVENT);
+			mActiveVenue = null;
+			mProfile = null;
+			return;
+		}
+
+		// Set the order timeout based on the venue timeout value
+		order.timeOut = mActiveVenue.getOrderTimeout();
+		
 		// Add the order to the list of orders
 		mOrders.add(order);
 	}
@@ -607,11 +626,11 @@ public class BartsyApplication extends Application implements AppObservable {
 		for (Order order : mOrders) {
 
 			// The additional timeout when we check for local timeouts gives the server the opportunity to always time out an order first. This 
-			long duration  = Constants.timoutDelay + order.timeOut - ((System.currentTimeMillis() - (order.state_transitions[order.status]).getTime()))/60000;
+			double duration  = Constants.timoutDelay + order.timeOut - ((System.currentTimeMillis() - (order.state_transitions[order.status]).getTime()))/ (double) 60000;
 			
 			if (duration <= 0) {
 				// Order time out - set it to that state and update UI
-//				order.setTimeoutState(); *************************** ONLY FOR ALPHA *******
+				order.setTimeoutState(); 
 			}
 		}
 		

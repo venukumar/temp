@@ -182,6 +182,7 @@ public class MapActivity extends Activity implements LocationListener,
 				venue.setLongitude(json.getString("longitude"));
 				venue.setAddress(json.getString("address"));
 				venue.setUserCount(json.getInt("checkedInUsers"));
+				venue.setOrderTimeout(json.getInt("cancelOrderTime"));
 				if (json.getInt("wifiPresent") != 0) {
 					venue.setWifiName(json.getString("wifiName"));
 					venue.setWifiPassword(json.getString("wifiPassword"));
@@ -236,7 +237,7 @@ public class MapActivity extends Activity implements LocationListener,
 	 */
 
 	// We're using this variable as a message buffer with the background service checking user in
-	Venue mVenue = null;
+//	Venue mVenue = null;
 	
 	protected void venueSelectedAction(Venue venue) {
 		
@@ -246,15 +247,11 @@ public class MapActivity extends Activity implements LocationListener,
 		if (venue.getStatus().equalsIgnoreCase("CLOSED"))
 			return;
 
-		// Initialize message buffer for alertBox() and userCheckinAction()
-		mVenue = venue;
-
 		// Check user into venue after confirmation
-		
 		if (mApp.mActiveVenue == null) {
 			// We're not locally checked in, we don't need to display alerts so we 
 			// directly go to check the user in
-			invokeUserCheckInSyscall();
+			invokeUserCheckInSyscall(venue);
 		} else if (venue.getId().trim().equalsIgnoreCase(mApp.mActiveVenue.getId().trim())) {
 			// Selected venue was already active, no need to do anything more
 			Intent intent = new Intent(activity, VenueActivity.class);
@@ -293,7 +290,7 @@ public class MapActivity extends Activity implements LocationListener,
 			public void onClick(DialogInterface dialog, int which) {
 
 				dialog.dismiss();
-				invokeUserCheckInSyscall();
+				invokeUserCheckInSyscall(venue);
 
 			}
 		});
@@ -318,12 +315,9 @@ public class MapActivity extends Activity implements LocationListener,
 	
 	String errorMessage = null;
 	
-	protected void invokeUserCheckInSyscall() {
+	protected void invokeUserCheckInSyscall(final Venue venue) {
 		new Thread() {
 			public void run() {
-				
-				// Load the venue paramenter from the local parameter buffer
-				Venue venue = mVenue;
 				
 				// Invoke the user checkin syscall
 				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyId(), venue.getId(), Constants.URL_USER_CHECK_IN);
@@ -338,15 +332,13 @@ public class MapActivity extends Activity implements LocationListener,
 							
 							// Host checked user in successfully. Check the user in locally too.
 
+							// Set venue parameters
 							if (json.has("userCount"))
 								venue.setUserCount(json.getInt("userCount"));
 
 							// Check into the venue locally
 							mApp.userCheckIn(venue);
 
-							
-							final Venue venuefinal = venue;
-							
 							handler.post(new Runnable() {
 								public void run() {
 									

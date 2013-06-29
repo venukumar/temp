@@ -730,6 +730,12 @@ public class WebServices {
 					
 					if (result.has("userCount"))
 						venue.setUserCount(result.getInt("userCount"));
+					
+					// FOR NOW hardcode the value of the order time out as it's NOT sent in the syscall
+					if (result.has("orderTimeout"))
+						venue.setOrderTimeout(result.getInt("orderTimeout"));
+					else
+						venue.setOrderTimeout(15);
 
 					return venue;
 				}

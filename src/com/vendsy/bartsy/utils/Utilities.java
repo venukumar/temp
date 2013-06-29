@@ -15,11 +15,18 @@
  */
 package com.vendsy.bartsy.utils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
 
 import com.vendsy.bartsy.R;
 
@@ -147,4 +154,28 @@ public final class Utilities {
 		return sharedPref.getInt(r.getString(key), defaultValue);
 	}
 
+	/**
+	 * Returns a Date with the GMT string provided as input in the local time zone. The 
+	 * @param date
+	 * @param format
+	 * @return
+	 */
+	public static Date getLocalDateFromGTMString(String input, String format) {
+		
+        SimpleDateFormat inputFormat = new SimpleDateFormat(format, Locale.getDefault());
+        inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
+        Date output = null;
+        String time = "";
+        try {
+			output = inputFormat.parse(input);
+			time = outputFormat.format(output);
+		} catch (ParseException e) {
+			// Bad date format - leave time blank
+			e.printStackTrace();
+			Log.e(TAG, "Bad date format in getPastOrders syscall");
+			return null;
+		}
+		return output; 
+	}
 }
