@@ -140,7 +140,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		
 		final View itemView = mInflater.inflate(R.layout.orders_past_row, null);
 		
-		// Extract tiem from UTC field
+		// Extract time from UTC field
 		String inputText = order.createdDate.replace("T", " ").replace("Z", ""); // example: 2013-06-27 10:20:15
         SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
