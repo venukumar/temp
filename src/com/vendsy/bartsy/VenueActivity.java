@@ -766,18 +766,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_HISTORY_CHANGED_EVENT");
 
 				String message = mApp.getLastMessage();
-
-				// The history could be empty because this event is sent even on
-				// a channel init
-				if (message == null)
-					break;
-
-				BartsyCommand command = parseMessage(message);
-				if (command != null) {
-					processCommand(command);
-				} else {
-					Log.d(TAG, "Invalid command received");
-				}
 				break;
 			}
 			case HANDLE_ALLJOYN_ERROR_EVENT: {
@@ -878,14 +866,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		return command;
 	}
 
-	void processCommand(BartsyCommand command) {
-		if (command.opcode.equalsIgnoreCase("order_status_changed")) {
-			if (processRemoteOrderStatusChanged(command))
-				// An error occurred - for now log it
-				appendStatus("ERROR PROCESSING ORDER STATUS CHANGED COMMAND");
-		} else
-			appendStatus("Unknown command: " + command.opcode);
-	}
 
 	/******
 	 * 
@@ -1013,24 +993,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	}
 
-	public Boolean processRemoteOrderStatusChanged(BartsyCommand command) {
-		// Return false if everything went well, true if we need to perform
-		// recovery
-
-		appendStatus("Received new remote order status: "
-				+ command.arguments.get(1));
-
-		String orderSenderID = command.arguments.get(3);
-
-		// Because with Alljoyn every connected client gets a command, we make
-		// sure this command is for us
-		if (!orderSenderID.equalsIgnoreCase("" + mApp.mProfile.getBartsyId()))
-			return true;
-
-		mApp.updateOrder(command.arguments.get(1), command.arguments.get(0));
-
-		return false;
-	}
 
 	/*
 	 * 
