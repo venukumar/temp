@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 /**
  * 
  * @author Seenu Malireddy
@@ -63,7 +64,13 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 	public void loadPeopleList() {
 
 		Log.v(TAG, "PeopleSectionFragment.loadPeopleList()");
-
+		
+		if (mApp.mActiveVenue == null || mApp.mProfile == null) {
+			// This is when Internet is lost, user tried to load their profile and couldn't and now is trying to see if they can check their orders. They can.
+			Toast.makeText(mApp, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
 		try {
 
 			new Thread() {
