@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -29,6 +30,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	BartsyApplication mApp = null;
 	MainActivity mActivity = null;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
+	private ProgressDialog mProgressDialog;
+
 
 
 	/** Called when the activity is first created. */
@@ -140,11 +143,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		case R.id.button_my_profile:
 			
 			Log.v(TAG, "User profile button");
+
+			if (mProgressDialog != null && mProgressDialog.isShowing())
+				return;
 						
+			mProgressDialog = Utilities.progressDialog(this, "Loading..");
+			mProgressDialog.show();
+
+			
 			if (mApp.mProfile != null) {
 
 				// We have saved profile information from preferences. Get latest profile info from host and also get user status
-				new AsyncLoadXMLFeed().execute();
+				new downloadUserProfile().execute();
 				return;
 			} 
 			
@@ -158,7 +168,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 	
 	
-	private class AsyncLoadXMLFeed extends AsyncTask<Void, Void, Void>{
+	private class downloadUserProfile extends AsyncTask<Void, Void, Void>{
 		@Override
 		protected void onPreExecute(){
 			         // show your progress dialog
@@ -171,8 +181,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			
 			UserProfile user = WebServices.getUserProfile(getApplicationContext(), mApp.mProfile);
 			if (user == null) {
-				// Could not get user details - erase our user locally and of course, don't check anybody in
-				mApp.eraseUserProfile();
+				// Could not get user details 
+//				mApp.eraseUserProfile();
 			} else {
 				// Got a valid profile - save it locally 
 				mApp.saveUserProfile(user);
@@ -182,10 +192,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		
 		@Override
 		protected void onPostExecute(Void params){
-			// dismiss your dialog
-			// launch your News activity
 			if (mApp.mProfile == null) {
-				Toast.makeText(mActivity, "Could not load profile, starting fresh", Toast.LENGTH_SHORT).show();				
+				Toast.makeText(mActivity, "Could not load profile. Check your internet connection.", Toast.LENGTH_SHORT).show();	
+				mProgressDialog.dismiss();
 			} else {
 				Toast.makeText(mActivity, "Loaded profile", Toast.LENGTH_SHORT).show();
 				mApp.mUserProfileActivityInput = mApp.mProfile;
@@ -300,6 +309,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 		switch (requestCode) {
 		case REQUEST_CODE_USER_PROFILE:
+			
+			// Stop showing the dialog that we launched before calling the user profile activity
+			mProgressDialog.dismiss();
+
 			switch (responseCode) {
 			case RESULT_OK:
 				// We got a response from the user profile activity. Process the user profile and start
