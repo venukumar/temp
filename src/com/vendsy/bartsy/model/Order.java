@@ -212,7 +212,9 @@ public class Order {
 
 			if (json.has("senderBartsyId"))
 				sender = json.getString("senderBartsyId");
-			receiver = json.getString("recieverBartsyId");
+			
+			if(json.has("recieverBartsyId"))
+				receiver = json.getString("recieverBartsyId");
 			
 			if (json.has("description"))
 				description = json.getString("description");
