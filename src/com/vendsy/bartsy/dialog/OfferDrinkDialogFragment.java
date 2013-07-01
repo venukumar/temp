@@ -51,8 +51,8 @@ public class OfferDrinkDialogFragment extends SherlockDialogFragment {
 						.setText(mApp.drinkOffered.title);
 		((TextView) rootView.findViewById(R.id.view_dialog_drink_description))
 						.setText(mApp.drinkOffered.description);
-		((TextView) rootView.findViewById(R.id.view_dialog_drink_price)).setText(""
-						+ mApp.drinkOffered.baseAmount);
+//		((TextView) rootView.findViewById(R.id.view_dialog_drink_price)).setText(""
+//						+ mApp.drinkOffered.baseAmount);
 		// To set self profile information by default
 		if(mApp.drinkOffered.orderSender!=null){
 			updateProfileView(mApp.drinkOffered.orderSender);
