@@ -25,7 +25,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Application;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +38,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -47,6 +53,7 @@ import com.vendsy.bartsy.service.BackgroundService;
 import com.vendsy.bartsy.service.ConnectivityService;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
+import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 
 /**
@@ -119,7 +126,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		}
 
 		// load user profile if it exists. this is an application-wide variable.
-		loadUserProfile();
+		loadUserProfileBasics();
 
 		// Load active venue from preferences
 		loadActiveVenue();
@@ -320,7 +327,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	public UserProfile mUserProfileActivityInput = null; 
 
 
-	void loadUserProfile() {
+	void loadUserProfileBasics() {
 		
 		Log.w(TAG, "loadUserProfile()");
 
@@ -556,7 +563,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
-	private ArrayList<Order> mOrders = new ArrayList<Order>();
+	public ArrayList<Order> mOrders = new ArrayList<Order>();
 	
 	public ArrayList<Order> getOrdersCopy() {
 			return (ArrayList<Order>) mOrders.clone();
@@ -576,23 +583,14 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Make sure we have a valid order
 		if (order == null || order.serverID == null) {
-			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
-			Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
-			Log.e(TAG, "Invalid order being added to the orders list");
-			this.notifyObservers(APPLICATION_QUIT_EVENT);
-			mActiveVenue = null;
-			mProfile = null;
+			this.syncAppWithServer("addOrder() encoutnered invalid order");
 			return;
 		}
 
 		// Make sure we have a valid venue
 		if (mActiveVenue == null) {
 			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
-			Toast.makeText(this, "You need to be checked in to do that! Please restart Bartsy.", Toast.LENGTH_LONG);
-			Log.e(TAG, "Adding order " + order.serverID + " with no active venue");
-			this.notifyObservers(APPLICATION_QUIT_EVENT);
-			mActiveVenue = null;
-			mProfile = null;
+			this.syncAppWithServer("addOrder() trying to add order with no active venue");
 			return;
 		}
 
@@ -659,15 +657,9 @@ public class BartsyApplication extends Application implements AppObservable {
 			}
 		}
 
-		if (localOrder == null) {
-			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER
-			Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
-			Log.e(TAG, "order " + order_server_id + " not found!");
-			this.notifyObservers(APPLICATION_QUIT_EVENT);
-			mActiveVenue = null;
-			mProfile = null;
-			return "Received an update for a non existing order! Please restart Bartsy";
-		}
+		// Make sure we have a local order
+		if (localOrder == null)
+			return syncAppWithServer("Received an update for a non existing order and recovered.");
 
 		Log.e(TAG, "order " + order_server_id + " updated from status " + localOrder.status + " to status " + remote_order_status);
 
@@ -675,41 +667,23 @@ public class BartsyApplication extends Application implements AppObservable {
 		switch (remote_status) {
 		case Order.ORDER_STATUS_IN_PROGRESS:
 			// The order has been accepted remotely. Set the server_id on this order and update status and view
-			if (localOrder.status != Order.ORDER_STATUS_NEW) {
-				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
-				this.notifyObservers(APPLICATION_QUIT_EVENT);
-				mActiveVenue = null;
-				mProfile = null;
-				return "Order state missmatch. Please restart the application";
-			}
+			if (localOrder.status != Order.ORDER_STATUS_NEW) 				
+				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
 			message = "Order " + localOrder.serverID + " was accepted by the bartender.";
 			localOrder.nextPositiveState();
 			break;
 		case Order.ORDER_STATUS_READY:
 			// Remote order ready. Notify client with a notification and update status/view
-			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS) {
-				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
-				this.notifyObservers(APPLICATION_QUIT_EVENT);
-				mActiveVenue = null;
-				mProfile = null;
-				return "Order state missmatch. Please restart the application";
-			}
+			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
+				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
 			message = "Order " + localOrder.serverID + " is ready! Please please it up promptly to avoid charges.";
 			localOrder.nextPositiveState();
 			break;
 		case Order.ORDER_STATUS_COMPLETE:
 			// Order completed. Remove from the order list for now.
-			if (localOrder.status != Order.ORDER_STATUS_READY) {
-				Toast.makeText(this, "Received an update for a non existing order! Please restart Bartsy.", Toast.LENGTH_LONG);
-				this.notifyObservers(APPLICATION_QUIT_EVENT);
-				mActiveVenue = null;
-				mProfile = null;
-				return "Order state missmatch. Please restart the application";
-			}
-			message = "Order " + localOrder.serverID + " was picked up (hopefully by you).";
+			if (localOrder.status != Order.ORDER_STATUS_READY) 
+				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
 			Toast.makeText(this, "Your order was picked up. You can view a log of orders in the past orders tab", Toast.LENGTH_SHORT);
-			
-			// Move the order to the next state (
 			localOrder.nextPositiveState();
 			mOrders.remove(localOrder);
 			message =  "Order " + localOrder.serverID + " was picked up. If you didn't pick it up please see your bartender.";
@@ -732,6 +706,135 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(ORDERS_UPDATED);
 		return message;
 	}
+	
+	
+	
+	/**
+	 * TODO - Synchronization
+	 * 
+	 * Functions that perform synchronization with the server. It expects to be called from the background
+	 * and returns an error code depending on success or failure:
+	 * 
+	 * @param message
+	 */
+	
+	synchronized public String syncAppWithServer(final String message) {
+		Log.w(TAG, ">>> Synchronize(" + message + ")");
+		if (syncUserProfile() == SYNC_RESULT_OK) {
+			syncActiveVenue();
+			syncOpenOrders();
+		}
+		return message;
+	}
+	
+	/**
+	 * This functions synchronizes the application with the server. It expects to be called from the background
+	 * and returns an error code depending on success or failure:
+	 */
+	
+	public static final int SYNC_RESULT_OK 					= 0;
+	public static final int SYNC_RESULT_NO_LOCAL_PROFILE	= 1;
+	public static final int SYNC_RESULT_NO_SERVER_PROFILE	= 2;
+	public static final int SYNC_RESULT_JSON_ERROR			= 3;
+	
+	synchronized public int syncUserProfile() {
+
+		Log.w(TAG, "syncUserProfile()");
+		
+		// Try to load user profile from preferences
+		loadUserProfileBasics();
+
+		// If not found, nothing more to be done that returning.
+		if (mProfile == null)
+			return SYNC_RESULT_NO_LOCAL_PROFILE; 
+		
+		UserProfile user = WebServices.getUserProfile(getApplicationContext(), mProfile);
+		if (user == null) {
+			// Could not get user details - erase our user locally and of course, don't check anybody in
+			Log.w(TAG, "Could not load user profile");
+			return SYNC_RESULT_NO_SERVER_PROFILE;
+		} 
+		
+		// Got a valid profile - save it locally 
+		Log.w(TAG, "Found profile: " + user);
+		saveUserProfile(user);
+
+		return SYNC_RESULT_OK;	
+	}
+	
+
+	synchronized public int syncActiveVenue() {
+		
+		Log.w(TAG, "syncActiveVenue()");
+
+		/*
+		 * Synchronize active venue
+		 */
+		
+		if (mProfile == null)
+			return SYNC_RESULT_NO_LOCAL_PROFILE;
+		
+		Venue venue = WebServices.getActiveVenue(BartsyApplication.this, mProfile);
+	
+		// If venue found - set it up as the active venue
+		if (venue != null) {
+			Log.w(TAG, "Active venue found: " + venue.getName());
+			userCheckIn(venue);
+			
+		} else {
+			// 
+			Log.v(TAG, "Active venue not found");
+			userCheckOut();
+		}
+		
+		return SYNC_RESULT_OK;	
+	}
+	
+	synchronized public int syncOpenOrders() {
+
+		Log.w(TAG, "syncOpenOrders()");
+
+		String response = WebServices.getOpenOrders(BartsyApplication.this);
+		Log.v(TAG, "orders " + response);
+		if (response != null) {
+			try {
+				JSONObject orders = new JSONObject(response);
+				JSONArray listOfOrders = orders.has("orders") ? orders.getJSONArray("orders") : null;
+				if (listOfOrders != null) {
+
+					// Get the server's view of the open orders - for now replace our list with that of the server
+					mOrders.clear();
+					for (int i = 0; i < listOfOrders.length(); i++) {
+						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
+						
+						if (!orderJson.has("orderTimeout"))
+							orderJson.put("orderTimeout", mActiveVenue.getOrderTimeout());
+						
+						Order order = new Order(orderJson);
+						mOrders.add(order);
+					}
+				} else {
+					// We didn't get a response - keep our list
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+				return SYNC_RESULT_JSON_ERROR;
+			}
+		}
+		
+		notifyObservers(ORDERS_UPDATED);
+
+		return SYNC_RESULT_OK;	
+	}
+	
+
+	
+	/****
+	 * 
+	 * TODO - offered drinks nonsense
+	 * 
+	 */
+	
 	
 	public static final String DRINK_OFFERED = "DRINK_OFFERED";
 	public Order drinkOffered;

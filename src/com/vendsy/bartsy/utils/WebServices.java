@@ -295,7 +295,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static JSONObject postProfile(UserProfile user, String path, Context context) {
+	public static JSONObject saveUserProfile(UserProfile user, String path, Context context) {
 
 		String url = path;
 		byte[] dataFirst = null;
@@ -501,7 +501,7 @@ public class WebServices {
 	 * @return ordersList
 	 */
 
-	public static String getUserOrdersList(BartsyApplication app) {
+	public static String getOpenOrders(BartsyApplication app) {
 
 		String response = null;
 		try {
@@ -682,7 +682,7 @@ public class WebServices {
 	 * Return either a new profile with the parameters returned from the host or null if an error occurred or the
 	 * profile doesn't exist
 	 */
-	public static Venue syncUserDetails(BartsyApplication context, UserProfile user) {
+	public static Venue getActiveVenue(BartsyApplication context, UserProfile user) {
 
 		Log.v(TAG, "userLogin()");
 

@@ -136,7 +136,9 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText("****" + person.getCreditCardNumber().substring(12));
 				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(person.getCreditCardNumber());
 				((TextView) findViewById(R.id.view_profile_cc_month)).setText("**");
+				((TextView) findViewById(R.id.view_profile_cc_month)).setTag(person.getExpMonth());
 				((TextView) findViewById(R.id.view_profile_cc_year)).setText("**");
+				((TextView) findViewById(R.id.view_profile_cc_year)).setTag(person.getExpYear());
 				findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 				findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
 			}
@@ -343,7 +345,9 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(scanResult.getRedactedCardNumber());
 					((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(scanResult.cardNumber);
 					((TextView) findViewById(R.id.view_profile_cc_month)).setText(Integer.toString(scanResult.expiryMonth));
+					((TextView) findViewById(R.id.view_profile_cc_month)).setTag(Integer.toString(scanResult.expiryMonth));
 					((TextView) findViewById(R.id.view_profile_cc_year)).setText(Integer.toString(scanResult.expiryYear));
+					((TextView) findViewById(R.id.view_profile_cc_year)).setTag(Integer.toString(scanResult.expiryYear));
 					findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 					findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
 					
@@ -495,8 +499,8 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			
 			//Extract card details 	
 			user.setCreditCardNumber((String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag());
-			user.setExpMonth(((TextView) findViewById(R.id.view_profile_cc_month)).getText().toString());
-			user.setExpYear(((TextView) findViewById(R.id.view_profile_cc_year)).getText().toString());
+			user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
+			user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
 
 		}
 		
@@ -604,65 +608,11 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					
 					try {
 						// Service call for post profile data to server
-						JSONObject resultJson = WebServices.postProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+						JSONObject resultJson = WebServices.saveUserProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
 
-						// Process web service response
-						
-						if (resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0")) {
+						// Make sure we got a successful response
+						if (!(resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0"))) {
 
-							// Syscall successful - process response 
-
-							if (resultJson.has("bartsyId")) {
-								bartsyUserId = resultJson.getString("bartsyId");
-	
-								Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
-							} else {
-								Log.e(TAG, "bartsyId " + bartsyUserId + " not found");
-								mHandler.post(new Runnable() {
-									public void run() {
-										Toast.makeText(mActivity, "Server rejected login request. Try a different login.", Toast.LENGTH_LONG).show();
-										finish();
-									}
-								});
-								return;
-								
-							}
-	
-							// Sync user details
-							
-							Venue venue = WebServices.syncUserDetails(mApp, userProfile);
-						
-							// If venue found - set it up as the active venue
-							if (venue != null) {
-								Log.v(TAG, "Active venue found: " + venue.getName());
-								mApp.userCheckIn(venue);
-								
-							} else {
-								// 
-								Log.v(TAG, "Active venue not found");
-								mApp.userCheckOut();
-							}
-
-							// Finally, load the open orders this user has to be stored in the application object that will stick around 
-							loadUserOrders();
-
-							// AFter processing profile return back to calling activity with success code
-							
-							final String bartsyId = bartsyUserId;
-							mHandler.post(new Runnable() {
-								public void run() {
-
-									// Save profile in the global application structure and in preferences
-									userProfile.setBartsyId(bartsyId);
-									mApp.saveUserProfile(userProfile);
-									
-									// Return to calling activity with success code 
-									mActivity.setResult(InitActivity.RESULT_OK);
-									finish();
-								}
-							});
-						}else{
-							
 							// Error creating user. Ask parent to post Toast.
 							mHandler.post(new Runnable() {
 								@Override
@@ -673,6 +623,41 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 							});
 							return;
 						}
+
+						// Syscall successful - process response 
+						if (resultJson.has("bartsyId")) {
+							bartsyUserId = resultJson.getString("bartsyId");
+							Log.v(TAG, "bartsyUserId " + bartsyUserId + "");
+						} else {
+							// Bad server response
+							Log.e(TAG, "bartsyId " + bartsyUserId + " not found");
+							mHandler.post(new Runnable() {
+								public void run() {
+									Toast.makeText(mActivity, "Server rejected login request. Try a different login.", Toast.LENGTH_LONG).show();
+									finish();
+								}
+							});
+							return;
+						}
+
+						// Save profile in the global application structure and in preferences
+						userProfile.setBartsyId(bartsyUserId);
+						mApp.saveUserProfile(userProfile);
+
+						// Sync active venue
+						mApp.syncActiveVenue();
+
+						// Finally, load the open orders this user has to be stored in the application object that will stick around 
+						mApp.syncOpenOrders();
+						
+						// AFter processing profile return back to calling activity with success code
+						mHandler.post(new Runnable() {
+							public void run() {
+								// Return to calling activity with success code 
+								mActivity.setResult(InitActivity.RESULT_OK);
+								finish();
+							}
+						});
 					} catch (JSONException e) {
 						e.printStackTrace();
 
@@ -695,57 +680,6 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	
-	
-
-	/**
-	 * To get user orders from the server
-	 */
-	private void loadUserOrders() {
-		// Service call for get menu list in background
-		new Thread() {
-
-			public void run() {
-				String response = WebServices.getUserOrdersList(mApp);
-
-				Log.v(TAG, "oreders " + response);
-
-				userOrdersResponseHandling(response);
-			};
-
-		}.start();
-	}
-
-	
-	/**
-	 * User orders web service Response handling
-	 * 
-	 * @param response
-	 */
-
-	private void userOrdersResponseHandling(String response) {
-		if (response != null) {
-			try {
-				JSONObject orders = new JSONObject(response);
-				JSONArray listOfOrders = orders.has("orders") ? orders
-						.getJSONArray("orders") : null;
-				if (listOfOrders != null) {
-
-					// Start by clearning orders as there is a new loggin
-					mApp.clearOrders();
-					
-					for (int i = 0; i < listOfOrders.length(); i++) {
-						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
-						Order order = new Order(orderJson);
-						mApp.addOrderNoUI(order);
-					}
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	
 	/* 
 	 * Downloads an image for the mUser structure and displays it in a given view when done.

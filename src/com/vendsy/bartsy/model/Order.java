@@ -79,12 +79,14 @@ public class Order {
 	public static final int ORDER_STATUS_COMPLETE = 5;
 	public static final int ORDER_STATUS_INCOMPLETE = 6;
 	public static final int ORDER_STATUS_CANCELLED = 7;
-	public static final int ORDER_STATUS_TIMEOUT = 8;
+	public static final int ORDER_STATUS_OFFERED = 8;
+	public static final int ORDER_STATUS_TIMEOUT = 8;  // this is a local status used on the phone for orders expired locally
 	public static final int ORDER_STATUS_COUNT = 9;
 	
 	public String type = "Custom";
 
 	// The states are implemented in a status variable and each state transition
+	
 	// has an associated time
 	public int status;
 	public int last_status;	// the previous status of this order (needed for timeouts in particular)
@@ -144,6 +146,7 @@ public class Order {
 			orderData.put("totalPrice", String.valueOf(totalAmount));
 			orderData.put("orderStatus", ORDER_STATUS_NEW);
 			orderData.put("description", description);
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -154,6 +157,34 @@ public class Order {
 		return orderData;
 	}
 
+
+	@Override
+	public String toString() {
+		
+		JSONObject orderData = new JSONObject();
+		
+		try {
+			orderData.put("itemId", itemId);
+			orderData.put("itemName", title);
+			orderData.put("basePrice", String.valueOf(baseAmount));
+			orderData.put("tipPercentage", String.valueOf(tipAmount));
+			orderData.put("totalPrice", String.valueOf(totalAmount));
+			orderData.put("orderStatus", ORDER_STATUS_NEW);
+			orderData.put("description", description);
+			
+			// these fields are not used by the host but give a more details picture of the order
+			orderData.put("status", status);
+			orderData.put("orderTimeout", timeOut);
+			orderData.put("serverId", serverID);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return orderData.toString();
+	}
+	
+	
+	
 	/**
 	 * Constructor to parse all the information from the JSON
 	 * 
@@ -216,6 +247,9 @@ public class Order {
 				state_transitions[status] = new Date();
 			}
 
+			if (json.has("orderTimeout"))
+				timeOut = json.getInt("orderTimeout");
+			
 			// Set up last status based on current status
 			switch (status) {
 			case ORDER_STATUS_NEW:
@@ -352,6 +386,8 @@ public class Order {
 		// To display order receiver profile information in orders view
 		if(orderReceiver!=null){
 			updateProfileView(orderReceiver);
+		} else {
+			view.findViewById(R.id.view_order_profile_picture).setVisibility(View.GONE);
 		}
 
 		switch (this.status) {

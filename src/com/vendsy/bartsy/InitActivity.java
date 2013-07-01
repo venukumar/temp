@@ -214,7 +214,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 	
 	/**
 	 * This function is called by the user login dialog. The dialog provides a username/password and this function 
-	 * gets the rest of the information for the user profile or diplays a Toast if the username/password are incorrect
+	 * gets the rest of the information for the user profile or displays a Toast if the username/password are incorrect
 	 */
 	
 	@Override
@@ -241,36 +241,31 @@ public class InitActivity extends SherlockFragmentActivity implements
 						}
 					});
 					return;
-				} else {
+				} 
 	
-					// Logged in successfully and obtained user information. Do the next step.
-					mApp.saveUserProfile(profile);
-					
-					// Synch user check-in status
-					Venue venue = WebServices.syncUserDetails(mApp, profile);				
-					if (venue != null) {
-						Log.v(TAG, "Active venue found: " + venue.getName());
-						mApp.userCheckIn(venue);
-					} else {
-						// No venue - delete any local references
-						mApp.userCheckOut();
-					}
-					
-					
-					mHandler.post(new Runnable() {
-						@Override
-						public void run() {
-							
-							Toast.makeText(mActivity, "Logged in as " + user.getBartsyLogin(), Toast.LENGTH_SHORT).show();
+				// Logged in successfully and obtained user information. Save it.
+				mApp.saveUserProfile(profile);
+				
+				// Synch user check-in status
+				mApp.syncActiveVenue();
+				
+				// Sync open orders
+				mApp.syncOpenOrders();
+				
+				
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						
+						Toast.makeText(mActivity, "Logged in as " + user.getBartsyLogin(), Toast.LENGTH_SHORT).show();
 
-							// We got an existing user. Start profile edit activity using this user and the input
-							Intent intent = new Intent().setClass(InitActivity.this, MainActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-							startActivity(intent);
-							mActivity.finish();
-						}
-					});
-				}
+						// We got an existing user. Start profile edit activity using this user and the input
+						Intent intent = new Intent().setClass(InitActivity.this, MainActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(intent);
+						mActivity.finish();
+					}
+				});
 			};
 		}.start();
 	}
@@ -421,17 +416,13 @@ public class InitActivity extends SherlockFragmentActivity implements
 					// Got profile - save it
 					mApp.saveUserProfile(profile);
 
-					// Synch user check-in status
-					Venue venue = WebServices.syncUserDetails(mApp, profile);				
-					if (venue != null) {
-						Log.v(TAG, "Active venue found: " + venue.getName());
-						mApp.userCheckIn(venue);
-					} else {
-						// No venue - delete any local references
-						mApp.userCheckOut();
-					}
+					// Sync active venue
+					mApp.syncActiveVenue();
 					
-					// Save user profile as the active profile and start main activity.
+					// Sync open orders
+					mApp.syncOpenOrders();
+					
+					// Start main activity.
 					mHandler.post(new Runnable() {
 						@Override
 						public void run() {

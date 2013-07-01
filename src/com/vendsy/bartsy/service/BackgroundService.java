@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
@@ -81,12 +82,13 @@ public class BackgroundService extends Service {
 				try {
 					
 					// Print log 
-					if (mApp.mProfile != null)
-						Log.d(TAG, ">>> Active profile: " + mApp.mProfile);
-					if (mApp.mActiveVenue != null)
-						Log.d(TAG, ">>> Active venue: " + mApp.mActiveVenue);
-					if (mApp.getOrderCount() > 0)
-						Log.d(TAG, ">>> Open orders:  " + mApp.getOrderCount());
+					Log.d(TAG, ">>> Active profile: " + mApp.mProfile);
+					Log.d(TAG, ">>> Active venue: " + mApp.mActiveVenue);
+					String orders = "";
+					for (Order order : mApp.mOrders) {
+						orders += order + ", ";
+					}
+					Log.d(TAG, ">>> Open orders:  " + orders);
 					
 					
 					// refresh the UI to update the timers in the order
