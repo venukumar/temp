@@ -6,16 +6,19 @@ package com.vendsy.bartsy.view;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.WebServices;
 
 /**
  * @author peterkellis
@@ -109,7 +112,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 
 			int next = Order.ORDER_STATUS_COUNT;
 			
-			switch (order.status) {
+			int status = order.status;
+			
+			switch (status) {
 			case Order.ORDER_STATUS_NEW:
 				if (!newOrdersDisplayed) {
 					Log.v(TAG, "Order " + order.serverID + " is the first order with status " + order.status);
@@ -159,6 +164,11 @@ public class OpenOrdersSectionView extends LinearLayout{
 				Log.v(TAG, "Display incomplete order " + order.serverID);
 				next = Order.ORDER_STATUS_INCOMPLETE;
 				break;
+			case Order.ORDER_STATUS_OFFERED:
+				// Always display offered orders individually
+				Log.v(TAG, "Display offered order " + order.serverID);
+				next = Order.ORDER_STATUS_OFFERED;
+				break;				
 			default:
 				Log.d(TAG, "Unexpected order status");
 				break;
@@ -172,19 +182,42 @@ public class OpenOrdersSectionView extends LinearLayout{
 				// Display header view with current order
 				View view = order.updateView(mInflater, mContainer);
 				view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
-					
 					@Override
 					public void onClick(View v) {
 						mApp.removeOrder((Order) v.getTag());
 					}
 				});
+				
+				view.findViewById(R.id.view_order_footer_accept).setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Order order = (Order) v.getTag();
+						((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+						((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+						WebServices.updateOfferedDrinkStatus(mApp, order, true);
+					}
+				});
+				
+				view.findViewById(R.id.view_order_footer_reject).setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Order order = (Order) v.getTag();
+						((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+						((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+						WebServices.updateOfferedDrinkStatus(mApp, order, false);
+					}
+				});
+				
 				mOrderListView.addView(view);
+
+				// Don't bunder 
+				
+				
+				// If there are any more orders of the same type display them as mini views
 
 				float taxAmt = order.taxAmount;
 				float tipAmt = order.tipAmount;
 				float totalAmt = order.totalAmount;
-				
-				// If there are any more orders of the same type display them as mini views
 				
 				for (int j = i+1 ; j < orders.size(); j++)
 				{
@@ -194,7 +227,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 							next != Order.ORDER_STATUS_FAILED		&&
 							next != Order.ORDER_STATUS_INCOMPLETE	&&
 							next != Order.ORDER_STATUS_TIMEOUT		&&
-							next != Order.ORDER_STATUS_CANCELLED)  
+							next != Order.ORDER_STATUS_CANCELLED	&&
+							next != Order.ORDER_STATUS_OFFERED		&&
+							order.receiverId.equals(mini.receiverId))  
 					{
 						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
 						((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
@@ -210,15 +245,6 @@ public class OpenOrdersSectionView extends LinearLayout{
 				order.updateTipTaxTotalView(tipAmt,taxAmt,totalAmt);
 			}
 		}
-	}
-	
-
-	public void removeOrders(Order order) {
-		if (mOrderListView != null)
-			mOrderListView.removeView(order.view);
-		// ((ViewGroup) order.view.getParent()).removeView(order.view);
-		order.view = null;
-		mApp.removeOrder(order);
 	}
 
 }

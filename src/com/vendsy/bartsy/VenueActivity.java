@@ -1,13 +1,8 @@
 package com.vendsy.bartsy;
 
-import static com.vendsy.bartsy.utils.Utilities.SENDER_ID;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParserException;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -31,22 +26,17 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
-import com.vendsy.bartsy.dialog.OfferDrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MenuDrink;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.CommandParser;
-import com.vendsy.bartsy.utils.CommandParser.BartsyCommand;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 import com.vendsy.bartsy.view.DrinksSectionFragment;
-import com.vendsy.bartsy.view.OpenOrdersSectionView;
 import com.vendsy.bartsy.view.OrdersSectionFragment;
-import com.vendsy.bartsy.view.PastOrdersSectionView;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.Menu;
@@ -172,7 +162,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			Log.v(TAG, "gcm message ::: " + message);
 			
 			if(message!=null){
-				processPushNotification(message);
 			}
 		} catch (Exception e) {
 			Log.e(TAG, "Error in gcm message ::: " + e.getMessage());
@@ -180,21 +169,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 	}
 	
-	/**
-	 * Process push notification when the user selects on the PN message
-	 * 
-	 * @param message
-	 */
-	public void processPushNotification(String message){
-		try {
-			JSONObject json = new JSONObject(message);
-			if (json.has("messageType") && json.getString("messageType").equals("DrinkOffered")) {
-				mApp.displayOfferDrink(new Order(json),json.getString("senderBartsyId"));
-			}
-		}catch (JSONException e) {
-		}
-
-	}
 
 	/**
 	 * Initialize the fragments
@@ -468,8 +442,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 							mApp.userCheckOut();
 
 							
-							final Venue venuefinal = venue;
-							
 							mHandler.post(new Runnable() {
 								public void run() {
 									
@@ -642,7 +614,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			Locale l = Locale.getDefault();
 
 			return getString(mTabs[position]);
 		}
@@ -689,7 +660,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			Log.v(TAG, "gcm message ::: " + message);
 			
 			if(message!=null){
-				processPushNotification(message);
 			}
 		} catch (Exception e) {
 			Log.e(TAG, "Error in gcm message - onNewIntent() ::: " + e.getMessage());
@@ -713,7 +683,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
 	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
 	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
-	private static final int HANDLE_DRINK_OFFERED_EVENT = 6;
 
 	public synchronized void update(AppObservable o, Object arg) {
 		Log.v(TAG, "update(" + arg + ")");
@@ -743,10 +712,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		} else if (qualifier.equals(BartsyApplication.PEOPLE_UPDATED)) {
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
-			mApplicationHandler.sendMessage(message);
-		} else if (qualifier.equals(BartsyApplication.DRINK_OFFERED)) {
-			Message message = mApplicationHandler
-					.obtainMessage(HANDLE_DRINK_OFFERED_EVENT);
 			mApplicationHandler.sendMessage(message);
 		}
 	}
@@ -790,13 +755,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 					updatePeopleCount();
 				}
 				break;
-			case HANDLE_DRINK_OFFERED_EVENT:
-				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_DRINK_OFFERED_EVENT");
-				if (mPeopleFragment != null) {
-					Log.v(TAG, "DRINK_OFFERED dialog..");
-					displayOfferDrinkDialog();
-				}
-				break;
 			default:
 				break;
 			}
@@ -804,11 +762,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 
 		
 	};
-	
-	private void displayOfferDrinkDialog() {
-		OfferDrinkDialogFragment dialog = new OfferDrinkDialogFragment();
-		dialog.show(getSupportFragmentManager(),"displayOfferDrink");
-	}
 	
 
 	private void alljoynError() {
@@ -819,52 +772,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		}
 	}
 
-	public BartsyCommand parseMessage(String readMessage) {
-
-		appendStatus("Message received: " + readMessage);
-
-		// parse the command
-		BartsyCommand command = null;
-		ByteArrayInputStream stream = new ByteArrayInputStream(
-				readMessage.getBytes());
-		CommandParser commandParser = new CommandParser();
-
-		try {
-			command = commandParser.parse(stream);
-		} catch (XmlPullParserException e) {
-			// Auto-generated catch block
-			e.printStackTrace();
-			appendStatus("Invalid command format received");
-			return null;
-		} catch (IOException e) {
-			// Auto-generated catch block
-			e.printStackTrace();
-			appendStatus("Parser IO exception");
-			return null;
-		} finally {
-			// Makes sure that the InputStream is closed after the app is
-			// finished using it.
-			if (stream != null) {
-				try {
-					stream.close();
-				} catch (IOException e) {
-					// Auto-generated catch block
-					e.printStackTrace();
-					appendStatus("Stream close IO exception");
-					return null;
-				}
-			}
-		}
-
-		// check to make sure there was a
-		if (command == null) {
-			appendStatus("Parser succeeded but command is null");
-			return null;
-		}
-
-		// Return successfully processed command
-		return command;
-	}
 
 
 	/******
@@ -899,12 +806,11 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				Float.valueOf(drink.getPrice()), 						// arg(4) - Price
 				tipAmount,
 				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
-				mApp.mProfile);
+				mApp.mProfile,
+				((DrinkDialogFragment) dialog).profile);
 		
 
 		
-		order.orderReceiver = ((DrinkDialogFragment) dialog).profile;
-		// arg(6) - Each order contains the profile of the sender (and later the profile of the person that should pick it up)
 		order.itemId = drink.getDrinkId();
 
 		// invokePaypalPayment(); // To enable paypal payment

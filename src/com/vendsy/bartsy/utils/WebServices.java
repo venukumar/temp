@@ -37,6 +37,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.vendsy.bartsy.BartsyApplication;
@@ -181,7 +182,7 @@ public class WebServices {
 	 * 
 	 */
 	
-	public static void postHeartbeatResponse (final Context context, 
+	public static JSONObject postHeartbeatResponse (final Context context, 
 			String bartsyId, String venueId) {
 		
 		Log.v(TAG, "WebService.postHeartbeatResponse()");
@@ -195,15 +196,19 @@ public class WebServices {
 			e.printStackTrace();
 		}
 
+		JSONObject response = null;
+		
 		// Invoke syscall
 		try {
 			// We are not interested in the response to the syscall as the server is what's
 			// checking to see if everything is working property. If the server doesn't see
 			// the heartbeat it will check the user out. 
-			postRequest(Constants.URL_HEARTBEAT_RESPONSE, json, context);
+			response = new JSONObject(postRequest(Constants.URL_HEARTBEAT_RESPONSE, json, context));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		return response;
 	}
 
 	/**
@@ -229,7 +234,9 @@ public class WebServices {
 			orderData.put("venueId", venueID);
 			if(order.orderReceiver!=null){
 				orderData.put("recieverBartsyId", order.orderReceiver.getBartsyId());
+				orderData.put("receiverBartsyId", order.orderReceiver.getBartsyId());
 			}else{
+				orderData.put("receiverBartsyId", bartsyId);
 				orderData.put("recieverBartsyId", bartsyId);
 			}
 			orderData.put("specialInstructions", "");
@@ -259,6 +266,12 @@ public class WebServices {
 						response = "success";
 						order.serverID = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
+						
+						// Add order to the list and update views. This is a synchronized operation in case multiple threads are stepping on each other
+						app.addOrder(order);
+
+						// Increment the local order count
+						app.mOrderIDs++;
 						
 					} else if (errorCode.equalsIgnoreCase("1")) {
 						// Error code 1 means the venue doesn't accept orders.
@@ -540,23 +553,52 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static String updateOfferDrinkStatus(Context context, String venueID, Order order, int orderStatus, String barstyId) {
+	public static String updateOfferedDrinkStatus(final BartsyApplication app, final Order order, final boolean positive) {
 
-		Log.v(TAG, "To update offer drink: " + venueID);
+		new Thread(){
+			@Override
+			public void run() {
 
-		String response = null;
-		JSONObject json = new JSONObject();
-		try {
-			json.put("venueId", venueID);
-			json.put("orderId", order.serverID);
-			json.put("bartsyId", barstyId);
-			json.put("orderStatus", String.valueOf(orderStatus));
-			response = postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, context);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+				JSONObject response = null;
+				JSONObject json = new JSONObject();
+				try {
+					json.put("venueId", app.mActiveVenue.getId());
+					json.put("orderId", order.serverID);
+					json.put("bartsyId", app.mProfile.getBartsyId());
+					json.put("orderStatus", String.valueOf(positive ? Order.ORDER_STATUS_NEW : Order.ORDER_STATUS_OFFER_REJECTED));
+					response = new JSONObject(postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, app.getApplicationContext()));
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			
+				try {
+					if (response != null && response.has("errorCode") && response.getString("errorCode").equals("0")) {
 
-		return response;
+						// Success - move the order to the next state
+						if (positive) {
+							app.makeToast("Your order was sent to the bartender. Please be ready to pick it up.");							
+							order.nextPositiveState(); 
+						} else {
+							app.makeToast("The sender was notified.");							
+							order.nextPositiveState(); 
+						}
+						if (response.has("orderTimeout"))
+							order.timeOut = response.getInt("orderTimeout");
+						app.notifyObservers(BartsyApplication.ORDERS_UPDATED);
+						return;
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+				// Failure - restore the buttons and let the user try again later, or the order will time out
+				app.makeToast("Could not connect. Please check your internet connection.");
+				((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(true);
+				((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(true);
+
+			}
+		}.start();
+		return null;
 	}
 
 	

@@ -262,10 +262,8 @@ public class OrderCustomDrinkActivity extends Activity{
 				totalAmount, 						
 				tipAmount,
 				Integer.toString(R.drawable.drinks), 	
-				mApp.mProfile);
-		
-		// it will support to send drinks to other people
-		order.orderReceiver = profile;
+				mApp.mProfile,
+				profile);
 		
 		// invokePaypalPayment(); // To enable paypal payment
 
@@ -277,44 +275,38 @@ public class OrderCustomDrinkActivity extends Activity{
 	}
 	
 	// Response codes
-		public static final int HANDLE_ORDER_RESPONSE_SUCCESS = 0;
-		public static final int HANDLE_ORDER_RESPONSE_FAILURE = 1;
-		public static final int HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE = 2;
-		
-		// The handler code
-		public Handler processOrderDataHandler = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
+	public static final int HANDLE_ORDER_RESPONSE_SUCCESS = 0;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE = 1;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE = 2;
+	
+	// The handler code
+	public Handler processOrderDataHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
 
-				Log.v("OrderCustomDrinkActivity", "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
+			Log.v("OrderCustomDrinkActivity", "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
+			
+			switch (msg.what) {
+			case HANDLE_ORDER_RESPONSE_SUCCESS:
+				// The order was placed successfully 
 				
-				switch (msg.what) {
-				case HANDLE_ORDER_RESPONSE_SUCCESS:
-					// The order was placed successfully 
-					
-					// Add order to the list and update views
-					mApp.addOrder(order);
+				finish();
 
-					// Increment the local order count
-					mApp.mOrderIDs++;
-					
-					finish();
-
-					break;
-					
-				case HANDLE_ORDER_RESPONSE_FAILURE:
-					// The syscall was not placed
-					Toast.makeText(OrderCustomDrinkActivity.this, "Unable to place order. Check your internet connection", Toast.LENGTH_SHORT).show();
-					break;
-					
-				case HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE:
-					// The syscall got an error code
-					Toast.makeText(OrderCustomDrinkActivity.this, "Unable to place order. Venue is not accepting orders (" + msg.obj + ")", Toast.LENGTH_SHORT).show();
-					break;
-				}
+				break;
 				
+			case HANDLE_ORDER_RESPONSE_FAILURE:
+				// The syscall was not placed
+				Toast.makeText(OrderCustomDrinkActivity.this, "Unable to place order. Check your internet connection", Toast.LENGTH_SHORT).show();
+				break;
+				
+			case HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE:
+				// The syscall got an error code
+				Toast.makeText(OrderCustomDrinkActivity.this, "Unable to place order. Venue is not accepting orders (" + msg.obj + ")", Toast.LENGTH_SHORT).show();
+				break;
 			}
-		};
+			
+		}
+	};
 	
 	
 	/**

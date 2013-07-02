@@ -39,6 +39,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -97,9 +98,12 @@ import com.vendsy.bartsy.view.AppObserver;
  * is required to correctly display Activities when they are recreated.
  */
 public class BartsyApplication extends Application implements AppObservable {
+	
+	
 	private static final String TAG = "BartsyApplication";
 	public static String PACKAGE_NAME;
-
+	public Handler mHandler = new Handler();
+	
 	/**
 	 * When created, the application fires an intent to create the AllJoyn
 	 * service. This acts as sort of a combined view/controller in the overall
@@ -155,7 +159,19 @@ public class BartsyApplication extends Application implements AppObservable {
 	}
 	
 	
-
+	/**
+	 * Use this to create a toast even without a context
+	 * @param toast
+	 */
+	public void makeToast(final String toast) {
+		mHandler.post(new Runnable() {
+			public void run() {
+				Log.v(TAG, toast);
+				Toast.makeText(BartsyApplication.this, toast, Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+	
 	
 	/**
 	 * 
@@ -526,9 +542,17 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * Called when we have a new person check in a venue
 	 */
 
-	public void addPerson(UserProfile profile) {
+	synchronized public void addPerson(UserProfile profile) {
 		Log.v(TAG, "New user checked in: " + profile.getName() + " (" + profile.getBartsyId() + ")");
 
+		// Go over the list of orders and update profiles based on the information received
+		for (Order order : mOrders) {
+			if (profile.getBartsyId().equals(order.senderId))
+				order.orderSender = profile;
+			if (profile.getBartsyId().equals(order.receiverId))
+				order.orderReceiver = profile;
+		}
+		
 		mPeople.add(profile);
 		mActiveVenue.setUserCount(mPeople.size());
 //		notifyObservers(PEOPLE_UPDATED);
@@ -552,15 +576,6 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	public long mOrderIDs = 0;
 
-
-
-	/**********
-	 * 
-	 * The order list is saved in the global application state. This is done to
-	 * avoid losing any orders while the other activities are swapped in and out
-	 * as the user navigates in different screens.
-	 * 
-	 */
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
 	public ArrayList<Order> mOrders = new ArrayList<Order>();
@@ -583,7 +598,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Make sure we have a valid order
 		if (order == null || order.serverID == null) {
-			this.syncAppWithServer("addOrder() encoutnered invalid order");
+			this.syncAppWithServer("addOrder() encountered invalid order");
 			return;
 		}
 
@@ -596,6 +611,26 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		// Set the order timeout based on the venue timeout value
 		order.timeOut = mActiveVenue.getOrderTimeout();
+		
+		// Try to find the sender in the list of people to have full picture/username detail
+		for (UserProfile profile : mPeople) {
+			if (profile.getBartsyId().equals(order.senderId)) {
+				order.orderSender = profile;
+			} else if (profile.getBartsyId().equals(order.receiverId)) {
+				order.orderReceiver = profile;
+			}
+		}
+		
+		// Make sure the order knows the bartsy ID of the profile on this phone to know who's the sender and who's the receiver
+		order.bartsyId = mProfile.getBartsyId();
+		
+		
+		// For now (hack) correct problems with setting the status in the Order constructor 
+		if (order.status == Order.ORDER_STATUS_OFFERED && order.senderId.equals(order.bartsyId)) {
+			order.status = Order.ORDER_STATUS_NEW;
+		}
+		
+
 		
 		// Add the order to the list of orders
 		mOrders.add(order);
@@ -718,6 +753,20 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * @param message
 	 */
 	
+	
+	synchronized public void performHeartbeat() {
+		
+		/* 
+		// Update venue, order and people counts
+		if (json.has("venueId"))
+			app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
+		else {
+			// We don't have an active venue - make sure we don't and delete local references
+			app.userCheckOut();
+		}
+*/
+	}
+	
 	synchronized public String syncAppWithServer(final String message) {
 		Log.w(TAG, ">>> Synchronize(" + message + ")");
 		if (syncUserProfile() == SYNC_RESULT_OK) {
@@ -811,7 +860,7 @@ public class BartsyApplication extends Application implements AppObservable {
 							orderJson.put("orderTimeout", mActiveVenue.getOrderTimeout());
 						
 						Order order = new Order(orderJson);
-						mOrders.add(order);
+						addOrder(order);
 					}
 				} else {
 					// We didn't get a response - keep our list
@@ -828,36 +877,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	}
 	
 
-	
-	/****
-	 * 
-	 * TODO - offered drinks nonsense
-	 * 
-	 */
-	
-	
-	public static final String DRINK_OFFERED = "DRINK_OFFERED";
-	public Order drinkOffered;
-	
-	/**
-	 * To display offer drink dialog in VenueActivity
-	 * 
-	 * @param order
-	 * @param senderBartsyId
-	 */
-	public void displayOfferDrink(Order order, String senderBartsyId){
-		drinkOffered = order;
-		// Try to search for profile based on senderBartsyId and set to order sender.
-		for (UserProfile profile : mPeople) {
-			if(senderBartsyId!=null && senderBartsyId.equals(profile.getBartsyId())){
-				order.orderSender = profile;
-				break;
-			}
-		}
-		// To display offer drink dialog
-		notifyObservers(DRINK_OFFERED);
-	}
-	
 	
 	/**
 	 * The spirit list is saved in the global application state. This is done to
@@ -1469,7 +1488,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * descriptive string which is then sent to all observers. They can decide
 	 * to act or not based on the content of the string.
 	 */
-	private void notifyObservers(Object arg) {
+	public void notifyObservers(Object arg) {
 		Log.v(TAG, "notifyObservers(" + arg + ")");
 		for (AppObserver obs : mObservers) {
 			Log.v(TAG, "notify observer = " + obs);

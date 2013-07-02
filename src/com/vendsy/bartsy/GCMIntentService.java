@@ -141,8 +141,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 					messageTypeMSG = null;
 					
 				}else if(json.getString("messageType").equals("DrinkOffered")){
-					// To display offer drink dialog
-					app.displayOfferDrink(new Order(json),json.getString("senderBartsyId"));
+					// Process offered drink order
+					
+					json.put("orderStatus", Order.ORDER_STATUS_OFFERED);
+					Order order = new Order(json);
+					app.addOrder(order);
+					
 					if(json.has("body")){
 						messageTypeMSG = json.getString("body");
 					}

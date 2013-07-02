@@ -72,13 +72,34 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" >
 
-                            <ImageView
-                                android:id="@+id/view_order_profile_picture"
-                                android:layout_width="75dp"
-                                android:layout_height="75dp"
-                                android:layout_marginRight="3dp"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/profile" />
+                            <RelativeLayout
+                                android:id="@+id/view_recipient"
+                                android:layout_width="100dp"
+                                android:layout_height="100dp"
+                                android:layout_marginRight="@dimen/activity_horizontal_margin" >
+
+                                <ImageView
+                                    android:id="@+id/view_order_recipient_image"
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="fill_parent"
+                                    android:clickable="true"
+                                    android:scaleType="centerCrop"
+                                    android:src="@drawable/profile" />
+
+                                <TextView
+                                    android:id="@+id/textView2"
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="30dp"
+                                    android:layout_alignParentBottom="true"
+                                    android:layout_alignParentTop="false"
+                                    android:layout_centerInParent="true"
+                                    android:layout_marginTop="10dp"
+                                    android:background="#88000000"
+                                    android:gravity="center"
+                                    android:text="Recipient"
+                                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                            </RelativeLayout>
 
                             <LinearLayout
                                 android:layout_width="fill_parent"
@@ -185,21 +206,88 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content" >
 
-                                    <TextView
-                                        android:id="@+id/textView1"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="For: "
-                                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                                    <TextView
-                                        android:id="@+id/view_order_profile_name"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
                                         android:layout_weight="2"
-                                        android:text="You"
-                                        android:textAppearance="?android:attr/textAppearanceMedium"
-                                        android:textStyle="bold" />
+                                        android:orientation="vertical" >
+
+                                        <LinearLayout
+                                            android:id="@+id/view_order_for"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content" >
+
+                                            <TextView
+                                                android:id="@+id/view_order_recipient"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_weight="2"
+                                                android:text="You"
+                                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                                android:textStyle="bold" />
+                                        </LinearLayout>
+
+                                        <FrameLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="0dp"
+                                            android:layout_weight="2" >
+
+                                        </FrameLayout>
+
+                                        <LinearLayout
+                                            android:id="@+id/view_order_from"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content" >
+
+                                            <FrameLayout
+                                                android:layout_width="0dp"
+                                                android:layout_height="match_parent"
+                                                android:layout_weight="2" >
+
+                                            </FrameLayout>
+
+                                            <TextView
+                                                android:id="@+id/view_order_sender"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                                                android:text="You"
+                                                android:textAppearance="?android:attr/textAppearanceSmall"
+                                                android:textColor="@android:color/darker_gray"
+                                                android:textStyle="bold" />
+
+                                        </LinearLayout>
+                                    </LinearLayout>
+
+                                    <RelativeLayout
+                                        android:id="@+id/view_sender"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:layout_marginRight="@dimen/activity_horizontal_margin" >
+
+                                        <ImageView
+                                            android:id="@+id/view_order_sender_image"
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="fill_parent"
+                                            android:clickable="true"
+                                            android:scaleType="centerCrop"
+                                            android:src="@drawable/profile" />
+
+                                        <TextView
+                                            android:id="@+id/TextView02"
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="20dp"
+                                            android:layout_alignParentBottom="true"
+                                            android:layout_alignParentLeft="true"
+                                            android:layout_centerHorizontal="true"
+                                            android:background="#88000000"
+                                            android:gravity="center"
+                                            android:text="Sender"
+                                            android:textAppearance="?android:attr/textAppearanceSmall"
+                                            android:textSize="12sp" />
+
+                                    </RelativeLayout>
+
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
@@ -316,7 +404,26 @@
                         style="?android:attr/buttonBarStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" >
+                        android:orientation="horizontal"
+                        android:visibility="gone" >
+
+                        <Button
+                            android:id="@+id/view_order_footer_reject"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Reject"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/view_order_footer_accept"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="Accept"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
