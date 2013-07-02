@@ -22,21 +22,14 @@ public class Order {
 	private static final String TAG = "Order";
 	
 	// Each order has an ID that is unique within a session number
-	public String clientID; // this is the client-side managed ID used to
-							// identify an order when status is received
-	public String serverID; // this is the server-side manager ID used to
-							// identify the order on the server and tablet
-	// and also to let the user know what order the shoudl be asking for when
-	// they get to the bartender
+	public String clientID; 
+	
+	// this is the server-side manager ID used to identify the order on the server and tablet 
+	public String serverID; 
 
 	// Title and description are arbitrary strings
 	public String title, description;
 	public String itemId;
-
-	// The total price is in the local denomination and is the sum of price *
-	// quantity, fee and tax
-
-	public int image_resource;
 	
 	// Dates
 	public String updatedDate;
@@ -44,32 +37,31 @@ public class Order {
 	public String createdDate;
 
 	
-	// Fees: total = base + tax + fee + tip
+	// total = base + tax + fee + tip
+    DecimalFormat df = new DecimalFormat();
 	public float baseAmount;
 	public float feeAmount;
 	public float taxAmount;
 	public float tipAmount;
 	public float totalAmount;
-	
-    DecimalFormat df = new DecimalFormat();
 
-
-	// Each order contains the sender and the recipient (another single in the
-	// bar or a friend to pick the order up)
+	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public UserProfile orderSender;
 	public UserProfile orderReceiver;
+	public String senderId = null;
+	public String receiverId = null;
+	public String bartsyId = null; // our id
 
-	// The view displaying this order or null. The view is the display of the
-	// order in a list.
-	// The list could be either on the client or the server and it looks
-	// different in both cases
-	// but the code manages the differences.
+	// The view displaying this order or null. The view is the display of the  order in a list.
+	// The list could be either on the client or the server and it looks different in both cases but the code manages the differences.
 	public View view = null;
 
 	// Order states
 	// (received) -> NEW -> (accepted) -> IN_PROGRESS -> (completed) -> READY -> (picked_up) -> COMPLETE 
-	//			  -> (timed out, error, etc) -> CANCELLED
 	// 						(rejected) -> REJECTED (failed) -> FAILED (forgotten) -> INCOMPLETE
+	//			  -> (timed out, error, etc) -> CANCELLED
+	//			  -> (no server updates, timeout) -> TIMEDOUT
+	// (offered)  -> OFFERED -> NEW...
 
 	public static final int ORDER_STATUS_NEW = 0;
 	public static final int ORDER_STATUS_REJECTED = 1;
@@ -79,15 +71,15 @@ public class Order {
 	public static final int ORDER_STATUS_COMPLETE = 5;
 	public static final int ORDER_STATUS_INCOMPLETE = 6;
 	public static final int ORDER_STATUS_CANCELLED = 7;
-	public static final int ORDER_STATUS_OFFERED = 8;
-	public static final int ORDER_STATUS_TIMEOUT = 8;  // this is a local status used on the phone for orders expired locally
-	public static final int ORDER_STATUS_COUNT = 9;
+	public static final int ORDER_STATUS_OFFER_REJECTED = 8;
+	public static final int ORDER_STATUS_OFFERED = 9;
+	
+	// These are local state (not sent to the  server used only for user notification purposes)
+	public static final int ORDER_STATUS_TIMEOUT = 10;  // this is a local status used on the phone for orders expired locally
+	public static final int ORDER_STATUS_COUNT = 11;
 	
 	public String type = "Custom";
 
-	// The states are implemented in a status variable and each state transition
-	
-	// has an associated time
 	public int status;
 	public int last_status;	// the previous status of this order (needed for timeouts in particular)
 	public int timeOut;			// time in minutes this order has before it times out (from the last updated state)
@@ -101,7 +93,7 @@ public class Order {
 	 */
 	public void initialize(String clientOrderID, String serverOrderID,
 			String title, String description, float baseAmount, float tipAmount,
-			String image_resource, UserProfile order_sender) {
+			String image_resource, UserProfile order_sender, UserProfile order_receiver) {
 		this.clientID = clientOrderID;
 		this.serverID = serverOrderID;
 		this.title = title;
@@ -113,10 +105,11 @@ public class Order {
 		this.taxAmount = baseAmount * Constants.taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
 		
-		this.image_resource = R.drawable.drinks; // for now always use the same
-													// picture for drinks
 		// this.image_resource = Integer.parseInt(image_resource);
 		this.orderSender = order_sender;
+		this.senderId = order_sender.getBartsyId();
+		this.orderReceiver = order_receiver;
+		this.receiverId = order_receiver.getBartsyId();
 
 		// Orders starts in the "NEW" status
 		this.status = ORDER_STATUS_NEW;
@@ -172,10 +165,11 @@ public class Order {
 			orderData.put("orderStatus", ORDER_STATUS_NEW);
 			orderData.put("description", description);
 			
-			// these fields are not used by the host but give a more details picture of the order
 			orderData.put("status", status);
 			orderData.put("orderTimeout", timeOut);
 			orderData.put("serverId", serverID);
+			orderData.put("senderId", senderId);
+			orderData.put("receiverId", receiverId);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -192,9 +186,6 @@ public class Order {
 	 */
 	public Order(JSONObject json) {
 
-		String sender = null;
-		String receiver = null;
-		
 		try {
 			status = Integer.valueOf(json.getString("orderStatus"));
 			state_transitions[status] = new Date(); // For now just use current date. the date should come in the syscall 
@@ -210,11 +201,16 @@ public class Order {
 			if (json.has("itemId"))
 				itemId = json.getString("itemId");
 
+			// Set up the sender of the drink and try to find that person in the list of people
 			if (json.has("senderBartsyId"))
-				sender = json.getString("senderBartsyId");
-			
-			if(json.has("recieverBartsyId"))
-				receiver = json.getString("recieverBartsyId");
+				senderId = json.getString("senderBartsyId");
+
+			if (json.has("bartsyId"))
+				receiverId = json.getString("bartsyId");
+			if (json.has("recieverBartsyId"))
+				receiverId = json.getString("recieverBartsyId");
+			if (json.has("receiverBartsyId"))
+				receiverId = json.getString("receiverBartsyId");
 			
 			if (json.has("description"))
 				description = json.getString("description");
@@ -224,6 +220,11 @@ public class Order {
 				status = Integer.parseInt(json.getString("orderStatus"));
 			else 
 				status = ORDER_STATUS_NEW;
+
+			// For now (hack) since the server is sending the wrong status for offered drinks, update it 
+			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
+				status = ORDER_STATUS_OFFERED;
+			}
 			
 			// Used only by the getPastOrders syscall
 			if (json.has("dateCreated")) 
@@ -254,6 +255,9 @@ public class Order {
 			
 			// Set up last status based on current status
 			switch (status) {
+			case ORDER_STATUS_OFFERED:
+				last_status = status;
+				break;
 			case ORDER_STATUS_NEW:
 				last_status = status;
 				break;
@@ -291,6 +295,10 @@ public class Order {
 	 */
 	public void nextPositiveState() {
 		switch (this.status) {
+		case ORDER_STATUS_OFFERED:
+			last_status = status;
+			this.status = ORDER_STATUS_NEW;
+			break;
 		case ORDER_STATUS_NEW:
 			last_status = status;
 			this.status = ORDER_STATUS_IN_PROGRESS;
@@ -340,6 +348,10 @@ public class Order {
 		int oldStatus = status;
 		
 		switch (status) {
+		case ORDER_STATUS_OFFERED:
+			last_status = status;
+			status = ORDER_STATUS_OFFER_REJECTED;
+			break;
 		case ORDER_STATUS_NEW:
 			last_status = status;
 			status = ORDER_STATUS_REJECTED;
@@ -376,7 +388,7 @@ public class Order {
 
 		// Update item details
 		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
-		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
+		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title + getTitleModifier());
 		if (description != null || description.equalsIgnoreCase(""))
 			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
 		else
@@ -386,13 +398,24 @@ public class Order {
 		updateTipTaxTotalView(tipAmount, taxAmount, totalAmount);
 		
 		// To display order receiver profile information in orders view
-		if(orderReceiver!=null){
-			updateProfileView(orderReceiver);
-		} else {
-			view.findViewById(R.id.view_order_profile_picture).setVisibility(View.GONE);
-		}
+		updateProfileView();
 
 		switch (this.status) {
+		case ORDER_STATUS_OFFERED:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"You were offered a drink by " + senderId + ".\nAccept it or let it timeout");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+			view.findViewById(R.id.view_order_footer).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_footer_reject).setTag(this);
+			view.findViewById(R.id.view_order_footer_accept).setTag(this);
+			break;
+		case ORDER_STATUS_OFFER_REJECTED:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Your drink offer was rejected by " + receiverId + ".");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			break;
 		case ORDER_STATUS_NEW:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is waiting to be accepted.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
@@ -494,28 +517,84 @@ public class Order {
 	 * 
 	 * @param profile
 	 */
-	private void updateProfileView(UserProfile profile) {
+	private void updateProfileView() {
 		
-		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_order_profile_picture));
-		// Set profile image
-		if (!profile.hasImage() && profileImageView!=null) {
-			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile, profileImageView);
+		// Show sender details
+		if (orderSender != null && senderId != null && receiverId != null && !senderId.equals(receiverId)) {
+
+			// Display or download image if available
+			if (orderSender.hasImage()) {
+				((ImageView)view.findViewById(R.id.view_order_sender_image)).setImageBitmap(orderSender.getImage());
+			} else if (orderSender.hasImagePath()) {
+				WebServices.downloadImage(Constants.DOMAIN_NAME + orderSender.getImagePath(), orderSender, ((ImageView)view.findViewById(R.id.view_order_sender_image)));
+			} else {
+				view.findViewById(R.id.view_sender).setVisibility(View.GONE);
+				view.findViewById(R.id.view_order_from).setVisibility(View.GONE);
+			}
+
+			// Show nick name if available
+			if (orderSender.hasNickname())  {
+				((TextView) view.findViewById(R.id.view_order_sender)).setText(orderSender.getNickname());	
+			} else {
+				view.findViewById(R.id.view_order_from).setVisibility(View.GONE);					
+			}
 		} else {
-			profileImageView.setImageBitmap(profile.getImage());
+			view.findViewById(R.id.view_sender).setVisibility(View.GONE);
+			view.findViewById(R.id.view_order_from).setVisibility(View.GONE);
 		}
 		
-	
-		// Show the username of the recipient
-		((TextView) view.findViewById(R.id.view_order_profile_name)).setText(profile.getNickname());	
+		// Show receiver details
+		if (orderReceiver != null) {
+
+			// Display or download image if available
+			if (orderReceiver.hasImage()) {
+				((ImageView)view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(orderReceiver.getImage());
+			} else if (orderReceiver.hasImagePath()) {
+				WebServices.downloadImage(Constants.DOMAIN_NAME + orderReceiver.getImagePath(), orderReceiver, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
+			} else {
+				view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
+				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);
+			}
+
+			// Show nick name if available
+			if (orderReceiver.hasNickname())  {
+				((TextView) view.findViewById(R.id.view_order_recipient)).setText(orderReceiver.getNickname());	
+			} else {
+				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);					
+			}
+		} else {
+			view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
+			view.findViewById(R.id.view_order_for).setVisibility(View.GONE);
+		}
+		
+		
 	}
 
+	private String getTitleModifier() {
+		
+		String recipient = "";
+		if (!receiverId.equals(bartsyId)) {
+			if (orderReceiver != null) 
+				recipient = "\n(for: " + orderReceiver.getNickname() + ")";
+			else 
+				recipient = "\n(for another user)";
+		} else if (!senderId.equals(bartsyId)){
+			if (orderSender != null)
+				recipient = "\n(from: " + orderReceiver.getNickname() + ")";
+			else 
+				recipient = "\n(from another user)";
+		}
+		return recipient;
+	}
 	
 	public View getMiniView(LayoutInflater inflater, ViewGroup container ) {
 		
 		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
 		
 		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
-		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title);
+
+		
+		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title + getTitleModifier());
 		if (description != null || description.equalsIgnoreCase(""))
 			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
 		else
@@ -526,4 +605,3 @@ public class Order {
 
 
 }
- 
