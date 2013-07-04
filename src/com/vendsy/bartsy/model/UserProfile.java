@@ -73,6 +73,7 @@ public class UserProfile {
 	ArrayList<UserProfile> likes  = null;
 	ArrayList<UserProfile> favorites  = null;
 
+	private boolean imageDownloaded;
 	
 	/**
 	 * Default constructor
@@ -197,7 +198,14 @@ public class UserProfile {
 			
 	}
 	
-	
+	public boolean isImageDownloaded() {
+		return imageDownloaded;
+	}
+
+	public void setImageDownloaded(boolean imageDownloaded) {
+		this.imageDownloaded = imageDownloaded;
+	}
+
 	/*
 	 * Constructor using Facebook profile JSON as a base.  
 	 * 
@@ -449,7 +457,7 @@ public class UserProfile {
 	}
 
 	public boolean hasCreditCardNumber() {
-		if (creditCardNumber == null || creditCardNumber.equalsIgnoreCase(""))
+		if (creditCardNumber == null || creditCardNumber.equalsIgnoreCase("") || creditCardNumber.length()<13)
 			return false;
 		else 
 			return true;
@@ -605,7 +613,7 @@ public class UserProfile {
 	}
 
 	public boolean hasImage() {
-		if (image == null)
+		if (image == null && !imageDownloaded)
 			return false;
 		else 
 			return true;
