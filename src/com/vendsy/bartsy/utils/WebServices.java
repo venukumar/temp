@@ -55,11 +55,12 @@ public class WebServices {
 	
 
 	// Google API project id registered to use GCM.
-// public static final String SENDER_ID = "227827031375";
+//	public static final String SENDER_ID = "227827031375";
 	public static final String SENDER_ID = "605229245886"; // dev 
 //	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
+// 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
 //	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
@@ -81,7 +82,7 @@ public class WebServices {
 	public static final String URL_UPDATE_OFFERED_DRINK = DOMAIN_NAME + PROJECT_NAME + "order/updateOfferedDrinkStatus";
 	public static final String URL_GET_PAST_ORDERS = DOMAIN_NAME + PROJECT_NAME + "order/getPastOrders";
 	public static final String URL_UPDATE_ORDER_STATUS = DOMAIN_NAME + PROJECT_NAME + "order/updateOrderStatus";
-	
+	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
 
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "1";
@@ -834,6 +835,29 @@ public class WebServices {
 	}
 	
 	/**
+	 *  Get notification sys call
+	 */
+	public static String getNotifications(Context context, String bartsyId, String venueID){
+		String response = null;
+		// Post data to get notification which is related to user and checkedin venue
+		JSONObject postData = new JSONObject();
+		try {
+			postData.put("venueId", venueID);
+			postData.put("bartsyId", bartsyId);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		// Webservice call to get the notification data from server
+		try {
+			response = WebServices.postRequest(URL_GET_NOTIFICATIONS, postData, context);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return response;
+	}
+	
+	/**
 	 * Service call to change order status
 	 * 
 	 * @param order
@@ -891,6 +915,7 @@ public class WebServices {
 				if (result != null) {
 
 					profile.setImage(result);
+					profile.setImageDownloaded(true);
 					
 					// Set bitmap image to profile image view
 					if (imageView != null) {
