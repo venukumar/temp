@@ -162,7 +162,9 @@
             android:theme="@style/Theme.Sherlock" 
             >
         </activity>
-
+		<activity android:name=".NotificationsActivity"
+            android:screenOrientation="portrait">
+        </activity>
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -192,8 +194,7 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyB7glbDqha_iJiS9ryvkWPUrjMcxitm9zw" /> 
-          -->
-          
+        -->
          <!-- Start of Crittercism.com Code -->
         <activity android:name="com.crittercism.NotificationActivity" />
 

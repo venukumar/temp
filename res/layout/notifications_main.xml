@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android1="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+	        <LinearLayout
+	            android1:id="@+id/people_notifications"
+	            android1:layout_width="match_parent"
+	            android1:layout_height="wrap_content"
+	            android1:divider="?android:dividerVertical"
+	    		android1:dividerPadding="@dimen/activity_vertical_margin"
+	            android1:orientation="vertical" 
+	             android:showDividers="middle|end">
+	        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
