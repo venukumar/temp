@@ -138,7 +138,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			this.startActivity(intent);
 			break;
 		case R.id.button_notifications:
-			// For now don't do anything
+			intent = new Intent().setClass(this, NotificationsActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
 			break;
 		case R.id.button_my_profile:
 			
