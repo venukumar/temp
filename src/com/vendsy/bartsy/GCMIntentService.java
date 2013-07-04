@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 package com.vendsy.bartsy;
-
-import static com.vendsy.bartsy.utils.Utilities.SENDER_ID;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.util.Log;
-
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.model.Order;
@@ -49,12 +39,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	public GCMIntentService() {
 
-		super(SENDER_ID);
+		super(WebServices.SENDER_ID);
 	}
 
 	@Override
 	protected void onRegistered(Context context, String registrationId) {
-		Log.v(TAG, "senderid ::: " + SENDER_ID);
+		Log.v(TAG, "senderid ::: " + WebServices.SENDER_ID);
 		Log.v(TAG, "Device registered: regId = " + registrationId);
 
 		SharedPreferences settings = getSharedPreferences(REG_ID, 0);
@@ -104,65 +94,54 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 */
 	private String processPushNotification(String message) {
 		BartsyApplication app = (BartsyApplication) getApplication();
-		String messageTypeMSG = "";
+		String messageTypeMSG = null;
 		try {
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")) {
 
 				if (json.getString("messageType").equals("updateOrderStatus")) {
 					// Handle updateOrderStatus from Push Notification
-					messageTypeMSG = app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));;
+//					messageTypeMSG = app.updateOrder(json.getString("orderId"), json.getString("orderStatus"));;
+	
+					app.syncOrders();
 					
 				} else if(json.getString("messageType").equals("orderTimeout")) {
 					// Handle orderTimeout from Push Notification. Time Out is based on venue configuration
-					messageTypeMSG = app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));;
-					
-				} else if (json.getString("messageType").equals("heartBeat")) {
-					// Handle heart beat ping. 
-					Log.v(TAG, "Heartbeat" + json);
-					
-					// Bartsy ID mismatch - don't send response for now
-					if (app.loadBartsyId() == null ||
-							!app.loadBartsyId().equalsIgnoreCase(json.getString("bartsyId"))) {
-						Log.e(TAG, "Received hearbeat for user " + json.getString("bartsyId") + " instead of local user: " + app.loadBartsyId());
-						return null;
-					}
-					
-					// Update venue, order and people counts
-					if (json.has("venueId"))
-						app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
-					else {
-						// We don't have an active venue - make sure we don't and delete local references
-						app.userCheckOut();
-					}
-					
-					// Send reply to host
-					WebServices.postHeartbeatResponse(app.getApplicationContext(), app.loadBartsyId(), app.mActiveVenue == null ? "" : app.mActiveVenue.getId());
-					messageTypeMSG = null;
-					
+//					messageTypeMSG = app.updateOrder(json.getString("cancelledOrder"),json.getString("orderStatus"));;
+
+					app.syncOrders();
+									
 				}else if(json.getString("messageType").equals("DrinkOffered")){
 					// Process offered drink order
 					
 					json.put("orderStatus", Order.ORDER_STATUS_OFFERED);
 					Order order = new Order(json);
-					app.addOrder(order);
+//					app.addOrder(order);
 					
 					if(json.has("body")){
-						messageTypeMSG = json.getString("body");
+//						messageTypeMSG = json.getString("body");
 					}
-				}
 				
-				// When other person accept offer drink
-				else if(json.getString("messageType").equals("DrinkOfferAccepted")){
-					if(json.has("body")){
-						messageTypeMSG = json.getString("body");
+					app.syncOrders();
+					
+				} else if(json.getString("messageType").equals("DrinkOfferAccepted")){
+
+					// When other person accept offer drink
+					if(json.has("body")) {
+//						messageTypeMSG = json.getString("body");
 					}
+
+					app.syncOrders();
+
 				}
 				// When other person reject offer drink
 				else if(json.getString("messageType").equals("DrinkOfferRejected")){
 					if(json.has("body")){
-						messageTypeMSG = json.getString("body");
+//						messageTypeMSG = json.getString("body");
 					}
+				
+					app.syncOrders();
+
 				}
 			}
 		} catch (JSONException e) {

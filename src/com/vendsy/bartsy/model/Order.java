@@ -1,6 +1,7 @@
 package com.vendsy.bartsy.model;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -48,9 +48,13 @@ public class Order {
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public UserProfile orderSender;
 	public UserProfile orderReceiver;
-	public String senderId = null;
-	public String receiverId = null;
 	public String bartsyId = null; // our id
+	public String senderId = null;
+	public String senderNickname = null;
+	public String senderImagePath = null;
+	public String recipientId = null;
+	public String recipientNickname = null;
+	public String recipientImagePath = null;
 
 	// The view displaying this order or null. The view is the display of the  order in a list.
 	// The list could be either on the client or the server and it looks different in both cases but the code manages the differences.
@@ -63,20 +67,22 @@ public class Order {
 	//			  -> (no server updates, timeout) -> TIMEDOUT
 	// (offered)  -> OFFERED -> NEW...
 
-	public static final int ORDER_STATUS_NEW = 0;
-	public static final int ORDER_STATUS_REJECTED = 1;
-	public static final int ORDER_STATUS_IN_PROGRESS = 2;
-	public static final int ORDER_STATUS_READY = 3;
-	public static final int ORDER_STATUS_FAILED = 4;
-	public static final int ORDER_STATUS_COMPLETE = 5;
-	public static final int ORDER_STATUS_INCOMPLETE = 6;
-	public static final int ORDER_STATUS_CANCELLED = 7;
+	public static final int ORDER_STATUS_NEW 			= 0;
+	public static final int ORDER_STATUS_REJECTED 		= 1;
+	public static final int ORDER_STATUS_IN_PROGRESS 	= 2;
+	public static final int ORDER_STATUS_READY 			= 3;
+	public static final int ORDER_STATUS_FAILED 		= 4;
+	public static final int ORDER_STATUS_COMPLETE 		= 5;
+	public static final int ORDER_STATUS_INCOMPLETE 	= 6;
+	public static final int ORDER_STATUS_CANCELLED 		= 7;
 	public static final int ORDER_STATUS_OFFER_REJECTED = 8;
-	public static final int ORDER_STATUS_OFFERED = 9;
+	public static final int ORDER_STATUS_OFFERED 		= 9;
+	public static final int ORDER_STATUS_REMOVED		= 10;
+
 	
 	// These are local state (not sent to the  server used only for user notification purposes)
-	public static final int ORDER_STATUS_TIMEOUT = 10;  // this is a local status used on the phone for orders expired locally
-	public static final int ORDER_STATUS_COUNT = 11;
+	public static final int ORDER_STATUS_TIMEOUT = 11;  // this is a local status used on the phone for orders expired locally
+	public static final int ORDER_STATUS_COUNT = 12;
 	
 	public String type = "Custom";
 
@@ -109,7 +115,7 @@ public class Order {
 		this.orderSender = order_sender;
 		this.senderId = order_sender.getBartsyId();
 		this.orderReceiver = order_receiver;
-		this.receiverId = order_receiver.getBartsyId();
+		this.recipientId = order_receiver.getBartsyId();
 
 		// Orders starts in the "NEW" status
 		this.status = ORDER_STATUS_NEW;
@@ -150,7 +156,23 @@ public class Order {
 		return orderData;
 	}
 
-
+	/**
+	 * It will returns JSON format to update order status
+	 */
+	public JSONObject statusChangedJSON(){
+		final JSONObject orderData = new JSONObject();
+		try {
+			orderData.put("orderId", serverID);
+			orderData.put("orderStatus", status);
+			orderData.put("orderRejectionReason", errorReason);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return orderData;
+	}
+	
+	
 	@Override
 	public String toString() {
 		
@@ -169,7 +191,7 @@ public class Order {
 			orderData.put("orderTimeout", timeOut);
 			orderData.put("serverId", serverID);
 			orderData.put("senderId", senderId);
-			orderData.put("receiverId", receiverId);
+			orderData.put("receiverId", recipientId);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -177,6 +199,43 @@ public class Order {
 		return orderData.toString();
 	}
 	
+	public String readableStatus() {
+		String message = "";
+		
+		switch(status) {
+		case ORDER_STATUS_NEW:
+			message = title + " order placed.\nWe will let you know when it's in progress.";
+			break;
+		case ORDER_STATUS_REJECTED:
+			message = title + " order rejected.\nUnfortunately the venue could not prepare it.";
+			break;
+		case ORDER_STATUS_IN_PROGRESS:
+			message = title + " order in progress.\nIt should be ready in less than a minute.";
+			break;
+		case ORDER_STATUS_READY:
+			message = title + " order ready.\nYou have " + timeOut + " minutes to pick it up, then you will be charged!";
+			break;
+		case ORDER_STATUS_FAILED:
+			message = title + " order failed.\nPlease check with the venue.";
+			break;
+		case ORDER_STATUS_COMPLETE:
+			message = title + " order picked up.\nPlease make sure you have it.";
+			break;
+		case ORDER_STATUS_INCOMPLETE:
+			message = title + " not picked up.\nYou were charged for it because you didn't pick it up on time. Check with the venue for all refunds.";
+			break;
+		case ORDER_STATUS_CANCELLED:
+			message = title + " timed out.\nIt was taking too long.";
+			break;
+		case ORDER_STATUS_OFFERED:
+			message = title + " offered.\nAccept/reject?";
+			break;
+		case ORDER_STATUS_OFFER_REJECTED:
+			message = title + " rejected.\nYour drink offer was not accepted";
+			break;
+		}
+		return message;
+	}
 	
 	
 	/**
@@ -201,16 +260,25 @@ public class Order {
 			if (json.has("itemId"))
 				itemId = json.getString("itemId");
 
-			// Set up the sender of the drink and try to find that person in the list of people
 			if (json.has("senderBartsyId"))
 				senderId = json.getString("senderBartsyId");
+			if (json.has("senderNickname"))
+				senderNickname = json.getString("senderNickname");
+			if (json.has("senderImagePath"))
+				senderImagePath = json.getString("senderImagePath");
 
 			if (json.has("bartsyId"))
-				receiverId = json.getString("bartsyId");
+				recipientId = json.getString("bartsyId");
 			if (json.has("recieverBartsyId"))
-				receiverId = json.getString("recieverBartsyId");
+				recipientId = json.getString("recieverBartsyId");
 			if (json.has("receiverBartsyId"))
-				receiverId = json.getString("receiverBartsyId");
+				recipientId = json.getString("receiverBartsyId");			
+			if (json.has("recipientBartsyId"))
+				recipientId = json.getString("recipientBartsyId");
+			if (json.has("recipientNickname"))
+				recipientNickname = json.getString("recipientNickname");
+			if (json.has("recipientImagePath"))
+				recipientImagePath = json.getString("recipientImagePath");
 			
 			if (json.has("description"))
 				description = json.getString("description");
@@ -222,9 +290,9 @@ public class Order {
 				status = ORDER_STATUS_NEW;
 
 			// For now (hack) since the server is sending the wrong status for offered drinks, update it 
-			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
-				status = ORDER_STATUS_OFFERED;
-			}
+//			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
+//				status = ORDER_STATUS_OFFERED;
+//			}
 			
 			// Used only by the getPastOrders syscall
 			if (json.has("dateCreated")) 
@@ -288,93 +356,67 @@ public class Order {
 			d = Utilities.getLocalDateFromGTMString(createdDate, "d MMM yyyy HH:mm:ss 'GMT'");
 		return d;
 	}
-
 	
-	/**
-	 * To process next positive state for the 0rder
-	 */
-	public void nextPositiveState() {
-		switch (this.status) {
-		case ORDER_STATUS_OFFERED:
-			last_status = status;
-			this.status = ORDER_STATUS_NEW;
-			break;
-		case ORDER_STATUS_NEW:
-			last_status = status;
-			this.status = ORDER_STATUS_IN_PROGRESS;
-			break;
-		case ORDER_STATUS_IN_PROGRESS:
-			last_status = status;
-			this.status = ORDER_STATUS_READY;
-			break;
-		case ORDER_STATUS_READY:
-			last_status = status;
-			this.status = ORDER_STATUS_COMPLETE;
-			break;
+
+	public String getRecipientName(ArrayList<UserProfile> people) {
+ 
+		if (recipientNickname != null)
+			return recipientNickname;
+		
+		if (orderReceiver != null)
+			return orderReceiver.getName();
+		
+		if (recipientId == null)
+			return "<unkown>";
+					
+		for (UserProfile p : people) {
+			if (p.getBartsyId().equals(recipientId)) {
+				// User found
+				orderReceiver = p;
+				return p.getName();
+			}
 		}
-
-		// Mark the time of the state transition in the timetable
-		state_transitions[status] = new Date();
+		return "<unkown>";
 	}
+	
+	
 
-	public void setCancelledState() {
+	public void updateStatus(int status) {
+		
+		if (status == ORDER_STATUS_REMOVED) {
+			Log.i(TAG, "Skipping status update of order " + serverID + " from " + this.status + " to " + status + " with last status " + last_status);
+			return;
+		}
 		
 		last_status = status;
-		status = ORDER_STATUS_CANCELLED;
+		this.status = status;
 		state_transitions[status] = new Date();
+
+		// Log the state change and update the order with an error reason
+		Log.i(TAG, "Order " + serverID + " changed status from " + last_status + " to " + status + " for reason: "  + errorReason);
+//		this.errorReason = errorReason;
 	}
+	
 
 	public void setTimeoutState() {
 		
-		// Don't change orders that have already this status because their last_status would get lost
-		if (status == ORDER_STATUS_TIMEOUT ||
-				status == ORDER_STATUS_REJECTED ||
-				status == ORDER_STATUS_FAILED ||
-				status == ORDER_STATUS_INCOMPLETE) 
+		Log.v(TAG, "setTimeoutState()");
+
+		if (status == ORDER_STATUS_NEW || status == ORDER_STATUS_READY || status == ORDER_STATUS_IN_PROGRESS) {
+			// Change status of orders 
+			last_status = status;
+			status = ORDER_STATUS_TIMEOUT;
+			state_transitions[status] = new Date();
+			errorReason = "Server unreachable. Check your internet connection and notify Bartsy customer support.";
+
+			Log.v(TAG, "Order " + this.serverID + " moved from state " + last_status + " to timeout state " + status);
+		} else {
+			Log.v(TAG, "Order " + this.serverID + "with last status " + last_status + " not changed to timeout status because the status was " + status + " with reason " + errorReason);
 			return;
-		
-		last_status = status;
-		status = ORDER_STATUS_CANCELLED;
-		state_transitions[status] = new Date();
+		}
 	}
 
-	/**
-	 * To process next negative state for the order
-	 */
-	
-	public void nextNegativeState(String errorReason) {
-		
-		
-		int oldStatus = status;
-		
-		switch (status) {
-		case ORDER_STATUS_OFFERED:
-			last_status = status;
-			status = ORDER_STATUS_OFFER_REJECTED;
-			break;
-		case ORDER_STATUS_NEW:
-			last_status = status;
-			status = ORDER_STATUS_REJECTED;
-			break;
-		case ORDER_STATUS_IN_PROGRESS:
-			last_status = status;
-			status = ORDER_STATUS_FAILED;
-			break;
-		case ORDER_STATUS_READY:
-			last_status = status;
-			status = ORDER_STATUS_INCOMPLETE;
-			break;
-		}
-		
-		// Log the state change and update the order with an error reason
-		Log.i(TAG, "Order " + serverID + " changed status from " + oldStatus + " to " + status + " for reason: "  + errorReason);
-		this.errorReason = errorReason;
-		
-		// Mark the time of the state transition in the timetable
-		state_transitions[status] = new Date();
-	}
-	
-	
+
 	public View updateView(LayoutInflater inflater, ViewGroup container) {
 
 		Log.v(TAG, "updateView()");
@@ -400,10 +442,14 @@ public class Order {
 		// To display order receiver profile information in orders view
 		updateProfileView();
 
-		switch (this.status) {
+		int orderStatus = status;
+		if (orderStatus == ORDER_STATUS_REMOVED)
+			orderStatus = last_status;
+		
+		switch (orderStatus) {
 		case ORDER_STATUS_OFFERED:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"You were offered a drink by " + senderId + ".\nAccept it or let it timeout");
+					"You were offered a drink!");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
 			view.findViewById(R.id.view_order_footer).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_footer_reject).setTag(this);
@@ -411,7 +457,7 @@ public class Order {
 			break;
 		case ORDER_STATUS_OFFER_REJECTED:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your drink offer was rejected by " + receiverId + ".");
+					"Your drink offer was rejected by " + recipientId + ".");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
@@ -456,6 +502,13 @@ public class Order {
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
+		case ORDER_STATUS_COMPLETE:
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
+					"Your order was picked up.");
+			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
+			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			break;
 		case ORDER_STATUS_TIMEOUT:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
 					"Connectivity issues. Check with the venue immediately.");
@@ -479,7 +532,7 @@ public class Order {
 		((TextView) view.findViewById(R.id.view_order_timer)).setText(String.valueOf((int)elapsed_min)+" min");
 
 		// Handle timeout views
-		if (status == ORDER_STATUS_CANCELLED || status == ORDER_STATUS_TIMEOUT) {
+		if (orderStatus == ORDER_STATUS_CANCELLED || orderStatus == ORDER_STATUS_TIMEOUT) {
 
 			// Update timeout counter to always be expired even if there is some left (due to clock inconsistencies between local and server)
 			((TextView) view.findViewById(R.id.view_order_timeout_value)).setText("Expired");
@@ -520,13 +573,13 @@ public class Order {
 	private void updateProfileView() {
 		
 		// Show sender details
-		if (orderSender != null && senderId != null && receiverId != null && !senderId.equals(receiverId)) {
+		if (orderSender != null && senderId != null && recipientId != null && !senderId.equals(recipientId)) {
 
 			// Display or download image if available
 			if (orderSender.hasImage()) {
 				((ImageView)view.findViewById(R.id.view_order_sender_image)).setImageBitmap(orderSender.getImage());
 			} else if (orderSender.hasImagePath()) {
-				WebServices.downloadImage(Constants.DOMAIN_NAME + orderSender.getImagePath(), orderSender, ((ImageView)view.findViewById(R.id.view_order_sender_image)));
+				WebServices.downloadImage(orderSender, ((ImageView)view.findViewById(R.id.view_order_sender_image)));
 			} else {
 				view.findViewById(R.id.view_sender).setVisibility(View.GONE);
 				view.findViewById(R.id.view_order_from).setVisibility(View.GONE);
@@ -550,7 +603,7 @@ public class Order {
 			if (orderReceiver.hasImage()) {
 				((ImageView)view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(orderReceiver.getImage());
 			} else if (orderReceiver.hasImagePath()) {
-				WebServices.downloadImage(Constants.DOMAIN_NAME + orderReceiver.getImagePath(), orderReceiver, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
+				WebServices.downloadImage(orderReceiver, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
 			} else {
 				view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
 				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);
@@ -573,7 +626,7 @@ public class Order {
 	private String getTitleModifier() {
 		
 		String recipient = "";
-		if (!receiverId.equals(bartsyId)) {
+		if (!recipientId.equals(bartsyId)) {
 			if (orderReceiver != null) 
 				recipient = "\n(for: " + orderReceiver.getNickname() + ")";
 			else 

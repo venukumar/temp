@@ -223,10 +223,11 @@ public class MapActivity extends Activity implements LocationListener,
 		for (int i = 0; i < venues.size(); i++) {
 			Venue venue = venues.get(i);
 
-			LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()), Float.valueOf(venue.getLongitude()));
-			mMap.addMarker(new MarkerOptions().position(coord).title(venue.getName())
-					.snippet(venue.getUserCount() == 1 ? "person" : "people" + 
-							" checked in: " + venue.getUserCount()));
+			if (venue.hasLatLong()) {
+				LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()), Float.valueOf(venue.getLongitude()));
+				mMap.addMarker(new MarkerOptions().position(coord).title(venue.getName())
+						.snippet(venue.getUserCount() == 1 ? "person" : "people checked in: " + venue.getUserCount()));
+			}
 		}
 	}
 
@@ -320,7 +321,7 @@ public class MapActivity extends Activity implements LocationListener,
 			public void run() {
 				
 				// Invoke the user checkin syscall
-				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyId(), venue.getId(), Constants.URL_USER_CHECK_IN);
+				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_IN);
 
 				if (response != null) {
 					try {
@@ -419,6 +420,14 @@ public class MapActivity extends Activity implements LocationListener,
 		
 		@Override
 		public int compare(Venue arg0, Venue arg1) {
+			
+			// Display venues with no location at the bottom of the list
+			if ( !arg0.hasLatLong() && !arg1.hasLatLong())
+				return 0;
+			if (!arg0.hasLatLong())
+				return 1;
+			if (!arg1.hasLatLong())
+				return -1;
 			
 			Location loc0 = new Location(LocationManager.NETWORK_PROVIDER);
 			loc0.setLatitude(Double.parseDouble(arg0.getLatitude()));

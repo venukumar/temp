@@ -92,7 +92,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 					// Webservice call for to get the checkedIn people
 					try {
 						response = WebServices.postRequest(
-								Constants.URL_LIST_OF_CHECKED_IN_USERS,
+								WebServices.URL_LIST_OF_CHECKED_IN_USERS,
 								postData, mApp.getApplicationContext());
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -161,7 +161,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 								profile = new UserProfile();
 								profile.setBartsyId(bartsyID);
 								profile.setNickname(nickName);
-								profile.setImagePath(imagepath);
+								profile.setImagePath(WebServices.DOMAIN_NAME + imagepath);
 							}
 							
 							// Add profile (new or old) to the existing people list

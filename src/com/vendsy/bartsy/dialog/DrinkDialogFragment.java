@@ -135,7 +135,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));
 		
 		if (!profile.hasImage()) {
-			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile, profileImageView);
+			WebServices.downloadImage(profile, profileImageView);
 		} else {
 			profileImageView.setImageBitmap(profile.getImage());
 		}
@@ -207,9 +207,12 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 				// Gets a reference to our "selected" radio button
 				RadioButton b = (RadioButton) tipPercentage.findViewById(selected);
-				if (b == null || b.getText().toString().trim().length() == 0) 
-					tipAmount = Float.parseFloat(percentage.getText().toString()) ;
-				else 
+				if (b == null || b.getText().toString().trim().length() == 0) {
+					String tip="0";
+					if (percentage.getText()!= null)
+						tip = percentage.getText().toString();
+					tipAmount = Float.parseFloat(tip) ;
+				} else 
 					tipAmount = Float.parseFloat(b.getText().toString().replace("%", "")) / (float) 100 * drink.getPrice();
 
 				mListener.onDialogPositiveClick(DrinkDialogFragment.this);

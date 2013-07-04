@@ -63,27 +63,32 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 			view.findViewById(R.id.view_map_wifi).setVisibility(View.GONE);
 
 		// Compute distance to user
-		String locationProvider = LocationManager.NETWORK_PROVIDER;
-		Location currentLocation = lm.getLastKnownLocation(locationProvider);
-		Location venueLocation = new Location(LocationManager.NETWORK_PROVIDER);
-		venueLocation.setLatitude(Double.parseDouble(venue.getLatitude()));
-		venueLocation.setLongitude(Double.parseDouble(venue.getLongitude()));
-		float distance=-1;
-		if(currentLocation!=null){
-			distance = venueLocation.distanceTo(currentLocation) * (float) 0.00062137;
+		if (venue.hasLatLong()) {
+			String locationProvider = LocationManager.NETWORK_PROVIDER;
+			Location currentLocation = lm.getLastKnownLocation(locationProvider);
+			Location venueLocation = new Location(LocationManager.NETWORK_PROVIDER);
+			venueLocation.setLatitude(Double.parseDouble(venue.getLatitude()));
+			venueLocation.setLongitude(Double.parseDouble(venue.getLongitude()));
+			float distance=-1;
+			if(currentLocation!=null){
+				distance = venueLocation.distanceTo(currentLocation) * (float) 0.00062137;
+			}
+	
+			// Format distance
+			DecimalFormat df = new DecimalFormat();
+			df.setMaximumFractionDigits(2);
+			df.setMinimumFractionDigits(2);
+	
+			// Display distance
+			if(distance==-1){
+				((TextView) view.findViewById(R.id.view_map_distance)).setText("-");
+			}else{
+				((TextView) view.findViewById(R.id.view_map_distance)).setText(df.format(distance));
+			}
+		} else {
+			((TextView) view.findViewById(R.id.view_map_distance)).setText("-");
 		}
-
-		// Format distance
-		DecimalFormat df = new DecimalFormat();
-		df.setMaximumFractionDigits(2);
-		df.setMinimumFractionDigits(2);
-
-		// Display distance
-		if(distance==-1){
-			((TextView) view.findViewById(R.id.view_map_distance)).setText("UN KNOWN");
-		}else{
-			((TextView) view.findViewById(R.id.view_map_distance)).setText(df.format(distance));
-		}
+		
 
 		return view;
 	}

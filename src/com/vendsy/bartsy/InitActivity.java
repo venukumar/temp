@@ -97,11 +97,11 @@ public class InitActivity extends SherlockFragmentActivity implements
 			signInListeners();
 
 		// Check and set development environment display
-		if (Constants.DOMAIN_NAME.equalsIgnoreCase("http://54.235.76.180:8080/") && 
-				Utilities.SENDER_ID.equalsIgnoreCase("605229245886")) 
+		if (WebServices.DOMAIN_NAME.equalsIgnoreCase("http://54.235.76.180:8080/") && 
+				WebServices.SENDER_ID.equalsIgnoreCase("605229245886")) 
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("Server: DEV");
-		else if (Constants.DOMAIN_NAME.equalsIgnoreCase("http://app.bartsy.vendsy.com/") && 
-				Utilities.SENDER_ID.equalsIgnoreCase("560663323691")) 
+		else if (WebServices.DOMAIN_NAME.equalsIgnoreCase("http://app.bartsy.vendsy.com/") && 
+				WebServices.SENDER_ID.equalsIgnoreCase("560663323691")) 
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("Server: PROD");
 		else 
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("** INCONSISTENT DEPLOYMENT **");

@@ -145,8 +145,7 @@ public class OrderCustomDrinkActivity extends Activity{
 		ImageView profileImageView = ((ImageView)ordersView.findViewById(R.id.view_user_dialog_image_resource));
 		
 		if (!profile.hasImage()) {
-			WebServices.downloadImage(Constants.DOMAIN_NAME + profile.getImagePath(), profile,
-					profileImageView);
+			WebServices.downloadImage(profile, profileImageView);
 		} else {
 			profileImageView.setImageBitmap(profile.getImage());
 		}

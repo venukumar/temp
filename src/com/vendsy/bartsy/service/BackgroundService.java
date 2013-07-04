@@ -76,41 +76,29 @@ public class BackgroundService extends Service {
 		}
 
 		public void run() {
+			
+			// Oh my, an infinite loop
+			
 			while (isRunning) {
 
-				
 				try {
-					
-					// Print log 
-					Log.d(TAG, ">>> Active profile: " + mApp.mProfile);
-					Log.d(TAG, ">>> Active venue: " + mApp.mActiveVenue);
-					String orders = "";
-					for (Order order : mApp.mOrders) {
-						orders += order + ", ";
-					}
-					Log.d(TAG, ">>> Open orders:  " + orders);
-					
-					
-					// refresh the UI to update the timers in the order
-					mApp.updateOrderTimers();
-											
-					// Send heartbeat for as long as we're checked in
-					if (WebServices .isNetworkAvailable(BackgroundService.this) && mApp.mActiveVenue != null ) {			
-						WebServices.postHeartbeatResponse(mApp.getApplicationContext(), mApp.loadBartsyId(), mApp.mActiveVenue.getId());
-					}
-				} catch (Exception e) {
-					Log.w(TAG, " ******************************** Exception ***********************************\n"
-									+ e.getMessage());
-					e.printStackTrace();
-				}
-				
-				
-				
-				try {
-					// Thread in sleep
-					Thread.sleep(Constants.monitorFrequency);
-				} catch (InterruptedException e) {
 
+					// The main synchronization function that runs periodically
+					mApp.syncOrders();
+					
+					// The less interesting hearteat syscall
+					if (WebServices.isNetworkAvailable(BackgroundService.this)) {	
+						mApp.performHeartbeat();
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+
+				try {
+					// Sleep then wake up and continue the infinite loop
+					Thread.sleep(Constants.monitorFrequency);
+					
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}

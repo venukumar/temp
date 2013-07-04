@@ -98,15 +98,15 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			else if (person.hasImagePath()) {
 				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
 //				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
-				String imagePath;
+//				String imagePath;
+//				
+//				if(person.getImagePath().contains("http://") || person.getImagePath().contains("https://")){
+//					imagePath = person.getImagePath();
+//				}else{
+//					imagePath = Constants.DOMAIN_NAME + person.getImagePath();
+//				}
 				
-				if(person.getImagePath().contains("http://") || person.getImagePath().contains("https://")){
-					imagePath = person.getImagePath();
-				}else{
-					imagePath = Constants.DOMAIN_NAME + person.getImagePath();
-				}
-				
-				WebServices.downloadImage(imagePath, person, (ImageView) findViewById(R.id.view_profile_user_image));
+				WebServices.downloadImage(person, (ImageView) findViewById(R.id.view_profile_user_image));
 			}
 			
 			if (person.hasEmail()) 
@@ -501,7 +501,12 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			user.setCreditCardNumber((String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag());
 			user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
 			user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
-
+			
+			String ccType = GetCreditCardType(user.getCreditCardNumber());
+			if (!ccType.equalsIgnoreCase("VISA") && !ccType.equalsIgnoreCase("MasterCard")) {
+				Toast.makeText(this, "Please use VISA or MasterCard.", Toast.LENGTH_SHORT).show();
+				return;			
+			}
 		}
 		
 
@@ -608,7 +613,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					
 					try {
 						// Service call for post profile data to server
-						JSONObject resultJson = WebServices.saveUserProfile(userProfile, Constants.URL_POST_PROFILE_DATA, getApplicationContext());
+						JSONObject resultJson = WebServices.saveUserProfile(userProfile, WebServices.URL_POST_PROFILE_DATA, getApplicationContext());
 
 						// Make sure we got a successful response
 						if (!(resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0"))) {

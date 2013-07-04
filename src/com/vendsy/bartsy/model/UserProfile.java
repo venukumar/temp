@@ -93,7 +93,7 @@ public class UserProfile {
 				(!hasGoogleId() ? "" : ", googleId: " + googleId) +
 				(!hasFacebookUsername() ? "" : ", facebookUsername: " + facebookUsername) +
 				(!hasFacebookId() ? "" : ", facebookId: " + facebookId) +
-				(!hasImage() ? "" : ", Image: <available>") +
+				(!hasImage() ? "Image: <**NOT AVAILABE**>" : ", Image: <available>") +
 				(!hasImagePath() ? "" : ", imagePath: " + imagePath) +
 				(!hasNickname() ? "" : ", nickname: " + nickname) +
 				(!hasEmail() ? "" : ", email: " + email) +
@@ -627,7 +627,7 @@ public class UserProfile {
 		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
 
 		if (image == null) {
-			WebServices.downloadImage(Constants.DOMAIN_NAME + imagePath, this, profileImageView);
+			WebServices.downloadImage(this, profileImageView);
 		} else {
 			profileImageView.setImageBitmap(image);
 		}

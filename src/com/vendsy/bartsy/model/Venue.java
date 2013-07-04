@@ -95,6 +95,10 @@ public class Venue {
 		this.name = name;
 	}
 
+	public boolean hasLatLong() {
+		return !latitude.equals("") && latitude != null && !longitude.equals("") && longitude != null;
+	}
+	
 	public String getLatitude() {
 		return latitude;
 	}

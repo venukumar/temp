@@ -41,12 +41,6 @@ public final class Utilities {
 	 */
 	static final String SERVER_URL = "";
 
-	/**
-	 * Google API project id registered to use GCM.
-	 */
-// public static final String SENDER_ID = "227827031375";
-//	public static final String SENDER_ID = "605229245886"; // dev 
-	public static final String SENDER_ID = "560663323691"; // prod
 
 	/**
 	 * Tag used on log messages.

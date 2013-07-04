@@ -152,6 +152,7 @@
                                                 android:layout_height="wrap_content"
                                                 android:text="Placed: "
                                                 android:textAppearance="?android:attr/textAppearanceSmallInverse"
+                                                android:textColor="@android:color/darker_gray"
                                                 android:textSize="12sp"
                                                 android:textStyle="bold" />
 
@@ -186,6 +187,7 @@
                                                 android:layout_height="wrap_content"
                                                 android:text="Expires: "
                                                 android:textAppearance="?android:attr/textAppearanceSmallInverse"
+                                                android:textColor="@android:color/darker_gray"
                                                 android:textSize="12sp"
                                                 android:textStyle="bold" />
 

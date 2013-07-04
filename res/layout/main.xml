@@ -67,7 +67,8 @@
             android:drawableLeft="@drawable/arrowexpand_light"
             android:gravity="left|center_vertical"
             android:text="My notifications"
-            android:textAppearance="?android:attr/textAppearanceLargeInverse" />
+            android:textAppearance="?android:attr/textAppearanceLargeInverse"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/button_my_profile"

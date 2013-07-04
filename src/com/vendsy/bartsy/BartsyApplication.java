@@ -30,6 +30,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -40,7 +43,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -102,7 +107,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	private static final String TAG = "BartsyApplication";
 	public static String PACKAGE_NAME;
-	public Handler mHandler = new Handler();
 	
 	/**
 	 * When created, the application fires an intent to create the AllJoyn
@@ -141,7 +145,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		GCMRegistrar.checkManifest(this);
 		final String regId = GCMRegistrar.getRegistrationId(this);
 		if (regId.equals("")) {
-			GCMRegistrar.register(this, Utilities.SENDER_ID);
+			GCMRegistrar.register(this, WebServices.SENDER_ID);
 		} else {
 			Log.v(TAG, "Already registered");
 		}
@@ -160,18 +164,47 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	
 	/**
-	 * Use this to create a toast even without a context
-	 * @param toast
+	 * Convenience functions to generate notifications and Toasts 
 	 */
-	public void makeToast(final String toast) {
+
+	public Handler mHandler = new Handler();
+
+	public void makeText(final String toast, final int length) {
 		mHandler.post(new Runnable() {
 			public void run() {
 				Log.v(TAG, toast);
-				Toast.makeText(BartsyApplication.this, toast, Toast.LENGTH_SHORT).show();
+				Toast.makeText(BartsyApplication.this, toast, length).show();
 			}
 		});
 	}
 	
+	private void generateNotification(final String title, final String body, final int count) {
+		mHandler.post(new Runnable() {
+			public void run() {
+				
+				int icon = R.drawable.ic_launcher;
+				long when = System.currentTimeMillis();
+				NotificationManager notificationManager = (NotificationManager) BartsyApplication.this
+						.getSystemService(Context.NOTIFICATION_SERVICE);
+				Notification notification = new Notification(icon, body, when);
+		
+				Intent notificationIntent = new Intent(BartsyApplication.this, MainActivity.class);
+				// set intent so it does not start a new activity
+				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+						| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+				PendingIntent intent = PendingIntent.getActivity(BartsyApplication.this, 0,
+						notificationIntent, 0);
+				notification.setLatestEventInfo(BartsyApplication.this, title, body, intent);
+				notification.flags |= Notification.FLAG_AUTO_CANCEL;
+				notification.number = count;
+
+				// // Play default notification sound
+				notification.defaults = Notification.DEFAULT_SOUND;
+				notificationManager.notify(0, notification);
+			}
+		});
+	}
+		
 	
 	/**
 	 * 
@@ -345,7 +378,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void loadUserProfileBasics() {
 		
-		Log.w(TAG, "loadUserProfile()");
+		Log.w(TAG, "loadUserProfileBasics()");
 
 		// If we already have a profile, don't load one
 		if (mProfile != null) {
@@ -549,7 +582,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		for (Order order : mOrders) {
 			if (profile.getBartsyId().equals(order.senderId))
 				order.orderSender = profile;
-			if (profile.getBartsyId().equals(order.receiverId))
+			if (profile.getBartsyId().equals(order.recipientId))
 				order.orderReceiver = profile;
 		}
 		
@@ -578,8 +611,9 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
-	public ArrayList<Order> mOrders = new ArrayList<Order>();
+	private ArrayList<Order> mOrders = new ArrayList<Order>();
 	
+	@SuppressWarnings("unchecked")
 	public ArrayList<Order> getOrdersCopy() {
 			return (ArrayList<Order>) mOrders.clone();
 	}
@@ -588,25 +622,19 @@ public class BartsyApplication extends Application implements AppObservable {
 		mOrders.clear();
 	}
 
-	public synchronized void addOrder(Order order) {
-		// Add the order to the list of orders
-		addOrderNoUI(order);
-		notifyObservers(ORDERS_UPDATED);
-	}
-
-	public synchronized void addOrderNoUI(Order order) {
+	private synchronized boolean addOrder(Order order) {
 
 		// Make sure we have a valid order
 		if (order == null || order.serverID == null) {
-			this.syncAppWithServer("addOrder() encountered invalid order");
-			return;
+			Log.e(TAG, "addOrder() encountered invalid order");
+			return false;
 		}
 
 		// Make sure we have a valid venue
 		if (mActiveVenue == null) {
 			// For now hard crash - THIS NEEDS TO BE HANDLED BETTER (perhaps)
-			this.syncAppWithServer("addOrder() trying to add order with no active venue");
-			return;
+			Log.e(TAG, "addOrder() trying to add order with no active venue");
+			return false;
 		}
 
 		// Set the order timeout based on the venue timeout value
@@ -616,7 +644,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		for (UserProfile profile : mPeople) {
 			if (profile.getBartsyId().equals(order.senderId)) {
 				order.orderSender = profile;
-			} else if (profile.getBartsyId().equals(order.receiverId)) {
+			} else if (profile.getBartsyId().equals(order.recipientId)) {
 				order.orderReceiver = profile;
 			}
 		}
@@ -630,10 +658,11 @@ public class BartsyApplication extends Application implements AppObservable {
 			order.status = Order.ORDER_STATUS_NEW;
 		}
 		
-
-		
 		// Add the order to the list of orders
 		mOrders.add(order);
+		mOrderIDs++;
+
+		return true;
 	}
 
 	public synchronized void removeOrder(Order order) {
@@ -646,38 +675,12 @@ public class BartsyApplication extends Application implements AppObservable {
 		return mOrders.size();
 	}
 
-	/**
-	 * 
-	 * This handles a local order timeout. This scenario should be rare and only if WIFI is long irreparably. This in itself is pretty 
-	 * catastrophic, but regardless, we don't want orders to stick around forever in the local display so some time after the server timeout
-	 * (the additional time is indicated by the Constants.timeoutDelay value) we expire the orders locally 
-	 * 
-	 */
-	
-	public synchronized void updateOrderTimers() {
-
-		for (Order order : mOrders) {
-
-			// The additional timeout when we check for local timeouts gives the server the opportunity to always time out an order first. This 
-			double duration  = Constants.timoutDelay + order.timeOut - ((System.currentTimeMillis() - (order.state_transitions[order.status]).getTime()))/ (double) 60000;
-			
-			if (duration <= 0) {
-				// Order time out - set it to that state and update UI
-				order.setTimeoutState(); 
-			}
-		}
-		
-		// If there are any orders, update the view that includes the timer updates
-		if (mOrders.size() > 0)
-			notifyObservers(ORDERS_UPDATED);
-	}
-	
 	
 	/*
 	 * This updates the status of the order locally based on the status changed
 	 * reported from the server
 	 */
-
+/*
 	synchronized String updateOrder(String order_server_id, String remote_order_status) {
 
 		Log.v(TAG, "Update for remote code " + order_server_id);
@@ -741,37 +744,25 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(ORDERS_UPDATED);
 		return message;
 	}
-	
+*/
 	
 	
 	/**
 	 * TODO - Synchronization
 	 * 
-	 * Functions that perform synchronization with the server. It expects to be called from the background
-	 * and returns an error code depending on success or failure:
+	 * Functions that perform synchronization with the server. All these functions expect to be called from a thread other than 
+	 * the main application thread and return an error code depending on success or failure:
 	 * 
 	 * @param message
 	 */
 	
-	
-	synchronized public void performHeartbeat() {
-		
-		/* 
-		// Update venue, order and people counts
-		if (json.has("venueId"))
-			app.updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
-		else {
-			// We don't have an active venue - make sure we don't and delete local references
-			app.userCheckOut();
-		}
-*/
-	}
+
 	
 	synchronized public String syncAppWithServer(final String message) {
 		Log.w(TAG, ">>> Synchronize(" + message + ")");
 		if (syncUserProfile() == SYNC_RESULT_OK) {
 			syncActiveVenue();
-			syncOpenOrders();
+			syncOrders();
 		}
 		return message;
 	}
@@ -803,6 +794,11 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.w(TAG, "Could not load user profile");
 			return SYNC_RESULT_NO_SERVER_PROFILE;
 		} 
+		
+		// Download user image
+		Bitmap image = WebServices.fetchImage(user.getImagePath());
+		if (image != null)
+			user.setImage(image);
 		
 		// Got a valid profile - save it locally 
 		Log.w(TAG, "Found profile: " + user);
@@ -843,11 +839,9 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		Log.w(TAG, "syncOpenOrders()");
 
-		String response = WebServices.getOpenOrders(BartsyApplication.this);
-		Log.v(TAG, "orders " + response);
-		if (response != null) {
+		JSONObject orders = WebServices.getOpenOrders(BartsyApplication.this);
+		if (orders != null) {
 			try {
-				JSONObject orders = new JSONObject(response);
 				JSONArray listOfOrders = orders.has("orders") ? orders.getJSONArray("orders") : null;
 				if (listOfOrders != null) {
 
@@ -877,8 +871,457 @@ public class BartsyApplication extends Application implements AppObservable {
 	}
 	
 
+
+	synchronized public void performHeartbeat() {
+		
+		Log.v(TAG, "performHeartbeat()");
+		
+		if (mActiveVenue == null) {
+			Log.v(TAG, "No active venue - skipping heartbeat");
+			return;
+		}
+		if (mProfile == null) {
+			Log.v(TAG, "No active profile - skipping heartbeat");
+			return;
+		}
+		
+		JSONObject json = WebServices.postHeartbeatResponse(BartsyApplication.this, mProfile.getBartsyId(), mActiveVenue.getId());
+		
+		
+		// Update venue, order and people counts
+		if (json.has("venueId")) {
+			try {
+				updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			// We don't have an active venue - make sure we don't and delete local references
+			userCheckOut();
+		}
+	}
+	
 	
 	/**
+	 * TODO - Synchronize orders
+	 * 
+	 * This is the main synchronization function with the server. It's called if a discrepancy is found in our state versus the server state.
+	 * It performs all necessary synchronizations between our state and the server state.
+	 * @param message
+	 * @param background  - run in the background or not
+	 */
+	
+	
+	
+	
+	/**
+	 * Accessors for the main update function. These decide if we should access in the current
+	 * thread of spin up a new thread. They also can return a cloned version of the orders list
+	 * instead of performing an update
+	 */
+	
+	synchronized public ArrayList<Order> cloneOrders() {
+		return accessOrders(ACCESS_ORDERS_VIEW);
+	}
+	
+	synchronized public void syncOrders()  {
+	
+		if (Looper.myLooper() == Looper.getMainLooper()) {
+			// We're in the main thread - execute the update in the background with a new asynchronous task
+			Log.w(TAG, "Running updateOrders() in an async task");
+/*			mHandler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					new Thread () {
+						@Override 
+						public void run() {
+							accessOrders(BartsyApplication.ACCESS_ORDERS_UPDATE);				
+						};
+					}.start();
+				};
+			});
+*/
+			new UpdateAsync().execute();
+		} else {
+			// We're not in the main thread - don't spin up a thread
+			Log.w(TAG, "Running updateOrders()");
+			accessOrders(ACCESS_ORDERS_UPDATE);
+		}
+		
+		return;
+	}
+	
+	private class UpdateAsync extends AsyncTask<Void, Void, Void>{
+		@Override
+		protected void onPreExecute(){
+		}
+		
+		@Override
+		protected Void doInBackground(Void... Voids) {
+			accessOrders(ACCESS_ORDERS_UPDATE);
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void params){
+		}
+	}
+	
+	/**
+	 * 
+	 * This is the main function of the bunch. It performs most of the work using helper functions. It looks at the server
+	 * state and updates the current state by adding, removing and updated orders.
+	 * 
+	 */
+	public static final int ACCESS_ORDERS_UPDATE	= 0;
+	public static final int ACCESS_ORDERS_VIEW		= 1;
+	
+	@SuppressWarnings("unchecked")
+	synchronized private ArrayList<Order> accessOrders(int options) {
+		
+		if (options == ACCESS_ORDERS_VIEW) {
+			return (ArrayList<Order>) mOrders.clone();
+		}
+
+		
+		// Print orders before update
+		String ordersString = "\n";
+		for (Order order : mOrders) {
+			ordersString += order + "\n";
+		}
+		Log.w(TAG, ">>> Open orders before update:\n" + ordersString);
+
+		
+		boolean network = false;
+		try {
+			network = WebServices.isNetworkAvailable(BartsyApplication.this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}	
+
+		
+		if (network) {	
+			
+			JSONObject json = WebServices.getOpenOrders(BartsyApplication.this);
+			if(json != null) {
+	
+				// Synchronize people 
+				updatePeople(json);
+				
+				// Get remote orders list
+				ArrayList<Order> remoteOrders = extractOrders(json);
+		
+				// Find new orders, existing orders and missing orders.
+				ArrayList<Order> addedOrders = processAddedOrders(mOrders, remoteOrders);
+				ArrayList<Order> removedOrders = processRemovedOrders(mOrders, remoteOrders);
+				ArrayList<Order> updatedOrders = processExistingOrders(mOrders, remoteOrders);
+		
+				
+				// Generate notifications
+				if (addedOrders.size() > 0 || removedOrders.size() > 0 || updatedOrders.size() > 0) {
+					String message = "";
+					int count = 0;
+					if (addedOrders.size() > 0) {
+						for (Order order : addedOrders) {
+							message += order.readableStatus() + "\n";
+							count++;
+						}
+						message += "\n";
+					}	
+					if (updatedOrders.size() > 0) {
+						for (Order order : updatedOrders) {
+							message +=  order.readableStatus() + "\n";
+
+							switch (order.status) {
+							}	
+							
+							
+							count++;
+						}
+						message += "\n";
+					}	
+					if (removedOrders.size() > 0) {
+						for (Order order : removedOrders) {
+							message += order.readableStatus() + "\n";
+							count++;
+						}
+					}	
+		
+					// Print and generate modifications
+					Log.w(TAG, message);
+					generateNotification("Orders updated", message, count);
+				}		
+		
+				// Print orders after update
+				ordersString = "\n";
+				for (Order order : mOrders) {
+					ordersString += order + "\n";
+				}
+				Log.w(TAG, ">>> Open orders after update:\n" + ordersString);
+			}
+		}
+		
+		// Update timers and notify observers of status changes
+		updateOrderTimers();
+		notifyObservers(ORDERS_UPDATED);
+		
+		return null;
+	}
+	
+	ArrayList<Order> extractOrders(JSONObject json) {
+		
+		ArrayList<Order> orders = new ArrayList<Order>();
+		
+		try {
+			// To parse orders from JSON object
+			if (json.has("orders")) {
+				JSONArray ordersJson = json.getJSONArray("orders");
+				
+				for(int j=0; j<ordersJson.length();j++){
+					
+					JSONObject orderJSON = ordersJson.getJSONObject(j);
+	
+					// If the server is incorrectly sending the order timeout as a venue-wide variable, insert it in the order JSON
+					if (!orderJSON.has("orderTimeout") && json.has("orderTimeout"))
+						orderJSON.put("orderTimeout", json.getInt("orderTimeout"));
+					
+					Order order = new Order(orderJSON);
+					orders.add(order);
+				}
+			}
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return orders;
+	}
+	
+	Order findMatchingOrder(ArrayList<Order> orders, Order order) {
+		for (Order found : orders) {
+			if (found.serverID.equals(order.serverID))
+				return found;
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * These are the processing helper functions of the main update function. They process orders that were in the server
+	 * but not in the local state (new orders), orders that are in the local state but were not in the server state (removed 
+	 * orders) and orders that are both in the server state and the local state (updated orders)
+	 * 
+	 */
+	
+	ArrayList<Order> processAddedOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
+
+		// Find the orders to remove and store them in a separate list to avoid iterator issues
+		ArrayList<Order> processedOrders = new ArrayList<Order>();
+		for (Order order : remoteOrders) {
+			if (findMatchingOrder(localOrders, order) == null) {
+
+				switch(order.status) {
+				case Order.ORDER_STATUS_CANCELLED:
+					order.updateStatus(order.status);
+					order.updateStatus(Order.ORDER_STATUS_REMOVED);
+					WebServices.orderStatusChanged(order, BartsyApplication.this);
+					break;
+				case Order.ORDER_STATUS_NEW:
+				case Order.ORDER_STATUS_IN_PROGRESS:
+				case Order.ORDER_STATUS_READY:
+				case Order.ORDER_STATUS_OFFERED:
+					// Legal state - add new orders to the list of work and notify the user
+					processedOrders.add(order);
+					break;
+				default:
+					// Illegal state - print message
+					Log.e(TAG, "Skipping illegal order: " + order.serverID + " with status: " + order.status);
+					break;
+				}
+			}
+		}
+		
+		// Add the orders found
+		ArrayList<Order> addedOrders = new ArrayList<Order>();
+		for (Order order : processedOrders) {
+			if (addOrder(order)) {
+				Log.e(TAG, "Adding order: " + order.serverID + " with status: " + order.status);
+				addedOrders.add(order);
+			} else {
+				Log.e(TAG, "Could not add order: " + order.serverID + " with status: " + order.status);
+			}
+		}
+		
+		return addedOrders;
+	}
+	
+	ArrayList<Order> processRemovedOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
+		
+		// Find the orders to remove and store them in a separate list to avoid iterator issues
+		ArrayList<Order> removedOrders = new ArrayList<Order>();
+		for (Order order : localOrders) {
+			Order remoteOrder = findMatchingOrder(remoteOrders, order);
+			if ( remoteOrder == null) {
+
+				switch(order.status) {
+				
+				case Order.ORDER_STATUS_COMPLETE:
+				case Order.ORDER_STATUS_REJECTED:
+				case Order.ORDER_STATUS_FAILED:
+				case Order.ORDER_STATUS_INCOMPLETE:
+					removedOrders.add(order);
+					break;
+				case Order.ORDER_STATUS_CANCELLED:
+				case Order.ORDER_STATUS_TIMEOUT:
+					break;
+				default:
+					order.setTimeoutState();
+					break;
+				}
+			}
+		}
+		
+		// Remove orders found
+		for (Order order : removedOrders) {
+			localOrders.remove(order);
+		}
+		
+		return removedOrders;
+	}		
+	
+	ArrayList<Order> processExistingOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
+		ArrayList<Order> updatedOrders = new ArrayList<Order>();
+
+		for (Order remoteOrder : remoteOrders) {
+			
+			Order localOrder = findMatchingOrder(localOrders, remoteOrder);
+			
+			if ( localOrder != null && localOrder.status != remoteOrder.status) {
+				
+				// Update the status of the local order based on that of the remote order and return on error
+				
+				switch (remoteOrder.status) {
+				case Order.ORDER_STATUS_REJECTED:
+				case Order.ORDER_STATUS_FAILED:
+				case Order.ORDER_STATUS_COMPLETE:
+				case Order.ORDER_STATUS_INCOMPLETE:
+				case Order.ORDER_STATUS_OFFER_REJECTED:
+				case Order.ORDER_STATUS_CANCELLED:
+					// Change the state and leave it in the order list until user acknowledges the time out ****
+					localOrder.updateStatus(remoteOrder.status);
+					localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
+					WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
+					break;
+				default:
+					localOrder.updateStatus(remoteOrder.status);
+					break;
+				}
+
+				updatedOrders.add(localOrder);
+			}
+		}
+		return updatedOrders;
+	}		
+	
+	
+
+	/**
+	 * 
+	 * This functions updates the timers of the various orders and moves them to the expired state in case of a local timeout
+	 * 
+	 */
+	
+	private synchronized void updateOrderTimers() {
+
+		Log.v(TAG, "updateOrderTimers()");
+		
+		for (Order order : mOrders) {
+
+			// The additional timeout when we check for local timeouts gives the server the opportunity to always time out an order first. This 
+			long duration  = Constants.timoutDelay + order.timeOut - ((System.currentTimeMillis() - (order.state_transitions[order.status]).getTime()))/60000;
+			
+			if (duration <= 0) {
+
+				Log.v(TAG, "Order " + order.serverID + " timed out. Status " + order.status + " (" + order.state_transitions[order.status] + 
+						"), last_status: " + order.last_status + " (" + order.state_transitions[order.last_status] + 
+						"), placed (" + order.state_transitions[Order.ORDER_STATUS_NEW] + ")");
+
+				// Order time out - set it to that state (this won't have an effect if already in that state as the called function guarantees that)
+				order.setTimeoutState();
+			}
+		}
+	}
+	
+
+	/**
+	 * 
+	 * TODO - Synchronize people
+	 * 
+	 * 
+	 * 
+	 */
+	
+	synchronized private void updatePeople(JSONObject json) {
+		// Verify checked in users match server list
+		try {
+			
+			if(json.has("checkedInUsers")){
+				
+				JSONArray users;
+					users = json.getJSONArray("checkedInUsers");
+				
+				// Check sizes match
+				if (users.length() != mPeople.size()) {
+					syncPeople(users);
+					return;
+				}
+				
+				// Check Id's match
+				for(int i=0; i<users.length() ; i++){
+					JSONObject userJson = users.getJSONObject(i);
+					
+					boolean found = false;
+					for (UserProfile person : mPeople) {
+						if (person.getBartsyId().equalsIgnoreCase(userJson.getString("bartsyId"))) {
+							found = true;
+						}
+					}
+	
+					if (!found) {
+						syncPeople(users);
+						return;
+					}
+				}
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	synchronized private void syncPeople(JSONArray users) {
+		Log.w(TAG, "syncPeople()");
+		
+		try {
+			mPeople.clear();
+			for(int i=0; i<users.length() ; i++) {
+					mPeople.add(new UserProfile(users.getJSONObject(i)));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		notifyObservers(PEOPLE_UPDATED);
+
+	}
+	
+	
+	
+	
+	
+	/**
+	 * TODO - Custom drinks
+	 * 
 	 * The spirit list is saved in the global application state. This is done to
 	 * avoid losing any spirits while the other activities are swapped in and out
 	 * as the user navigates in different screens.

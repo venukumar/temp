@@ -39,6 +39,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
@@ -51,6 +52,40 @@ import com.vendsy.bartsy.model.Venue;
 public class WebServices {
 
 	private static final String TAG = "WebServices";
+	
+
+	// Google API project id registered to use GCM.
+// public static final String SENDER_ID = "227827031375";
+	public static final String SENDER_ID = "605229245886"; // dev 
+//	public static final String SENDER_ID = "560663323691"; // prod
+
+	// Server IP
+//	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+//	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
+
+	// API calls 
+	public static final String PROJECT_NAME = "Bartsy/";
+	public static final String URL_GET_BAR_LIST = DOMAIN_NAME + PROJECT_NAME + "venue/getMenu";
+	public static final String URL_GET_VENU_LIST = DOMAIN_NAME + PROJECT_NAME + "venue/getVenueList";
+	public static final String URL_LIST_OF_CHECKED_IN_USERS = DOMAIN_NAME + PROJECT_NAME + "data/checkedInUsersList";
+	public static final String URL_LIST_OF_USER_ORDERS = DOMAIN_NAME + PROJECT_NAME + "data/getUserOrders";
+	public static final String URL_GET_USER_PROFILE = DOMAIN_NAME + PROJECT_NAME + "user/getUserProfile";
+	public static final String URL_SYNC_USER_DETAILS = DOMAIN_NAME + PROJECT_NAME + "user/syncUserDetails";
+	public static final String URL_POST_PROFILE_DATA = DOMAIN_NAME + PROJECT_NAME + "user/saveUserProfile";
+	public static final String URL_USER_CHECK_IN = DOMAIN_NAME + PROJECT_NAME + "user/userCheckIn";
+	public static final String URL_USER_CHECK_OUT = DOMAIN_NAME + PROJECT_NAME + "user/userCheckOut";
+	public static final String URL_HEARTBEAT_RESPONSE = DOMAIN_NAME  + PROJECT_NAME + "user/heartBeat";
+	public static final String URL_PLACE_ORDER = DOMAIN_NAME + PROJECT_NAME + "order/placeOrder";
+	public static final String URL_GET_INGREDIENTS = DOMAIN_NAME + PROJECT_NAME + "inventory/getIngredients";
+	public static final String URL_UPDATE_OFFERED_DRINK = DOMAIN_NAME + PROJECT_NAME + "order/updateOfferedDrinkStatus";
+	public static final String URL_GET_PAST_ORDERS = DOMAIN_NAME + PROJECT_NAME + "order/getPastOrders";
+	public static final String URL_UPDATE_ORDER_STATUS = DOMAIN_NAME + PROJECT_NAME + "order/updateOrderStatus";
+	
+
+	// Current ApiVersion number
+	public static final String 	API_VERSION = "1";
+
 
 	/**
 	 * To check internet connection
@@ -60,30 +95,18 @@ public class WebServices {
 	 * @throws Exception
 	 */
 	public static boolean isNetworkAvailable(Context context) throws Exception {
-
-		ConnectivityManager cm = (ConnectivityManager) context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-		if (cm.getActiveNetworkInfo() != null
-				&& cm.getActiveNetworkInfo().isFailover())
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isFailover())
 			return false;
-		else if (cm.getActiveNetworkInfo() != null
-
-		&& cm.getActiveNetworkInfo().isAvailable()
-				&& cm.getActiveNetworkInfo().isConnected()) {
-
+		else if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable() && cm.getActiveNetworkInfo().isConnected())
 			return true;
-
-		}
-
-		else {
-
+		else
 			return false;
-		}
-
 	}
+	
 
 	/**
-	 * Create a new HttpClient and Post data
+	 * Create a new HttpClient and Post data. Can't be called on the main thread.
 	 * 
 	 * @param url
 	 * @param postData
@@ -98,7 +121,7 @@ public class WebServices {
 		HttpPost httppost = new HttpPost(url);
 		
 		// added apiVersion
-		postData.put("apiVersion", Constants.API_VERSION);
+		postData.put("apiVersion", API_VERSION);
 		String data = postData.toString();
 		
 		Log.i(TAG,"===> postRequest("+ url  + ", " + data + ")");
@@ -129,7 +152,6 @@ public class WebServices {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.e(TAG, "Error in http connection" + e.toString());
 			Log.e(TAG, "Error in http connection" + e.toString());
 		}
 		
@@ -182,8 +204,7 @@ public class WebServices {
 	 * 
 	 */
 	
-	public static JSONObject postHeartbeatResponse (final Context context, 
-			String bartsyId, String venueId) {
+	public static JSONObject postHeartbeatResponse (final Context context, String bartsyId, String venueId) {
 		
 		Log.v(TAG, "WebService.postHeartbeatResponse()");
 		final JSONObject json = new JSONObject();
@@ -200,10 +221,7 @@ public class WebServices {
 		
 		// Invoke syscall
 		try {
-			// We are not interested in the response to the syscall as the server is what's
-			// checking to see if everything is working property. If the server doesn't see
-			// the heartbeat it will check the user out. 
-			response = new JSONObject(postRequest(Constants.URL_HEARTBEAT_RESPONSE, json, context));
+			response = new JSONObject(postRequest(URL_HEARTBEAT_RESPONSE, json, context));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -254,7 +272,7 @@ public class WebServices {
 				Message msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE);
 				
 				try {
-					String response = postRequest(Constants.URL_PLACE_ORDER, orderData, context);
+					String response = postRequest(URL_PLACE_ORDER, orderData, context);
 					Log.v(TAG, "Post order to server response :: " + response);
 					
 												
@@ -267,11 +285,13 @@ public class WebServices {
 						order.serverID = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
 						
+						app.syncOrders();
+						
 						// Add order to the list and update views. This is a synchronized operation in case multiple threads are stepping on each other
-						app.addOrder(order);
+//						app.addOrder(order);
 
 						// Increment the local order count
-						app.mOrderIDs++;
+//						app.mOrderIDs++;
 						
 					} else if (errorCode.equalsIgnoreCase("1")) {
 						// Error code 1 means the venue doesn't accept orders.
@@ -325,7 +345,7 @@ public class WebServices {
 			json.put("deviceType", String.valueOf(Constants.DEVICE_Type));
 			json.put("deviceToken", settings.getString("RegId", ""));
 			// added apiVersion
-			json.put("apiVersion", Constants.API_VERSION);
+			json.put("apiVersion", API_VERSION);
 			
 /*
  			// Make sure the profile has login information and add it
@@ -479,7 +499,7 @@ public class WebServices {
 		try {
 			JSONObject json = new JSONObject();
 			json.put("bartsyId", string);
-			response = WebServices.postRequest(Constants.URL_GET_VENU_LIST, json, context);
+			response = WebServices.postRequest(URL_GET_VENU_LIST, json, context);
 		} catch (Exception e) {
 			Log.v(TAG, "Error venu list " + e.getMessage());
 		}
@@ -493,7 +513,7 @@ public class WebServices {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("venueId", venueID);
-			response = postRequest(Constants.URL_GET_INGREDIENTS, json, context);
+			response = postRequest(URL_GET_INGREDIENTS, json, context);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -508,17 +528,17 @@ public class WebServices {
 	 * @return ordersList
 	 */
 
-	public static String getOpenOrders(BartsyApplication app) {
+	public static JSONObject getOpenOrders(BartsyApplication app) {
 
-		String response = null;
+		JSONObject response = null;
 		try {
 
 			JSONObject postData = new JSONObject();
 			postData.put("bartsyId", app.loadBartsyId());
-			response = WebServices.postRequest(Constants.URL_LIST_OF_USER_ORDERS, postData, app.getApplicationContext());
+			response = new JSONObject(WebServices.postRequest(URL_LIST_OF_USER_ORDERS, postData, app.getApplicationContext()));
 
 		} catch (Exception e) {
-			Log.v(TAG, "getUserOdersList Exception found " + e.getMessage());
+			Log.e(TAG, "getUserOdersList Exception found " + e.getMessage());
 			return null;
 		}
 		return response;
@@ -538,9 +558,8 @@ public class WebServices {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("venueId", venueID);
-			response = postRequest(Constants.URL_GET_BAR_LIST, json, context);
+			response = postRequest(URL_GET_BAR_LIST, json, context);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -566,7 +585,7 @@ public class WebServices {
 					json.put("orderId", order.serverID);
 					json.put("bartsyId", app.mProfile.getBartsyId());
 					json.put("orderStatus", String.valueOf(positive ? Order.ORDER_STATUS_NEW : Order.ORDER_STATUS_OFFER_REJECTED));
-					response = new JSONObject(postRequest(Constants.URL_UPDATE_OFFERED_DRINK, json, app.getApplicationContext()));
+					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app.getApplicationContext()));
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -576,11 +595,11 @@ public class WebServices {
 
 						// Success - move the order to the next state
 						if (positive) {
-							app.makeToast("Your order was sent to the bartender. Please be ready to pick it up.");							
-							order.nextPositiveState(); 
+							app.makeText("Order sent. Please be ready to pick it up before it times out.", Toast.LENGTH_LONG);							
+							order.updateStatus(Order.ORDER_STATUS_NEW); 
 						} else {
-							app.makeToast("The sender was notified.");							
-							order.nextPositiveState(); 
+							app.makeText("The sender was notified about your offer.", Toast.LENGTH_LONG);							
+							order.updateStatus(Order.ORDER_STATUS_NEW); 
 						}
 						if (response.has("orderTimeout"))
 							order.timeOut = response.getInt("orderTimeout");
@@ -592,7 +611,7 @@ public class WebServices {
 				}
 
 				// Failure - restore the buttons and let the user try again later, or the order will time out
-				app.makeToast("Could not connect. Please check your internet connection.");
+				app.makeText("Could not connect. Please check your internet connection.", Toast.LENGTH_LONG);
 				((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(true);
 				((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(true);
 
@@ -639,7 +658,7 @@ public class WebServices {
 			} 
 
 			// Place API call and check for errors
-			JSONObject result = new JSONObject(postRequest(Constants.URL_GET_USER_PROFILE, json, context));
+			JSONObject result = new JSONObject(postRequest(URL_GET_USER_PROFILE, json, context));
 			String errorCode = result.getString("errorCode");
 
 			// Parse response if no error
@@ -688,7 +707,7 @@ public class WebServices {
 				if (result.has("status"))
 					user.setStatus(result.getString("status"));
 				if (result.has("userImage"))
-					user.setImagePath(result.getString("userImage"));
+					user.setImagePath(DOMAIN_NAME + result.getString("userImage"));
 				if (result.has("creditCardNumber"))
 					user.setCreditCardNumber(result.getString("creditCardNumber"));
 				if (result.has("expMonth"))
@@ -751,7 +770,7 @@ public class WebServices {
 			json.put("type", "login");
 			
 			// Place API call and check for errors
-			JSONObject result = new JSONObject(postRequest(Constants.URL_SYNC_USER_DETAILS, json, context));
+			JSONObject result = new JSONObject(postRequest(URL_SYNC_USER_DETAILS, json, context));
 			String errorCode = result.getString("errorCode");
 
 			// Parse response if no error
@@ -806,13 +825,38 @@ public class WebServices {
 
 		try {
 			response = WebServices.postRequest(
-					Constants.URL_GET_PAST_ORDERS, postData,
+					URL_GET_PAST_ORDERS, postData,
 					context);
 		} catch (Exception e) {
 		}
 		
 		return response;
 	}
+	
+	/**
+	 * Service call to change order status
+	 * 
+	 * @param order
+	 * @param context
+	 */
+	public static void orderStatusChanged(final Order order,
+			final Context context) {
+		new Thread() {
+
+			@Override
+			public void run() {
+				try {
+					String response;
+					response = postRequest(URL_UPDATE_ORDER_STATUS, order.statusChangedJSON(), context);
+					System.out.println("response :: " + response);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+	}
+
 	
 	
 	/**
@@ -822,13 +866,15 @@ public class WebServices {
 	 *             imageView
 	 * 
 	 * @param fileUrl
-	 * @param model
+	 * @param profile
 	 * @param imageView
 	 */
-	public static void downloadImage(final String fileUrl, final Object model, final ImageView imageView) {
+	public static void downloadImage( final UserProfile profile, final ImageView imageView) {
 
+		if (!profile.hasImagePath()) return;
+		final String url = profile.getImagePath();
+		
 		new AsyncTask<String, Void, Bitmap>() {
-			Bitmap bmImg;
 
 			protected void onPreExecute() {
 				super.onPreExecute();
@@ -836,30 +882,7 @@ public class WebServices {
 			}
 
 			protected Bitmap doInBackground(String... params) {
-
-				Log.v("file Url: ", fileUrl);
-				URL myFileUrl = null;
-				try {
-					myFileUrl = new URL(fileUrl);
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
-				// Webservice call to get the image bitmap from the image url
-				try {
-
-					HttpURLConnection conn = (HttpURLConnection) myFileUrl
-							.openConnection();
-					conn.setDoInput(true);
-					conn.connect();
-					InputStream is = conn.getInputStream();
-					bmImg = BitmapFactory.decodeStream(is);
-
-				} catch (IOException e) {
-					e.printStackTrace();
-					bmImg = null;
-				}
-
-				return bmImg;
+				return fetchImage(url);
 			}
 
 			protected void onPostExecute(Bitmap result) {
@@ -867,19 +890,46 @@ public class WebServices {
 				// Make sure we got an image
 				if (result != null) {
 
-					if (model!=null && model instanceof UserProfile) {
-						UserProfile profile = (UserProfile) model;
-						profile.setImage(result);
-					}
+					profile.setImage(result);
 					
-					imageView.setImageBitmap(result);
 					// Set bitmap image to profile image view
-					imageView.setTag(result);
+					if (imageView != null) {
+						imageView.setImageBitmap(result);
+						imageView.setTag(result);
+					}
 				}
 			}
 
 		}.execute();
 
+	}
+	
+	public static Bitmap fetchImage(String url) {
+
+		Log.v("file Url: ", url);
+		Bitmap bmImg = null;
+
+		URL myFileUrl = null;
+		try {
+			myFileUrl = new URL(url);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		// Webservice call to get the image bitmap from the image url
+		try {
+
+			HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
+			conn.setDoInput(true);
+			conn.connect();
+			InputStream is = conn.getInputStream();
+			bmImg = BitmapFactory.decodeStream(is);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			bmImg = null;
+		}
+		return bmImg;
 	}
 
 	
