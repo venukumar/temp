@@ -52,10 +52,7 @@ public class NotificationsActivity extends Activity{
 	 * Call getNotifications Sys call and get the notifications data from the server
 	 */
 	private void loadNotifications(){
-		if (mApp.mActiveVenue == null) {
-			return;
-		}
-		
+			
 		// To display progress dialog
 		progressDialog = Utilities.progressDialog(this, "Loading..");
 		progressDialog.show();
@@ -65,7 +62,7 @@ public class NotificationsActivity extends Activity{
 
 			public void run() {
 				
-				final String response = WebServices.getNotifications(NotificationsActivity.this, mApp.mProfile.getBartsyId(), mApp.mActiveVenue.getId());
+				final String response = WebServices.getNotifications(NotificationsActivity.this, mApp.mProfile.getBartsyId());
 				// Post handler to access UI 
 				handler.post(new Runnable() {
 					
