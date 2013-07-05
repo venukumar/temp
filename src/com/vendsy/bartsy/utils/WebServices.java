@@ -837,12 +837,11 @@ public class WebServices {
 	/**
 	 *  Get notification sys call
 	 */
-	public static String getNotifications(Context context, String bartsyId, String venueID){
+	public static String getNotifications(Context context, String bartsyId){
 		String response = null;
 		// Post data to get notification which is related to user and checkedin venue
 		JSONObject postData = new JSONObject();
 		try {
-			postData.put("venueId", venueID);
 			postData.put("bartsyId", bartsyId);
 		} catch (JSONException e) {
 			e.printStackTrace();
