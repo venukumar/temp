@@ -22,6 +22,9 @@ public class Notification {
 	private String type;
 	private String userImage;
 	private String createdTime;
+	private String venueName;
+	private String venueImage;
+	private Order order;
 	
 	@Override
 	public String toString() {
@@ -40,6 +43,10 @@ public class Notification {
 			message = json.getString("message");
 			type = json.getString("type");
 			createdTime = json.getString("createdTime");
+			venueName = json.getString("venueName"); 
+			venueImage = json.getString("venueImage"); 
+			
+			//TODO Order receiver image and name
 		} catch (JSONException e) {
 		}
 	}
