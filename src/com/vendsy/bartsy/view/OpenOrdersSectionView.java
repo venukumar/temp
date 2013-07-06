@@ -123,11 +123,16 @@ public class OpenOrdersSectionView extends LinearLayout{
 					
 					Log.v(TAG, "Processing order " + order.serverID + " with status " + order.status + " and last status " + order.last_status);
 		
-					if (!statusDisplayed[order.status]) {
+					// Use last status if the order status is now removed
+					int status = order.status;
+					if (order.status == Order.ORDER_STATUS_REMOVED)
+						status = order.last_status;
+					
+					if (!statusDisplayed[status]) {
 						
 						Log.v(TAG, "Showing master order " + order.serverID);
 		
-						statusDisplayed[order.status] = true;
+						statusDisplayed[status] = true;
 						
 						// Display header based on the current order
 						
@@ -160,7 +165,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 						});
 						
 						mOrderListView.addView(view);
-		
+		 
 						// If there are any more orders of the same type and recipient, display them as mini views
 		
 						float taxAmt = order.taxAmount;
@@ -170,7 +175,13 @@ public class OpenOrdersSectionView extends LinearLayout{
 						for (int j = i+1 ; j < orders.size(); j++)
 						{
 							Order mini = orders.get(j);
-							if (mini.status == order.status && order.recipientId.equals(mini.recipientId))  
+							
+							// Use last status if the mini order status is now removed
+							int miniStatus = mini.status;
+							if (mini.status == Order.ORDER_STATUS_REMOVED)
+								miniStatus = order.last_status;
+							
+							if (miniStatus == status && order.recipientId.equals(mini.recipientId))  
 							{
 								Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
 								((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
