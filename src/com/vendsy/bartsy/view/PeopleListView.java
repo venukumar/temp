@@ -91,9 +91,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 					}
 					// Webservice call for to get the checkedIn people
 					try {
-						response = WebServices.postRequest(
-								WebServices.URL_LIST_OF_CHECKED_IN_USERS,
-								postData, mApp.getApplicationContext());
+						response = WebServices.postRequest(WebServices.URL_LIST_OF_CHECKED_IN_USERS, postData, mApp);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

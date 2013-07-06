@@ -229,7 +229,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 
 		new Thread() {
 			public void run() {
-				UserProfile profile = WebServices.getUserProfile(mApp.getApplicationContext(), user);
+				UserProfile profile = WebServices.getUserProfile(mApp, user);
 
 				if (profile == null) {
 	
@@ -397,7 +397,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 				public void run() {
 					
 					// User log-in syscall
-					UserProfile profile = WebServices.getUserProfile(mApp.getApplicationContext(), user);
+					UserProfile profile = WebServices.getUserProfile(mApp, user);
 
 					if (profile == null) {
 		

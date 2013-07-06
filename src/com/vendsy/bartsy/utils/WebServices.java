@@ -3,12 +3,15 @@ package com.vendsy.bartsy.utils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -21,6 +24,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,14 +60,14 @@ public class WebServices {
 
 	// Google API project id registered to use GCM.
 //	public static final String SENDER_ID = "227827031375";
-	public static final String SENDER_ID = "605229245886"; // dev 
-//	public static final String SENDER_ID = "560663323691"; // prod
+//	public static final String SENDER_ID = "605229245886"; // dev 
+	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
 // 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
-//	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
+//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	// API calls 
 	public static final String PROJECT_NAME = "Bartsy/";
@@ -85,7 +89,7 @@ public class WebServices {
 	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
 
 	// Current ApiVersion number
-	public static final String 	API_VERSION = "1";
+	public static final String 	API_VERSION = "2";
 
 
 	/**
@@ -115,50 +119,89 @@ public class WebServices {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String postRequest(String url, JSONObject postData, Context context) throws Exception {
+	public static String postRequest(String url, JSONObject postData, BartsyApplication context)  {
 
 		String response = null;
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost(url);
 		
 		// added apiVersion
-		postData.put("apiVersion", API_VERSION);
+		try {
+			postData.put("apiVersion", API_VERSION);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		String data = postData.toString();
 		
 		Log.i(TAG,"===> postRequest("+ url  + ", " + data + ")");
 
-		try {
-			boolean status = isNetworkAvailable(context);
+			boolean status = false;
+			try {
+				status = isNetworkAvailable(context);
+			} catch (Exception e) {
+				e.printStackTrace();
+				
+			}
+			
 			if (status == true) {
-				try {
-					httppost.setEntity(new StringEntity(data));
+					try {
+						httppost.setEntity(new StringEntity(data));
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+						return null;
+					}
 
 					// Execute HTTP Post Request
 
 					httppost.setHeader("Accept", "application/json");
 					httppost.setHeader("Content-type", "application/json");
 
-					HttpResponse httpResponse = httpclient.execute(httppost);
+					HttpResponse httpResponse;
+					try {
+						httpResponse = httpclient.execute(httppost);
+					} catch (ClientProtocolException e) {
+						e.printStackTrace();
+						return null;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return null;
+					}
 
-					String responseofmain = EntityUtils.toString(httpResponse.getEntity());
-					response = responseofmain.toString();
+					try {
+						response = EntityUtils.toString(httpResponse.getEntity());
+					} catch (ParseException e) {
+						e.printStackTrace();
+						return null;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return null;
+					}
+					
+					// Check API version number 
+					JSONObject responseJson = null;
+					try {
+						responseJson = new JSONObject(response);
+						if (responseJson.has("errorCode") && responseJson.getString("errorCode").equals("100")) {
+							context.makeText("API version missmatch. Please update your app to the latest version.", Toast.LENGTH_LONG);
+							response = null;
+						}
+					} catch (JSONException e) {
+						// Could be that we returned a JSONArray instead - check that 
+						try {
+							JSONArray responseJsonArray = new JSONArray(response);
+						} catch (JSONException e1) {
+							// Not an array either - print stack
+							e.printStackTrace();
+						}
+					}
 					
 					Log.i(TAG,"<=== postRequest response:"+ response);
-					
-				} catch (Exception e) {
-					Log.e(TAG, "Error in http connection" + e.toString());
-					Log.v(TAG, "Exception found ::: " + e.getMessage());
-
 				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.e(TAG, "Error in http connection" + e.toString());
-		}
-		
 		return response;
 	}
 
+	
 	
 	/**
 	 * Service call for user check in and check out
@@ -167,7 +210,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static String userCheckInOrOut (final Context context, String bartsyID, String venueId, String url) {
+	public static String userCheckInOrOut (final BartsyApplication context, String bartsyID, String venueId, String url) {
 		String response = null;
 		SharedPreferences sharedPref = context.getSharedPreferences(
 				context.getResources().getString(
@@ -205,7 +248,7 @@ public class WebServices {
 	 * 
 	 */
 	
-	public static JSONObject postHeartbeatResponse (final Context context, String bartsyId, String venueId) {
+	public static JSONObject postHeartbeatResponse (final BartsyApplication context, String bartsyId, String venueId) {
 		
 		Log.v(TAG, "WebService.postHeartbeatResponse()");
 		final JSONObject json = new JSONObject();
@@ -242,7 +285,6 @@ public class WebServices {
 	 */
 	public static boolean postOrderTOServer(final BartsyApplication app, final Order order, 
 			String venueID, final Handler processOrderDataHandler) {
-		final Context context = app.getApplicationContext();
 		final JSONObject orderData = order.getPlaceOrderJSON();
 		
 		String bartsyId = app.loadBartsyId();
@@ -273,7 +315,7 @@ public class WebServices {
 				Message msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE);
 				
 				try {
-					String response = postRequest(URL_PLACE_ORDER, orderData, context);
+					String response = postRequest(URL_PLACE_ORDER, orderData, app);
 					Log.v(TAG, "Post order to server response :: " + response);
 					
 												
@@ -323,7 +365,7 @@ public class WebServices {
 	 * @param context
 	 * @return
 	 */
-	public static JSONObject saveUserProfile(UserProfile user, String path, Context context) {
+	public static JSONObject saveUserProfile(UserProfile user, String path, BartsyApplication context) {
 
 		String url = path;
 		byte[] dataFirst = null;
@@ -473,6 +515,12 @@ public class WebServices {
 				Log.v(TAG, "postProfileResponseChecking " + responseofmain);
 				JSONObject resultJson = new JSONObject(responseofmain);
 				
+				// Check API version number 
+				if (resultJson.has("errorCode") && resultJson.getString("errorCode").equals("100")) {
+					context.makeText("API version missmatch. Please update your app to the latest version.", Toast.LENGTH_LONG);
+					resultJson = null;
+				}
+				
 				Log.i(TAG,"<=== postRequest response: " + resultJson);
 
 				
@@ -495,7 +543,7 @@ public class WebServices {
 	 * @param context
 	 * @return list of venues
 	 */
-	public static String getVenueList(final Context context, String string) {
+	public static String getVenueList(final BartsyApplication context, String string) {
 		String response = null;
 		try {
 			JSONObject json = new JSONObject();
@@ -509,7 +557,7 @@ public class WebServices {
 	}
 	
 	
-	public static String getIngredients(final Context context, String venueID){
+	public static String getIngredients(final BartsyApplication context, String venueID){
 		String response = null;
 		JSONObject json = new JSONObject();
 		try {
@@ -536,7 +584,7 @@ public class WebServices {
 
 			JSONObject postData = new JSONObject();
 			postData.put("bartsyId", app.loadBartsyId());
-			response = new JSONObject(WebServices.postRequest(URL_LIST_OF_USER_ORDERS, postData, app.getApplicationContext()));
+			response = new JSONObject(WebServices.postRequest(URL_LIST_OF_USER_ORDERS, postData, app));
 
 		} catch (Exception e) {
 			Log.e(TAG, "getUserOdersList Exception found " + e.getMessage());
@@ -551,7 +599,7 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static String getMenuList(Context context, String venueID) {
+	public static String getMenuList(BartsyApplication context, String venueID) {
 
 		Log.v(TAG, "getting menu for venue: " + venueID);
 
@@ -586,7 +634,7 @@ public class WebServices {
 					json.put("orderId", order.serverID);
 					json.put("bartsyId", app.mProfile.getBartsyId());
 					json.put("orderStatus", String.valueOf(positive ? Order.ORDER_STATUS_NEW : Order.ORDER_STATUS_OFFER_REJECTED));
-					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app.getApplicationContext()));
+					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app));
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -633,7 +681,7 @@ public class WebServices {
 	 * Return either a new profile with the parameters returned from the host or null if an error occurred or the
 	 * profile doesn't exist
 	 */
-	public static UserProfile getUserProfile(Context context, UserProfile login) {
+	public static UserProfile getUserProfile(BartsyApplication context, UserProfile login) {
 
 		Log.v(TAG, "userLogin()");
 
@@ -813,7 +861,7 @@ public class WebServices {
 	 * @param venueID
 	 * @return
 	 */
-	public static String getPastOrders(Context context, String bartsyId, String venueID){
+	public static String getPastOrders(BartsyApplication context, String bartsyId, String venueID){
 
 		JSONObject postData = new JSONObject();
 		String response = null;
@@ -837,7 +885,7 @@ public class WebServices {
 	/**
 	 *  Get notification sys call
 	 */
-	public static String getNotifications(Context context, String bartsyId){
+	public static String getNotifications(BartsyApplication context, String bartsyId){
 		String response = null;
 		// Post data to get notification which is related to user and checkedin venue
 		JSONObject postData = new JSONObject();
@@ -863,7 +911,7 @@ public class WebServices {
 	 * @param context
 	 */
 	public static void orderStatusChanged(final Order order,
-			final Context context) {
+			final BartsyApplication context) {
 		new Thread() {
 
 			@Override

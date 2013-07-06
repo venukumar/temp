@@ -84,7 +84,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		@Override
 		protected String doInBackground(String... params) {
 			
-			return WebServices.getPastOrders(mActivity, mApp.mProfile.getBartsyId(), mApp.mActiveVenue.getId());
+			return WebServices.getPastOrders(mApp, mApp.mProfile.getBartsyId(), mApp.mActiveVenue.getId());
 		}
 
 		@Override
@@ -160,30 +160,30 @@ public class PastOrdersSectionView extends LinearLayout {
 		((TextView) itemView.findViewById(R.id.orderId)).setText(order.serverID);
 		
 		String status = "?";
-		switch(order.status) {
+		switch(order.last_status) {
 		case Order.ORDER_STATUS_CANCELLED:
-			status = "Failed";
+			status = "Cancelled";
 			break;
 		case Order.ORDER_STATUS_COMPLETE:
-			status = "OK";
+			status = "Complete";
 			break;
 		case Order.ORDER_STATUS_READY:
-			status = "Open";
+			status = "Ready";
 			break;
 		case Order.ORDER_STATUS_FAILED:
 			status = "Failed";
 			break;
 		case Order.ORDER_STATUS_IN_PROGRESS:
-			status = "Open";
+			status = "In progress";
 			break;
 		case Order.ORDER_STATUS_INCOMPLETE:
-			status = "Failed";
+			status = "Incomplete";
 			break;
 		case Order.ORDER_STATUS_NEW:
-			status = "Open";
+			status = "New";
 			break;
 		case Order.ORDER_STATUS_REJECTED:
-			status = "Failed";
+			status = "Rejected";
 			break;
 		}
 		

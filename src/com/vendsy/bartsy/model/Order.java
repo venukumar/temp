@@ -202,7 +202,12 @@ public class Order {
 	public String readableStatus() {
 		String message = "";
 		
-		switch(status) {
+		int orderStatus = status;
+		
+		if (status == ORDER_STATUS_REMOVED)
+			orderStatus = last_status;
+		
+		switch(orderStatus) {
 		case ORDER_STATUS_NEW:
 			message = title + " order placed.\nWe will let you know when it's in progress.";
 			break;
@@ -225,7 +230,7 @@ public class Order {
 			message = title + " not picked up.\nYou were charged for it because you didn't pick it up on time. Check with the venue for all refunds.";
 			break;
 		case ORDER_STATUS_CANCELLED:
-			message = title + " timed out.\nIt was taking too long.";
+			message = title + " timed out.\nYour were not charged. Please check with the venue.";
 			break;
 		case ORDER_STATUS_OFFERED:
 			message = title + " offered.\nAccept/reject?";
@@ -233,6 +238,11 @@ public class Order {
 		case ORDER_STATUS_OFFER_REJECTED:
 			message = title + " rejected.\nYour drink offer was not accepted";
 			break;
+		case ORDER_STATUS_TIMEOUT:
+			message = title + " timed out due to internet issues.\nPlease check on your order with the venue.";
+			break;
+		default:
+			message = title + " is in an illegal status.";
 		}
 		return message;
 	}
@@ -336,6 +346,11 @@ public class Order {
 				last_status = ORDER_STATUS_IN_PROGRESS;
 				break;
 			}
+			
+			// Update the last status of the order (this is sent for past orders)
+			if (json.has("lastState"))
+				last_status = Integer.parseInt(json.getString("lastState"));
+
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
@@ -383,12 +398,12 @@ public class Order {
 
 	public void updateStatus(int status) {
 		
-		if (status == ORDER_STATUS_REMOVED) {
+		if (this.status == ORDER_STATUS_REMOVED) {
 			Log.i(TAG, "Skipping status update of order " + serverID + " from " + this.status + " to " + status + " with last status " + last_status);
 			return;
 		}
 		
-		last_status = status;
+		last_status = this.status;
 		this.status = status;
 		state_transitions[status] = new Date();
 
@@ -633,7 +648,7 @@ public class Order {
 				recipient = "\n(for another user)";
 		} else if (!senderId.equals(bartsyId)){
 			if (orderSender != null)
-				recipient = "\n(from: " + orderReceiver.getNickname() + ")";
+				recipient = "\n(from: " + orderSender.getNickname() + ")";
 			else 
 				recipient = "\n(from another user)";
 		}

@@ -788,7 +788,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		if (mProfile == null)
 			return SYNC_RESULT_NO_LOCAL_PROFILE; 
 		
-		UserProfile user = WebServices.getUserProfile(getApplicationContext(), mProfile);
+		UserProfile user = WebServices.getUserProfile(this, mProfile);
 		if (user == null) {
 			// Could not get user details - erase our user locally and of course, don't check anybody in
 			Log.w(TAG, "Could not load user profile");
@@ -797,8 +797,10 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		// Download user image
 		Bitmap image = WebServices.fetchImage(user.getImagePath());
-		if (image != null)
+		if (image != null) {
 			user.setImage(image);
+			user.setImageDownloaded(true);
+		}
 		
 		// Got a valid profile - save it locally 
 		Log.w(TAG, "Found profile: " + user);
@@ -929,19 +931,19 @@ public class BartsyApplication extends Application implements AppObservable {
 		if (Looper.myLooper() == Looper.getMainLooper()) {
 			// We're in the main thread - execute the update in the background with a new asynchronous task
 			Log.w(TAG, "Running updateOrders() in an async task");
-/*			mHandler.post(new Runnable() {
-				
-				@Override
-				public void run() {
-					new Thread () {
-						@Override 
-						public void run() {
-							accessOrders(BartsyApplication.ACCESS_ORDERS_UPDATE);				
-						};
-					}.start();
-				};
-			});
-*/
+//			mHandler.post(new Runnable() {
+//				
+//				@Override
+//				public void run() {
+//					new Thread () {
+//						@Override 
+//						public void run() {
+//							accessOrders(BartsyApplication.ACCESS_ORDERS_UPDATE);				
+//						};
+//					}.start();
+//				};
+//			});
+
 			new UpdateAsync().execute();
 		} else {
 			// We're not in the main thread - don't spin up a thread
@@ -1000,8 +1002,9 @@ public class BartsyApplication extends Application implements AppObservable {
 			e.printStackTrace();
 		}	
 
+		// Synchronize only when network is up and when there is an active venue
 		
-		if (network) {	
+		if (network && mActiveVenue != null) {	
 			
 			JSONObject json = WebServices.getOpenOrders(BartsyApplication.this);
 			if(json != null) {
@@ -1032,11 +1035,6 @@ public class BartsyApplication extends Application implements AppObservable {
 					if (updatedOrders.size() > 0) {
 						for (Order order : updatedOrders) {
 							message +=  order.readableStatus() + "\n";
-
-							switch (order.status) {
-							}	
-							
-							
 							count++;
 						}
 						message += "\n";
@@ -1115,27 +1113,39 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	ArrayList<Order> processAddedOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
 
+		Log.w(TAG, "processAddedOrders()");
+
 		// Find the orders to remove and store them in a separate list to avoid iterator issues
 		ArrayList<Order> processedOrders = new ArrayList<Order>();
 		for (Order order : remoteOrders) {
 			if (findMatchingOrder(localOrders, order) == null) {
 
 				switch(order.status) {
+				
+				// For order that have completed their lifecycle and we're just learning about it, remove them from host
 				case Order.ORDER_STATUS_CANCELLED:
+				case Order.ORDER_STATUS_COMPLETE:
+				case Order.ORDER_STATUS_REJECTED:
+				case Order.ORDER_STATUS_FAILED:
+				case Order.ORDER_STATUS_INCOMPLETE:
+				case Order.ORDER_STATUS_OFFER_REJECTED:
 					order.updateStatus(order.status);
 					order.updateStatus(Order.ORDER_STATUS_REMOVED);
 					WebServices.orderStatusChanged(order, BartsyApplication.this);
 					break;
+					
+				// These order we're learning about because we probably have lost our local orders cache. Add them to the cache.
 				case Order.ORDER_STATUS_NEW:
 				case Order.ORDER_STATUS_IN_PROGRESS:
 				case Order.ORDER_STATUS_READY:
 				case Order.ORDER_STATUS_OFFERED:
-					// Legal state - add new orders to the list of work and notify the user
 					processedOrders.add(order);
 					break;
+					
+				// Illegal remote order state - print message and skip it
+				case Order.ORDER_STATUS_REMOVED:
 				default:
-					// Illegal state - print message
-					Log.e(TAG, "Skipping illegal order: " + order.serverID + " with status: " + order.status);
+					Log.e(TAG, "Skipping illegal added order: " + order.serverID + " with status: " + order.status);
 					break;
 				}
 			}
@@ -1157,6 +1167,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	ArrayList<Order> processRemovedOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
 		
+		Log.w(TAG, "processRemovedOrders()");
+		
 		// Find the orders to remove and store them in a separate list to avoid iterator issues
 		ArrayList<Order> removedOrders = new ArrayList<Order>();
 		for (Order order : localOrders) {
@@ -1164,18 +1176,35 @@ public class BartsyApplication extends Application implements AppObservable {
 			if ( remoteOrder == null) {
 
 				switch(order.status) {
-				
+
+				// These orders have finished their lifecycle and the host doesn't know about them. Remove them
 				case Order.ORDER_STATUS_COMPLETE:
 				case Order.ORDER_STATUS_REJECTED:
 				case Order.ORDER_STATUS_FAILED:
 				case Order.ORDER_STATUS_INCOMPLETE:
-					removedOrders.add(order);
+				case Order.ORDER_STATUS_OFFER_REJECTED:
+					order.updateStatus(Order.ORDER_STATUS_REMOVED);
 					break;
-				case Order.ORDER_STATUS_CANCELLED:
+					
+				// For these statuses we already expect user action, so keep them around
 				case Order.ORDER_STATUS_TIMEOUT:
+				case Order.ORDER_STATUS_REMOVED:
 					break;
-				default:
+					
+				// We have orders that are still in progress and haven't timed out locally. Set them to timeout.
+				case Order.ORDER_STATUS_NEW:
+				case Order.ORDER_STATUS_IN_PROGRESS:
+				case Order.ORDER_STATUS_READY:
+				case Order.ORDER_STATUS_OFFERED:
+					Log.e(TAG, "Timing out removed order: " + order.serverID + " with status: " + order.status);
 					order.setTimeoutState();
+					break;
+					
+				// Somehow our local state is in an impossible state for an order the host knows nothing about - print message and remove them
+				case Order.ORDER_STATUS_CANCELLED:
+				default:
+					Log.e(TAG, "Skipping illegal removed order: " + order.serverID + " with status: " + order.status);
+					removedOrders.add(order);
 					break;
 				}
 			}
@@ -1190,17 +1219,28 @@ public class BartsyApplication extends Application implements AppObservable {
 	}		
 	
 	ArrayList<Order> processExistingOrders(ArrayList<Order> localOrders, ArrayList<Order> remoteOrders) {
+
+		Log.w(TAG, "processExistingOrders()");
+		
 		ArrayList<Order> updatedOrders = new ArrayList<Order>();
 
 		for (Order remoteOrder : remoteOrders) {
 			
 			Order localOrder = findMatchingOrder(localOrders, remoteOrder);
-			
+
+			// Handle the case where the timeout of the bartender has changed while we have open orders 
+			if (localOrder != null && localOrder.timeOut != remoteOrder.timeOut) {
+				Log.v(TAG, "Adjusting order timeout for order " + localOrder.serverID + " from " + localOrder.timeOut + " to " + remoteOrder.timeOut);
+				localOrder.timeOut = remoteOrder.timeOut;
+			}
+				
 			if ( localOrder != null && localOrder.status != remoteOrder.status) {
 				
 				// Update the status of the local order based on that of the remote order and return on error
 				
 				switch (remoteOrder.status) {
+				
+				// These orders have finished their lifecycle and the host knows about them. Let the host know to remove them.
 				case Order.ORDER_STATUS_REJECTED:
 				case Order.ORDER_STATUS_FAILED:
 				case Order.ORDER_STATUS_COMPLETE:
@@ -1211,13 +1251,34 @@ public class BartsyApplication extends Application implements AppObservable {
 					localOrder.updateStatus(remoteOrder.status);
 					localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
 					WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
+					updatedOrders.add(localOrder);
 					break;
+				
+				// These order are in a local state the host shouldn't know about. Don't do anything
+				case Order.ORDER_STATUS_TIMEOUT:
+					break;
+
+				// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
+				case Order.ORDER_STATUS_REMOVED:
+					Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+					localOrder.setTimeoutState();
+					break;
+					
+				// These orders have legitimately changed status to match that of the host. Update them locally.
+				case Order.ORDER_STATUS_NEW:
+				case Order.ORDER_STATUS_IN_PROGRESS:
+				case Order.ORDER_STATUS_READY:
+					localOrder.updateStatus(remoteOrder.status);
+					updatedOrders.add(localOrder);
+					break;
+					
+				// These orders are somehow in a local state that shouldn't be possible without the knowledge of the host. Match host state!
+				case Order.ORDER_STATUS_OFFERED:
 				default:
+					Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
 					localOrder.updateStatus(remoteOrder.status);
 					break;
 				}
-
-				updatedOrders.add(localOrder);
 			}
 		}
 		return updatedOrders;

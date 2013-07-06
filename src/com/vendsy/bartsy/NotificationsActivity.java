@@ -62,7 +62,7 @@ public class NotificationsActivity extends Activity{
 
 			public void run() {
 				
-				final String response = WebServices.getNotifications(NotificationsActivity.this, mApp.mProfile.getBartsyId());
+				final String response = WebServices.getNotifications(mApp, mApp.mProfile.getBartsyId());
 				// Post handler to access UI 
 				handler.post(new Runnable() {
 					

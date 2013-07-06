@@ -96,79 +96,96 @@ public class OpenOrdersSectionView extends LinearLayout{
 
 		// Make sure the list view is empty
 		mOrderListView.removeAllViews();
+		
+		ArrayList<String> recipients = new ArrayList<String>();
+		
+		for (Order order : orders) {
+			if (!recipients.contains(order.recipientId))
+				recipients.add(order.recipientId);
+		}
 
-		// We bundle orders together according to their status, starting from the top of the list
-		boolean[] statusDisplayed = new boolean[Order.ORDER_STATUS_COUNT];
+		// For all different recipients of drinks (for now order by recipient isntead of order number)
 
-		// Add any existing orders in the layout, one by one
-
-		for (int i = 0 ; i < orders.size(); i++) {
-			
-			Order order= orders.get(i);
-
-			Log.v(TAG, "Processing order " + order.serverID + " with status " + order.status + " and last status " + order.last_status);
-
-			if (!statusDisplayed[order.status]) {
+		for (String recipientId : recipients) {
+		
+			// We bundle orders together according to their status, starting from the top of the list
+			boolean[] statusDisplayed = new boolean[Order.ORDER_STATUS_COUNT];
+	
+			// Add any existing orders in the layout, one by one
+	
+			for (int i = 0 ; i < orders.size(); i++) {
 				
-				Log.v(TAG, "Showing master order " + order.serverID);
+				Order order= orders.get(i);
 
-				statusDisplayed[order.status] = true;
+				// Process the orders of the current recipient only
 				
-				// Display header based on the current order
-				
-				View view = order.updateView(mInflater, mContainer);
-				view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						mApp.removeOrder((Order) v.getTag());
-					}
-				});
-				
-				view.findViewById(R.id.view_order_footer_accept).setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						Order order = (Order) v.getTag();
-						((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
-						((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
-						WebServices.updateOfferedDrinkStatus(mApp, order, true);
-					}
-				});
-				
-				view.findViewById(R.id.view_order_footer_reject).setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						Order order = (Order) v.getTag();
-						((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
-						((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
-						WebServices.updateOfferedDrinkStatus(mApp, order, false);
-					}
-				});
-				
-				mOrderListView.addView(view);
-
-				// If there are any more orders of the same type and recipient, display them as mini views
-
-				float taxAmt = order.taxAmount;
-				float tipAmt = order.tipAmount;
-				float totalAmt = order.totalAmount;
-				
-				for (int j = i+1 ; j < orders.size(); j++)
-				{
-					Order mini = orders.get(j);
-					if (mini.status == order.status && order.recipientId.equals(mini.recipientId))  
-					{
-						Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
-						((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
-
-						// Collect prices from mini views						
-						taxAmt+=mini.taxAmount;
-						tipAmt+=mini.tipAmount;
-						totalAmt+=mini.totalAmount;
+				if (order.recipientId.equals(recipientId)) {
+					
+					Log.v(TAG, "Processing order " + order.serverID + " with status " + order.status + " and last status " + order.last_status);
+		
+					if (!statusDisplayed[order.status]) {
+						
+						Log.v(TAG, "Showing master order " + order.serverID);
+		
+						statusDisplayed[order.status] = true;
+						
+						// Display header based on the current order
+						
+						View view = order.updateView(mInflater, mContainer);
+						view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								mApp.removeOrder((Order) v.getTag());
+							}
+						});
+						
+						view.findViewById(R.id.view_order_footer_accept).setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								Order order = (Order) v.getTag();
+								((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+								((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+								WebServices.updateOfferedDrinkStatus(mApp, order, true);
+							}
+						});
+						
+						view.findViewById(R.id.view_order_footer_reject).setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								Order order = (Order) v.getTag();
+								((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+								((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+								WebServices.updateOfferedDrinkStatus(mApp, order, false);
+							}
+						});
+						
+						mOrderListView.addView(view);
+		
+						// If there are any more orders of the same type and recipient, display them as mini views
+		
+						float taxAmt = order.taxAmount;
+						float tipAmt = order.tipAmount;
+						float totalAmt = order.totalAmount;
+						
+						for (int j = i+1 ; j < orders.size(); j++)
+						{
+							Order mini = orders.get(j);
+							if (mini.status == order.status && order.recipientId.equals(mini.recipientId))  
+							{
+								Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
+								((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
+		
+								// Collect prices from mini views						
+								taxAmt+=mini.taxAmount;
+								tipAmt+=mini.tipAmount;
+								totalAmt+=mini.totalAmount;
+							}
+						}
+		
+						// Update price of the parent order view with any additional money from mini-views added
+						order.updateTipTaxTotalView(tipAmt,taxAmt,totalAmt);
 					}
 				}
-
-				// Update price of the parent order view with any additional money from mini-views added
-				order.updateTipTaxTotalView(tipAmt,taxAmt,totalAmt);
 			}
 		}
 	}

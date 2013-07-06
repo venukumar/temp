@@ -181,7 +181,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		    // load your xml feed asynchronously
 		  
 			
-			UserProfile user = WebServices.getUserProfile(getApplicationContext(), mApp.mProfile);
+			UserProfile user = WebServices.getUserProfile(mApp, mApp.mProfile);
 			if (user == null) {
 				// Could not get user details 
 //				mApp.eraseUserProfile();
@@ -208,7 +208,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 	/**
 	 * To checkout user from the active venue
-	 * 
 	 */
 	private void checkOutUser() {
 		// For now it will ask confirmation dialog
@@ -248,7 +247,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 						public void run() {
 							// Check out web service call
 							String response = WebServices.userCheckInOrOut(
-									MainActivity.this,
+									mApp,
 									mApp.loadBartsyId(),
 									mApp.mActiveVenue.getId(),
 									WebServices.URL_USER_CHECK_OUT);
@@ -317,8 +316,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 
 			switch (responseCode) {
 			case RESULT_OK:
-				// We got a response from the user profile activity. Process the user profile and start
-				// the right activity if successful
+				// We got a response from the user profile activity. Process the user profile and start the right activity if successful
 				Log.v(TAG, "Profile saved - process results");
 				Toast.makeText(this, "Profile saved", Toast.LENGTH_SHORT).show();
 				break;

@@ -130,7 +130,7 @@ public class MapActivity extends Activity implements LocationListener,
 	protected void loadVenuesFromServer(final ListView venueList) {
 		new Thread() {
 			public void run() {
-				String response = WebServices.getVenueList(MapActivity.this, mApp.loadBartsyId());
+				String response = WebServices.getVenueList(mApp, mApp.loadBartsyId());
 				if (response != null) {
 					venues = getVenueListResponse(response);
 					// Handler for UI thread
@@ -321,7 +321,7 @@ public class MapActivity extends Activity implements LocationListener,
 			public void run() {
 				
 				// Invoke the user checkin syscall
-				String response = WebServices.userCheckInOrOut(MapActivity.this, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_IN);
+				String response = WebServices.userCheckInOrOut(mApp, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_IN);
 
 				if (response != null) {
 					try {

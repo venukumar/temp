@@ -204,7 +204,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 			return null;
 		}
 		// Step 1 - get the web service response and display the results in the view
-		String response = WebServices.getMenuList(mActivity.getApplicationContext(), mApp.mActiveVenue.getId());
+		String response = WebServices.getMenuList(mApp, mApp.mActiveVenue.getId());
 		if (response == null) {
 			Log.d(TAG, "Webservice get menu call failed");
 			return null;

@@ -425,7 +425,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 				Venue venue = mVenue;
 				
 				// Invoke the user checkin syscall
-				String response = WebServices.userCheckInOrOut(VenueActivity.this, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_OUT);
+				String response = WebServices.userCheckInOrOut(mApp, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_OUT);
 
 				if (response != null) {
 					try {

@@ -73,7 +73,7 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 		new Thread(){
 			public void run() {
 				
-				String response = WebServices.getIngredients(CustomDrinksActivity.this, app.mActiveVenue.getId());
+				String response = WebServices.getIngredients(app, app.mActiveVenue.getId());
 				parseIngredientsResponse(response);
 				
 				// Thread can't access UI related components directly. We have to post by using handler

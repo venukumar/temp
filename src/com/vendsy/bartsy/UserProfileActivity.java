@@ -613,7 +613,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 					
 					try {
 						// Service call for post profile data to server
-						JSONObject resultJson = WebServices.saveUserProfile(userProfile, WebServices.URL_POST_PROFILE_DATA, getApplicationContext());
+						JSONObject resultJson = WebServices.saveUserProfile(userProfile, WebServices.URL_POST_PROFILE_DATA, mApp);
 
 						// Make sure we got a successful response
 						if (!(resultJson!=null && resultJson.has("errorCode") && resultJson.getString("errorCode").equalsIgnoreCase("0"))) {
