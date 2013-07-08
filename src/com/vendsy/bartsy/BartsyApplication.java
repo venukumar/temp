@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -164,6 +165,7 @@ public class BartsyApplication extends Application implements AppObservable {
 //		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
 	}
 	
+
 	
 	/**
 	 * Convenience functions to generate notifications and Toasts 
@@ -206,8 +208,17 @@ public class BartsyApplication extends Application implements AppObservable {
 			}
 		});
 	}
-		
 	
+	/**
+	 * 
+	 * TODO - Image Cache
+	 * 
+	 * Any image can be saved in hash map based on the image path
+	 * 
+	 */
+	public HashMap<String, Bitmap> savedImages = new HashMap<String, Bitmap>();
+		
+		
 	/**
 	 * 
 	 * TODO - active venue
