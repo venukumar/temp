@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.vendsy.bartsy.R;
@@ -171,5 +172,16 @@ public final class Utilities {
 			return null;
 		}
 		return output; 
+	}
+	/**
+	 * Returns the date in string in "time ago format"
+	 * 
+	 * @param input
+	 * @param format
+	 * @return
+	 */
+	public static String getFriendlyDate(String input, String format){
+		Date date = getLocalDateFromGTMString(input, format);
+		return (String) DateUtils.getRelativeTimeSpanString(date.getTime(), System.currentTimeMillis(),DateUtils.HOUR_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
 	}
 }
