@@ -417,7 +417,7 @@ public class Order {
 		
 		Log.v(TAG, "setTimeoutState()");
 
-		if (status == ORDER_STATUS_NEW || status == ORDER_STATUS_READY || status == ORDER_STATUS_IN_PROGRESS) {
+		if (status == ORDER_STATUS_NEW || status == ORDER_STATUS_READY || status == ORDER_STATUS_IN_PROGRESS || status == ORDER_STATUS_OFFERED) {
 			// Change status of orders 
 			last_status = status;
 			status = ORDER_STATUS_TIMEOUT;
@@ -457,40 +457,54 @@ public class Order {
 		// To display order receiver profile information in orders view
 		updateProfileView();
 
+		// If the order has been removed already (and we're showing for UI reasons), use the last status for showing the state
 		int orderStatus = status;
 		if (orderStatus == ORDER_STATUS_REMOVED)
 			orderStatus = last_status;
+
 		
 		switch (orderStatus) {
 		case ORDER_STATUS_OFFERED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"You were offered a drink!");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
-			view.findViewById(R.id.view_order_footer).setVisibility(View.VISIBLE);
-			view.findViewById(R.id.view_order_footer_reject).setTag(this);
-			view.findViewById(R.id.view_order_footer_accept).setTag(this);
+			if (senderId.equals(bartsyId)) {
+				// We are the sender 
+				((TextView) view.findViewById(R.id.view_order_state_description)).setText("Waiting for recipient to accept/reject your offer");
+				((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);				
+			} else {
+				// We are the recipient
+				((TextView) view.findViewById(R.id.view_order_state_description)).setText("You were offered a drink!");
+				((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+				view.findViewById(R.id.view_order_footer).setVisibility(View.VISIBLE);
+				view.findViewById(R.id.view_order_footer_reject).setTag(this);
+				view.findViewById(R.id.view_order_footer_accept).setTag(this);
+			}
 			break;
 		case ORDER_STATUS_OFFER_REJECTED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your drink offer was rejected by " + recipientId + ".");
-			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
-			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
-			view.findViewById(R.id.view_order_notification_button).setTag(this);
+			if (recipientId.equals(bartsyId)) {
+				// We are the recipient 
+				((TextView) view.findViewById(R.id.view_order_state_description)).setText("You rejected this offer.");
+				((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);				
+				view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+				view.findViewById(R.id.view_order_notification_button).setTag(this);
+			} else {
+				// We are the sender - 
+				((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your offer was rejected by its recipient");
+				((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+				view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
+				view.findViewById(R.id.view_order_notification_button).setTag(this);
+			}
 			break;
 		case ORDER_STATUS_NEW:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is waiting to be accepted.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was placed. You'll be notified when accepted.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
 			break;
 		case ORDER_STATUS_REJECTED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order was rejected. Please check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was rejected. Please check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_FAILED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order failed. Please check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order failed. Please check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
@@ -504,29 +518,38 @@ public class Order {
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
 			break;
 		case ORDER_STATUS_INCOMPLETE:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order was not picked up. Check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was not picked up. Check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_CANCELLED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order was taking too long and it expired. You weren't charged.");
+			switch (last_status) { 
+			case ORDER_STATUS_OFFERED:
+				if (recipientId.equals(bartsyId)) {
+					// We are the recipient 
+					((TextView) view.findViewById(R.id.view_order_state_description)).setText("The offer timed out. Please accept your offered drinks within " + timeOut + " minutes.");
+				} else {
+					// We are the sender - 
+					((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your offer timed out as the recipient didn't accept or reject it in time. You weren't charged, so feel free to make another offer.");
+				}
+				break;
+			default:
+				((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was taking too long and it timed out. You weren't charged.");
+				break;
+			}
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_COMPLETE:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Your order was picked up.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was picked up.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_TIMEOUT:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText(
-					"Connectivity issues. Check with the venue immediately.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order  timed out due to connectivity issues. Please check with the venue immediately.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);

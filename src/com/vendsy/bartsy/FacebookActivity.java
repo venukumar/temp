@@ -4,11 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.facebook.Request;
-import com.facebook.Response;
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.model.GraphUser;
 import com.vendsy.bartsy.model.UserProfile;
 /**
  * 
@@ -21,7 +16,7 @@ public class FacebookActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 //    setContentView(R.layout.facebook_layout);
-
+/*
     // start Facebook Login
     Session.openActiveSession(this, true, new Session.StatusCallback() {
 
@@ -56,13 +51,13 @@ public class FacebookActivity extends Activity {
         	finish();
         }
       }
-    });
+    });*/
   }
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
       super.onActivityResult(requestCode, resultCode, data);
-      Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
+//      Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
   }
 
 }

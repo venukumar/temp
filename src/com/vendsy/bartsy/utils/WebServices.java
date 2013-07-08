@@ -196,7 +196,7 @@ public class WebServices {
 						}
 					}
 					
-					Log.i(TAG,"<=== postRequest response:"+ response);
+					Log.i(TAG,"<=== postRequest response: " + url + ", " + response);
 				}
 		return response;
 	}
@@ -521,7 +521,7 @@ public class WebServices {
 					resultJson = null;
 				}
 				
-				Log.i(TAG,"<=== postRequest response: " + resultJson);
+				Log.i(TAG,"<=== postRequest response: " + url + ", " + resultJson);
 
 				
 				return resultJson;
@@ -550,9 +550,8 @@ public class WebServices {
 			json.put("bartsyId", string);
 			response = WebServices.postRequest(URL_GET_VENU_LIST, json, context);
 		} catch (Exception e) {
-			Log.v(TAG, "Error venu list " + e.getMessage());
+			Log.v(TAG, "Error venue list " + e.getMessage());
 		}
-		Log.v(TAG, "response venu list " + response);
 		return response;
 	}
 	
@@ -566,7 +565,6 @@ public class WebServices {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		Log.v(TAG, "response Ingredient list " + response);
 		return response;
 	}
 	
@@ -621,7 +619,7 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static String updateOfferedDrinkStatus(final BartsyApplication app, final Order order, final boolean positive) {
+	public static String updateOfferedDrinkStatus(final BartsyApplication app, final Order order) {
 
 		new Thread(){
 			@Override
@@ -633,7 +631,7 @@ public class WebServices {
 					json.put("venueId", app.mActiveVenue.getId());
 					json.put("orderId", order.serverID);
 					json.put("bartsyId", app.mProfile.getBartsyId());
-					json.put("orderStatus", String.valueOf(positive ? Order.ORDER_STATUS_NEW : Order.ORDER_STATUS_OFFER_REJECTED));
+					json.put("orderStatus", Integer.toString(order.status));
 					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app));
 				} catch (Exception e1) {
 					e1.printStackTrace();
@@ -642,13 +640,12 @@ public class WebServices {
 				try {
 					if (response != null && response.has("errorCode") && response.getString("errorCode").equals("0")) {
 
-						// Success - move the order to the next state
-						if (positive) {
-							app.makeText("Order sent. Please be ready to pick it up before it times out.", Toast.LENGTH_LONG);							
-							order.updateStatus(Order.ORDER_STATUS_NEW); 
+						// Success - Toast the user. A notification will also be sent from the main order update function which will update the order's status after the server changes is
+						if (order.status != Order.ORDER_STATUS_OFFER_REJECTED) {
+							app.makeText("The sender was notified that you accepted their offer.", Toast.LENGTH_LONG);
+							app.makeText("Your order was placed. Please be ready to pick it up before it times out.", Toast.LENGTH_LONG);							
 						} else {
-							app.makeText("The sender was notified about your offer.", Toast.LENGTH_LONG);							
-							order.updateStatus(Order.ORDER_STATUS_NEW); 
+							app.makeText("The sender was notified that you rejected their offer.", Toast.LENGTH_LONG);							
 						}
 						if (response.has("orderTimeout"))
 							order.timeOut = response.getInt("orderTimeout");
@@ -661,9 +658,8 @@ public class WebServices {
 
 				// Failure - restore the buttons and let the user try again later, or the order will time out
 				app.makeText("Could not connect. Please check your internet connection.", Toast.LENGTH_LONG);
-				((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(true);
-				((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(true);
-
+//				((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(true);
+//				((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(true);
 			}
 		}.start();
 		return null;
@@ -917,10 +913,7 @@ public class WebServices {
 			@Override
 			public void run() {
 				try {
-					String response;
-					response = postRequest(URL_UPDATE_ORDER_STATUS, order.statusChangedJSON(), context);
-					System.out.println("response :: " + response);
-
+					postRequest(URL_UPDATE_ORDER_STATUS, order.statusChangedJSON(), context);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

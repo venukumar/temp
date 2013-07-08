@@ -1,9 +1,6 @@
 package com.vendsy.bartsy.model;
 
-import io.card.payment.CreditCard;
-
 import java.util.ArrayList;
-import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,9 +12,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.model.GraphUser;
 import com.google.android.gms.plus.model.people.Person;
-import com.google.android.gms.plus.model.people.Person.Emails;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
@@ -180,7 +175,7 @@ public class UserProfile {
 	 * @param user
 	 * @return
 	 */
-	public UserProfile (GraphUser user) {
+/*	public UserProfile (GraphUser user) {
 		
 		// Set all the user details
 		
@@ -197,7 +192,7 @@ public class UserProfile {
 		this.setImagePath(Constants.FB_PICTURE+user.getId()+"/picture");
 			
 	}
-	
+	*/
 	public boolean isImageDownloaded() {
 		return imageDownloaded;
 	}

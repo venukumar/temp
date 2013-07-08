@@ -45,7 +45,9 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -652,12 +654,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		// Make sure the order knows the bartsy ID of the profile on this phone to know who's the sender and who's the receiver
 		order.bartsyId = mProfile.getBartsyId();
 		
-		
-		// For now (hack) correct problems with setting the status in the Order constructor 
-		if (order.status == Order.ORDER_STATUS_OFFERED && order.senderId.equals(order.bartsyId)) {
-			order.status = Order.ORDER_STATUS_NEW;
-		}
-		
 		// Add the order to the list of orders
 		mOrders.add(order);
 		mOrderIDs++;
@@ -1131,7 +1127,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_OFFER_REJECTED:
 					order.updateStatus(order.status);
 					order.updateStatus(Order.ORDER_STATUS_REMOVED);
-					WebServices.orderStatusChanged(order, BartsyApplication.this);
+					WebServices.orderStatusChanged(order, this);
 					break;
 					
 				// These order we're learning about because we probably have lost our local orders cache. Add them to the cache.
@@ -1189,6 +1185,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				// For these statuses we already expect user action, so keep them around
 				case Order.ORDER_STATUS_TIMEOUT:
 				case Order.ORDER_STATUS_REMOVED:
+				case Order.ORDER_STATUS_CANCELLED:
 					break;
 					
 				// We have orders that are still in progress and haven't timed out locally. Set them to timeout.
@@ -1198,13 +1195,6 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_OFFERED:
 					Log.e(TAG, "Timing out removed order: " + order.serverID + " with status: " + order.status);
 					order.setTimeoutState();
-					break;
-					
-				// Somehow our local state is in an impossible state for an order the host knows nothing about - print message and remove them
-				case Order.ORDER_STATUS_CANCELLED:
-				default:
-					Log.e(TAG, "Skipping illegal removed order: " + order.serverID + " with status: " + order.status);
-					removedOrders.add(order);
 					break;
 				}
 			}
@@ -1236,48 +1226,84 @@ public class BartsyApplication extends Application implements AppObservable {
 				
 			if ( localOrder != null && localOrder.status != remoteOrder.status) {
 				
+				// Ignore the remote status in some cases
+				boolean ignoreRemote = false;
+				
+				switch (localOrder.status) {
+				case Order.ORDER_STATUS_OFFER_REJECTED:
+					// We shouldn't be in this state unless the host didn't hear our state change. Remind the host.
+					if (localOrder.senderId.equals(localOrder.bartsyId)) {
+						// We are the sender - acknowledge the change of status and remove the order
+						localOrder.updateStatus(remoteOrder.status);
+						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
+						WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
+						updatedOrders.add(localOrder);
+						ignoreRemote = true;
+					} else {
+						// We are the recipient - this is not a legal state for the server to be updating us on
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+						localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
+						ignoreRemote = true;
+					}
+					break;
+				}
+				
 				// Update the status of the local order based on that of the remote order and return on error
 				
-				switch (remoteOrder.status) {
-				
-				// These orders have finished their lifecycle and the host knows about them. Let the host know to remove them.
-				case Order.ORDER_STATUS_REJECTED:
-				case Order.ORDER_STATUS_FAILED:
-				case Order.ORDER_STATUS_COMPLETE:
-				case Order.ORDER_STATUS_INCOMPLETE:
-				case Order.ORDER_STATUS_OFFER_REJECTED:
-				case Order.ORDER_STATUS_CANCELLED:
-					// Change the state and leave it in the order list until user acknowledges the time out ****
-					localOrder.updateStatus(remoteOrder.status);
-					localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
-					WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
-					updatedOrders.add(localOrder);
-					break;
-				
-				// These order are in a local state the host shouldn't know about. Don't do anything
-				case Order.ORDER_STATUS_TIMEOUT:
-					break;
-
-				// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
-				case Order.ORDER_STATUS_REMOVED:
-					Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
-					localOrder.setTimeoutState();
-					break;
+				if (!ignoreRemote) {
 					
-				// These orders have legitimately changed status to match that of the host. Update them locally.
-				case Order.ORDER_STATUS_NEW:
-				case Order.ORDER_STATUS_IN_PROGRESS:
-				case Order.ORDER_STATUS_READY:
-					localOrder.updateStatus(remoteOrder.status);
-					updatedOrders.add(localOrder);
-					break;
+					switch (remoteOrder.status) {
 					
-				// These orders are somehow in a local state that shouldn't be possible without the knowledge of the host. Match host state!
-				case Order.ORDER_STATUS_OFFERED:
-				default:
-					Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
-					localOrder.updateStatus(remoteOrder.status);
-					break;
+					// These orders have finished their lifecycle and the host knows about them. Let the host know to remove them.
+					case Order.ORDER_STATUS_REJECTED:
+					case Order.ORDER_STATUS_FAILED:
+					case Order.ORDER_STATUS_COMPLETE:
+					case Order.ORDER_STATUS_INCOMPLETE:
+					case Order.ORDER_STATUS_CANCELLED:
+						// Change the state and leave it in the order list until user acknowledges the time out ****
+						localOrder.updateStatus(remoteOrder.status);
+						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
+						WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
+						updatedOrders.add(localOrder);
+						break;
+					
+					// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
+					case Order.ORDER_STATUS_REMOVED:
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
+						break;
+	
+					// Handling offered drinks is tricky because it depends on who the sender/recipient are
+					case Order.ORDER_STATUS_OFFER_REJECTED:
+						if (localOrder.senderId.equals(localOrder.bartsyId)) {
+							// We are the sender - acknowledge the change of status and remove the order
+							localOrder.updateStatus(remoteOrder.status);
+							localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
+							WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
+							updatedOrders.add(localOrder);
+						} else {
+							// We are the recipient - this is not a legal state for the server to be updating us on (we should be updating the host on this)
+							Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+							localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
+						}
+						break;
+						
+					// These orders have legitimately changed status to match that of the host. Update them locally.
+					case Order.ORDER_STATUS_NEW:
+					case Order.ORDER_STATUS_IN_PROGRESS:
+					case Order.ORDER_STATUS_READY:
+						localOrder.updateStatus(remoteOrder.status);
+						updatedOrders.add(localOrder);
+						break;
+						
+					// These orders are somehow in a remote state that shouldn't be possible. Match host state!
+					case Order.ORDER_STATUS_TIMEOUT:
+					case Order.ORDER_STATUS_OFFERED:
+					default:
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+//						localOrder.updateStatus(remoteOrder.status);
+						break;
+					}
 				}
 			}
 		}

@@ -104,7 +104,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 				recipients.add(order.recipientId);
 		}
 
-		// For all different recipients of drinks (for now order by recipient isntead of order number)
+		// For all different recipients of drinks (for now order by recipient instead of order number)
 
 		for (String recipientId : recipients) {
 		
@@ -150,7 +150,8 @@ public class OpenOrdersSectionView extends LinearLayout{
 								Order order = (Order) v.getTag();
 								((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
 								((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
-								WebServices.updateOfferedDrinkStatus(mApp, order, true);
+								order.updateStatus(Order.ORDER_STATUS_NEW);
+								WebServices.updateOfferedDrinkStatus(mApp, order);
 							}
 						});
 						
@@ -160,7 +161,8 @@ public class OpenOrdersSectionView extends LinearLayout{
 								Order order = (Order) v.getTag();
 								((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
 								((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
-								WebServices.updateOfferedDrinkStatus(mApp, order, false);
+								order.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
+								WebServices.updateOfferedDrinkStatus(mApp, order);
 							}
 						});
 						
