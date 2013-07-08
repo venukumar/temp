@@ -49,7 +49,7 @@
                             android1:padding="1dp" >
 
                             <ImageView
-                                android1:id="@+id/ImageView22"
+                                android1:id="@+id/messageTypeImage"
                                 android1:layout_width="17dp"
                                 android1:layout_height="17dp"
                                 android1:scaleType="fitXY"
@@ -83,7 +83,7 @@
                     android1:layout_height="80dp" >
 
                     <ImageView
-                        android1:id="@+id/ImageView47"
+                        android1:id="@+id/otherProfileImage"
                         android1:layout_width="105dp"
                         android1:layout_height="105dp"
                         android1:scaleType="fitXY"
