@@ -969,6 +969,54 @@ public class WebServices {
 
 	}
 	
+	/**
+	 * @methodName : downloadImage
+	 * 
+	 *             To download the image from server and set image bitmap to
+	 *             imageView
+	 * 
+	 * @param imageView
+	 */
+	public static void downloadImage(final ImageView imageView, BartsyApplication app) {
+
+		final String url = (String) imageView.getTag();
+		// Error handling: Do not proceed if the url is null
+		if(url==null){
+			return;
+		}
+		// Make sure that given image is already downloaded. If it is already saved in the application object then it will simply uses existing bitmap image
+		if(app.savedImages.get(url)!=null){
+			imageView.setImageBitmap(app.savedImages.get(url));
+			return;
+		}
+		// Download the image
+		new AsyncTask<String, Void, Bitmap>() {
+
+			protected void onPreExecute() {
+				super.onPreExecute();
+
+			}
+
+			protected Bitmap doInBackground(String... params) {
+				return fetchImage(url);
+			}
+
+			protected void onPostExecute(Bitmap result) {
+				
+				// Make sure we got an image
+				if (result != null) {
+					
+					// Set bitmap image to profile image view
+					if (imageView != null) {
+						imageView.setImageBitmap(result);
+					}
+				}
+			}
+
+		}.execute();
+
+	}
+	
 	public static Bitmap fetchImage(String url) {
 
 		Log.v("file Url: ", url);
