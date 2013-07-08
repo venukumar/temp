@@ -260,9 +260,13 @@ public class Order {
 			state_transitions[status] = new Date(); // For now just use current date. the date should come in the syscall 
 			title = json.getString("itemName");
 			
+			if (json.has("basePrice"))
 			baseAmount = Float.valueOf(json.getString("basePrice"));
-			serverID = json.getString("orderId");
+			if (json.has("tipPercentage"))
 			tipAmount = Float.valueOf(json.getString("tipPercentage"));
+			
+			serverID = json.getString("orderId");
+			
 			totalAmount = Float.valueOf(json.getString("totalPrice"));
 			taxAmount = baseAmount * Constants.taxRate;
 			description = json.getString("description");
@@ -287,9 +291,14 @@ public class Order {
 				recipientId = json.getString("recipientBartsyId");
 			if (json.has("recipientNickname"))
 				recipientNickname = json.getString("recipientNickname");
+			if(json.has("recieverName")){
+				recipientNickname = json.getString("recieverName");
+			}
 			if (json.has("recipientImagePath"))
 				recipientImagePath = json.getString("recipientImagePath");
-			
+			if (json.has("recieverImage")){
+				recipientImagePath = json.getString("recieverImage");
+			}
 			if (json.has("description"))
 				description = json.getString("description");
 			
