@@ -53,6 +53,10 @@ public class Notification {
 		} catch (JSONException e) {
 		}
 	}
+	
+	public boolean hasVenueImage(){
+		return venueImage!=null;
+	}
 
 	public String getId() {
 		return id;
