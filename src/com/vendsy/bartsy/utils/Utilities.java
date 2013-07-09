@@ -182,6 +182,10 @@ public final class Utilities {
 	 */
 	public static String getFriendlyDate(String input, String format){
 		Date date = getLocalDateFromGTMString(input, format);
+		// If there is any incorrect format then it will get null
+		if(date==null){
+			return input;
+		}
 		return (String) DateUtils.getRelativeTimeSpanString(date.getTime(), System.currentTimeMillis(),DateUtils.HOUR_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
 	}
 }
