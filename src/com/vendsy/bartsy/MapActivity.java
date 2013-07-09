@@ -161,14 +161,20 @@ public class MapActivity extends Activity implements LocationListener,
 
 		ArrayList<Venue> list = new ArrayList<Venue>();
 		
-		JSONArray array;
+		JSONArray array = null;
 		try {
-			array = new JSONArray(response);
+			JSONObject json = new JSONObject(response);
+			if(json.has("venues")){
+				array = json.getJSONArray("venues");
+			}
 		} catch (JSONException e) {
-			e.printStackTrace();
 			return null;
 		}
-			
+		// Make sure that array should not be null
+		if(array==null){
+			return list;
+		}
+		
 		for (int i = 0; i < array.length(); i++) {
 
 			try {
