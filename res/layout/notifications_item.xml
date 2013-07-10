@@ -1,78 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-   <LinearLayout  xmlns:android1="http://schemas.android.com/apk/res/android"
-                android1:layout_width="match_parent"
-                android1:layout_height="wrap_content"
-                android1:layout_marginBottom="1dp"
-                android1:padding="4dp" >
+   <LinearLayout xmlns:android1="http://schemas.android.com/apk/res/android"
+       android1:layout_width="match_parent"
+       android1:layout_height="wrap_content" >
 
-                <RelativeLayout
-                    android1:layout_width="80dp"
-                    android1:layout_height="80dp" >
+       <ImageView
+           android1:id="@+id/profileImage"
+           android1:layout_width="70dp"
+           android1:layout_height="70dp"
+           android1:padding="3dp"
+           android1:scaleType="centerCrop"
+           android1:src="@drawable/profile" />
 
-                    <ImageView
-                        android1:id="@+id/profileImage"
-                        android1:layout_width="105dp"
-                        android1:layout_height="105dp"
-                        android1:padding="3dp"
-                        android1:scaleType="fitXY"
-                        android1:src="@drawable/profile" />
+				<LinearLayout
+				    android1:layout_width="fill_parent"
+				    android1:layout_height="wrap_content"
+				    android1:orientation="vertical" >
 
-                    <ImageView
-                        android1:id="@+id/ImageView01"
-                        android1:layout_width="105dp"
-                        android1:layout_height="105dp"
-                        android1:scaleType="fitXY"
-                        android1:src="@drawable/frame" />
-                </RelativeLayout>
-				<LinearLayout android1:layout_width="fill_parent"
-                    android1:layout_height="wrap_content"
-                    android1:orientation="vertical"
-                    android1:paddingLeft="@dimen/activity_horizontal_margin" >
+					<LinearLayout
+					    android1:layout_width="match_parent"
+					    android1:layout_height="wrap_content"
+					    android1:layout_gravity="top" >
 
-                    <TextView
-                        android1:id="@+id/userNameText"
-                        android1:layout_width="wrap_content"
-                        android1:layout_height="wrap_content"
-                        android1:text="You"
-                        android1:textAppearance="?android:attr/textAppearanceMedium"
-                        android1:textStyle="bold" />
+						<TextView
+						    android1:id="@+id/userNameText"
+						    android1:layout_width="0dp"
+						    android1:layout_height="wrap_content"
+						    android1:layout_weight="2"
+						    android1:text="You"
+						    android1:textAppearance="?android:attr/textAppearanceMedium"
+						    android1:textStyle="bold" />
+
+						<TextView
+						    android1:id="@+id/dateText"
+						    android1:layout_width="wrap_content"
+						    android1:layout_height="wrap_content"
+						    android1:layout_gravity="top"
+						    android1:gravity="bottom"
+						    android1:text="55 min ago"
+						    android1:textAppearance="?android:attr/textAppearanceSmall"
+						    android1:textColor="@android:color/darker_gray" />
+
+					</LinearLayout>
 
                     <LinearLayout
                         android1:layout_width="match_parent"
                         android1:layout_height="wrap_content" >
-
-                        <FrameLayout
-                            android1:layout_width="wrap_content"
-                            android1:layout_height="wrap_content"
-                            android1:padding="1dp" >
-
-                            <ImageView
-                                android1:id="@+id/messageTypeImage"
-                                android1:layout_width="17dp"
-                                android1:layout_height="17dp"
-                                android1:scaleType="fitXY"
-                                android1:src="@drawable/ic_checked_in" />
-                        </FrameLayout>
 
                         <TextView
                             android1:id="@+id/messageText"
                             android1:layout_width="wrap_content"
                             android1:layout_height="wrap_content"
                             android1:layout_gravity="center_vertical"
-                            android1:layout_marginLeft="@dimen/activity_horizontal_margin"
                             android1:text="Auto checked-in.\nYou were last here 7 days ago."
                             android1:textAppearance="?android:attr/textAppearanceSmall" />
 
                     </LinearLayout>
-
-                    <TextView
-                        android1:id="@+id/dateText"
-                        android1:layout_width="wrap_content"
-                        android1:layout_height="wrap_content"
-                        android1:layout_weight="2"
-                        android1:gravity="bottom"
-                        android1:text="55 min ago"
-                        android1:textAppearance="?android:attr/textAppearanceSmall"
-                        android1:textColor="@android:color/darker_gray" />
  </LinearLayout>
  </LinearLayout>

@@ -1,13 +1,15 @@
 package com.vendsy.bartsy;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.MenuItem;
 import com.vendsy.bartsy.model.Notification;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
@@ -29,7 +35,7 @@ import com.vendsy.bartsy.utils.WebServices;
  * @author Seenu Malireddy
  *
  */
-public class NotificationsActivity extends Activity{
+public class NotificationsActivity extends SherlockActivity {
 	
 	// Progress dialog
 	private ProgressDialog progressDialog;
@@ -37,6 +43,7 @@ public class NotificationsActivity extends Activity{
 
 	private ArrayList<Notification> notifications = new ArrayList<Notification>();
 	private LinearLayout notificationsListView;
+	private HashMap<String, Bitmap> savedImages = new HashMap<String, Bitmap>();
 	
 	private Handler handler = new Handler();
 		
@@ -46,6 +53,12 @@ public class NotificationsActivity extends Activity{
 		setContentView(R.layout.notifications_main);
 		
 		mApp = (BartsyApplication) getApplication();
+		
+		// Set up the action bar custom view
+		final ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayShowHomeEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
+
 		
 		LinearLayout notificationsLayout = (LinearLayout)findViewById(R.id.people_notifications);
 		
@@ -67,6 +80,28 @@ public class NotificationsActivity extends Activity{
 		
 		loadNotifications();
 	}
+	
+	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		switch (item.getItemId()) {
+		
+		case android.R.id.home:
+			// app icon in action bar clicked; go home
+//			Intent intent = new Intent(this, MainActivity.class);
+//			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//			startActivity(intent);
+			finish();
+			return super.onOptionsItemSelected(item);
+		default:
+			break;
+		}
+		
+		return super.onOptionsItemSelected(item);
+	}
+
 	
 	/**
 	 * Call getNotifications Sys call and get the notifications data from the server
@@ -170,15 +205,15 @@ public class NotificationsActivity extends Activity{
 		// Set profile image based on the notification type
 		((TextView)view.findViewById(R.id.userNameText)).setText(notification.getVenueName());
 		profileImage.setTag(WebServices.DOMAIN_NAME+notification.getVenueImage());
-		WebServices.downloadImage(profileImage, mApp);		
+		WebServices.downloadImage(profileImage, savedImages);		
 		
-		ImageView imageView = ((ImageView)view.findViewById(R.id.messageTypeImage));
+//		ImageView imageView = ((ImageView)view.findViewById(R.id.messageTypeImage));
 		// If the notification is related to checkout then replace messagetype image with checkout image 
-		if(Notification.TYPE_CHECKOUT.equals(notification.getType())){
-			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.checkout));
-		}else if(Notification.TYPE_UPDATE_ORDER.equals(notification.getType())){
-			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.sambuca));
-		}
+//		if(Notification.TYPE_CHECKOUT.equals(notification.getType())){
+//			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.checkout));
+//		}else if(Notification.TYPE_UPDATE_ORDER.equals(notification.getType())){
+//			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.drink));
+//		}
 		
 		// Add view to the notification list view
 		notificationsListView.addView(view);
@@ -191,7 +226,7 @@ public class NotificationsActivity extends Activity{
 	 */
 	public void addOfferDrinkView(Notification notification){
 		// Inflate checkin view
-		View view = getLayoutInflater().inflate(R.layout.offer_drink_notifications_item, null);
+		View view = getLayoutInflater().inflate(R.layout.notifications_item, null);
 		
 		// Set all notification information to the view
 		((ImageView)view.findViewById(R.id.profileImage)).setImageBitmap(mApp.mProfile.getImage());
@@ -199,11 +234,11 @@ public class NotificationsActivity extends Activity{
 		
 		((TextView)view.findViewById(R.id.dateText)).setText(Utilities.getFriendlyDate(notification.getCreatedTime(), "d MMM yyyy HH:mm:ss 'GMT'"));
 		
-		ImageView otherProfileImage = ((ImageView)view.findViewById(R.id.otherProfileImage));
+		ImageView otherProfileImage = ((ImageView)view.findViewById(R.id.profileImage));
 		
 		if(Notification.TYPE_PLACE_ORDER.equals(notification.getType())){
-			ImageView imageView = ((ImageView)view.findViewById(R.id.messageTypeImage));
-			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.sambuca));
+//			ImageView imageView = ((ImageView)view.findViewById(R.id.messageTypeImage));
+//			imageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.drink));
 			
 			// Set venue profile image
 			((TextView)view.findViewById(R.id.userNameText)).setText(notification.getVenueName());
@@ -216,7 +251,7 @@ public class NotificationsActivity extends Activity{
 			((TextView)view.findViewById(R.id.userNameText)).setText(notification.getOrder().recipientNickname);
 			otherProfileImage.setTag(WebServices.DOMAIN_NAME+notification.getOrder().recipientImagePath);
 		}
-		WebServices.downloadImage(otherProfileImage, mApp);
+		WebServices.downloadImage(otherProfileImage, savedImages);
 		
 		// Add view to the notification list view
 		notificationsListView.addView(view);
