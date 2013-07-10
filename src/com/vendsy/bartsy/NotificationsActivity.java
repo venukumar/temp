@@ -10,22 +10,18 @@ import org.json.JSONObject;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.GestureDetector.SimpleOnGestureListener;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.LinearLayout.LayoutParams;
 
+import com.vendsy.bartsy.ResponsiveScrollView.OnEndScrollListener;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
 import com.vendsy.bartsy.model.Notification;
 import com.vendsy.bartsy.utils.Utilities;
@@ -46,6 +42,10 @@ public class NotificationsActivity extends SherlockActivity {
 	private HashMap<String, Bitmap> savedImages = new HashMap<String, Bitmap>();
 	
 	private Handler handler = new Handler();
+	private ResponsiveScrollView responsiveScrollView;
+	
+	private int index = 0; // Present index of the records to pass in the Sys call
+	
 		
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,8 +62,15 @@ public class NotificationsActivity extends SherlockActivity {
 		
 		LinearLayout notificationsLayout = (LinearLayout)findViewById(R.id.people_notifications);
 		
-		ScrollView scrollView = new ScrollView(this);
-		notificationsLayout.addView(scrollView);
+		responsiveScrollView = new ResponsiveScrollView(this);
+		responsiveScrollView.setOnEndScrollListener(new OnEndScrollListener(){
+			@Override
+			public void onEndScroll() {
+				loadNotifications();
+			}
+		});
+		
+		notificationsLayout.addView(responsiveScrollView);
 		
 		notificationsListView = new LinearLayout(this);
 		// Set parameters for linear layout
@@ -75,7 +82,7 @@ public class NotificationsActivity extends SherlockActivity {
 		notificationsListView.setDividerDrawable(getResources().getDrawable(R.drawable.div_light_grey));
 		notificationsListView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE | LinearLayout.SHOW_DIVIDER_BEGINNING | LinearLayout.SHOW_DIVIDER_END);
 		
-		scrollView.addView(notificationsListView);
+		responsiveScrollView.addView(notificationsListView);
 //		notificationsListView.
 		
 		loadNotifications();
@@ -107,23 +114,28 @@ public class NotificationsActivity extends SherlockActivity {
 	 * Call getNotifications Sys call and get the notifications data from the server
 	 */
 	private void loadNotifications(){
-			
-		// To display progress dialog
-		progressDialog = Utilities.progressDialog(this, "Loading..");
-		progressDialog.show();
+				
+		responsiveScrollView.setInProgress(true);
+		// display progress dialog for first time
+		if(index==0){
+			progressDialog = Utilities.progressDialog(this, "Loading..");
+			progressDialog.show();
+		}
 		
 		// Background thread
 		new Thread() {
 
 			public void run() {
 				
-				final String response = WebServices.getNotifications(mApp, mApp.mProfile.getBartsyId());
+				final String response = WebServices.getNotifications(mApp, mApp.mProfile.getBartsyId(), index);
 				// Post handler to access UI 
 				handler.post(new Runnable() {
 					
 					@Override
 					public void run() {
-						progressDialog.dismiss();
+						if(progressDialog!=null && progressDialog.isShowing()){
+							progressDialog.dismiss();
+						}
 						
 						// Notifications web service response handling
 						if (response != null){
@@ -141,9 +153,7 @@ public class NotificationsActivity extends SherlockActivity {
 	 * @param response
 	 */
 	private void processNotificationResponse(String response) {
-		
-		notifications.clear();
-		
+		ArrayList<Notification> notificationList = new ArrayList<Notification>();
 		try {
 			JSONObject json = new JSONObject(response);
 			// Success response
@@ -152,10 +162,12 @@ public class NotificationsActivity extends SherlockActivity {
 				for (int i=0; i<jsonArray.length() ; i++) {
 					JSONObject jsonObj = jsonArray.getJSONObject(i);
 					Notification notification = new Notification(jsonObj);
-					notifications.add(notification);
+					notificationList.add(notification);
 				}
-				
-				updateNotificationsView();
+				// if the notifications list size is zero then we have to disable the scroll listener
+				responsiveScrollView.setNoMoreItems(jsonArray.length()==0);
+				// Update list view with new notifications
+				updateNotificationsView(notificationList);
 			}
 			// Error response
 			else if(json.has("errorMessage")){
@@ -169,9 +181,7 @@ public class NotificationsActivity extends SherlockActivity {
 	 * Update notifications in the view. For every type of notification, there are different type of view and adding to the list view
 	 *  
 	 */
-	public void updateNotificationsView(){
-		// Make sure that list view is empty
-		notificationsListView.removeAllViews();
+	public void updateNotificationsView(ArrayList<Notification> notifications){
 		
 		for(Notification notification: notifications){
 			// Add offer drink view and set the notification data 
@@ -184,6 +194,11 @@ public class NotificationsActivity extends SherlockActivity {
 				addGenericNotificationView(notification);
 			}
 		}
+		
+		// Add the new notifications to the existing list and its count
+		this.notifications.addAll(notifications);
+		index += notifications.size();
+		
 	}
 
 	/**

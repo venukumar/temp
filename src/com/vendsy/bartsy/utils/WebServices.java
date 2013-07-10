@@ -49,7 +49,9 @@ import android.widget.Toast;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.ResponsiveScrollView;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -88,6 +90,7 @@ public class WebServices {
 	public static final String URL_GET_PAST_ORDERS = DOMAIN_NAME + PROJECT_NAME + "order/getPastOrders";
 	public static final String URL_UPDATE_ORDER_STATUS = DOMAIN_NAME + PROJECT_NAME + "order/updateOrderStatus";
 	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
+	public static final String URL_SEND_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/sendMessages";
 
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "2";
@@ -881,13 +884,17 @@ public class WebServices {
 	
 	/**
 	 *  Get notification sys call
+	 * @param index 
 	 */
-	public static String getNotifications(BartsyApplication context, String bartsyId){
+	public static String getNotifications(BartsyApplication context, String bartsyId, int index){
 		String response = null;
 		// Post data to get notification which is related to user and checkedin venue
 		JSONObject postData = new JSONObject();
 		try {
 			postData.put("bartsyId", bartsyId);
+			postData.put("index", index);
+			postData.put("noOfResults", ResponsiveScrollView.PAGE_SIZE);
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
