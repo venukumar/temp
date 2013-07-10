@@ -121,7 +121,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 				
 				if (order.recipientId.equals(recipientId)) {
 					
-					Log.v(TAG, "Processing order " + order.serverID + " with status " + order.status + " and last status " + order.last_status);
+					Log.v(TAG, "Processing order " + order.serverId + " with status " + order.status + " and last status " + order.last_status);
 		
 					// Use last status if the order status is now removed
 					int status = order.status;
@@ -130,7 +130,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 					
 					if (!statusDisplayed[status]) {
 						
-						Log.v(TAG, "Showing master order " + order.serverID);
+						Log.v(TAG, "Showing master order " + order.serverId);
 		
 						statusDisplayed[status] = true;
 						
@@ -185,8 +185,8 @@ public class OpenOrdersSectionView extends LinearLayout{
 							
 							if (miniStatus == status && order.recipientId.equals(mini.recipientId))  
 							{
-								Log.v(TAG, "Adding mini order " + mini.serverID + " to order " + order.serverID);
-								((LinearLayout)order.view.findViewById(R.id.view_order_mini)).addView(mini.getMiniView(mInflater, mContainer));
+								Log.v(TAG, "Adding mini order " + mini.serverId + " to order " + order.serverId);
+								mini.addItemsView((LinearLayout)order.view.findViewById(R.id.view_order_mini), mInflater, mContainer);
 		
 								// Collect prices from mini views						
 								taxAmt+=mini.taxAmount;

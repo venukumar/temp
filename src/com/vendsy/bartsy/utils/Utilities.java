@@ -155,7 +155,7 @@ public final class Utilities {
 	 * @param format
 	 * @return
 	 */
-	public static Date getLocalDateFromGTMString(String input, String format) {
+	public static Date getLocalDateFromGMTString(String input, String format) {
 		
         SimpleDateFormat inputFormat = new SimpleDateFormat(format, Locale.getDefault());
         inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
@@ -173,6 +173,7 @@ public final class Utilities {
 		}
 		return output; 
 	}
+	
 	/**
 	 * Returns the date in string in "time ago format"
 	 * 
@@ -181,8 +182,11 @@ public final class Utilities {
 	 * @return
 	 */
 	public static String getFriendlyDate(String input, String format){
-		Date date = getLocalDateFromGTMString(input, format);
-		// If there is any incorrect format then it will get null
+
+		// Parse date using the provided format
+		Date date = getLocalDateFromGMTString(input, format);
+
+		// Make sure the date is valid, if not simply return the input string
 		if(date==null){
 			return input;
 		}

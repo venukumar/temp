@@ -308,12 +308,6 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical" >
-
-                                <include
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="10"
-                                    layout="@layout/orders_open_item" />
                             </LinearLayout>
 
                             <LinearLayout

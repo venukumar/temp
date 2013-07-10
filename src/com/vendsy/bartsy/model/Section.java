@@ -20,13 +20,13 @@ public class Section {
 	private String venueId;
 
 	// data will not save in db
-	private List<MenuDrink> drinks = new ArrayList<MenuDrink>();
+	private List<Item> drinks = new ArrayList<Item>();
 
-	public List<MenuDrink> getDrinks() {
+	public List<Item> getDrinks() {
 		return drinks;
 	}
 
-	public void setDrinks(List<MenuDrink> drinks) {
+	public void setDrinks(List<Item> drinks) {
 		this.drinks = drinks;
 	}
 

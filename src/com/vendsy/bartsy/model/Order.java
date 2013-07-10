@@ -3,6 +3,8 @@ package com.vendsy.bartsy.model;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Log;
@@ -21,15 +23,11 @@ public class Order {
 
 	private static final String TAG = "Order";
 	
-	// Each order has an ID that is unique within a session number
-	public String clientID; 
-	
 	// this is the server-side manager ID used to identify the order on the server and tablet 
-	public String serverID; 
+	public String serverId; 
 
-	// Title and description are arbitrary strings
-	public String title, description;
-	public String itemId;
+	// List of items in this order
+	public ArrayList<Item> items = new ArrayList<Item>();
 	
 	// Dates
 	public String updatedDate;
@@ -47,7 +45,7 @@ public class Order {
 
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public UserProfile orderSender;
-	public UserProfile orderReceiver;
+	public UserProfile orderRecipient;
 	public String bartsyId = null; // our id
 	public String senderId = null;
 	public String senderNickname = null;
@@ -55,6 +53,7 @@ public class Order {
 	public String recipientId = null;
 	public String recipientNickname = null;
 	public String recipientImagePath = null;
+	public String userSessionCode = null;
 
 	// The view displaying this order or null. The view is the display of the  order in a list.
 	// The list could be either on the client or the server and it looks different in both cases but the code manages the differences.
@@ -97,14 +96,9 @@ public class Order {
 	 * When an order is initialized the state transition times are undefined
 	 * except for the first state, which is when the order is received
 	 */
-	public void initialize(String clientOrderID, String serverOrderID,
-			String title, String description, float baseAmount, float tipAmount,
-			String image_resource, UserProfile order_sender, UserProfile order_receiver) {
-		this.clientID = clientOrderID;
-		this.serverID = serverOrderID;
-		this.title = title;
-		this.description = description;
-
+	public Order (Item item, float baseAmount, float tipAmount, UserProfile order_sender, UserProfile order_receiver) {
+		
+		this.items.add(item);
 		
 		this.baseAmount = baseAmount;
 		this.tipAmount = tipAmount;
@@ -114,7 +108,7 @@ public class Order {
 		// this.image_resource = Integer.parseInt(image_resource);
 		this.orderSender = order_sender;
 		this.senderId = order_sender.getBartsyId();
-		this.orderReceiver = order_receiver;
+		this.orderRecipient = order_receiver;
 		this.recipientId = order_receiver.getBartsyId();
 
 		// Orders starts in the "NEW" status
@@ -138,13 +132,28 @@ public class Order {
 	public JSONObject getPlaceOrderJSON() {
 		final JSONObject orderData = new JSONObject();
 		try {
-			orderData.put("itemId", itemId);
-			orderData.put("itemName", title);
+
+			if (items.size() > 1) {
+				JSONArray jsonItems = new JSONArray();
+				for (Item item : items) {
+					JSONObject jsonItem = new JSONObject();
+					jsonItem.put("itemId", item.getItemId());
+					jsonItem.put("itemName", item.getTitle());
+					jsonItem.put("description", item.getDescription());
+					jsonItem.put("basePrice", Float.toString(item.getPrice()));
+					jsonItems.put(jsonItem);
+				}
+				orderData.put("itemsList", jsonItems);
+			} else if (items.size() == 1) {
+				orderData.put("itemId", items.get(0).getItemId());
+				orderData.put("itemName", items.get(0).getTitle());
+				orderData.put("description", items.get(0).getDescription());
+			}
+		
 			orderData.put("basePrice", String.valueOf(baseAmount));
 			orderData.put("tipPercentage", String.valueOf(tipAmount));
 			orderData.put("totalPrice", String.valueOf(totalAmount));
-			orderData.put("orderStatus", ORDER_STATUS_NEW);
-			orderData.put("description", description);
+			orderData.put("orderStatus", status);
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -159,10 +168,10 @@ public class Order {
 	/**
 	 * It will returns JSON format to update order status
 	 */
-	public JSONObject statusChangedJSON(){
+	public JSONObject getStatusChangedJSON(){
 		final JSONObject orderData = new JSONObject();
 		try {
-			orderData.put("orderId", serverID);
+			orderData.put("orderId", serverId);
 			orderData.put("orderStatus", status);
 			orderData.put("orderRejectionReason", errorReason);
 			
@@ -179,24 +188,17 @@ public class Order {
 		JSONObject orderData = new JSONObject();
 		
 		try {
-			orderData.put("itemId", itemId);
-			orderData.put("itemName", title);
-			orderData.put("basePrice", String.valueOf(baseAmount));
-			orderData.put("tipPercentage", String.valueOf(tipAmount));
-			orderData.put("totalPrice", String.valueOf(totalAmount));
-			orderData.put("orderStatus", ORDER_STATUS_NEW);
-			orderData.put("description", description);
 			
-			orderData.put("status", status);
+			// Additional fields not already in the place order JSON
 			orderData.put("orderTimeout", timeOut);
-			orderData.put("serverId", serverID);
+			orderData.put("serverId", serverId);
 			orderData.put("senderId", senderId);
 			orderData.put("receiverId", recipientId);
-			
+			orderData.put("orderStatus", status);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		return orderData.toString();
+		return getPlaceOrderJSON() + orderData.toString();
 	}
 	
 	public String readableStatus() {
@@ -209,40 +211,40 @@ public class Order {
 		
 		switch(orderStatus) {
 		case ORDER_STATUS_NEW:
-			message = title + " order placed.\nWe will let you know when it's in progress.";
+			message = "New order placed.\nWe will let you know when it's in progress.";
 			break;
 		case ORDER_STATUS_REJECTED:
-			message = title + " order rejected.\nUnfortunately the venue could not prepare it.";
+			message = "Order rejected.\nUnfortunately the venue could not prepare it.";
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
-			message = title + " order in progress.\nIt should be ready in less than a minute.";
+			message = "Order in progress.\nIt should be ready in less than a minute.";
 			break;
 		case ORDER_STATUS_READY:
-			message = title + " order ready.\nYou have " + timeOut + " minutes to pick it up, then you will be charged!";
+			message = "Order ready.\nYou have " + timeOut + " minutes to pick it up, then you will be charged!";
 			break;
 		case ORDER_STATUS_FAILED:
-			message = title + " order failed.\nPlease check with the venue.";
+			message = "Order failed.\nPlease check with the venue.";
 			break;
 		case ORDER_STATUS_COMPLETE:
-			message = title + " order picked up.\nPlease make sure you have it.";
+			message = "Order picked up.\nPlease make sure you have it.";
 			break;
 		case ORDER_STATUS_INCOMPLETE:
-			message = title + " not picked up.\nYou were charged for it because you didn't pick it up on time. Check with the venue for all refunds.";
+			message = "Order not picked up.\nYou were charged for it because you didn't pick it up on time. Check with the venue for all refunds.";
 			break;
 		case ORDER_STATUS_CANCELLED:
-			message = title + " timed out.\nYour were not charged. Please check with the venue.";
+			message = "Order timed out.\nYour were not charged. Please check with the venue.";
 			break;
 		case ORDER_STATUS_OFFERED:
-			message = title + " offered.\nAccept/reject?";
+			message = "Order offered.\nAccept/reject?";
 			break;
 		case ORDER_STATUS_OFFER_REJECTED:
-			message = title + " rejected.\nYour drink offer was not accepted";
+			message = "Order rejected.\nYour drink offer was not accepted";
 			break;
 		case ORDER_STATUS_TIMEOUT:
-			message = title + " timed out due to internet issues.\nPlease check on your order with the venue.";
+			message = "Order timed out due to internet issues.\nPlease check on your order with the venue.";
 			break;
 		default:
-			message = title + " is in an illegal status.";
+			message = "Order is in an illegal status.";
 		}
 		return message;
 	}
@@ -256,23 +258,41 @@ public class Order {
 	public Order(JSONObject json) {
 
 		try {
-			status = Integer.valueOf(json.getString("orderStatus"));
-			state_transitions[status] = new Date(); // For now just use current date. the date should come in the syscall 
-			title = json.getString("itemName");
+
+			// Parse old format item
+			if (json.has("title")  || json.has("description") || json.has("itemId")) {
+				Item item = new Item();
+				if (json.has("itemName"))
+					item.setTitle(json.getString("itemName"));
+				if (json.has("description"))
+					item.setDescription(json.getString("description"));
+				if (json.has("basePrice"))
+					item.setPrice(Float.valueOf(json.getString("basePrice")));
+				if (json.has("itemId"))
+					item.setItemId(json.getString("itemId"));
+				items.add(item);
+			} 
+	
+			// Parse new format item list
+			if (json.has("itemsList")) {
+				JSONArray itemsJSON = json.getJSONArray("itemsList");
+				
+				for (int i=0 ; i < itemsJSON.length() ; i++) {
+					items.add(new Item(itemsJSON.getJSONObject(i)));
+				}
+			}
 			
 			if (json.has("basePrice"))
-			baseAmount = Float.valueOf(json.getString("basePrice"));
+				baseAmount = Float.valueOf(json.getString("basePrice"));
+
 			if (json.has("tipPercentage"))
-			tipAmount = Float.valueOf(json.getString("tipPercentage"));
+				tipAmount = Float.valueOf(json.getString("tipPercentage"));
 			
-			serverID = json.getString("orderId");
+			serverId = json.getString("orderId");
 			
 			totalAmount = Float.valueOf(json.getString("totalPrice"));
 			taxAmount = baseAmount * Constants.taxRate;
-			description = json.getString("description");
 
-			if (json.has("itemId"))
-				itemId = json.getString("itemId");
 
 			if (json.has("senderBartsyId"))
 				senderId = json.getString("senderBartsyId");
@@ -299,8 +319,6 @@ public class Order {
 			if (json.has("recieverImage")){
 				recipientImagePath = json.getString("recieverImage");
 			}
-			if (json.has("description"))
-				description = json.getString("description");
 			
 			// Setup the order status if it exists or set it to NEW_ORDER if it doesn't
 			if (json.has("orderStatus"))
@@ -359,7 +377,11 @@ public class Order {
 			// Update the last status of the order (this is sent for past orders)
 			if (json.has("lastState"))
 				last_status = Integer.parseInt(json.getString("lastState"));
-
+			
+			// Set up user session code
+			if (json.has("userSessionCode")) 
+				userSessionCode = json.getString("userSessionCode");
+			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
@@ -375,9 +397,9 @@ public class Order {
 
 	
 	Date parseWeirdDate(String date) {
-		Date d = Utilities.getLocalDateFromGTMString(createdDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+		Date d = Utilities.getLocalDateFromGMTString(createdDate, "dd MMM yyyy HH:mm:ss 'GMT'");
 		if (d == null)
-			d = Utilities.getLocalDateFromGTMString(createdDate, "d MMM yyyy HH:mm:ss 'GMT'");
+			d = Utilities.getLocalDateFromGMTString(createdDate, "d MMM yyyy HH:mm:ss 'GMT'");
 		return d;
 	}
 	
@@ -387,8 +409,8 @@ public class Order {
 		if (recipientNickname != null)
 			return recipientNickname;
 		
-		if (orderReceiver != null)
-			return orderReceiver.getName();
+		if (orderRecipient != null)
+			return orderRecipient.getName();
 		
 		if (recipientId == null)
 			return "<unkown>";
@@ -396,7 +418,7 @@ public class Order {
 		for (UserProfile p : people) {
 			if (p.getBartsyId().equals(recipientId)) {
 				// User found
-				orderReceiver = p;
+				orderRecipient = p;
 				return p.getName();
 			}
 		}
@@ -408,7 +430,7 @@ public class Order {
 	public void updateStatus(int status) {
 		
 		if (this.status == ORDER_STATUS_REMOVED) {
-			Log.i(TAG, "Skipping status update of order " + serverID + " from " + this.status + " to " + status + " with last status " + last_status);
+			Log.i(TAG, "Skipping status update of order " + serverId + " from " + this.status + " to " + status + " with last status " + last_status);
 			return;
 		}
 		
@@ -417,7 +439,7 @@ public class Order {
 		state_transitions[status] = new Date();
 
 		// Log the state change and update the order with an error reason
-		Log.i(TAG, "Order " + serverID + " changed status from " + last_status + " to " + status + " for reason: "  + errorReason);
+		Log.i(TAG, "Order " + serverId + " changed status from " + last_status + " to " + status + " for reason: "  + errorReason);
 //		this.errorReason = errorReason;
 	}
 	
@@ -433,9 +455,9 @@ public class Order {
 			state_transitions[status] = new Date();
 			errorReason = "Server unreachable. Check your internet connection and notify Bartsy customer support.";
 
-			Log.v(TAG, "Order " + this.serverID + " moved from state " + last_status + " to timeout state " + status);
+			Log.v(TAG, "Order " + this.serverId + " moved from state " + last_status + " to timeout state " + status);
 		} else {
-			Log.v(TAG, "Order " + this.serverID + "with last status " + last_status + " not changed to timeout status because the status was " + status + " with reason " + errorReason);
+			Log.v(TAG, "Order " + this.serverId + "with last status " + last_status + " not changed to timeout status because the status was " + status + " with reason " + errorReason);
 			return;
 		}
 	}
@@ -445,21 +467,16 @@ public class Order {
 
 		Log.v(TAG, "updateView()");
 		Log.v(TAG, "Order sender   :" + orderSender);
-		Log.v(TAG, "Order receiver :" + orderReceiver);
+		Log.v(TAG, "Order receiver :" + orderRecipient);
 		
 		view = (View) inflater.inflate(R.layout.orders_open_item_list, container, false);
 
 		// Update header
-		((TextView) view.findViewById(R.id.view_order_item_number)).setText("" + serverID);
+		((TextView) view.findViewById(R.id.view_order_item_number)).setText(userSessionCode);
 
-		// Update item details
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
-		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title + getTitleModifier());
-		if (description != null || description.equalsIgnoreCase(""))
-			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
-		else
-			((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
-
+		// Add the item list
+		addItemsView((LinearLayout) view.findViewById(R.id.view_order_mini), inflater, container);
+		
 		// Update the order's tip, tax and total
 		updateTipTaxTotalView(tipAmount, taxAmount, totalAmount);
 		
@@ -644,21 +661,21 @@ public class Order {
 		}
 		
 		// Show receiver details
-		if (orderReceiver != null) {
+		if (orderRecipient != null) {
 
 			// Display or download image if available
-			if (orderReceiver.hasImage()) {
-				((ImageView)view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(orderReceiver.getImage());
-			} else if (orderReceiver.hasImagePath()) {
-				WebServices.downloadImage(orderReceiver, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
+			if (orderRecipient.hasImage()) {
+				((ImageView)view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(orderRecipient.getImage());
+			} else if (orderRecipient.hasImagePath()) {
+				WebServices.downloadImage(orderRecipient, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
 			} else {
 				view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
 				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);
 			}
 
 			// Show nick name if available
-			if (orderReceiver.hasNickname())  {
-				((TextView) view.findViewById(R.id.view_order_recipient)).setText(orderReceiver.getNickname());	
+			if (orderRecipient.hasNickname())  {
+				((TextView) view.findViewById(R.id.view_order_recipient)).setText(orderRecipient.getNickname());	
 			} else {
 				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);					
 			}
@@ -674,8 +691,8 @@ public class Order {
 		
 		String recipient = "";
 		if (!recipientId.equals(bartsyId)) {
-			if (orderReceiver != null) 
-				recipient = "\n(for: " + orderReceiver.getNickname() + ")";
+			if (orderRecipient != null) 
+				recipient = "\n(for: " + orderRecipient.getNickname() + ")";
 			else 
 				recipient = "\n(for another user)";
 		} else if (!senderId.equals(bartsyId)){
@@ -687,20 +704,19 @@ public class Order {
 		return recipient;
 	}
 	
-	public View getMiniView(LayoutInflater inflater, ViewGroup container ) {
+	public void addItemsView(LinearLayout itemsView, LayoutInflater inflater, ViewGroup container ) {
 		
-		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
-		
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(baseAmount));
-
-		
-		((TextView) view.findViewById(R.id.view_order_title)).setText(this.title + getTitleModifier());
-		if (description != null || description.equalsIgnoreCase(""))
-			((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
-		else
-			((TextView) view.findViewById(R.id.view_order_description)).setText(this.description);
-
-		return view;
+		for (Item item : items) {
+			LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
+			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(item.getPrice()));
+			((TextView) view.findViewById(R.id.view_order_title)).setText(item.getTitle());
+			if (item.getDescription() != null || item.getDescription().equalsIgnoreCase(""))
+				((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
+			else
+				((TextView) view.findViewById(R.id.view_order_description)).setText(item.getDescription());
+			
+			itemsView.addView(view);
+		}
 	}
 
 

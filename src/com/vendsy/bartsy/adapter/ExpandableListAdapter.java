@@ -13,13 +13,13 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.Item;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     private Context context;
     private ArrayList<String> groups;
-    private ArrayList<ArrayList<MenuDrink>> subItems;
+    private ArrayList<ArrayList<Item>> subItems;
     private LayoutInflater inflater;
     
     /**
@@ -31,7 +31,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
      */
     public ExpandableListAdapter(Context context, 
                         ArrayList<String> groups,
-						ArrayList<ArrayList<MenuDrink>> subItems ) { 
+						ArrayList<ArrayList<Item>> subItems ) { 
         this.context = context;
 		this.groups = groups;
         this.subItems = subItems;
@@ -55,7 +55,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             view = convertView;
         else
             view = inflater.inflate(R.layout.drink_item, parent, false); 
-        MenuDrink c = (MenuDrink)getChild( groupPosition, childPosition );
+        Item c = (Item)getChild( groupPosition, childPosition );
 		TextView textView = (TextView)view.findViewById( R.id.view_drink_title );
 		if( textView != null )
 			textView.setText( c.getTitle() );

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.Ingredient;
-import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Venue;
 
 public class CustomDrinksListViewAdapter extends ArrayAdapter<Ingredient> {

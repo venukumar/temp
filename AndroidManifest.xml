@@ -163,6 +163,7 @@
             >
         </activity>
 		<activity android:name=".NotificationsActivity"
+            android:label="Bartsy notifications"
             android:screenOrientation="portrait">
         </activity>
         <receiver

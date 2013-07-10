@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.utils.WebServices;
 
@@ -157,7 +158,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		} 
 		
 		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
-		((TextView) itemView.findViewById(R.id.orderId)).setText(order.serverID);
+		((TextView) itemView.findViewById(R.id.orderId)).setText(order.serverId);
 		
 		String status = "?";
 		switch(order.last_status) {
@@ -188,7 +189,13 @@ public class PastOrdersSectionView extends LinearLayout {
 		}
 		
 		((TextView) itemView.findViewById(R.id.orderStatus)).setText(String.valueOf(status));
-		((TextView) itemView.findViewById(R.id.itemName)).setText(order.title);
+
+		// Set title
+		String title = "";
+		for (Item item : order.items) 
+			title += item.getTitle() + "\n";
+		((TextView) itemView.findViewById(R.id.itemName)).setText(title);
+
 		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + order.totalAmount));
 
 		ordersTableLayout.addView(itemView);

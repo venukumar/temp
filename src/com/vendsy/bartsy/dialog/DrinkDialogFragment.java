@@ -11,26 +11,22 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnKeyListener;
 import android.view.View.OnTouchListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
-import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -39,7 +35,7 @@ import com.vendsy.bartsy.utils.WebServices;
  */
 public class DrinkDialogFragment extends SherlockDialogFragment implements DialogInterface.OnClickListener, OnClickListener, OnTouchListener {
 
-	public MenuDrink drink;
+	public Item drink;
 	public UserProfile profile;
 	public float tipAmount;
 	private View view;

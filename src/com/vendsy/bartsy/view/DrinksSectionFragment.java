@@ -28,7 +28,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
-import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -51,9 +51,9 @@ public class DrinksSectionFragment extends SherlockFragment {
 	
 	public class Menu {
 		ArrayList<String> headings;
-		ArrayList<ArrayList<MenuDrink>> items;
+		ArrayList<ArrayList<Item>> items;
 		
-		Menu (ArrayList<String> headings, ArrayList<ArrayList<MenuDrink>> items) {
+		Menu (ArrayList<String> headings, ArrayList<ArrayList<Item>> items) {
 			this.headings = headings;
 			this.items = items;
 		}
@@ -228,7 +228,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 	private Menu extractMenuFromResponse (String response) {
 		
 		ArrayList<String> headings = new ArrayList<String>();
-		ArrayList<ArrayList<MenuDrink>> items = new ArrayList<ArrayList<MenuDrink>>();
+		ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
 	
 		try {
 		
@@ -270,9 +270,9 @@ public class DrinksSectionFragment extends SherlockFragment {
 
 							// Add the list of items under that heading to the items list
 							JSONArray contents = subSection.getJSONArray("contents");
-							ArrayList<MenuDrink> subsection_contents = new ArrayList<MenuDrink>();
+							ArrayList<Item> subsection_contents = new ArrayList<Item>();
 							for (int k = 0; k < contents.length(); k++) {
-								MenuDrink menuDrink = new MenuDrink(contents.getJSONObject(k));
+								Item menuDrink = new Item(contents.getJSONObject(k));
 								// Try to parse price to decimal. if it is succeeded then drink will be added to the subsection list otherwise it will not add the list 
 								if (menuDrink.valid != null) {
 									subsection_contents.add(menuDrink);
@@ -331,7 +331,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 		// Display menu from memory into the view
 		
 		ArrayList<String> headings = mMenu.headings;
-		final ArrayList<ArrayList<MenuDrink>> items = mMenu.items;
+		final ArrayList<ArrayList<Item>> items = mMenu.items;
 
 		Log.v(TAG, "Menu is in cache. Displaying " + headings.size() + " headings");
 
@@ -350,7 +350,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 						return false;
 					}
 					
-					MenuDrink menuDrink = items.get(groupPosition).get(childPosition);
+					Item menuDrink = items.get(groupPosition).get(childPosition);
 
 					// Create an instance of the dialog fragment and show it
 					DrinkDialogFragment dialog = new DrinkDialogFragment();

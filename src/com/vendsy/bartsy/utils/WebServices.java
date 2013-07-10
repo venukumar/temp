@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
@@ -60,14 +61,14 @@ public class WebServices {
 
 	// Google API project id registered to use GCM.
 //	public static final String SENDER_ID = "227827031375";
-//	public static final String SENDER_ID = "605229245886"; // dev 
-	public static final String SENDER_ID = "560663323691"; // prod
+	public static final String SENDER_ID = "605229245886"; // dev 
+//	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
 // 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
-//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
-	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+//	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	// API calls 
 	public static final String PROJECT_NAME = "Bartsy/";
@@ -293,9 +294,9 @@ public class WebServices {
 		try {
 			orderData.put("bartsyId", bartsyId);
 			orderData.put("venueId", venueID);
-			if(order.orderReceiver!=null){
-				orderData.put("recieverBartsyId", order.orderReceiver.getBartsyId());
-				orderData.put("receiverBartsyId", order.orderReceiver.getBartsyId());
+			if(order.orderRecipient!=null){
+				orderData.put("recieverBartsyId", order.orderRecipient.getBartsyId());
+				orderData.put("receiverBartsyId", order.orderRecipient.getBartsyId());
 			}else{
 				orderData.put("receiverBartsyId", bartsyId);
 				orderData.put("recieverBartsyId", bartsyId);
@@ -325,7 +326,7 @@ public class WebServices {
 					if (errorCode.equalsIgnoreCase("0")) {
 						// Error code 0 means the order was placed successfullly. Set the serverID of the order from the syscall.
 						response = "success";
-						order.serverID = json.getString("orderId");
+						order.serverId = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
 						
 						app.syncOrders();
@@ -629,7 +630,7 @@ public class WebServices {
 				JSONObject json = new JSONObject();
 				try {
 					json.put("venueId", app.mActiveVenue.getId());
-					json.put("orderId", order.serverID);
+					json.put("orderId", order.serverId);
 					json.put("bartsyId", app.mProfile.getBartsyId());
 					json.put("orderStatus", Integer.toString(order.status));
 					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app));
@@ -906,17 +907,28 @@ public class WebServices {
 	 * @param order
 	 * @param context
 	 */
-	public static void orderStatusChanged(final Order order,
-			final BartsyApplication context) {
+	public static void orderStatusChanged(final Order order, final BartsyApplication context) {
+
 		new Thread() {
 
 			@Override
 			public void run() {
-				try {
-					postRequest(URL_UPDATE_ORDER_STATUS, order.statusChangedJSON(), context);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+
+				// Create json
+				JSONArray statusUpdates = new JSONArray();
+				JSONObject orderData = new JSONObject();
+					try {
+						// Add to array
+						statusUpdates.put(Integer.parseInt(order.serverId));
+						orderData.put("orderId", statusUpdates);
+						orderData.put("orderStatus", order.status);
+					} catch (JSONException e) {
+						e.printStackTrace();
+						return;
+					}
+				
+				// Send the order updates
+				postRequest(URL_UPDATE_ORDER_STATUS, orderData, context);
 			}
 		}.start();
 	}
@@ -977,7 +989,7 @@ public class WebServices {
 	 * 
 	 * @param imageView
 	 */
-	public static void downloadImage(final ImageView imageView, BartsyApplication app) {
+	public static void downloadImage(final ImageView imageView, HashMap<String, Bitmap> savedImages) {
 
 		final String url = (String) imageView.getTag();
 		// Error handling: Do not proceed if the url is null
@@ -985,8 +997,8 @@ public class WebServices {
 			return;
 		}
 		// Make sure that given image is already downloaded. If it is already saved in the application object then it will simply uses existing bitmap image
-		if(app.savedImages.get(url)!=null){
-			imageView.setImageBitmap(app.savedImages.get(url));
+		if(savedImages.get(url)!=null){
+			imageView.setImageBitmap(savedImages.get(url));
 			return;
 		}
 		// Download the image

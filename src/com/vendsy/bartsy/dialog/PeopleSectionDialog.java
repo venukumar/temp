@@ -53,13 +53,6 @@ public class PeopleSectionDialog extends Dialog{
 		
 	}
 	
-	/**
-	 * There is no implementation for this method and implementation is provided by the DrinkDialogFragment
-	 * 
-	 * @see DrinkDialogFragment
-	 * 
-	 * @param profile
-	 */
 	protected void selectedProfile(UserProfile profile) {
 		dismiss();
 	}

@@ -28,10 +28,9 @@ import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
-import com.vendsy.bartsy.model.MenuDrink;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
@@ -43,9 +42,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 
-public class VenueActivity extends SherlockFragmentActivity implements
-		ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener,
-		PeopleDialogFragment.UserDialogListener, AppObserver {
+public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener, PeopleDialogFragment.UserDialogListener, AppObserver {
 
 	/****************
 	 * 
@@ -784,7 +781,7 @@ public class VenueActivity extends SherlockFragmentActivity implements
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {
 		// User touched the dialog's positive button
-		MenuDrink drink = ((DrinkDialogFragment) dialog).drink;
+		Item drink = ((DrinkDialogFragment) dialog).drink;
 
 		appendStatus("Placing order for: " + drink.getTitle());
 		
@@ -795,23 +792,9 @@ public class VenueActivity extends SherlockFragmentActivity implements
 			return;
 		}
 		
-		Order order = new Order();
-
 		Float tipAmount = ((DrinkDialogFragment) dialog).tipAmount;
 
-		order.initialize(Long.toString(mApp.mOrderIDs), // arg(0) - Client order  ID
-				null, 									// arg(1) - This order still doesn't have a server-assigned ID
-				drink.getTitle(), 						// arg(2) - Title
-				drink.getDescription(), 				// arg(3) - Description
-				Float.valueOf(drink.getPrice()), 						// arg(4) - Price
-				tipAmount,
-				Integer.toString(R.drawable.drinks), 	// arg(5) - Image resource for the order. for now always use the same picture for the drink drink.getImage(),
-				mApp.mProfile,
-				((DrinkDialogFragment) dialog).profile);
-		
-
-		
-		order.itemId = drink.getDrinkId();
+		Order order = new Order(drink, Float.valueOf(drink.getPrice()), tipAmount, mApp.mProfile, ((DrinkDialogFragment) dialog).profile);
 
 		// invokePaypalPayment(); // To enable paypal payment
 
@@ -868,36 +851,6 @@ public class VenueActivity extends SherlockFragmentActivity implements
 		}
 	};
 
-	
-	
-	
-	
-
-	/*
-	 * 
-	 * TODO - Send/receive order status changed command
-	 */
-
-	public void sendOrderStatusChanged(Order order) {
-		// Expects the order status and the server ID to be already set on this
-		// end
-		appendStatus("Sending order response for order: " + order.serverID);
-
-		mApp.newLocalUserMessage("<command><opcode>order_status_changed</opcode>"
-				+ "<argument>" + order.status + "</argument>" + // arg(0) -
-																// status is
-																// already
-																// updated on
-																// this end
-				"<argument>" + order.serverID + "</argument>" + // arg(1)
-				"<argument>" + order.clientID + "</argument>" + // arg(2)
-				"<argument>" + order.orderSender.getBartsyId() + "</argument>" + // arg(3)
-				"</command>");
-
-		// Update tab title with the number of open orders
-		updateOrdersCount();
-
-	}
 
 
 	/*

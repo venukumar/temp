@@ -208,16 +208,6 @@ public class BartsyApplication extends Application implements AppObservable {
 			}
 		});
 	}
-	
-	/**
-	 * 
-	 * TODO - Image Cache
-	 * 
-	 * Any image can be saved in hash map based on the image path
-	 * 
-	 */
-	public HashMap<String, Bitmap> savedImages = new HashMap<String, Bitmap>();
-		
 		
 	/**
 	 * 
@@ -596,7 +586,7 @@ public class BartsyApplication extends Application implements AppObservable {
 			if (profile.getBartsyId().equals(order.senderId))
 				order.orderSender = profile;
 			if (profile.getBartsyId().equals(order.recipientId))
-				order.orderReceiver = profile;
+				order.orderRecipient = profile;
 		}
 		
 		mPeople.add(profile);
@@ -619,12 +609,10 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * server and the tablet.
 	 * 
 	 */
-
-	public long mOrderIDs = 0;
-
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
 	private ArrayList<Order> mOrders = new ArrayList<Order>();
+	private Order mCurrentOrder = null;
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Order> getOrdersCopy() {
@@ -638,7 +626,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	private synchronized boolean addOrder(Order order) {
 
 		// Make sure we have a valid order
-		if (order == null || order.serverID == null) {
+		if (order == null || order.serverId == null) {
 			Log.e(TAG, "addOrder() encountered invalid order");
 			return false;
 		}
@@ -658,7 +646,7 @@ public class BartsyApplication extends Application implements AppObservable {
 			if (profile.getBartsyId().equals(order.senderId)) {
 				order.orderSender = profile;
 			} else if (profile.getBartsyId().equals(order.recipientId)) {
-				order.orderReceiver = profile;
+				order.orderRecipient = profile;
 			}
 		}
 		
@@ -667,7 +655,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		// Add the order to the list of orders
 		mOrders.add(order);
-		mOrderIDs++;
 
 		return true;
 	}
@@ -1104,7 +1091,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	Order findMatchingOrder(ArrayList<Order> orders, Order order) {
 		for (Order found : orders) {
-			if (found.serverID.equals(order.serverID))
+			if (found.serverId.equals(order.serverId))
 				return found;
 		}
 		return null;
@@ -1152,7 +1139,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				// Illegal remote order state - print message and skip it
 				case Order.ORDER_STATUS_REMOVED:
 				default:
-					Log.e(TAG, "Skipping illegal added order: " + order.serverID + " with status: " + order.status);
+					Log.e(TAG, "Skipping illegal added order: " + order.serverId + " with status: " + order.status);
 					break;
 				}
 			}
@@ -1162,10 +1149,10 @@ public class BartsyApplication extends Application implements AppObservable {
 		ArrayList<Order> addedOrders = new ArrayList<Order>();
 		for (Order order : processedOrders) {
 			if (addOrder(order)) {
-				Log.e(TAG, "Adding order: " + order.serverID + " with status: " + order.status);
+				Log.e(TAG, "Adding order: " + order.serverId + " with status: " + order.status);
 				addedOrders.add(order);
 			} else {
-				Log.e(TAG, "Could not add order: " + order.serverID + " with status: " + order.status);
+				Log.e(TAG, "Could not add order: " + order.serverId + " with status: " + order.status);
 			}
 		}
 		
@@ -1204,7 +1191,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_IN_PROGRESS:
 				case Order.ORDER_STATUS_READY:
 				case Order.ORDER_STATUS_OFFERED:
-					Log.e(TAG, "Timing out removed order: " + order.serverID + " with status: " + order.status);
+					Log.e(TAG, "Timing out removed order: " + order.serverId + " with status: " + order.status);
 					order.setTimeoutState();
 					break;
 				}
@@ -1231,7 +1218,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 			// Handle the case where the timeout of the bartender has changed while we have open orders 
 			if (localOrder != null && localOrder.timeOut != remoteOrder.timeOut) {
-				Log.v(TAG, "Adjusting order timeout for order " + localOrder.serverID + " from " + localOrder.timeOut + " to " + remoteOrder.timeOut);
+				Log.v(TAG, "Adjusting order timeout for order " + localOrder.serverId + " from " + localOrder.timeOut + " to " + remoteOrder.timeOut);
 				localOrder.timeOut = remoteOrder.timeOut;
 			}
 				
@@ -1252,7 +1239,7 @@ public class BartsyApplication extends Application implements AppObservable {
 						ignoreRemote = true;
 					} else {
 						// We are the recipient - this is not a legal state for the server to be updating us on
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
 						ignoreRemote = true;
 					}
@@ -1280,7 +1267,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					
 					// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
 					case Order.ORDER_STATUS_REMOVED:
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
 						break;
 	
@@ -1294,7 +1281,7 @@ public class BartsyApplication extends Application implements AppObservable {
 							updatedOrders.add(localOrder);
 						} else {
 							// We are the recipient - this is not a legal state for the server to be updating us on (we should be updating the host on this)
-							Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+							Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
 							localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
 						}
 						break;
@@ -1311,7 +1298,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					case Order.ORDER_STATUS_TIMEOUT:
 					case Order.ORDER_STATUS_OFFERED:
 					default:
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverID + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
 //						localOrder.updateStatus(remoteOrder.status);
 						break;
 					}
@@ -1340,7 +1327,7 @@ public class BartsyApplication extends Application implements AppObservable {
 			
 			if (duration <= 0) {
 
-				Log.v(TAG, "Order " + order.serverID + " timed out. Status " + order.status + " (" + order.state_transitions[order.status] + 
+				Log.v(TAG, "Order " + order.serverId + " timed out. Status " + order.status + " (" + order.state_transitions[order.status] + 
 						"), last_status: " + order.last_status + " (" + order.state_transitions[order.last_status] + 
 						"), placed (" + order.state_transitions[Order.ORDER_STATUS_NEW] + ")");
 

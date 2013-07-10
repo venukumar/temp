@@ -8,6 +8,7 @@ import com.vendsy.bartsy.dialog.PeopleSectionDialog;
 import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Constants;
@@ -226,7 +227,7 @@ public class OrderCustomDrinkActivity extends Activity{
 	 * It will trigger when order button is pressed
 	 */
 	private void proceedOrder(){
-		order = new Order();
+
 		
 		final RadioGroup tipPercentage = (RadioGroup) ordersView.findViewById(R.id.view_dialog_drink_tip);
 		int selected = tipPercentage.getCheckedRadioButtonId();
@@ -254,21 +255,14 @@ public class OrderCustomDrinkActivity extends Activity{
 			mixers += i.getName() + ", ";
 		}
 		
-		order.initialize(Long.toString(mApp.mOrderIDs), 
-				null, 
-				mApp.selectedSpirit.getName(),
-				mixers,
-				totalAmount, 						
-				tipAmount,
-				Integer.toString(R.drawable.drinks), 	
-				mApp.mProfile,
-				profile);
+		Order order = new Order(new Item(mApp.selectedSpirit.getName(), mixers, totalAmount),
+				totalAmount, tipAmount, mApp.mProfile, profile);
 		
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(),
-							processOrderDataHandler))
+		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(), processOrderDataHandler))
+			
 		// Failed to place syscall due to internal error
 		Toast.makeText(this, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 	}
