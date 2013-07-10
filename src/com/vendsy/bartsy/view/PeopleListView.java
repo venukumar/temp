@@ -7,12 +7,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.MessagesActivity;
+import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -182,6 +185,17 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 									Log.v(TAG, "Adding a user item to the layout");
 									profile.view = mInflater.inflate(R.layout.user_item, null);
 									profile.updateView(PeopleListView.this); // sets up view specifics and sets listener to this
+									
+									View messagesButton = profile.view.findViewById(R.id.messagesButton);
+									messagesButton.setOnClickListener(new OnClickListener() {
+										
+										@Override
+										public void onClick(View v) {
+											Intent intent = new Intent(activity, MessagesActivity.class);
+											activity.startActivity(intent);
+										}
+									});
+									
 									addView(profile.view);
 								};
 		

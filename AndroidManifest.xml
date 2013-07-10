@@ -166,6 +166,10 @@
             android:label="Bartsy notifications"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".MessagesActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

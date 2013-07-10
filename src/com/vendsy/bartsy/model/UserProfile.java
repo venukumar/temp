@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.plus.model.people.Person;
+import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
@@ -624,11 +626,10 @@ public class UserProfile {
 
 	public void updateView(OnClickListener listener) {
 
-		((ImageView) view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(getImage());
 		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
 
 		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
-
+		
 		if (image == null) {
 			WebServices.downloadImage(this, profileImageView);
 		} else {
