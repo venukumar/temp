@@ -186,16 +186,26 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 									profile.view = mInflater.inflate(R.layout.user_item, null);
 									profile.updateView(PeopleListView.this); // sets up view specifics and sets listener to this
 									
+									final UserProfile userProfile = profile;
 									View messagesButton = profile.view.findViewById(R.id.view_user_list_chat_button);
-									messagesButton.setOnClickListener(new OnClickListener() {
-										
-										@Override
-										public void onClick(View v) {
-											Intent intent = new Intent(activity, MessagesActivity.class);
-											activity.startActivity(intent);
-										}
-									});
 									
+									// User can not send message to self. So, message option should be visible to others
+									if(profile.getBartsyId().equals(mApp.mProfile.getBartsyId())){
+										messagesButton.setVisibility(View.GONE);
+									}else{
+										// Set message button listener
+										messagesButton.setOnClickListener(new OnClickListener() {
+											
+											@Override
+											public void onClick(View v) {
+												
+												mApp.selectedUserProfile = userProfile;
+												
+												Intent intent = new Intent(activity, MessagesActivity.class);
+												activity.startActivity(intent);
+											}
+										});
+									}
 									addView(profile.view);
 								};
 		
