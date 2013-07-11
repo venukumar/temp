@@ -42,7 +42,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -51,7 +50,6 @@ import com.vendsy.bartsy.GCMIntentService;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.ResponsiveScrollView;
 import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -68,7 +66,7 @@ public class WebServices {
 
 	// Server IP
 // 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
-//	public static final String DOMAIN_NAME = "http://192.168.0.109:8080/";  // local machine
+//	public static final String DOMAIN_NAME = "http://192.168.0.72:8080/";  // local machine
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
 //	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
@@ -90,7 +88,8 @@ public class WebServices {
 	public static final String URL_GET_PAST_ORDERS = DOMAIN_NAME + PROJECT_NAME + "order/getPastOrders";
 	public static final String URL_UPDATE_ORDER_STATUS = DOMAIN_NAME + PROJECT_NAME + "order/updateOrderStatus";
 	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
-	public static final String URL_SEND_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/sendMessages";
+	public static final String URL_SEND_MESSAGE = DOMAIN_NAME + PROJECT_NAME + "data/sendMessage";
+	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "2";

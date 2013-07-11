@@ -1382,6 +1382,15 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 	public ArrayList<Category> mixers = new ArrayList<Category>();
 	
+	
+	/**
+	 * If user clicked on the people list then it will be saved in the global application state. This is done to
+	 * avoid losing selected user profile while the other activities are swapped in and out
+	 * as the user navigates in different screens.
+	 * 
+	 */
+	public UserProfile selectedUserProfile = new UserProfile();
+	
 
 	/************************************************************************
 	 * 
