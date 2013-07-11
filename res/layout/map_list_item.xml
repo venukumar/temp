@@ -58,7 +58,7 @@
                         android:layout_gravity="center_vertical"
                         android:text="22"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="@android:color/holo_red_light"
+                        android:textColor="#f83ab3"
                         android:textStyle="bold" />
 
                     <TextView

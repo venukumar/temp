@@ -186,7 +186,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 									profile.view = mInflater.inflate(R.layout.user_item, null);
 									profile.updateView(PeopleListView.this); // sets up view specifics and sets listener to this
 									
-									View messagesButton = profile.view.findViewById(R.id.messagesButton);
+									View messagesButton = profile.view.findViewById(R.id.view_user_list_chat_button);
 									messagesButton.setOnClickListener(new OnClickListener() {
 										
 										@Override

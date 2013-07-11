@@ -26,6 +26,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
+import com.vendsy.bartsy.dialog.DrinkDialogFragment.OrderDialogListener;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Item;
@@ -42,7 +43,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 
-public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.NoticeDialogListener, PeopleDialogFragment.UserDialogListener, AppObserver {
+public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.OrderDialogListener, PeopleDialogFragment.UserDialogListener, AppObserver {
 
 	/****************
 	 * 
@@ -114,6 +115,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setIcon(R.drawable.home_icon);
 
 		// Create the adapter that will return a fragment for each of the primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -280,15 +282,20 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 public boolean onCreateOptionsMenu(Menu menu) {
 
         checkOut = menu.add("Check out...");
-        
         checkOut.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-        
-
-		// Calling super after populating the menu is necessary here to ensure that the
-		// action bar helpers have a chance to handle this event.
+		// Update the checkout/orders button
+		if (checkOut != null) {
+			if (mApp.hasActiveOrder()) {
+				checkOut.setTitle(mApp.getActiveOrder().items.size() + " items");
+				checkOut.setIcon(R.drawable.drink);
+			} else {
+				checkOut.setTitle("Check out...");
+			}
+		}
+		
+		// Calling super after populating the menu is necessary here to ensure that the action bar helpers have a chance to handle this event.
 		boolean retValue = super.onCreateOptionsMenu(menu);
-
 
 		return retValue;
 	 }
@@ -296,14 +303,21 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-
 		
 		if (item == checkOut) {
-			// Check out from the venue
-			checkOutFromVenue(mApp.mActiveVenue);
-			return super.onOptionsItemSelected(item);
+
+			if (mApp.hasActiveOrder()) {
+				
+				// if we have an order, show the order dialog 
+				new DrinkDialogFragment().show(getSupportFragmentManager(),"Order drink");
+
+			} else {
+				
+				// Check out from the venue
+				checkOutFromVenue(mApp.mActiveVenue);
+				return super.onOptionsItemSelected(item);
+			}
 		}
-		
 		
 		switch (item.getItemId()) {
 		
@@ -504,8 +518,18 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		// Update the tab titles
 		updateOrdersCount();
 		updatePeopleCount();
+		
+		// Update the checkout/orders button
+		if (checkOut != null) {
+			if (mApp.hasActiveOrder()) {
+				checkOut.setTitle(mApp.getActiveOrder().items.size() + " items");
+				checkOut.setIcon(R.drawable.drink);
+			} else {
+				checkOut.setTitle("Check out...");
+				checkOut.setIcon(null);
+			}
+		}
 	}
-
 	
 	/*
 	 * Updates the action bar tab with the number of open orders
@@ -779,37 +803,80 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 */
 
 	@Override
-	public void onDialogPositiveClick(DialogFragment dialog) {
-		// User touched the dialog's positive button
-		Item drink = ((DrinkDialogFragment) dialog).drink;
+	public void onDialogPositiveClick(DrinkDialogFragment dialog) {
 
-		appendStatus("Placing order for: " + drink.getTitle());
-		
 		if (mApp.mActiveVenue == null) {
-			// No active venue. We need to termiate venue activity. We also notify the user.
+			// No active venue. We need to terminate venue activity. We also notify the user.
 			Toast.makeText(this, "You need to be logged in to place an order", Toast.LENGTH_SHORT).show();
 			finish();
 			return;
 		}
 		
-		Float tipAmount = ((DrinkDialogFragment) dialog).tipAmount;
+		Float tipAmount = dialog.tipAmount;
+		Order order;
+		if (dialog.item == null) {
+			
+			// No active item (came from menu selection) 
+			order = mApp.getActiveOrder();
+			
+		} else if (mApp.hasActiveOrder()) {
 
-		Order order = new Order(drink, Float.valueOf(drink.getPrice()), tipAmount, mApp.mProfile, ((DrinkDialogFragment) dialog).profile);
+			// Already have an open order - add the item and the new tip amount and send order
+			mApp.getActiveOrder().addItem(dialog.item,dialog.tipAmount);
+			order = mApp.getActiveOrder();
 
+		} else {
+			
+			// No active order. Start one
+			order = new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mProfile, dialog.profile);
+		}
+
+		// Update action bar
+		updateActionBarStatus();
+		
 		// invokePaypalPayment(); // To enable paypal payment
 
-		processOrderData(order); // bypass PayPal for now for testing
-
-	}
-		
-	private void processOrderData(Order order) {
-
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(), processOrderDataHandler))
+		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
 			// Failed to place syscall due to internal error
 			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
+		}
 	}
+	
+	
+	@Override
+	public void onDialogNegativeClick(DrinkDialogFragment dialog) {
 
+		Item item = dialog.item;
+		
+		if (mApp.mActiveVenue == null) {
+			// No active venue. We need to terminate venue activity. We also notify the user.
+			Toast.makeText(this, "You need to be checked in to place an order", Toast.LENGTH_SHORT).show();
+			finish();
+			return;
+		}
+
+		if ( item != null) {
+
+			appendStatus("Adding item to order: " + item.getTitle());
+
+			if (mApp.hasActiveOrder()) {
+
+				// Already have an open order - add the item and the new tip amount
+				mApp.getActiveOrder().addItem(item,dialog.tipAmount);
+							
+			} else {
+				
+				// No active order. Start one
+				mApp.setActiveOrder(new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mProfile, dialog.profile));
+			}
+		}
+		
+		// Update action bar
+		updateActionBarStatus();
+	}
+	
+	
 	
 	/**
 	 * 
@@ -834,18 +901,32 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			
 			switch (msg.what) {
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
+				
+				// If there is an active order, remove it
+				if (mApp.hasActiveOrder())
+					mApp.removeActiveOrder();
+
+				// Update action bar
+				updateActionBarStatus();
+				
+				// Synchronize orders
+				mApp.syncOrders();
+				
 				// The order was placed successfully 
 				Toast.makeText(mActivity, "Your order was placed.", Toast.LENGTH_SHORT).show();
+
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE:
-				// The syscall was not placed
-				Toast.makeText(mActivity, "Unable to place order. Check your internet connection, restart application, reset application or download new version.", Toast.LENGTH_SHORT).show();
+				// The sys call was not placed
+				Toast.makeText(mActivity, "Unable to place order.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(mActivity, "Check your internet connection, restart application, reset application or download new version.", Toast.LENGTH_SHORT).show();
 				break;
 				
 			case HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE:
-				// The syscall got an error code
-				Toast.makeText(mActivity, "Unable to place order: " + msg.obj, Toast.LENGTH_SHORT).show();
+				// The sys call got an error code
+				Toast.makeText(mActivity, "Unable to place order.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(mActivity, msg.obj.toString(), Toast.LENGTH_SHORT).show();
 				break;
 			}
 		}

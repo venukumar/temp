@@ -612,7 +612,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
 	private ArrayList<Order> mOrders = new ArrayList<Order>();
-	private Order mCurrentOrder = null;
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Order> getOrdersCopy() {
@@ -626,7 +625,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	private synchronized boolean addOrder(Order order) {
 
 		// Make sure we have a valid order
-		if (order == null || order.serverId == null) {
+		if (order == null || order.orderId == null) {
 			Log.e(TAG, "addOrder() encountered invalid order");
 			return false;
 		}
@@ -668,79 +667,34 @@ public class BartsyApplication extends Application implements AppObservable {
 	public int getOrderCount() {
 		return mOrders.size();
 	}
-
 	
-	/*
-	 * This updates the status of the order locally based on the status changed
-	 * reported from the server
+	
+	/** 
+	 * TODO - Active order 
+	 * 
+	 * Used to create a tab and null'ed out when the order is placed
+	 * 
 	 */
-/*
-	synchronized String updateOrder(String order_server_id, String remote_order_status) {
 
-		Log.v(TAG, "Update for remote code " + order_server_id);
+	private Order mActiveOrder = null;
 
-		int remote_status = Integer.parseInt(remote_order_status);
-		String message = null;
-
-		Order localOrder = null;
-		for (Order order : mOrders) {
-			if (order_server_id.equalsIgnoreCase(order.serverID)) {
-				localOrder = order;
-			}
-		}
-
-		// Make sure we have a local order
-		if (localOrder == null)
-			return syncAppWithServer("Received an update for a non existing order and recovered.");
-
-		Log.e(TAG, "order " + order_server_id + " updated from status " + localOrder.status + " to status " + remote_order_status);
-
-		// Update the status of the local order based on that of the remote order and return on error
-		switch (remote_status) {
-		case Order.ORDER_STATUS_IN_PROGRESS:
-			// The order has been accepted remotely. Set the server_id on this order and update status and view
-			if (localOrder.status != Order.ORDER_STATUS_NEW) 				
-				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
-			message = "Order " + localOrder.serverID + " was accepted by the bartender.";
-			localOrder.nextPositiveState();
-			break;
-		case Order.ORDER_STATUS_READY:
-			// Remote order ready. Notify client with a notification and update status/view
-			if (localOrder.status != Order.ORDER_STATUS_IN_PROGRESS)
-				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
-			message = "Order " + localOrder.serverID + " is ready! Please please it up promptly to avoid charges.";
-			localOrder.nextPositiveState();
-			break;
-		case Order.ORDER_STATUS_COMPLETE:
-			// Order completed. Remove from the order list for now.
-			if (localOrder.status != Order.ORDER_STATUS_READY) 
-				return syncAppWithServer("Sycnronized Bartsy due to order missmatch.");
-			Toast.makeText(this, "Your order was picked up. You can view a log of orders in the past orders tab", Toast.LENGTH_SHORT);
-			localOrder.nextPositiveState();
-			mOrders.remove(localOrder);
-			message =  "Order " + localOrder.serverID + " was picked up. If you didn't pick it up please see your bartender.";
-			break;
-		case Order.ORDER_STATUS_CANCELLED:
-			// Order cancelled. Notify the user and keep it in the list until acknowledged
-			localOrder.setCancelledState();
-			message = "Order " + localOrder.serverID + " is taking too long! Please check with your bartender.";
-			break;
-		case Order.ORDER_STATUS_REJECTED:
-		case Order.ORDER_STATUS_FAILED:
-		case Order.ORDER_STATUS_INCOMPLETE:
-			localOrder.nextNegativeState("Your order was rejected");
-			message = "Order " +localOrder.serverID + " rejected by the venue.";
-			break;
-		}
-
-		// Update the orders tab view and title
-
-		notifyObservers(ORDERS_UPDATED);
-		return message;
+	public boolean hasActiveOrder() {
+		return mActiveOrder != null;
 	}
-*/
 	
+	public void setActiveOrder(Order order) {
+		mActiveOrder = order;
+	}
 	
+	public Order getActiveOrder() {
+		return mActiveOrder;
+	}
+	
+	public void removeActiveOrder() {
+		mActiveOrder = null;
+	}
+	
+ 	
 	/**
 	 * TODO - Synchronization
 	 * 
@@ -1091,7 +1045,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	Order findMatchingOrder(ArrayList<Order> orders, Order order) {
 		for (Order found : orders) {
-			if (found.serverId.equals(order.serverId))
+			if (found.orderId.equals(order.orderId))
 				return found;
 		}
 		return null;
@@ -1139,7 +1093,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				// Illegal remote order state - print message and skip it
 				case Order.ORDER_STATUS_REMOVED:
 				default:
-					Log.e(TAG, "Skipping illegal added order: " + order.serverId + " with status: " + order.status);
+					Log.e(TAG, "Skipping illegal added order: " + order.orderId + " with status: " + order.status);
 					break;
 				}
 			}
@@ -1149,10 +1103,10 @@ public class BartsyApplication extends Application implements AppObservable {
 		ArrayList<Order> addedOrders = new ArrayList<Order>();
 		for (Order order : processedOrders) {
 			if (addOrder(order)) {
-				Log.e(TAG, "Adding order: " + order.serverId + " with status: " + order.status);
+				Log.e(TAG, "Adding order: " + order.orderId + " with status: " + order.status);
 				addedOrders.add(order);
 			} else {
-				Log.e(TAG, "Could not add order: " + order.serverId + " with status: " + order.status);
+				Log.e(TAG, "Could not add order: " + order.orderId + " with status: " + order.status);
 			}
 		}
 		
@@ -1191,7 +1145,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_IN_PROGRESS:
 				case Order.ORDER_STATUS_READY:
 				case Order.ORDER_STATUS_OFFERED:
-					Log.e(TAG, "Timing out removed order: " + order.serverId + " with status: " + order.status);
+					Log.e(TAG, "Timing out removed order: " + order.orderId + " with status: " + order.status);
 					order.setTimeoutState();
 					break;
 				}
@@ -1218,7 +1172,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 			// Handle the case where the timeout of the bartender has changed while we have open orders 
 			if (localOrder != null && localOrder.timeOut != remoteOrder.timeOut) {
-				Log.v(TAG, "Adjusting order timeout for order " + localOrder.serverId + " from " + localOrder.timeOut + " to " + remoteOrder.timeOut);
+				Log.v(TAG, "Adjusting order timeout for order " + localOrder.orderId + " from " + localOrder.timeOut + " to " + remoteOrder.timeOut);
 				localOrder.timeOut = remoteOrder.timeOut;
 			}
 				
@@ -1239,10 +1193,14 @@ public class BartsyApplication extends Application implements AppObservable {
 						ignoreRemote = true;
 					} else {
 						// We are the recipient - this is not a legal state for the server to be updating us on
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.orderId + " with status: " + localOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
 						ignoreRemote = true;
 					}
+					break;
+				case Order.ORDER_STATUS_TIMEOUT:
+					// Local timeout - we should not be getting an update from the remote in this state. Something is wrong
+					Log.e(TAG, "Remote order still around after local timeout for local order " + localOrder.orderId + " with status: " + localOrder.status);
 					break;
 				}
 				
@@ -1267,7 +1225,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					
 					// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
 					case Order.ORDER_STATUS_REMOVED:
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.orderId + " with status: " + localOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
 						break;
 	
@@ -1281,7 +1239,7 @@ public class BartsyApplication extends Application implements AppObservable {
 							updatedOrders.add(localOrder);
 						} else {
 							// We are the recipient - this is not a legal state for the server to be updating us on (we should be updating the host on this)
-							Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
+							Log.e(TAG, "Skipping illegal existing order: " + localOrder.orderId + " with status: " + localOrder.status);
 							localOrder.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
 						}
 						break;
@@ -1298,7 +1256,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					case Order.ORDER_STATUS_TIMEOUT:
 					case Order.ORDER_STATUS_OFFERED:
 					default:
-						Log.e(TAG, "Skipping illegal existing order: " + localOrder.serverId + " with status: " + localOrder.status);
+						Log.e(TAG, "Skipping illegal existing order: " + localOrder.orderId + " with status: " + localOrder.status);
 //						localOrder.updateStatus(remoteOrder.status);
 						break;
 					}
@@ -1327,7 +1285,7 @@ public class BartsyApplication extends Application implements AppObservable {
 			
 			if (duration <= 0) {
 
-				Log.v(TAG, "Order " + order.serverId + " timed out. Status " + order.status + " (" + order.state_transitions[order.status] + 
+				Log.e(TAG, "Order " + order.orderId + " timed out. Status " + order.status + " (" + order.state_transitions[order.status] + 
 						"), last_status: " + order.last_status + " (" + order.state_transitions[order.last_status] + 
 						"), placed (" + order.state_transitions[Order.ORDER_STATUS_NEW] + ")");
 

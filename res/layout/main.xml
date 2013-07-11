@@ -26,7 +26,7 @@
             android:padding="4dp"
             android:text="ALPHA"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/holo_red_dark"
+            android:textColor="#f83ab3"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -110,8 +110,8 @@
             android:gravity="center"
             android:text="PRODUCTION SERVER"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/holo_red_dark"
-            android:textStyle="bold" />
+            android:textColor="#f83ab3"
+            android:typeface="normal" />
 
         <TextView
             android:id="@+id/textView4"

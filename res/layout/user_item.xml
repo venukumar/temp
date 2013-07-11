@@ -16,8 +16,9 @@
             android:scaleType="fitXY" />
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:orientation="vertical"
             android:paddingLeft="@dimen/activity_horizontal_margin" >
 
@@ -38,7 +39,7 @@
                     android:layout_width="17dp"
                     android:layout_height="17dp"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_checked_in" />
+                    android:src="@drawable/tickmark" />
 
                 <TextView
                     android:id="@+id/TextView10"
@@ -49,16 +50,15 @@
                     android:text="Checked in"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-                <ImageButton android:id="@+id/messagesButton"
-                    android:src="@drawable/messages"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-                
-            </LinearLayout>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/view_user_list_chat_button"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/mail"
+            android:text="Chat" />
 
     </LinearLayout>
 

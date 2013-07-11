@@ -354,7 +354,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 
 					// Create an instance of the dialog fragment and show it
 					DrinkDialogFragment dialog = new DrinkDialogFragment();
-					dialog.drink = menuDrink;
+					dialog.item = menuDrink;
 					dialog.profile = mApp.mProfile;
 					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
 

@@ -24,7 +24,7 @@ public class Order {
 	private static final String TAG = "Order";
 	
 	// this is the server-side manager ID used to identify the order on the server and tablet 
-	public String serverId; 
+	public String orderId; 
 
 	// List of items in this order
 	public ArrayList<Item> items = new ArrayList<Item>();
@@ -153,7 +153,7 @@ public class Order {
 			orderData.put("basePrice", String.valueOf(baseAmount));
 			orderData.put("tipPercentage", String.valueOf(tipAmount));
 			orderData.put("totalPrice", String.valueOf(totalAmount));
-			orderData.put("orderStatus", status);
+			orderData.put("orderStatus", Integer.toString(status));
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -171,7 +171,7 @@ public class Order {
 	public JSONObject getStatusChangedJSON(){
 		final JSONObject orderData = new JSONObject();
 		try {
-			orderData.put("orderId", serverId);
+			orderData.put("orderId", orderId);
 			orderData.put("orderStatus", status);
 			orderData.put("orderRejectionReason", errorReason);
 			
@@ -191,7 +191,7 @@ public class Order {
 			
 			// Additional fields not already in the place order JSON
 			orderData.put("orderTimeout", timeOut);
-			orderData.put("serverId", serverId);
+			orderData.put("serverId", orderId);
 			orderData.put("senderId", senderId);
 			orderData.put("receiverId", recipientId);
 			orderData.put("orderStatus", status);
@@ -288,7 +288,7 @@ public class Order {
 			if (json.has("tipPercentage"))
 				tipAmount = Float.valueOf(json.getString("tipPercentage"));
 			
-			serverId = json.getString("orderId");
+			orderId = json.getString("orderId");
 			
 			totalAmount = Float.valueOf(json.getString("totalPrice"));
 			taxAmount = baseAmount * Constants.taxRate;
@@ -430,7 +430,7 @@ public class Order {
 	public void updateStatus(int status) {
 		
 		if (this.status == ORDER_STATUS_REMOVED) {
-			Log.i(TAG, "Skipping status update of order " + serverId + " from " + this.status + " to " + status + " with last status " + last_status);
+			Log.i(TAG, "Skipping status update of order " + orderId + " from " + this.status + " to " + status + " with last status " + last_status);
 			return;
 		}
 		
@@ -439,7 +439,7 @@ public class Order {
 		state_transitions[status] = new Date();
 
 		// Log the state change and update the order with an error reason
-		Log.i(TAG, "Order " + serverId + " changed status from " + last_status + " to " + status + " for reason: "  + errorReason);
+		Log.i(TAG, "Order " + orderId + " changed status from " + last_status + " to " + status + " for reason: "  + errorReason);
 //		this.errorReason = errorReason;
 	}
 	
@@ -455,9 +455,9 @@ public class Order {
 			state_transitions[status] = new Date();
 			errorReason = "Server unreachable. Check your internet connection and notify Bartsy customer support.";
 
-			Log.v(TAG, "Order " + this.serverId + " moved from state " + last_status + " to timeout state " + status);
+			Log.v(TAG, "Order " + this.orderId + " moved from state " + last_status + " to timeout state " + status);
 		} else {
-			Log.v(TAG, "Order " + this.serverId + "with last status " + last_status + " not changed to timeout status because the status was " + status + " with reason " + errorReason);
+			Log.v(TAG, "Order " + this.orderId + "with last status " + last_status + " not changed to timeout status because the status was " + status + " with reason " + errorReason);
 			return;
 		}
 	}
@@ -472,7 +472,7 @@ public class Order {
 		view = (View) inflater.inflate(R.layout.orders_open_item_list, container, false);
 
 		// Update header
-		((TextView) view.findViewById(R.id.view_order_item_number)).setText(userSessionCode);
+		((TextView) view.findViewById(R.id.view_order_item_number)).setText(orderId);
 
 		// Add the item list
 		addItemsView((LinearLayout) view.findViewById(R.id.view_order_mini), inflater, container);
@@ -719,5 +719,18 @@ public class Order {
 		}
 	}
 
+	public void addItem(Item item, float tip) {
+
+		Log.v(TAG, "Adding item "  + item.getTitle() + " to order " + orderId );
+		
+		// Add item to the order
+		items.add(item);
+		
+		// Update totals
+		baseAmount	+= item.getPrice();
+		taxAmount	=  Constants.taxRate * baseAmount;
+		tipAmount	+= tip;
+		totalAmount	=  tipAmount + taxAmount + baseAmount;
+	}
 
 }

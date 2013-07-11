@@ -188,11 +188,11 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						((RadioButton) findViewById(R.id.view_profile_orientation_bisexual)).setChecked(true);
 				}
 				
-			} else {
+			} else if (person.hasVisibility() && person.getVisibility().equalsIgnoreCase(UserProfile.HIDDEN)) {
 				
+				// The person has set up their profile to be invisible
 				((CheckBox) findViewById(R.id.view_profile_checkbox_details)).setChecked(false);
 				findViewById(R.id.view_profile_details).setVisibility(View.GONE);
-
 			}
 		} else {
 			// No current user - don't show option not to add password or credit card

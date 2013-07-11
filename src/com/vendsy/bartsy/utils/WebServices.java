@@ -316,6 +316,7 @@ public class WebServices {
 			@Override
 			public void run() {
 				
+				// General failure, including Internet failure, etc.
 				Message msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE);
 				
 				try {
@@ -327,23 +328,12 @@ public class WebServices {
 					String errorCode = json.getString("errorCode");
 					
 					if (errorCode.equalsIgnoreCase("0")) {
-						// Error code 0 means the order was placed successfullly. Set the serverID of the order from the syscall.
-						response = "success";
-						order.serverId = json.getString("orderId");
+						// Error code 0 means the order was placed successfully. Set the serverID of the order from the syscall.
+						order.orderId = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
-						
-						app.syncOrders();
-						
-						// Add order to the list and update views. This is a synchronized operation in case multiple threads are stepping on each other
-//						app.addOrder(order);
-
-						// Increment the local order count
-//						app.mOrderIDs++;
-						
-					} else if (errorCode.equalsIgnoreCase("1")) {
-						// Error code 1 means the venue doesn't accept orders.
-						response = json.getString("errorMessage");
-						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE, response);
+					} else {
+						// Controlled failure with error code from host.
+						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE, json.getString("errorMessage"));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -633,7 +623,7 @@ public class WebServices {
 				JSONObject json = new JSONObject();
 				try {
 					json.put("venueId", app.mActiveVenue.getId());
-					json.put("orderId", order.serverId);
+					json.put("orderId", order.orderId);
 					json.put("bartsyId", app.mProfile.getBartsyId());
 					json.put("orderStatus", Integer.toString(order.status));
 					response = new JSONObject(postRequest(URL_UPDATE_OFFERED_DRINK, json, app));
@@ -926,9 +916,9 @@ public class WebServices {
 				JSONObject orderData = new JSONObject();
 					try {
 						// Add to array
-						statusUpdates.put(Integer.parseInt(order.serverId));
+						statusUpdates.put(Integer.parseInt(order.orderId));
 						orderData.put("orderId", statusUpdates);
-						orderData.put("orderStatus", order.status);
+						orderData.put("orderStatus", Integer.toString(order.status));
 					} catch (JSONException e) {
 						e.printStackTrace();
 						return;

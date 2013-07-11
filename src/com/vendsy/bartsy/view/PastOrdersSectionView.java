@@ -158,7 +158,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		} 
 		
 		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
-		((TextView) itemView.findViewById(R.id.orderId)).setText(order.serverId);
+		((TextView) itemView.findViewById(R.id.orderId)).setText(order.orderId);
 		
 		String status = "?";
 		switch(order.last_status) {
