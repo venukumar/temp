@@ -6,15 +6,17 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center_horizontal"
         android:orientation="vertical">
-	        <LinearLayout
-		        android:id="@+id/messagesLayout"
-		        android:layout_width="match_parent"
-		        android:layout_height="match_parent"
-		        android:dividerHeight="1dp"
-		        android:footerDividersEnabled="true" 
-		        android:layout_weight="2">
+	     <com.vendsy.bartsy.ResponsiveScrollView 
+	          android:layout_width="match_parent"
+		      android:layout_height="match_parent"
+		      android:layout_weight="2">
+		      <LinearLayout
+				     android:id="@+id/messagesLayout"
+				     android:layout_width="match_parent"
+				     android:orientation="vertical"
+				     android:layout_height="wrap_content"/>
+	       </com.vendsy.bartsy.ResponsiveScrollView>
 		
-		    </LinearLayout>
 		    <LinearLayout android:layout_width="match_parent" 
 		        android:layout_height="wrap_content">
 		        <EditText android:id="@+id/messageTextBox"
