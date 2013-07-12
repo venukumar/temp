@@ -55,6 +55,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
+import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -182,7 +183,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		});
 	}
 	
-	private void generateNotification(final String title, final String body, final int count) {
+	public void generateNotification(final String title, final String body, final int count, final String gcmMessage) {
 		mHandler.post(new Runnable() {
 			public void run() {
 				
@@ -192,7 +193,8 @@ public class BartsyApplication extends Application implements AppObservable {
 						.getSystemService(Context.NOTIFICATION_SERVICE);
 				Notification notification = new Notification(icon, body, when);
 		
-				Intent notificationIntent = new Intent(BartsyApplication.this, MainActivity.class);
+				Intent notificationIntent = new Intent(BartsyApplication.this, VenueActivity.class);
+				notificationIntent.putExtra(Utilities.EXTRA_MESSAGE, gcmMessage);
 				// set intent so it does not start a new activity
 				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 						| Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -999,7 +1001,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 					// Print and generate modifications
 					Log.w(TAG, message);
-					generateNotification("Orders updated", message, count);
+					generateNotification("Orders updated", message, count, "");
 				}		
 		
 				// Print orders after update
@@ -1360,8 +1362,22 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(PEOPLE_UPDATED);
 
 	}
+	/**
+	 * TODO - Chat messages
+	 * 
+	 * Update chat messages screen when other people send a message
+	 * 
+	 * @param messageData
+	 */
+	public static final String NEW_CHAT_MESSAGE_RECEIVED = "NEW_CHAT_MESSAGE_RECEIVED";
+	public MessageData receivedMessage;
 	
-	
+	synchronized public void updateMessages(JSONObject json) {
+		
+		receivedMessage = new MessageData(json);
+		notifyObservers(NEW_CHAT_MESSAGE_RECEIVED);
+		
+	}
 	
 	
 	
@@ -1999,4 +2015,6 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * us as observers in order to get notifications of interesting events.
 	 */
 	private List<AppObserver> mObservers = new ArrayList<AppObserver>();
+
+	
 }

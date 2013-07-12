@@ -11,6 +11,9 @@ import com.vendsy.bartsy.MessagesActivity;
 import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.dialog.DrinkDialogFragment;
+import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
+import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.WebServices;
 

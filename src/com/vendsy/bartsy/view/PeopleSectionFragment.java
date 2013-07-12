@@ -15,6 +15,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.UserProfile;
 
 /**
@@ -55,7 +56,10 @@ public class PeopleSectionFragment extends SherlockFragment{
 		mPeopleListView = new PeopleListView(mActivity, mApp, inflater){
 			@Override
 			protected void selectedUserProfile(UserProfile profile) {
-				// For now, there is no action for profile selection
+				// if this view has been used by VenueActivity then enable the PeopleProfileDialog
+				ProfileDialogFragment dialog = new ProfileDialogFragment();
+				dialog.mUser = profile;
+				dialog.show((mActivity).getSupportFragmentManager(),"ProfileDialogFragment");
 				
 			}
 		};

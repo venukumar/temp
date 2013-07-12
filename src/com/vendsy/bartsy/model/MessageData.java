@@ -30,7 +30,9 @@ public class MessageData{
 	 */
 	public MessageData(JSONObject json) {
 		try {
-			id = json.getInt("id");
+			if(json.has("id")){
+				id = json.getInt("id");
+			}
 			body = json.getString("message");
 			senderId = json.getString("senderId");
 			receiverId = json.getString("receiverId");

@@ -1,6 +1,5 @@
 package com.vendsy.bartsy;
 
-import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.app.AlertDialog;
@@ -26,11 +25,12 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment.OrderDialogListener;
 import com.vendsy.bartsy.dialog.PeopleDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Item;
+import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
@@ -161,6 +161,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Log.v(TAG, "gcm message ::: " + message);
 			
 			if(message!=null){
+				processPushNotification(message);
 			}
 		} catch (Exception e) {
 			Log.e(TAG, "Error in gcm message ::: " + e.getMessage());
@@ -168,6 +169,50 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 
 	}
 	
+	/**
+	 * Process push notification when the user selects on the PN message
+	 * 
+	 * @param message
+	 */
+	public void processPushNotification(String message){
+		try {
+			JSONObject json = new JSONObject(message);
+			if (json.has("messageType")){
+				String type = json.getString("messageType");
+				// If the PN type is message then launch Message Activity
+				if(type.equals("message")) {
+					MessageData messageData = new MessageData(json);
+					mApp.selectedUserProfile = getOtherPeopleProfile(messageData);
+					if(mApp.selectedUserProfile!=null){
+						Intent intent = new Intent(mActivity, MessagesActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						mActivity.startActivity(intent);
+					}
+				}
+				// Display order tab
+				else{
+					mViewPager.setCurrentItem(2);
+				}
+			}
+			
+		}catch (JSONException e) {
+		}
+	}
+	
+	private UserProfile getOtherPeopleProfile(MessageData message){
+		String userId = message.getReceiverId();
+		if(userId.equals(mApp.mProfile.getBartsyId())){
+			userId = message.getSenderId();
+		}
+		// Fetch user profile based on the user id
+		for(UserProfile profile: mApp.mPeople){
+			if(profile.getBartsyId().equals(userId)){
+				return profile;
+			}
+		}
+		
+		return null;
+	}
 
 	/**
 	 * Initialize the fragments
@@ -680,6 +725,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Log.v(TAG, "gcm message ::: " + message);
 			
 			if(message!=null){
+				processPushNotification(message);
 			}
 		} catch (Exception e) {
 			Log.e(TAG, "Error in gcm message - onNewIntent() ::: " + e.getMessage());
@@ -733,7 +779,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
 			mApplicationHandler.sendMessage(message);
-		}
+		} 
 	}
 
 	private Handler mApplicationHandler= new Handler() {

@@ -7,9 +7,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Notification;
 import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.view.AppObserver;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -27,7 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
-public class MessagesActivity extends Activity{
+public class MessagesActivity extends Activity implements AppObserver {
 
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
@@ -40,6 +42,7 @@ public class MessagesActivity extends Activity{
 	
 	private ArrayList<MessageData> messages = new ArrayList<MessageData>();
 	private LinearLayout messagesList;
+	private EditText messageTextBox;
 	
 	private static final String TAG = "MessagesActivity";
 
@@ -52,10 +55,16 @@ public class MessagesActivity extends Activity{
 
 		// Set up the pointer to the main application
 		mApp = (BartsyApplication) getApplication();
+		
+		/*
+		 * Now that we're all ready to go, we are ready to accept notifications
+		 * from other components.
+		 */
+		mApp.addObserver(this);
 
 		messagesLayout = (LinearLayout) findViewById(R.id.messagesLayout);
 		
-		final EditText messageTextBox = (EditText) findViewById(R.id.messageTextBox);
+		messageTextBox = (EditText) findViewById(R.id.messageTextBox);
 		Button sendButton = (Button) findViewById(R.id.sendButton);
 		// Set click listener to the send button
 		sendButton.setOnClickListener(new OnClickListener() {
@@ -98,6 +107,8 @@ public class MessagesActivity extends Activity{
 							// Success response
 							if(json.has("errorCode") && json.getInt("errorCode") ==0){
 								addMessageInList(messageData);
+								// Clear 
+								messageTextBox.setText("");
 							}// Error response
 							else if(json.has("errorMessage")){
 								Toast.makeText(getApplicationContext(), json.getString("errorMessage"), Toast.LENGTH_LONG).show();
@@ -195,8 +206,9 @@ public class MessagesActivity extends Activity{
 				((ImageView)view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(mApp.mProfile.getImage());
 				messagesList = ((LinearLayout)view.findViewById(R.id.messages_list));
 				
-				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				params.gravity = Gravity.RIGHT;
+				view.setLayoutParams(params);
 				
 				addMessageView(message);
 				
@@ -239,6 +251,23 @@ public class MessagesActivity extends Activity{
 		}
 		
 		messagesList.addView(messageTextView);
+		
+	}
+	
+	public synchronized void update(AppObservable o, Object arg) {
+		Log.v(TAG, "update(" + arg + ")");
+		
+		final String qualifier = (String) arg;
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				
+				if (qualifier.equals(BartsyApplication.NEW_CHAT_MESSAGE_RECEIVED)) {
+					addMessageInList(mApp.receivedMessage);
+					mApp.receivedMessage=null;
+				}
+			}
+		});
 		
 	}
 

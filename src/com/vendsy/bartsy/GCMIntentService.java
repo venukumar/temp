@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
+import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
@@ -142,6 +143,16 @@ public class GCMIntentService extends GCMBaseIntentService {
 				
 					app.syncOrders();
 
+				}
+				// When other person sends the chat message
+				else if(json.getString("messageType").equals("message")){
+					
+					app.updateMessages(json);
+					// Generate Notification
+					try {
+						app.generateNotification("Message Received", json.getString("body"), 1, message);
+					} catch (JSONException e) {
+					}
 				}
 			}
 		} catch (JSONException e) {
