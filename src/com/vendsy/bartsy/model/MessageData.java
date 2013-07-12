@@ -1,5 +1,6 @@
 package com.vendsy.bartsy.model;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -14,8 +15,35 @@ public class MessageData{
 	private String senderId;
 	private String receiverId;
 	private String venueId;
+	private String createdDate;
 	
+	/**
+	 * Default constructor
+	 */
+	public MessageData() {
+	}
 	
+	/**
+	 * Constructor to extract values from JSON Object
+	 * 
+	 * @param json
+	 */
+	public MessageData(JSONObject json) {
+		try {
+			id = json.getInt("id");
+			body = json.getString("message");
+			senderId = json.getString("senderId");
+			receiverId = json.getString("receiverId");
+			
+			createdDate = json.getString("date");
+		} catch (JSONException e) {
+		}
+	}
+	/**
+	 * Get Message in JSON format to post in Sys call
+	 * 
+	 * @return
+	 */
 	public JSONObject getJSONData(){
 		JSONObject json = new JSONObject();
 		try {
@@ -23,10 +51,8 @@ public class MessageData{
 			json.put("senderId", getSenderId());
 			json.put("receiverId", getReceiverId());
 			json.put("message", getBody());
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
 		}
-		
 		return json;
 	}
 	
@@ -67,6 +93,14 @@ public class MessageData{
 	
 	public void setVenueId(String venueId) {
 		this.venueId = venueId;
+	}
+
+	public String getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
 	}
 	
 }
