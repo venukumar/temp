@@ -22,28 +22,53 @@
             android:layout_gravity="center_vertical"
             android:orientation="vertical" >
 
-            <TextView
-                android:id="@+id/view_map_venue_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Finn Mc&apos;Cool&apos;s"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/view_map_venue_address"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:text="2435 Main St, Santa Monica, CA 90405"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="11sp" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/view_map_venue_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Finn Mc&apos;Cool&apos;s"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/view_map_venue_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2435 Main St, Santa Monica, CA 90405"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4" >
+                </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/view_map_venue_checked_in"
+                    android:layout_width="25dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="2dp"
+                    android:src="@drawable/tickmark" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginTop="@dimen/activity_vertical_margin" >
+                android:layout_gravity="center_vertical" >
 
                 <LinearLayout
                     android:id="@+id/view_map_checkins"
@@ -102,7 +127,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="80dp"
+        android:layout_width="70dp"
         android:layout_height="80dp"
         android:gravity="center"
         android:orientation="vertical" >
@@ -113,7 +138,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:text="0.8"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/holo_blue_light"
             android:textStyle="bold" />
 

@@ -22,13 +22,15 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 
 	private List<Venue> items;
 	LocationManager lm = null;
+	private Venue activeVenue = null;
 
-	public VenueListViewAdapter(Context context, int resource, List<Venue> items, LocationManager lm) {
+	public VenueListViewAdapter(Context context, int resource, List<Venue> items, LocationManager lm, Venue activeVenue) {
 
 		super(context, resource, items);
 
 		this.items = items;
 		this.lm = lm;
+		this.activeVenue = activeVenue;
 
 	}
 
@@ -89,7 +91,13 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 			((TextView) view.findViewById(R.id.view_map_distance)).setText("-");
 		}
 		
-
+		// If we're checked in display check-mark
+		if (activeVenue != null && activeVenue.getId().equals(venue.getId())) {
+			view.findViewById(R.id.view_map_venue_checked_in).setVisibility(View.VISIBLE);
+		} else {
+			view.findViewById(R.id.view_map_venue_checked_in).setVisibility(View.GONE);
+		}
+		
 		return view;
 	}
 }

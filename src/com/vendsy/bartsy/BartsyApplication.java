@@ -255,6 +255,9 @@ public class BartsyApplication extends Application implements AppObservable {
 		Log.w(TAG, "userCheckOut()");
 
 		eraseActiveVenue();
+		
+		// Delete active order
+		eraseActiveOrder();
 	}
 
 	public void userCheckIn(String venueId, String venueName, int userCount) {
@@ -690,7 +693,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		return mActiveOrder;
 	}
 	
-	public void removeActiveOrder() {
+	public void eraseActiveOrder() {
 		mActiveOrder = null;
 	}
 	

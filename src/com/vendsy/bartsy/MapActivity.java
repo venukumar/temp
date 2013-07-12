@@ -220,8 +220,7 @@ public class MapActivity extends Activity implements LocationListener,
 			return;
 		}
 		// To set the adapter to the list view
-		VenueListViewAdapter customAdapter = new VenueListViewAdapter(
-				MapActivity.this, R.layout.map_list_item, venues, locationManager);
+		VenueListViewAdapter customAdapter = new VenueListViewAdapter(MapActivity.this, R.layout.map_list_item, venues, locationManager, mApp.mActiveVenue);
 
 		venueList.setAdapter(customAdapter);
 

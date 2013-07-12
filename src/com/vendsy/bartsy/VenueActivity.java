@@ -115,7 +115,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayShowHomeEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setIcon(R.drawable.home_icon);
+		actionBar.setIcon(R.drawable.tickmark);
 
 		// Create the adapter that will return a fragment for each of the primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -323,7 +323,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
-			Intent intent = new Intent(this, MainActivity.class);
+			Intent intent = new Intent(this, MapActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return super.onOptionsItemSelected(item);
@@ -368,7 +368,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		
 		if (mApp.mActiveVenue == null) {
 			// Not checked in apparently. just end activity
-			Intent intent = new Intent(this, MainActivity.class);
+			Intent intent = new Intent(this, MapActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
@@ -458,9 +458,8 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 									
 									Toast.makeText(VenueActivity.this, "Checked out from " + mVenue.getName(), Toast.LENGTH_SHORT).show();
 
-
 									// Start venue activity and finish this activity
-									Intent intent = new Intent(mActivity, MainActivity.class);
+									Intent intent = new Intent(mActivity, MapActivity.class);
 									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 									startActivity(intent);
 									finish();
@@ -904,7 +903,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				
 				// If there is an active order, remove it
 				if (mApp.hasActiveOrder())
-					mApp.removeActiveOrder();
+					mApp.eraseActiveOrder();
 
 				// Update action bar
 				updateActionBarStatus();
