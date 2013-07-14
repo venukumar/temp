@@ -35,9 +35,7 @@
     <string name="config_venue_channel_name">Venue</string>
     <string name="config_cardio_token">0f13c2616ead46e7a000674d20743cfe</string>
 
-    <string name="venueId">venueId</string>
-    <string name="venueName">venueName</string>
-    <string name="venueUserCount">venueUserCount</string>
+    <string name="prefs_venue">prefs_venue</string>
     
     <!-- Action bar items -->
 

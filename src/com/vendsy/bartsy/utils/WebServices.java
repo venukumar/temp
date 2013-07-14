@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
@@ -779,10 +780,6 @@ public class WebServices {
 
 		Log.v(TAG, "userLogin()");
 
-		// For now only load the venue from preference as this syscall is BROKEN!!!
-//		return context.loadActiveVenue();
-		
-		
 		try {
 
 			JSONObject json = new JSONObject();
@@ -816,20 +813,7 @@ public class WebServices {
 
 				if (result.has("venueId") && result.has("venueName")) {
 					// We are checked in - return the venue details
-					
-					Venue venue = new Venue();
-					venue.setId(result.getString("venueId"));
-					venue.setName(result.getString("venueName"));
-					
-					if (result.has("userCount"))
-						venue.setUserCount(result.getInt("userCount"));
-					
-					// FOR NOW hardcode the value of the order time out as it's NOT sent in the syscall
-					if (result.has("orderTimeout"))
-						venue.setOrderTimeout(result.getInt("orderTimeout"));
-					else
-						venue.setOrderTimeout(15);
-
+					Venue venue = new Venue(result);
 					return venue;
 				}
 			}
@@ -838,8 +822,6 @@ public class WebServices {
 		}
 
 		return null;
-		
-		
 	}
 
 	
@@ -903,7 +885,7 @@ public class WebServices {
 	 * @param order
 	 * @param context
 	 */
-	public static void orderStatusChanged(final Order order, final BartsyApplication context) {
+	public static void orderStatusChanged(final ArrayList<Order> orders, final BartsyApplication context) {
 
 		new Thread() {
 
@@ -912,19 +894,31 @@ public class WebServices {
 
 				// Create json
 				JSONArray statusUpdates = new JSONArray();
-				JSONObject orderData = new JSONObject();
+				for (Order order : orders) {
 					try {
-						// Add to array
-						statusUpdates.put(Integer.parseInt(order.orderId));
-						orderData.put("orderId", statusUpdates);
+						// Create update structure
+						JSONObject orderData = new JSONObject();
+						orderData.put("orderId", order.orderId);
 						orderData.put("orderStatus", Integer.toString(order.status));
+						// Add to array
+						statusUpdates.put(orderData);
 					} catch (JSONException e) {
 						e.printStackTrace();
 						return;
 					}
+				}
+				
+				// complete the format
+				JSONObject json = new JSONObject();
+				try {
+					json.put("orderList", statusUpdates);
+				} catch (JSONException e) {
+					e.printStackTrace();
+					return;
+				}
 				
 				// Send the order updates
-				postRequest(URL_UPDATE_ORDER_STATUS, orderData, context);
+				postRequest(URL_UPDATE_ORDER_STATUS, json, context);
 			}
 		}.start();
 	}

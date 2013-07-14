@@ -96,13 +96,13 @@ public class Order {
 	 * When an order is initialized the state transition times are undefined
 	 * except for the first state, which is when the order is received
 	 */
-	public Order (Item item, float baseAmount, float tipAmount, UserProfile order_sender, UserProfile order_receiver) {
+	public Order (Item item, float baseAmount, float tipAmount, float taxRate, UserProfile order_sender, UserProfile order_receiver) {
 		
 		this.items.add(item);
 		
 		this.baseAmount = baseAmount;
 		this.tipAmount = tipAmount;
-		this.taxAmount = baseAmount * Constants.taxRate;
+		this.taxAmount = baseAmount * taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
 		
 		// this.image_resource = Integer.parseInt(image_resource);
@@ -291,7 +291,7 @@ public class Order {
 			orderId = json.getString("orderId");
 			
 			totalAmount = Float.valueOf(json.getString("totalPrice"));
-			taxAmount = baseAmount * Constants.taxRate;
+			taxAmount = totalAmount - tipAmount - baseAmount;
 
 
 			if (json.has("senderBartsyId"))
@@ -473,6 +473,8 @@ public class Order {
 
 		// Update header
 		((TextView) view.findViewById(R.id.view_order_item_number)).setText(orderId);
+		((TextView) view.findViewById(R.id.view_order_pickup_code)).setText(userSessionCode);
+		
 
 		// Add the item list
 		addItemsView((LinearLayout) view.findViewById(R.id.view_order_mini), inflater, container);
@@ -726,9 +728,12 @@ public class Order {
 		// Add item to the order
 		items.add(item);
 		
+		// Figure out tax rate
+		Float taxRate = taxAmount / baseAmount;
+		
 		// Update totals
 		baseAmount	+= item.getPrice();
-		taxAmount	=  Constants.taxRate * baseAmount;
+		taxAmount	=  taxRate * baseAmount;
 		tipAmount	+= tip;
 		totalAmount	=  tipAmount + taxAmount + baseAmount;
 	}

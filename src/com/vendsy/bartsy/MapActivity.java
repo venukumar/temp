@@ -181,20 +181,7 @@ public class MapActivity extends Activity implements LocationListener,
 
 				JSONObject json = array.getJSONObject(i);
 
-				Venue venue = new Venue();
-				venue.setId(json.getString("venueId"));
-				venue.setName(json.getString("venueName"));
-				venue.setLatitude(json.getString("latitude"));
-				venue.setLongitude(json.getString("longitude"));
-				venue.setAddress(json.getString("address"));
-				venue.setUserCount(json.getInt("checkedInUsers"));
-				venue.setOrderTimeout(json.getInt("cancelOrderTime"));
-				if (json.getInt("wifiPresent") != 0) {
-					venue.setWifiName(json.getString("wifiName"));
-					venue.setWifiPassword(json.getString("wifiPassword"));
-					venue.SetWifiTypeOfAuthentication(json.getString("typeOfAuthentication"));
-				}
-				venue.setStatus(json.getString("venueStatus"));
+				Venue venue = new Venue(json);
 
 				list.add(venue);
 
@@ -385,8 +372,10 @@ public class MapActivity extends Activity implements LocationListener,
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
-			finish();
-			return true;
+			Intent intent = new Intent(this, MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			return super.onOptionsItemSelected(item);
 		default:
 			return super.onOptionsItemSelected(item);
 		}

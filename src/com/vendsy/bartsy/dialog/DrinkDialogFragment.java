@@ -40,6 +40,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 	public Item item;
 	public UserProfile profile;
+	public float taxRate;
+	
 	public float tipAmount;
 	public float baseAmount;
 	public float taxAmount;
@@ -106,7 +108,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			baseAmount = mApp.getActiveOrder().baseAmount + item.getPrice();
 		else
 			baseAmount = item.getPrice();
-		taxAmount = baseAmount * Constants.taxRate;
+		taxAmount = baseAmount * taxRate;
 		tipAmount = baseAmount * (float) 20 / (float) 100; //  based on the radio button selected (default is 20%)
 		totalAmount = baseAmount + taxAmount + tipAmount;
 

@@ -873,7 +873,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		} else {
 			
 			// No active order. Start one
-			order = new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mProfile, dialog.profile);
+			order = new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, dialog.taxRate, mApp.mProfile, dialog.profile);
 		}
 
 		// Update action bar
@@ -913,7 +913,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			} else {
 				
 				// No active order. Start one
-				mApp.setActiveOrder(new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mProfile, dialog.profile));
+				mApp.setActiveOrder(new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mActiveVenue.getTaxRate(), mApp.mProfile, dialog.profile));
 			}
 		}
 		

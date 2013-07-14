@@ -356,6 +356,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 					DrinkDialogFragment dialog = new DrinkDialogFragment();
 					dialog.item = menuDrink;
 					dialog.profile = mApp.mProfile;
+					dialog.taxRate = mApp.mActiveVenue.getTaxRate();
 					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
 
 					return false;

@@ -22,7 +22,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,7 +33,6 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -46,9 +44,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -230,31 +225,9 @@ public class BartsyApplication extends Application implements AppObservable {
 		return mActiveVenue == null;
 	}
 	
-	public void updateActiveVenue(String venueId, String venueName, int userCount) {
-
-		Log.v(TAG, "updateActiveVenue(" + venueId + ", " + venueName + ", " + userCount);
-		
-		if (mActiveVenue == null) {
-			// Server thinks we're checked in but we have no active venue - check user in
-			Log.e(TAG, "Active venue updated to " + venueName);
-			userCheckIn(venueId, venueName, userCount);
-			return;
-		} 
-		
-		if (mActiveVenue.getUserCount() != userCount) {
-			Log.e(TAG, "Updating user count from " + mActiveVenue.getUserCount() + " to " + userCount);
-			mActiveVenue.setUserCount(userCount);
-			notifyObservers(PEOPLE_UPDATED);
-		}
-		
-		// Save the new venue to preferences
-		saveActiveVenue();
-	}
-	
-
 	public void userCheckOut() {
 
-		Log.w(TAG, "userCheckOut()");
+		Log.w(TAG, ">> check out: " + mActiveVenue);
 
 		eraseActiveVenue();
 		
@@ -262,28 +235,9 @@ public class BartsyApplication extends Application implements AppObservable {
 		eraseActiveOrder();
 	}
 
-	public void userCheckIn(String venueId, String venueName, int userCount) {
-		
-		Log.w(TAG, "userCheckIn(" + venueId + ", " + venueName + ")");
-		
-		mActiveVenue = new Venue();
-		mActiveVenue.setId(venueId);
-		mActiveVenue.setName(venueName);
-		mActiveVenue.setUserCount(userCount);
-
-		mOrders.clear();
-		mPeople.clear();
-		
-		saveActiveVenue();
-		
-		notifyObservers(PEOPLE_UPDATED);
-		notifyObservers(ORDERS_UPDATED);
-
-	}
-	
 	public void userCheckIn(Venue venue) {
 		
-		Log.w(TAG, "userCheckIn(" + venue + ")" );
+		Log.w(TAG, ">>> check in: " + venue);
 		
 		mActiveVenue = venue;
 
@@ -298,10 +252,10 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	public Venue loadActiveVenue () {
 		
-		Log.w(TAG, "loadActiveVenue()");
+		Log.v(TAG, "loadActiveVenue()");
 		
 		if (mActiveVenue != null) {
-			Log.v(TAG, "Venue already loaded: " + mActiveVenue);
+			Log.w(TAG, ">>> Venue already loaded: " + mActiveVenue);
 			saveActiveVenue(); // make sure the active venue is saved
 			return mActiveVenue; 
 		}
@@ -310,62 +264,51 @@ public class BartsyApplication extends Application implements AppObservable {
 		mOrders.clear();
 		mPeople.clear();
 		
-		String venueID = Utilities.loadPref(this, R.string.venueId, null);
-		String venueName = Utilities.loadPref(this, R.string.venueName, null);
-		int userCount = Utilities.loadPref(this, R.string.venueUserCount, 0);
-
-		if (venueID == null || venueName == null) {
-			Log.v(TAG, "No active venue found");
-			return null;
+		String venueString = Utilities.loadPref(this, R.string.prefs_venue, null);
+		if (venueString != null) {
+			try {
+				JSONObject json = new JSONObject(venueString);
+				mActiveVenue = new Venue(json);
+				Log.w(TAG, ">>> Venue loaded: " + mActiveVenue);
+			} catch (JSONException e) {
+				e.printStackTrace();
+				Log.w(TAG, "Could not load venue");
+				return null;
+			}
 		}
 		
-		mActiveVenue = new Venue();
-		mActiveVenue.setId(venueID);
-		mActiveVenue.setName(venueName);
-		mActiveVenue.setUserCount(userCount);
-		
 		Log.w(TAG, "Active venue loaded: " + mActiveVenue);
-		
 		return mActiveVenue;
 	}
 	
 	public void saveActiveVenue() {
 		
-		Log.w(TAG, "saveActiveVenue(" + mActiveVenue + ")");
+		Log.v(TAG, "saveActiveVenue ()");
 
 		if (mActiveVenue == null) {
-			Log.v(TAG, "Active venue doesn't exist");
+			Log.w(TAG, "Active venue doesn't exist");
 			eraseActiveVenue();
 		} else {
-			Log.v(TAG, "Venue saved:  (" + mActiveVenue.getId() + ", " + mActiveVenue.getName() + ")");
-			Utilities.savePref(this, R.string.venueId, mActiveVenue.getId());
-			Utilities.savePref(this, R.string.venueName, mActiveVenue.getName());
-			Utilities.savePref(this, R.string.venueUserCount, mActiveVenue.getUserCount());
+			Log.w(TAG, ">>> Venue saved: " + mActiveVenue);
+			Utilities.savePref(this, R.string.prefs_venue, mActiveVenue.toString());
 		}
 	}
 	
 	private void eraseActiveVenue() {
 
-		Log.w(TAG, "eraseActiveVenue(" + mActiveVenue + ")");
+		Log.w(TAG, ">>> Venue erased: " + mActiveVenue);
 		
 		// Delete active venue in memory
 		mActiveVenue = null;
 		mOrders.clear();
 		mPeople.clear();
 
-
 		// Delete active venue in saved preferences
-		
 		SharedPreferences sharedPref = getSharedPreferences(getResources().getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		Resources r = getResources();
-		
-		editor.remove(r.getString(R.string.venueId));
-		editor.remove(r.getString(R.string.venueName));
-		editor.remove(r.getString(R.string.venueUserCount));
-
+		editor.remove(r.getString(R.string.prefs_venue));
 		editor.commit();		
-
 	}
 	
 	
@@ -386,20 +329,20 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void loadUserProfileBasics() {
 		
-		Log.w(TAG, "loadUserProfileBasics()");
+		Log.v(TAG, "loadUserProfileBasics()");
 
 		// If we already have a profile, don't load one
 		if (mProfile != null) {
-			Log.v(TAG, "Profile already exists: " + mProfile);
+			Log.w(TAG, "Profile already exists: " + mProfile);
 			return;
-		}
+		} 
 		
 		// Initialize the profile structure
 		mProfile = null;
 
 		// Make sure the user's account name has been saved or there is no local profile
 		if (loadBartsyId() == null) {
-			Log.v(TAG, "No saved user profile");
+			Log.w(TAG, "No saved user profile");
 			return;
 		}			
 
@@ -429,7 +372,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		mProfile.setNickname(Utilities.loadPref(this, R.string.config_user_nickname, null));
 		mProfile.setImage(image);
 
-		Log.v(TAG, "Profile loaded: " +  mProfile);
+		Log.v(TAG, ">>> Profile loaded: " +  mProfile);
 	}
 	
 	void saveUserProfile(UserProfile profile) {
@@ -437,7 +380,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		// First remove any saved profile data to avoid saving bits of different profiles
 		eraseUserProfile();
 
-		Log.w(TAG, "saveUserProfile(" + profile + ")");
+		Log.w(TAG, ">>> Profile saved: " + profile);
 				
 		// Save in memory
 		mProfile = profile;
@@ -473,7 +416,7 @@ public class BartsyApplication extends Application implements AppObservable {
 
 	void eraseUserProfile() {
 		
-		Log.w(TAG, "eraseUserProfile()");
+		Log.w(TAG, ">>> Profile erased: " + mProfile);
 
 		mProfile = null;
 		
@@ -529,7 +472,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	public void saveUserProfileImage(Bitmap bitmap) {
 		// Save bitmap to file
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.w(TAG, "Saving user profile image to " + file);
+		Log.w(TAG, ">>> Saving user profile image to " + file);
 
 		try {
 			FileOutputStream out = new FileOutputStream(file);
@@ -542,7 +485,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	Bitmap loadUserProfileImage() {
 		String file = getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture);
-		Log.w(TAG, "Loading user profile from " + file);
+		Log.w(TAG, ">>> Loading user profile from " + file);
 		Bitmap image = null;
 		try {
 			image = BitmapFactory.decodeFile(file);
@@ -555,7 +498,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	void eraseUserProfileImage() {
 		
-		Log.w(TAG, "Erase profile image");
+		Log.w(TAG, ">>> Erase profile image");
 		
 		File file = new File(getFilesDir()  + File.separator + getResources().getString(R.string.config_user_profile_picture));
 		file.delete();
@@ -790,43 +733,6 @@ public class BartsyApplication extends Application implements AppObservable {
 		return SYNC_RESULT_OK;	
 	}
 	
-	synchronized public int syncOpenOrders() {
-
-		Log.w(TAG, "syncOpenOrders()");
-
-		JSONObject orders = WebServices.getOpenOrders(BartsyApplication.this);
-		if (orders != null) {
-			try {
-				JSONArray listOfOrders = orders.has("orders") ? orders.getJSONArray("orders") : null;
-				if (listOfOrders != null) {
-
-					// Get the server's view of the open orders - for now replace our list with that of the server
-					mOrders.clear();
-					for (int i = 0; i < listOfOrders.length(); i++) {
-						JSONObject orderJson = (JSONObject) listOfOrders.get(i);
-						
-						if (!orderJson.has("orderTimeout"))
-							orderJson.put("orderTimeout", mActiveVenue.getOrderTimeout());
-						
-						Order order = new Order(orderJson);
-						addOrder(order);
-					}
-				} else {
-					// We didn't get a response - keep our list
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-				return SYNC_RESULT_JSON_ERROR;
-			}
-		}
-		
-		notifyObservers(ORDERS_UPDATED);
-
-		return SYNC_RESULT_OK;	
-	}
-	
-
-
 	synchronized public void performHeartbeat() {
 		
 		Log.v(TAG, "performHeartbeat()");
@@ -842,18 +748,17 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		JSONObject json = WebServices.postHeartbeatResponse(BartsyApplication.this, mProfile.getBartsyId(), mActiveVenue.getId());
 		
+		// Just print active venue and user for now
+		Log.d(TAG, ">>> Venue >>> " + mActiveVenue);
+		Log.d(TAG, ">>> User  >>> " + mProfile);
 		
 		// Update venue, order and people counts
-		if (json.has("venueId")) {
-			try {
-				updateActiveVenue(json.getString("venueId"), json.getString("venueName"), json.getInt("userCount"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		} else {
-			// We don't have an active venue - make sure we don't and delete local references
-			userCheckOut();
-		}
+//		if (json.has("venueId")) {
+//			updateActiveVenue(new Venue(json));
+//		} else {
+//			// We don't have an active venue - make sure we don't and delete local references
+//			userCheckOut();
+//		}
 	}
 	
 	
@@ -1069,7 +974,8 @@ public class BartsyApplication extends Application implements AppObservable {
 		Log.w(TAG, "processAddedOrders()");
 
 		// Find the orders to remove and store them in a separate list to avoid iterator issues
-		ArrayList<Order> processedOrders = new ArrayList<Order>();
+		ArrayList<Order> addOrders = new ArrayList<Order>();
+		ArrayList<Order> updateOrders = new ArrayList<Order>();
 		for (Order order : remoteOrders) {
 			if (findMatchingOrder(localOrders, order) == null) {
 
@@ -1084,7 +990,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_OFFER_REJECTED:
 					order.updateStatus(order.status);
 					order.updateStatus(Order.ORDER_STATUS_REMOVED);
-					WebServices.orderStatusChanged(order, this);
+					updateOrders.add(order);
 					break;
 					
 				// These order we're learning about because we probably have lost our local orders cache. Add them to the cache.
@@ -1092,7 +998,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				case Order.ORDER_STATUS_IN_PROGRESS:
 				case Order.ORDER_STATUS_READY:
 				case Order.ORDER_STATUS_OFFERED:
-					processedOrders.add(order);
+					addOrders.add(order);
 					break;
 					
 				// Illegal remote order state - print message and skip it
@@ -1104,9 +1010,14 @@ public class BartsyApplication extends Application implements AppObservable {
 			}
 		}
 		
+		// Update orders that have status changes on the host
+		if (updateOrders.size() > 0) {
+			WebServices.orderStatusChanged(updateOrders, BartsyApplication.this);
+		}
+		
 		// Add the orders found
 		ArrayList<Order> addedOrders = new ArrayList<Order>();
-		for (Order order : processedOrders) {
+		for (Order order : addOrders) {
 			if (addOrder(order)) {
 				Log.e(TAG, "Adding order: " + order.orderId + " with status: " + order.status);
 				addedOrders.add(order);
@@ -1114,6 +1025,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				Log.e(TAG, "Could not add order: " + order.orderId + " with status: " + order.status);
 			}
 		}
+		
 		
 		return addedOrders;
 	}
@@ -1169,7 +1081,11 @@ public class BartsyApplication extends Application implements AppObservable {
 
 		Log.w(TAG, "processExistingOrders()");
 		
-		ArrayList<Order> updatedOrders = new ArrayList<Order>();
+		// These orders locally changed status
+		ArrayList<Order> changeOrders = new ArrayList<Order>();
+		
+		// The remote status of these orders needs to be updated on the host
+		ArrayList<Order> updateOrders = new ArrayList<Order>();
 
 		for (Order remoteOrder : remoteOrders) {
 			
@@ -1193,8 +1109,8 @@ public class BartsyApplication extends Application implements AppObservable {
 						// We are the sender - acknowledge the change of status and remove the order
 						localOrder.updateStatus(remoteOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
-						WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
-						updatedOrders.add(localOrder);
+						changeOrders.add(localOrder);
+						updateOrders.add(localOrder);
 						ignoreRemote = true;
 					} else {
 						// We are the recipient - this is not a legal state for the server to be updating us on
@@ -1224,8 +1140,8 @@ public class BartsyApplication extends Application implements AppObservable {
 						// Change the state and leave it in the order list until user acknowledges the time out ****
 						localOrder.updateStatus(remoteOrder.status);
 						localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
-						WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
-						updatedOrders.add(localOrder);
+						changeOrders.add(localOrder);
+						updateOrders.add(localOrder);
 						break;
 					
 					// The host should never be sending us removed orders. Log the illegal state and let the order expire locally.
@@ -1240,8 +1156,8 @@ public class BartsyApplication extends Application implements AppObservable {
 							// We are the sender - acknowledge the change of status and remove the order
 							localOrder.updateStatus(remoteOrder.status);
 							localOrder.updateStatus(Order.ORDER_STATUS_REMOVED);
-							WebServices.orderStatusChanged(localOrder, BartsyApplication.this);
-							updatedOrders.add(localOrder);
+							updateOrders.add(localOrder);
+							changeOrders.add(localOrder);
 						} else {
 							// We are the recipient - this is not a legal state for the server to be updating us on (we should be updating the host on this)
 							Log.e(TAG, "Skipping illegal existing order: " + localOrder.orderId + " with status: " + localOrder.status);
@@ -1254,7 +1170,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					case Order.ORDER_STATUS_IN_PROGRESS:
 					case Order.ORDER_STATUS_READY:
 						localOrder.updateStatus(remoteOrder.status);
-						updatedOrders.add(localOrder);
+						changeOrders.add(localOrder);
 						break;
 						
 					// These orders are somehow in a remote state that shouldn't be possible. Match host state!
@@ -1268,7 +1184,13 @@ public class BartsyApplication extends Application implements AppObservable {
 				}
 			}
 		}
-		return updatedOrders;
+		
+		// Send changes across if any
+		if (updateOrders.size() > 0) {
+			WebServices.orderStatusChanged(updateOrders, BartsyApplication.this);
+		}
+		
+		return changeOrders;
 	}		
 	
 	

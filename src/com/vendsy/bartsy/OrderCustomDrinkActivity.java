@@ -256,7 +256,7 @@ public class OrderCustomDrinkActivity extends Activity{
 		}
 		
 		Order order = new Order(new Item(mApp.selectedSpirit.getName(), mixers, totalAmount),
-				totalAmount, tipAmount, mApp.mProfile, profile);
+				totalAmount, tipAmount, mApp.mActiveVenue.getTaxRate(), mApp.mProfile, profile);
 		
 		// invokePaypalPayment(); // To enable paypal payment
 
@@ -283,6 +283,7 @@ public class OrderCustomDrinkActivity extends Activity{
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
 				// The order was placed successfully 
 				
+				mApp.syncOrders();
 				finish();
 
 				break;
