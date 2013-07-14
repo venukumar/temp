@@ -250,7 +250,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 				mApp.syncActiveVenue();
 				
 				// Sync open orders
-				mApp.syncOpenOrders();
+				mApp.syncOrders();
 				
 				
 				mHandler.post(new Runnable() {
@@ -420,7 +420,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 					mApp.syncActiveVenue();
 					
 					// Sync open orders
-					mApp.syncOpenOrders();
+					mApp.syncOrders();
 					
 					// Start main activity.
 					mHandler.post(new Runnable() {

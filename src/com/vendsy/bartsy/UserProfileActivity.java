@@ -653,7 +653,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						mApp.syncActiveVenue();
 
 						// Finally, load the open orders this user has to be stored in the application object that will stick around 
-						mApp.syncOpenOrders();
+						mApp.syncOrders();
 						
 						// AFter processing profile return back to calling activity with success code
 						mHandler.post(new Runnable() {
