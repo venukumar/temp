@@ -18,6 +18,7 @@ import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -75,16 +76,74 @@ public class OpenOrdersSectionView extends LinearLayout{
 		// Load the orders currently present in the Bartsy server
 //		loadUserOrders();
 		
-		displayOrders();
-
+		if (Constants.bundleOrders)
+			displayBundledOrders();
+		else
+			displayOrders();
 	}
 
+	
+	
+	private void displayOrders() {
+		
+		// Use a swallow copy of the global structure to be able to remove orders from the global structure in the iterator
+		ArrayList<Order> orders = mApp.cloneOrders();
+		
+
+		// Update people count in people tab
+		mActivity.updateOrdersCount();
+
+		// Make sure the list view is empty
+		mOrderListView.removeAllViews();
+		
+		for (int i = 0 ; i < orders.size(); i++) {
+			
+			Order order= orders.get(i);
+			Log.v(TAG, "Processing order " + order.orderId + " with status " + order.status + " and last status " + order.last_status);
+
+			View view = order.updateView(mInflater, mContainer);
+			
+			view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mApp.removeOrder((Order) v.getTag());
+				}
+			});
+			
+			view.findViewById(R.id.view_order_footer_accept).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Order order = (Order) v.getTag();
+					((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+					((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+					order.updateStatus(Order.ORDER_STATUS_NEW);
+					WebServices.updateOfferedDrinkStatus(mApp, order);
+				}
+			});
+			
+			view.findViewById(R.id.view_order_footer_reject).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Order order = (Order) v.getTag();
+					((Button) order.view.findViewById(R.id.view_order_footer_reject)).setEnabled(false);
+					((Button) order.view.findViewById(R.id.view_order_footer_accept)).setEnabled(false);
+					order.updateStatus(Order.ORDER_STATUS_OFFER_REJECTED);
+					WebServices.updateOfferedDrinkStatus(mApp, order);
+				}
+			});
+			
+			
+			mOrderListView.addView(view);
+
+		}
+	}
+	
 
 	/*
 	 * Displays the orders from the order list into the view, bundled by state
 	 */
 	
-	private void displayOrders() {
+	private void displayBundledOrders() {
 
 		Log.v(TAG, "mApp.mOrders list size = " + mApp.getOrderCount());
 
