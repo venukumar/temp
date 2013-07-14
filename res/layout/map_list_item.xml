@@ -9,147 +9,164 @@
 
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center_vertical"
+        android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:gravity="center_vertical"
         android:orientation="vertical"
+        android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin" >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="vertical" >
+            android:layout_height="wrap_content" >
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/view_map_venue_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" >
+                    android:text="Finn Mc&apos;Cool&apos;s"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/view_map_venue_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Finn Mc&apos;Cool&apos;s"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/view_map_venue_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2435 Main St, Santa Monica, CA 90405"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/view_map_venue_address"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2435 Main St, Santa Monica, CA 90405"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textSize="11sp" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="4" >
+            </FrameLayout>
+        </LinearLayout>
 
-                </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical" >
 
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="4" >
-                </FrameLayout>
+            <LinearLayout
+                android:id="@+id/view_map_closed"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone" >
 
                 <ImageView
-                    android:id="@+id/view_map_venue_checked_in"
-                    android:layout_width="25dp"
-                    android:layout_height="fill_parent"
+                    android:id="@+id/ImageView01"
+                    android:layout_width="wrap_content"
+                    android:layout_height="15dp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginRight="2dp"
-                    android:src="@drawable/tickmark" />
+                    android:paddingTop="1dp"
+                    android:src="@drawable/attention" />
 
+                <TextView
+                    android:id="@+id/TextView04"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text=" Closed"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:id="@+id/view_map_checkins"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical" >
 
-                <LinearLayout
-                    android:id="@+id/view_map_checkins"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical" >
-
-                    <TextView
-                        android:id="@+id/view_map_venue_people_count"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="22"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="#f83ab3"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/view_map_people_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text=" people checked in"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/view_map_wifi"
+                <TextView
+                    android:id="@+id/view_map_venue_people_count"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="22"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#f83ab3"
+                    android:textStyle="bold" />
 
-                    <ImageView
-                        android:id="@+id/imageView1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="15dp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="1dp"
-                        android:paddingTop="2dp"
-                        android:src="@drawable/wifi" />
+                <TextView
+                    android:id="@+id/view_map_people_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text=" people checked in"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/TextView02"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="available"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
+            <LinearLayout
+                android:id="@+id/view_map_wifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
 
-                </LinearLayout>
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="1dp"
+                    android:paddingTop="2dp"
+                    android:src="@drawable/wifi" />
 
+                <TextView
+                    android:id="@+id/TextView02"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="available"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="70dp"
-        android:layout_height="80dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:gravity="center"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/view_map_distance"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="0.8"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/holo_blue_light"
-            android:textStyle="bold" />
+        <ImageView
+            android:id="@+id/view_map_venue_checked_in"
+            android:layout_width="25dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_marginRight="2dp"
+            android:src="@drawable/tickmark"
+            android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/TextView03"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:id="@+id/view_map_distance_option"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="miles"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="10sp" />
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/view_map_distance"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="0.8"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@android:color/holo_blue_light"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/TextView03"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="miles"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textSize="10sp" />
+        </LinearLayout>
 
     </LinearLayout>
 
