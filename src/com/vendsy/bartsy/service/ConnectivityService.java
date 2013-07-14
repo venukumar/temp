@@ -642,13 +642,13 @@ public class ConnectivityService extends Service implements AppObserver {
         	
 
         	// For now just check in the venue with this channel, ignoring the fact we may already be checked in
-        	if (Constants.USE_ALLJOYN) {
+/*        	if (Constants.USE_ALLJOYN) {
         		mApp.mActiveVenue = new Venue();
         		mApp.mActiveVenue.setId("locu_venue_id");
         		mApp.mActiveVenue.setName(name);
         		mApp.mActiveVenue.setAddress("Santa Monica, CA"); 
         	}
-        }
+*/        }
         
         public void hostAutoConnect() {
         	// Host channel started, join the channel as a user in order to be able to start receiving messages
