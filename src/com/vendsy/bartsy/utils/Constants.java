@@ -15,11 +15,12 @@ public class Constants {
 	
 	public static final String ASSETS_PATH = "file:///android_asset/";
 	
-	// For now use card-coded value of tax
-	public static final float taxRate = (float) (9.0) / (float) (100.0);
+	// For now use hard-coded value of tax
+	public static final float taxRate = (float) (9.5) / (float) (100.0);
 	
 	public static final long monitorFrequency = 60000 ; // frequency in which to run the background service, in ms
 	public static final int timoutDelay = 2; // how many more minutes to delay a local timeout from the server timeout
 
+	public static final boolean bundleOrders = false;
 
 }
