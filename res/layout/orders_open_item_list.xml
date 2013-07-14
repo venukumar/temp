@@ -26,13 +26,23 @@
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content" >
 
-                            <ImageView
-                                android:id="@+id/imageView1"
+                            <TextView
+                                android:id="@+id/textView1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_vertical"
-                                android:layout_marginRight="4dp"
-                                android:src="@drawable/attention_light" />
+                                android:text="#"
+                                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                            <TextView
+                                android:id="@+id/view_order_item_number"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:gravity="center_vertical"
+                                android:text="100012"
+                                android:textAppearance="?android:attr/textAppearanceMedium"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/view_order_state_description"
@@ -117,14 +127,19 @@
                                         android:orientation="vertical" >
 
                                         <TextView
-                                            android:id="@+id/view_order_item_number"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:gravity="center_vertical"
-                                            android:text="100012"
+                                            android:text="Pickup code:"
+                                            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                                        <TextView
+                                            android:id="@+id/view_order_pickup_code"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="#order"
                                             android:textAppearance="?android:attr/textAppearanceLarge"
-                                            android:textSize="38sp"
-                                            android:textStyle="bold" />
+                                            android:textColor="@android:color/holo_blue_bright" />
+
                                     </LinearLayout>
 
                                     <LinearLayout
