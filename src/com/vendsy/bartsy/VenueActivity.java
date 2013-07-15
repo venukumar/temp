@@ -175,6 +175,12 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 * @param message
 	 */
 	public void processPushNotification(String message){
+		// TODO if message is empty then we can think it as order PN for now
+		if(message.length()==0){
+			// Display order tab
+			mViewPager.setCurrentItem(2);
+			return;
+		}
 		try {
 			JSONObject json = new JSONObject(message);
 			if (json.has("messageType")){
