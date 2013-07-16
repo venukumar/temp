@@ -39,6 +39,7 @@ import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class UserProfileActivity extends Activity implements OnClickListener {
@@ -486,6 +487,16 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			// Extract first and last name
 			String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
 			String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
+
+			// Require first and last names
+			if (first_name == null || first_name.equals("") || last_name == null || last_name.equals("")) {
+				Toast.makeText(this, "First and last names are required", Toast.LENGTH_SHORT).show();
+				return;			
+			}
+			user.setFirstName(first_name);
+			user.setLastName(last_name);
+			
+/*			
 			if (first_name.length() > 0 && last_name.length() > 0)
 				user.setName(first_name + " " + last_name);
 			else if (first_name.length() > 0)
@@ -496,9 +507,11 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				user.setFirstName(first_name);
 			if (last_name.length() > 0)
 					user.setLastName(last_name);
-			
+*/			
 			//Extract card details 	
-			user.setCreditCardNumber((String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag());
+			String cc = (String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag();
+			String ecc = Utilities.asymmetricRSAEncode(cc);
+			user.setCreditCardNumber(cc);
 			user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
 			user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
 			
