@@ -29,6 +29,7 @@ import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -50,12 +51,14 @@ public class DrinksSectionFragment extends SherlockFragment {
 	 */
 	
 	public class Menu {
+		String venueId;
 		ArrayList<String> headings;
 		ArrayList<ArrayList<Item>> items;
 		
-		Menu (ArrayList<String> headings, ArrayList<ArrayList<Item>> items) {
+		Menu (String venueId, ArrayList<String> headings, ArrayList<ArrayList<Item>> items) {
 			this.headings = headings;
 			this.items = items;
+			this.venueId = venueId;
 		}
 	}
 
@@ -130,9 +133,9 @@ public class DrinksSectionFragment extends SherlockFragment {
 		mMenuLoading = true;
 		Log.d(TAG, "Indicate start of menu loading");
 		
-		// Check if menu has already been cached
+		// Check if menu has already been cached for this venue
 		
-		if (mMenu == null) {
+		if (mMenu == null || !mMenu.venueId.equals(mApp.mActiveVenue.getId())) {
 			Log.v(TAG, "Menu not available in memory");
 
 			// Menu is not already in memory, call the appropriate loader
@@ -142,10 +145,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 				@Override
 				public void run() {
 
-					String apiResponse = null;
-			
-					
-					// Database failed for some reason. Attempt to download the menu from the web
+					// Attempt to download the menu from the web
 					downloadAndDisplayMenu();
 					
 					if (mMenu == null) {
@@ -203,8 +203,11 @@ public class DrinksSectionFragment extends SherlockFragment {
 		if(mApp.mActiveVenue==null){
 			return null;
 		}
+		
+		Venue venue = mApp.mActiveVenue;
+		
 		// Step 1 - get the web service response and display the results in the view
-		String response = WebServices.getMenuList(mApp, mApp.mActiveVenue.getId());
+		String response = WebServices.getMenuList(mApp, venue.getId());
 		if (response == null) {
 			Log.d(TAG, "Webservice get menu call failed");
 			return null;
@@ -213,7 +216,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 		}
 		
 		// parse the response into a menu in-memory structure
-		mMenu = extractMenuFromResponse (response);
+		mMenu = extractMenuFromResponse (venue, response);
 		// To save menu in application class
 		
 		return response;
@@ -225,7 +228,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 	 * Helper function for downloadAndDisplayMenu. Processes the server response and builds a menu object
 	 */
 	
-	private Menu extractMenuFromResponse (String response) {
+	private Menu extractMenuFromResponse (Venue venue, String response) {
 		
 		ArrayList<String> headings = new ArrayList<String>();
 		ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
@@ -289,7 +292,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 			e.printStackTrace();
 		}
 		
-		return new Menu(headings, items);
+		return new Menu(venue.getId(), headings, items);
 	}
 
 	
@@ -314,8 +317,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 		
 		Log.v(TAG, "updateView()");
 		
-		// If menu is not already in memory, call the appropriate loader
-		if (mMenu == null) {
+		if (mMenu == null || !mMenu.venueId.equals(mApp.mActiveVenue.getId())) {
 			Log.d(TAG, "Menu not available for display");
 			loadMenu();
 			return;
