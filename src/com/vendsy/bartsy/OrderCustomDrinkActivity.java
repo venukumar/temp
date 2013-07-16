@@ -110,7 +110,7 @@ public class OrderCustomDrinkActivity extends Activity{
 			@Override
 			public void onClick(View v) {
 				
-				orderButton.setVisibility(View.GONE);
+				orderButton.setEnabled(false);
 				proceedOrder();
 			}
 		});
