@@ -3,6 +3,7 @@
  */
 package com.vendsy.bartsy.view;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,6 +28,7 @@ import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -156,7 +158,7 @@ public class PastOrdersSectionView extends LinearLayout {
 			e.printStackTrace();
 			Log.e(TAG, "Bad date format in getPastOrders syscall");
 		} 
-		
+		time = Utilities.getFriendlyDate(order.createdDate.replace("T", " ").replace("Z", ""), "yyyy-MM-dd HH:mm:ss");
 		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
 		((TextView) itemView.findViewById(R.id.orderId)).setText(order.orderId);
 		
@@ -192,11 +194,35 @@ public class PastOrdersSectionView extends LinearLayout {
 
 		// Set title
 		String title = "";
-		for (Item item : order.items) 
-			title += item.getTitle() + "\n";
+		int size = order.items.size();
+		for (int i=0; i< size ; i++) {
+			Item item = order.items.get(i);
+		    DecimalFormat df = new DecimalFormat();
+			df.setMaximumFractionDigits(0);
+			df.setMinimumFractionDigits(0);
+
+			title += item.getTitle() + "  ($"+ df.format(item.getPrice()) + ")";
+			if (i != size && size > 1)
+				title +="\n";
+		}
 		((TextView) itemView.findViewById(R.id.itemName)).setText(title);
 
-		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + order.totalAmount));
+		// Set sender/recipient string
+		String us = mApp.loadBartsyId();
+		String text;
+		if (us.equals(order.senderId) && !us.equals(order.recipientId))
+			text = "To: " + order.recipientNickname;
+		else if (!us.equals(order.senderId) && us.equals(order.recipientId))
+			text = "From: " + order.senderNickname;
+		else
+			text = "";
+		((TextView) itemView.findViewById(R.id.sender_recipient)).setText(text);
+
+		// Set total
+	    DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(2);
+		df.setMinimumFractionDigits(2);
+		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + df.format(order.totalAmount)));
 
 		ordersTableLayout.addView(itemView);
 	}
