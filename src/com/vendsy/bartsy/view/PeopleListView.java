@@ -8,22 +8,20 @@ import org.json.JSONObject;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.MessagesActivity;
-import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
-import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
-import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 /**
@@ -142,6 +140,14 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 							if (json.has("userImagePath")) {
 								imagepath = json.getString("userImagePath");
 							}
+							String messagesStatus = "";
+							if(json.has("hasMessages")){
+								try {
+									messagesStatus = json.getString("hasMessages");
+								} catch (JSONException e) {
+									e.printStackTrace();
+								}
+							}
 							
 							// Go over the list of people in the global structure looking for images
 							UserProfile profile = null;
@@ -164,6 +170,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 								profile.setBartsyId(bartsyID);
 								profile.setNickname(nickName);
 								profile.setImagePath(WebServices.DOMAIN_NAME + imagepath);
+								profile.setMessagesStatus(messagesStatus);
 							}
 							
 							// Add profile (new or old) to the existing people list
@@ -183,19 +190,24 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 								// Add any existing people in the layout, one by one
 								
 								Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
-		
+								final Drawable drawableTop = getResources().getDrawable(R.drawable.mail_read);
+								
 								for (UserProfile profile : mApp.mPeople) {
 									Log.v(TAG, "Adding a user item to the layout");
 									profile.view = mInflater.inflate(R.layout.user_item, null);
 									profile.updateView(PeopleListView.this); // sets up view specifics and sets listener to this
 									
 									final UserProfile userProfile = profile;
-									View messagesButton = profile.view.findViewById(R.id.view_user_list_chat_button);
+									Button messagesButton = (Button)profile.view.findViewById(R.id.view_user_list_chat_button);
 									
 									// User can not send message to self. So, message option should be visible to others
 									if(profile.getBartsyId().equals(mApp.mProfile.getBartsyId())){
 										messagesButton.setVisibility(View.GONE);
 									}else{
+										if(!userProfile.hasUnreadMessages()){
+											
+											messagesButton.setCompoundDrawablesWithIntrinsicBounds(null, drawableTop , null, null);
+										}
 										// Set message button listener
 										messagesButton.setOnClickListener(new OnClickListener() {
 											

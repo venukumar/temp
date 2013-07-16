@@ -67,6 +67,12 @@ public class UserProfile {
 	public static final String VISIBLE = "ON"; // show user profile and see other profiles
 	public static final String HIDDEN = "OFF"; // don't show user profile and don't see other profiles
 	
+	public static final String TYPE_MESSAGE_NEW = "New";
+	public static final String TYPE_MESSAGE_OLD = "Old";
+	public static final String TYPE_MESSAGE_NONE = "None";
+	
+	private String messagesStatus;
+	
 	ArrayList<UserProfile> likes  = null;
 	ArrayList<UserProfile> favorites  = null;
 
@@ -171,6 +177,10 @@ public class UserProfile {
 			
 	}
 	
+	public boolean hasUnreadMessages(){
+		return TYPE_MESSAGE_NEW.equals(messagesStatus);
+	}
+	
 	/**
 	 * Constructor using Facebook profile as a base.  
 	 * 
@@ -262,10 +272,25 @@ public class UserProfile {
 				e.printStackTrace();
 			}
 		}
+		if(person.has("hasMessages")){
+			try {
+				messagesStatus = person.getString("hasMessages");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
 	
+	public String getMessagesStatus() {
+		return messagesStatus;
+	}
+
+	public void setMessagesStatus(String messagesStatus) {
+		this.messagesStatus = messagesStatus;
+	}
+
 	/**
 	 * 
 	 * TODO - Setters/Getters

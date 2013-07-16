@@ -7,14 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.vendsy.bartsy.model.AppObservable;
-import com.vendsy.bartsy.model.MessageData;
-import com.vendsy.bartsy.model.Notification;
-import com.vendsy.bartsy.utils.WebServices;
-import com.vendsy.bartsy.view.AppObserver;
-
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -25,9 +18,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.LinearLayout.LayoutParams;
+
+import com.vendsy.bartsy.model.AppObservable;
+import com.vendsy.bartsy.model.MessageData;
+import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.view.AppObserver;
 
 public class MessagesActivity extends Activity implements AppObserver {
 
@@ -258,17 +256,25 @@ public class MessagesActivity extends Activity implements AppObserver {
 		Log.v(TAG, "update(" + arg + ")");
 		
 		final String qualifier = (String) arg;
-		handler.post(new Runnable() {
-			@Override
-			public void run() {
-				
-				if (qualifier.equals(BartsyApplication.NEW_CHAT_MESSAGE_RECEIVED)) {
-					addMessageInList(mApp.receivedMessage);
-					mApp.receivedMessage=null;
-				}
-			}
-		});
+					
+		if (qualifier.equals(BartsyApplication.NEW_CHAT_MESSAGE_RECEIVED)) {
+			// Load all the messages from the server and update the messages view
+			loadMessagesFromServer();
+			mApp.receivedMessage=null;
+		}
 		
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		Log.v(TAG, "onDestroy()");
+
+		// Only stop listening to messages from the application when we're killed (keep
+		// listening while in the background with no active view)
+		mApp.deleteObserver(this);
+
 	}
 
 		

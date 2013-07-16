@@ -785,6 +785,10 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
 			mApplicationHandler.sendMessage(message);
+		} else if (qualifier.equals(BartsyApplication.NEW_CHAT_MESSAGE_RECEIVED)) {
+			Message message = mApplicationHandler
+					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
+			mApplicationHandler.sendMessage(message);
 		} 
 	}
 
@@ -820,6 +824,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				}
 				break;
 			case HANDLE_PEOPLE_UPDATED_EVENT:
+				
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_PEOPLE_UPDATED_EVENT");
 				if (mPeopleFragment != null) {
 					Log.v(TAG, "Updating people view and count...");
