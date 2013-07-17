@@ -7,13 +7,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.UserProfile;
@@ -22,9 +21,10 @@ import com.vendsy.bartsy.model.UserProfile;
  * @author peterkellis
  * 
  */
-public class ProfileDialogFragment extends SherlockDialogFragment {
+public class ProfileDialogFragment extends SherlockDialogFragment implements OnClickListener {
 
 	public UserProfile mUser = null;
+	private ProfileDialogListener mListener;
 
 	/*
 	 * The activity that creates an instance of this dialog fragment must
@@ -32,15 +32,24 @@ public class ProfileDialogFragment extends SherlockDialogFragment {
 	 * passes the DialogFragment in case the host needs to query it.
 	 */
 	public interface ProfileDialogListener {
-		public void onUserDialogPositiveClick(DialogFragment dialog);
-		public void onUserDialogNegativeClick(DialogFragment dialog);
+		public void onUserDialogPositiveClick(ProfileDialogFragment dialog);
+		public void onUserDialogNegativeClick(ProfileDialogFragment dialog);
 	}
 
 	// Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
 	@Override
 	public void onAttach(Activity activity) {
+		
 		super.onAttach(activity);
 		
+		try {
+			// Instantiate the NoticeDialogListener so we can send events to the
+			// host
+			mListener = (ProfileDialogListener) activity;
+		} catch (ClassCastException e) {
+			// The activity doesn't implement the interface, throw exception
+			throw new ClassCastException(activity.toString() + " must implement ProfileDialogListener");
+		}
 	}
 
 	DialogInterface dialog = null;
@@ -56,13 +65,14 @@ public class ProfileDialogFragment extends SherlockDialogFragment {
 		// Inflate and set the layout for the dialog. Pass null as the parent view because its going in the dialog layout
 		View view = inflater.inflate(R.layout.dialog_user_profile, null);
 		
-		if(mUser!=null){
+		if (mUser != null){
 			// Customize dialog for this user
 			((TextView) view.findViewById(R.id.view_user_dialog_name)).setText(mUser.getNickname());
 			((TextView) view.findViewById(R.id.view_user_dialog_description)).setText(mUser.getDescription());
 	
 			// Set up user image 
 			((ImageView) view.findViewById(R.id.view_user_dialog_image_resource)).setImageBitmap(mUser.getImage());
+//	    new DownloadImageTask().execute((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));	  
 	
 			// Set up user info string
 			String info = mUser.getBirthday() + " / " + mUser.getGender() + " / " + mUser.getStatus();
@@ -75,7 +85,25 @@ public class ProfileDialogFragment extends SherlockDialogFragment {
 		// Set view and add click listeners by calling the listeners in the calling activity
 		builder.setView(view);
 		
+		
+	    builder.setTitle("User Profile");
+	    
+	    builder.setPositiveButton("Send Drink", this);
+	    builder.setNegativeButton("Send Message", this);
+
 		return builder.create();
+	}
+
+	@Override
+	public void onClick(DialogInterface dialog, int which) {
+		switch (which) {
+		case DialogInterface.BUTTON_POSITIVE:
+			mListener.onUserDialogPositiveClick(this);
+			break;
+		case DialogInterface.BUTTON_NEGATIVE:
+			mListener.onUserDialogNegativeClick(this);
+			break;
+		}
 	}
 
 }

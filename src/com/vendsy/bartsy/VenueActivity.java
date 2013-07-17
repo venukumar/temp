@@ -25,7 +25,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
-import com.vendsy.bartsy.dialog.PeopleDialogFragment;
+import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.MessageData;
@@ -43,7 +43,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 
-public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.OrderDialogListener, PeopleDialogFragment.UserDialogListener, AppObserver {
+public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.OrderDialogListener, 
+	AppObserver, ProfileDialogFragment.ProfileDialogListener {
 
 	/****************
 	 * 
@@ -859,7 +860,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 */
 
 	@Override
-	public void onDialogPositiveClick(DrinkDialogFragment dialog) {
+	public void onOrderDialogPositiveClick(DrinkDialogFragment dialog) {
 
 		if (mApp.mActiveVenue == null) {
 			// No active venue. We need to terminate venue activity. We also notify the user.
@@ -901,7 +902,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	
 	
 	@Override
-	public void onDialogNegativeClick(DrinkDialogFragment dialog) {
+	public void onOrderDialogNegativeClick(DrinkDialogFragment dialog) {
 
 		Item item = dialog.item;
 		
@@ -992,39 +993,36 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 
 	/*
 	 * 
-	 * TODO - User interaction commands
+	 * TODO - User interaction commands. These are the buttons of the user profile dialog that appears when clicking on a profile in the people list
 	 */
 
 	@Override
-	public void onUserDialogPositiveClick(DialogFragment dialog) {
-		// User touched the dialog's positive button
+	public void onUserDialogPositiveClick(ProfileDialogFragment dialog) {
 
-		Person user = ((PeopleDialogFragment) dialog).mUser;
+		Log.v(TAG, "Sending drink to: " + dialog.mUser.getNickname());
 
-		// DukesDonorUtil.getInstance().setDeviceId(registrationId);
-		// displayMessage(context, getString(R.string.gcm_registered));
-		// ServerUtilities.register(context, registrationId);
-
-		appendStatus("Sending drink to: " + user.getNickname());
-
-		mApp.newLocalUserMessage("<command><opcode>message</opcode>"
-				+ "<argument>" + user.getNickname() + "</argument>"
-				+ "<argument>" + "hi buddy" + "</argument>" + "</command>");
-		appendStatus("Placed drink order");
+		// Start a blank order for the given user
+		mApp.setActiveOrder(new Order(mApp.mProfile, dialog.mUser));
+		updateActionBarStatus();
+		
+		// Let the user know that they can select the item to send and take them to the menu tab
+		Toast.makeText(this, "Select a item or more for " + dialog.mUser.getNickname(), Toast.LENGTH_SHORT).show();
+		for (int i = 0; i < mTabs.length ; i++) {		
+			if (mTabs[i] == R.string.title_menu) {
+				getSupportActionBar().setSelectedNavigationItem(i);
+				return;
+			}
+		}
 	}
 
 	@Override
-	public void onUserDialogNegativeClick(DialogFragment dialog) {
-		// User touched the dialog's positive button
+	public void onUserDialogNegativeClick(ProfileDialogFragment dialog) {
 
-		Person user = ((PeopleDialogFragment) dialog).mUser;
+		Log.v(TAG, "Sending message to: " + dialog.mUser.getNickname());
 
-		appendStatus("Sending message to: " + user.getNickname());
-
-		mApp.newLocalUserMessage("<command><opcode>message</opcode>"
-				+ "<argument>" + user.getNickname() + "</argument>"
-				+ "<argument>" + "hi buddy" + "</argument>" + "</command>");
-		appendStatus("Sent message");
+		mApp.selectedUserProfile = dialog.mUser;
+		Intent intent = new Intent(this, MessagesActivity.class);
+		startActivity(intent);
 	}
 
 }

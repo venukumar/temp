@@ -57,8 +57,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	 * passes the DialogFragment in case the host needs to query it.
 	 */
 	public interface OrderDialogListener {
-		public void onDialogPositiveClick(DrinkDialogFragment dialog);
-		public void onDialogNegativeClick(DrinkDialogFragment dialog);
+		public void onOrderDialogPositiveClick(DrinkDialogFragment dialog);
+		public void onOrderDialogNegativeClick(DrinkDialogFragment dialog);
 	}
 
 	// Use this instance of the interface to deliver action events
@@ -152,8 +152,13 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		if (profile != null) updateProfileView(profile);
 		
 		// Setup up title and buttons
-		builder.setView(view).setPositiveButton("Place order", this)
-			.setNegativeButton("Add more items", this);
+		builder.setView(view);
+		if (mApp.hasActiveOrder() && mApp.getActiveOrder().items.isEmpty()) {
+			// No items in this open order. Don't allow to place the order
+		} else {
+			builder.setPositiveButton("Place order", this);
+		}
+		builder.setNegativeButton("Add more items", this);
 		builder.setTitle("Review your order");
 		
 		// Set radio button listeners
@@ -256,10 +261,10 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		// Send the event to the calling activity
 		switch (id) {
 		case DialogInterface.BUTTON_POSITIVE:
-				mListener.onDialogPositiveClick(DrinkDialogFragment.this);
+				mListener.onOrderDialogPositiveClick(DrinkDialogFragment.this);
 				break;
 		case DialogInterface.BUTTON_NEGATIVE:
-			mListener.onDialogNegativeClick(DrinkDialogFragment.this);
+			mListener.onOrderDialogNegativeClick(DrinkDialogFragment.this);
 			break;
 		}
 	}

@@ -93,9 +93,19 @@ public class Order {
 
 
 	/**
-	 * When an order is initialized the state transition times are undefined
-	 * except for the first state, which is when the order is received
+	 * 
+	 * TODO - CONSTRUCTORS
+	 * 
+	 * When an order is initialized the state transition times are undefined except for the first state, 
+	 * which is when the order is received
 	 */
+	
+	
+	public Order() {
+		df.setMaximumFractionDigits(2);
+		df.setMinimumFractionDigits(2);
+	}
+
 	public Order (Item item, float baseAmount, float tipAmount, float taxRate, UserProfile order_sender, UserProfile order_receiver) {
 		
 		this.items.add(item);
@@ -105,7 +115,6 @@ public class Order {
 		this.taxAmount = baseAmount * taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
 		
-		// this.image_resource = Integer.parseInt(image_resource);
 		this.orderSender = order_sender;
 		this.senderId = order_sender.getBartsyId();
 		this.orderRecipient = order_receiver;
@@ -118,12 +127,30 @@ public class Order {
 
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
-
 	}
 
-	public Order() {
+	
+	/** 
+	 * Constructor for new empty order destined for a given recipient
+	 * @param profile
+	 */
+	public Order(UserProfile sender, UserProfile recipient) {
+		this.orderSender = sender;
+		this.senderId = sender.getBartsyId();
+		
+		this.orderRecipient = recipient;
+		this.recipientId = recipient.getBartsyId();
+		
+		this.status = ORDER_STATUS_NEW;
+		
+		// Orders starts in the "NEW" status
+		this.status = ORDER_STATUS_NEW;
+		this.last_status = this.status;
+		this.state_transitions[this.status] = new Date();
+
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
+
 	}
 
 	/**
