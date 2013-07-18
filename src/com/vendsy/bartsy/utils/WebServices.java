@@ -42,6 +42,7 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -91,6 +92,7 @@ public class WebServices {
 	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
 	public static final String URL_SEND_MESSAGE = DOMAIN_NAME + PROJECT_NAME + "data/sendMessage";
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
+	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
 
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
@@ -447,8 +449,25 @@ public class WebServices {
 				json.put("description", user.getDescription());
 			if (user.hasGender()) 
 				json.put("gender", user.getGender());
-			if (user.hasCreditCardNumber()) 
+			if (user.hasCreditCardNumber()) {
+				// Encrypt CreditCardNumber(
+				String publicKey = Utilities.loadPref(context, "serverKey", "");
+				String encryptedString = AsymmetricCipherUtil.getEncryptedString(user.getCreditCardNumber(), publicKey);
+				
+				// TODO Decrypt and check the credit card is same or not
+				 byte[] bb= Base64.decode(encryptedString, android.util.Base64.NO_WRAP);
+				 byte[] bDecryptedKey = AsymmetricCipherUtil.decrypt(bb,AsymmetricCipherUtil.getPemPrivateKey(context));
+				 String decCredit = new String(bDecryptedKey, "UTF8");
+				 decCredit = decCredit.trim();
+				
+				Log.d("", "Encrypted number:::: "+encryptedString);
+//				Log.d("", "Decrypted number:::: "+decCredit);
+				
+				json.put("encryptedCreditCard", encryptedString);
+				
+				// TODO Must remove after testing
 				json.put("creditCardNumber", user.getCreditCardNumber());
+			}
 			if (user.hasExpMonth())
 				json.put("expMonth", user.getExpMonth());
 			if (user.hasExpYear())	
@@ -457,6 +476,8 @@ public class WebServices {
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		try {

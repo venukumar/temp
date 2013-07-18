@@ -59,18 +59,32 @@ public class SplashActivity extends Activity {
 		// which is guaranteed to have loaded before any activity or service), then start the init activity
 		if (mApp.mProfile == null) {
 			Log.e(TAG, "No saved profile found - load init activity");
+			new Thread(){
+				public void run() {
+					mApp.loadServerKey();
+					handler.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							//Stop loading
+							mProgressDialog.dismiss();
+							// Display NDA activity
+							Intent intent = new Intent().setClass(SplashActivity.this, NDAActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(intent);
+							finish();							
+						}
+					});
+				}
+			}.start();
 			
-			Intent intent = new Intent().setClass(this, NDAActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			finish();
-			return;
-		} 
+		}else{ 
 
-		Log.e(TAG, "Previously saved profiled found, try to log in: " + mApp.mProfile);
-		
-		// We have saved profile information from preferences. Get latest profile info from host and also get user status
-		new Synchronize().execute();
+			Log.e(TAG, "Previously saved profiled found, try to log in: " + mApp.mProfile);
+			
+			// We have saved profile information from preferences. Get latest profile info from host and also get user status
+			new Synchronize().execute();
+		}
 	}
 
 	private class Synchronize extends AsyncTask<Void, Void, Void>{

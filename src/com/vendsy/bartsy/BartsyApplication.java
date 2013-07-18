@@ -107,6 +107,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	private static final String TAG = "BartsyApplication";
 	public static String PACKAGE_NAME;
 	
+	public String serverPublicKey;
+	
 	/**
 	 * When created, the application fires an intent to create the AllJoyn
 	 * service. This acts as sort of a combined view/controller in the overall
@@ -139,7 +141,32 @@ public class BartsyApplication extends Application implements AppObservable {
 		loadActiveVenue();
 
 		// GCM registration code
+		loadGCMKey();
 
+		Log.v(TAG, "People list size: " + mPeople.size());
+		Log.v(TAG, "Orders list size: " + mOrders.size());
+		if (mActiveVenue == null)
+			Log.v(TAG, "Not checked in");
+		else
+			Log.v(TAG, "Checked in at " + mActiveVenue.getName());
+		
+		// Try to load server key from shared preference
+		if(serverPublicKey==null){
+			serverPublicKey = Utilities.loadPref(this, "serverKey", "");
+		}
+
+		// Setup Crittercism
+//		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
+	}
+	
+	private void loadGCMKey() {
+		// Make sure that GCM key is already registered
+		SharedPreferences settings = getSharedPreferences(GCMIntentService.REG_ID, 0);
+		String gcmKey = settings.getString("RegId", "");
+		if(gcmKey.length()>0){
+			return;
+		}
+		// Register the GCM key
 		GCMRegistrar.checkDevice(this);
 		GCMRegistrar.checkManifest(this);
 		final String regId = GCMRegistrar.getRegistrationId(this);
@@ -149,18 +176,26 @@ public class BartsyApplication extends Application implements AppObservable {
 			Log.v(TAG, "Already registered");
 		}
 		Log.v(TAG, "the registration id is:::::" + regId);
-
-		Log.v(TAG, "People list size: " + mPeople.size());
-		Log.v(TAG, "Orders list size: " + mOrders.size());
-		if (mActiveVenue == null)
-			Log.v(TAG, "Not checked in");
-		else
-			Log.v(TAG, "Checked in at " + mActiveVenue.getName());
-
-		// Setup Crittercism
-//		Crittercism.init(getApplicationContext(), "51b1940e46b7c25a30000003");
+		
 	}
-	
+
+	/**
+	 * Load server key from the server
+	 */
+	public boolean loadServerKey(){
+		
+		// If the key is not saved in the preference then get it from the server
+		if(serverPublicKey==null || serverPublicKey.length()==0){
+			JSONObject json = new JSONObject();
+			String response = WebServices.postRequest(WebServices.URL_GET_SERVER_KEY, json, this);
+			if(response==null || !response.contains("BEGIN PUBLIC KEY")){
+				return false;
+			}
+			serverPublicKey = response;
+			Utilities.savePref(this, "serverKey", serverPublicKey);
+		}
+		return true;
+	}
 
 	
 	/**
