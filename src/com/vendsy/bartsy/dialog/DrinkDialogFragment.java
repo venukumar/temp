@@ -38,19 +38,22 @@ import com.vendsy.bartsy.utils.WebServices;
  */
 public class DrinkDialogFragment extends SherlockDialogFragment implements DialogInterface.OnClickListener, OnClickListener, OnTouchListener {
 
-	public Item item;
-	public UserProfile profile;
-	public float taxRate;
+	// Inputs/outputs
+	public Order order;
 	
-	public float tipAmount;
-	public float baseAmount;
-	public float taxAmount;
-	public float totalAmount;
+	// Local
 	private View view;
-	private BartsyApplication mApp;
-    DecimalFormat df = new DecimalFormat();
+	private DecimalFormat df = new DecimalFormat();
 
+	/**
+	 * Constructors
+	 */
 
+	public DrinkDialogFragment (Order order) {
+		this.order = order;
+	}
+	
+	
 	/*
 	 * The activity that creates an instance of this dialog fragment must
 	 * implement this interface in order to receive event callbacks. Each method
@@ -78,11 +81,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			// The activity doesn't implement the interface, throw exception
 			throw new ClassCastException(activity.toString() + " must implement NoticeDialogListener");
 		}
-		
-		mApp = (BartsyApplication) getActivity().getApplication();
-		
 	}
-
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -100,44 +99,16 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		// Pass null as the parent view because its going in the dialog layout
 		view = inflater.inflate(R.layout.dialog_drink_order, null);
 
-		// Figure out totals
-		if (item == null) {
-			baseAmount = mApp.getActiveOrder().baseAmount;
-			profile = mApp.mProfile;
-		} else if (mApp.hasActiveOrder()) 
-			baseAmount = mApp.getActiveOrder().baseAmount + item.getPrice();
-		else
-			baseAmount = item.getPrice();
-		taxAmount = baseAmount * taxRate;
-		tipAmount = baseAmount * (float) 20 / (float) 100; //  based on the radio button selected (default is 20%)
-		totalAmount = baseAmount + taxAmount + tipAmount;
-
 		// Set the total, tax and tip amounts
-		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(tipAmount));
-		((TextView) view.findViewById(R.id.view_dialog_drink_tax_amount)).setText(df.format(taxAmount));
-		((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(totalAmount));
+		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(order.tipAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_tax_amount)).setText(df.format(order.taxAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(order.totalAmount));
 
 		
 		// If we already have an open order add its items to the layout
-		if (mApp.hasActiveOrder()) {
-			for (Item item : mApp.getActiveOrder().items) {
+		for (Item item : order.items) {
 
-				// Create item view
-				View itemView = inflater.inflate(R.layout.item, null);				
-				((TextView) itemView.findViewById(R.id.view_dialog_drink_title)).setText(item.getTitle());
-				if (item.getDescription() != null && !item.getDescription().equalsIgnoreCase(""))
-					((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setText(item.getDescription());
-				else
-					((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setVisibility(View.GONE);
-				((TextView) itemView.findViewById(R.id.view_dialog_drink_price)).setText(df.format(item.getPrice()));
-				
-				// Add the item to the order view
-				((LinearLayout) view.findViewById(R.id.view_dialog_drink_items)).addView(itemView);
-			}
-		}
-		
-		// Create the view for the item we may be adding and add it to the layout
-		if (item != null) {
+			// Create item view
 			View itemView = inflater.inflate(R.layout.item, null);				
 			((TextView) itemView.findViewById(R.id.view_dialog_drink_title)).setText(item.getTitle());
 			if (item.getDescription() != null && !item.getDescription().equalsIgnoreCase(""))
@@ -145,15 +116,17 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			else
 				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setVisibility(View.GONE);
 			((TextView) itemView.findViewById(R.id.view_dialog_drink_price)).setText(df.format(item.getPrice()));
+			
+			// Add the item to the order view
 			((LinearLayout) view.findViewById(R.id.view_dialog_drink_items)).addView(itemView);
 		}
 
 		// Show profile information by default
-		if (profile != null) updateProfileView(profile);
+		if (order.orderRecipient != null) updateProfileView(order.orderRecipient);
 		
 		// Setup up title and buttons
 		builder.setView(view);
-		if (mApp.hasActiveOrder() && mApp.getActiveOrder().items.isEmpty()) {
+		if (order.items.isEmpty()) {
 			// No items in this open order. Don't allow to place the order
 		} else {
 			builder.setPositiveButton("Place order", this);
@@ -185,10 +158,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		}
 	
 		// Show the username of the recipient
-		if (profile.getBartsyId() == mApp.mProfile.getBartsyId())
-			((TextView) view.findViewById(R.id.view_user_dialog_info)).setText("You");	
-		else
-			((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(profile.getNickname());	
+		((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(profile.getNickname());	
 		
 		// To pick more user profiles when user pressed on the image view
 		profileImageView.setOnClickListener(this);
@@ -205,7 +175,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 				@Override
 				protected void selectedProfile(UserProfile userProfile) {
 					// Update profile with new selected profile
-					DrinkDialogFragment.this.profile = userProfile;
+					order.orderRecipient = userProfile;
+					order.recipientId = userProfile.getBartsyId();
 					updateProfileView(userProfile);
 					super.selectedProfile(userProfile);
 				}
@@ -227,10 +198,10 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 				percent = (float) 0.20;
 			
 			// Set the tip and total amount based on the radio button selected
-			tipAmount = baseAmount * percent;
-			totalAmount = tipAmount + taxAmount + baseAmount;
-			((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(tipAmount));
-			((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(totalAmount));
+			order.tipAmount = order.baseAmount * percent;
+			order.totalAmount = order.tipAmount + order.taxAmount + order.baseAmount;
+			((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(order.tipAmount));
+			((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(order.totalAmount));
 
 			break;
 		}
@@ -253,10 +224,10 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			String tip="0";
 			if (percentage.getText()!= null)
 				tip = percentage.getText().toString();
-			tipAmount = Float.parseFloat(tip) ;
+			order.tipAmount = Float.parseFloat(tip) ;
 		} else 
-			tipAmount = Float.parseFloat(b.getText().toString().replace("%", "")) / (float) 100 * baseAmount;
-		totalAmount = tipAmount + taxAmount + baseAmount;
+			order.tipAmount = Float.parseFloat(b.getText().toString().replace("%", "")) / (float) 100 * order.baseAmount;
+		order.totalAmount = order.tipAmount + order.taxAmount + order.baseAmount;
 
 		// Send the event to the calling activity
 		switch (id) {

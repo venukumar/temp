@@ -22,5 +22,7 @@ public class Constants {
 	public static final int timoutDelay = 2; // how many more minutes to delay a local timeout from the server timeout
 
 	public static final boolean bundleOrders = false;
+	
+	public static final float defaultTip = (float) 20 / (float) 100;
 
 }

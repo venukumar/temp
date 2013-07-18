@@ -93,7 +93,7 @@ public class WebServices {
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 
 	// Current ApiVersion number
-	public static final String 	API_VERSION = "2";
+	public static final String 	API_VERSION = "3";
 
 
 	/**

@@ -361,7 +361,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			if (mApp.hasActiveOrder()) {
 				
 				// if we have an order, show the order dialog 
-				new DrinkDialogFragment().show(getSupportFragmentManager(),"Order drink");
+				new DrinkDialogFragment(mApp.getActiveOrder()).show(getSupportFragmentManager(),"Order drink");
 
 			} else {
 				
@@ -868,25 +868,6 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			finish();
 			return;
 		}
-		
-		Float tipAmount = dialog.tipAmount;
-		Order order;
-		if (dialog.item == null) {
-			
-			// No active item (came from menu selection) 
-			order = mApp.getActiveOrder();
-			
-		} else if (mApp.hasActiveOrder()) {
-
-			// Already have an open order - add the item and the new tip amount and send order
-			mApp.getActiveOrder().addItem(dialog.item,dialog.tipAmount);
-			order = mApp.getActiveOrder();
-
-		} else {
-			
-			// No active order. Start one
-			order = new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, dialog.taxRate, mApp.mProfile, dialog.profile);
-		}
 
 		// Update action bar
 		updateActionBarStatus();
@@ -894,7 +875,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, order, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
+		if (WebServices.postOrderTOServer(mApp, dialog.order, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
 			// Failed to place syscall due to internal error
 			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 		}
@@ -904,8 +885,6 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	@Override
 	public void onOrderDialogNegativeClick(DrinkDialogFragment dialog) {
 
-		Item item = dialog.item;
-		
 		if (mApp.mActiveVenue == null) {
 			// No active venue. We need to terminate venue activity. We also notify the user.
 			Toast.makeText(this, "You need to be checked in to place an order", Toast.LENGTH_SHORT).show();
@@ -913,21 +892,8 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			return;
 		}
 
-		if ( item != null) {
-
-			appendStatus("Adding item to order: " + item.getTitle());
-
-			if (mApp.hasActiveOrder()) {
-
-				// Already have an open order - add the item and the new tip amount
-				mApp.getActiveOrder().addItem(item,dialog.tipAmount);
-							
-			} else {
-				
-				// No active order. Start one
-				mApp.setActiveOrder(new Order(dialog.item, Float.valueOf(dialog.item.getPrice()), dialog.tipAmount, mApp.mActiveVenue.getTaxRate(), mApp.mProfile, dialog.profile));
-			}
-		}
+		// Make this order the active order
+		mApp.setActiveOrder(dialog.order);
 		
 		// Update action bar
 		updateActionBarStatus();
@@ -1002,7 +968,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		Log.v(TAG, "Sending drink to: " + dialog.mUser.getNickname());
 
 		// Start a blank order for the given user
-		mApp.setActiveOrder(new Order(mApp.mProfile, dialog.mUser));
+		mApp.setActiveOrder(new Order(mApp.mProfile, dialog.mUser, mApp.mActiveVenue.getTaxRate()));
 		updateActionBarStatus();
 		
 		// Let the user know that they can select the item to send and take them to the menu tab

@@ -37,11 +37,12 @@ public class Order {
 	
 	// total = base + tax + fee + tip
     DecimalFormat df = new DecimalFormat();
-	public float baseAmount;
-	public float feeAmount;
-	public float taxAmount;
-	public float tipAmount;
-	public float totalAmount;
+	public float baseAmount	= 0;
+	public float feeAmount	= 0;
+	public float taxAmount	= 0;
+	public float tipAmount	= 0;
+	public float totalAmount= 0;
+	public float taxRate	= 0;
 
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public UserProfile orderSender;
@@ -101,19 +102,21 @@ public class Order {
 	 */
 	
 	
-	public Order() {
+	public Order(float taxRate) {
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
+		this.taxRate = taxRate;
 	}
 
-	public Order (Item item, float baseAmount, float tipAmount, float taxRate, UserProfile order_sender, UserProfile order_receiver) {
+	public Order (UserProfile order_sender, UserProfile order_receiver, float taxRate, float tipAmount, Item item) {
 		
 		this.items.add(item);
 		
-		this.baseAmount = baseAmount;
+		this.baseAmount = item.getPrice();
 		this.tipAmount = tipAmount;
 		this.taxAmount = baseAmount * taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
+		this.taxRate = taxRate;
 		
 		this.orderSender = order_sender;
 		this.senderId = order_sender.getBartsyId();
@@ -134,7 +137,14 @@ public class Order {
 	 * Constructor for new empty order destined for a given recipient
 	 * @param profile
 	 */
-	public Order(UserProfile sender, UserProfile recipient) {
+	public Order(UserProfile sender, UserProfile recipient, float taxRate) {
+		
+		this.baseAmount = 0;
+		this.tipAmount = 0;
+		this.taxAmount = 0;
+		this.totalAmount = 0;
+		this.taxRate = taxRate;
+		
 		this.orderSender = sender;
 		this.senderId = sender.getBartsyId();
 		
@@ -748,20 +758,17 @@ public class Order {
 		}
 	}
 
-	public void addItem(Item item, float tip) {
+	public void addItem(Item item) {
 
 		Log.v(TAG, "Adding item "  + item.getTitle() + " to order " + orderId );
 		
 		// Add item to the order
 		items.add(item);
 		
-		// Figure out tax rate
-		Float taxRate = taxAmount / baseAmount;
-		
-		// Update totals
+		// Update totals - notice that we compute the tip here using the default of the order dialog, that's where it will be changed if needed
 		baseAmount	+= item.getPrice();
 		taxAmount	=  taxRate * baseAmount;
-		tipAmount	+= tip;
+		tipAmount = Constants.defaultTip * baseAmount;
 		totalAmount	=  tipAmount + taxAmount + baseAmount;
 	}
 

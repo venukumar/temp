@@ -29,7 +29,9 @@ import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
+import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -354,11 +356,17 @@ public class DrinksSectionFragment extends SherlockFragment {
 					
 					Item menuDrink = items.get(groupPosition).get(childPosition);
 
+					// Figure out if we are adding the item to the active order or creating a new order
+					Order order;
+					if (mApp.hasActiveOrder()) {
+						order = mApp.getActiveOrder();
+						order.addItem(menuDrink);
+					} else {
+						order = new Order(mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, menuDrink);
+					}
+					
 					// Create an instance of the dialog fragment and show it
-					DrinkDialogFragment dialog = new DrinkDialogFragment();
-					dialog.item = menuDrink;
-					dialog.profile = mApp.mProfile;
-					dialog.taxRate = mApp.mActiveVenue.getTaxRate();
+					DrinkDialogFragment dialog = new DrinkDialogFragment(order);
 					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
 
 					return false;

@@ -255,8 +255,8 @@ public class OrderCustomDrinkActivity extends Activity{
 			mixers += i.getName() + ", ";
 		}
 		
-		Order order = new Order(new Item(mApp.selectedSpirit.getName(), mixers, totalAmount),
-				totalAmount, tipAmount, mApp.mActiveVenue.getTaxRate(), mApp.mProfile, profile);
+		Order order = new Order(mApp.mProfile, profile,  mApp.mActiveVenue.getTaxRate(), tipAmount, 
+				new Item(mApp.selectedSpirit.getName(), mixers, totalAmount));
 		
 		// invokePaypalPayment(); // To enable paypal payment
 
