@@ -7,13 +7,13 @@
            android1:id="@+id/profileImage"
            android1:layout_width="70dp"
            android1:layout_height="70dp"
-           android1:padding="3dp"
-           android1:scaleType="centerCrop"
-           android1:src="@drawable/profile" />
+           android1:background="@android:color/background_dark"
+           android1:scaleType="centerInside" />
 
 				<LinearLayout
 				    android1:layout_width="fill_parent"
 				    android1:layout_height="wrap_content"
+				    android1:layout_marginLeft="@dimen/activity_horizontal_margin"
 				    android1:orientation="vertical" >
 
 					<LinearLayout

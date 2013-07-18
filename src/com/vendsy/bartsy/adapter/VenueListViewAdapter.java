@@ -3,27 +3,35 @@ package com.vendsy.bartsy.adapter;
  * @author Seenu malireddy
  */
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.WebServices;
 
 public class VenueListViewAdapter extends ArrayAdapter<Venue> {
+	
+	private final static String TAG = "VenueListAdapter";
 
 	private List<Venue> items;
 	LocationManager lm = null;
 	private Venue activeVenue = null;
+	private HashMap<String, Bitmap> venueImages = new HashMap<String, Bitmap>();
 
 	public VenueListViewAdapter(Context context, int resource, List<Venue> items, LocationManager lm, Venue activeVenue) {
 
@@ -56,9 +64,9 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 			
 			((TextView) view.findViewById(R.id.view_map_venue_people_count)).setText(Integer.toString(venue.getUserCount()));
 			if (venue.getUserCount() == 1) 
-				((TextView) view.findViewById(R.id.view_map_people_text)).setText(" person checked in");
+				((TextView) view.findViewById(R.id.view_map_people_text)).setText(" checkin");
 			else
-				((TextView) view.findViewById(R.id.view_map_people_text)).setText(" people checked in");
+				((TextView) view.findViewById(R.id.view_map_people_text)).setText(" checkins");
 		} else {
 			view.findViewById(R.id.view_map_checkins).setVisibility(View.GONE);
 			view.findViewById(R.id.view_map_closed).setVisibility(View.VISIBLE);
@@ -67,12 +75,27 @@ public class VenueListViewAdapter extends ArrayAdapter<Venue> {
 			((TextView) view.findViewById(R.id.view_map_venue_name)).setTextColor(parent.getResources().getColor(android.R.color.darker_gray));
 		}
 	
-		// Display basic venue details
+		// Display venue name
 		((TextView) view.findViewById(R.id.view_map_venue_name)).setText(venue.getName());
-		((TextView) view.findViewById(R.id.view_map_venue_address)).setText(venue.getAddress());
+		
+		// Don't show country (why on earth is that there??) and zip
+		String address = venue.getAddress();
+		address = address.substring(0, address.indexOf(",United States,")).replace(",", ", ").replace(".",  "");
+		((TextView) view.findViewById(R.id.view_map_venue_address)).setText(address);
+		
+		// Display wifi if available
 		if (venue.getWifiName() == null)
 			view.findViewById(R.id.view_map_wifi).setVisibility(View.GONE);
 
+		// Download venue image
+		if (venue.hasImagePath()) {
+			Log.v(TAG, "Downloading " + venue.getName() + " image from " + venue.getImagePath());
+			ImageView venueImage = ((ImageView)view.findViewById(R.id.view_map_venue_image));
+			WebServices.downloadImage(venue.getImagePath(), venueImage, venueImages);
+		} else {
+			Log.v(TAG, venue.getName() + " has no image path");
+		}
+		
 		// Compute distance to user
 		if (venue.hasLatLong()) {
 			String locationProvider = LocationManager.NETWORK_PROVIDER;

@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.WebServices;
 
 public class Venue {
 
@@ -20,6 +21,7 @@ public class Venue {
 	private String status;
 	private int	   orderTimeout;
 	private float  taxRate;
+	private String imagePath = null;
 
 	public Venue (JSONObject json) {
 		
@@ -53,6 +55,9 @@ public class Venue {
 		
 			if (json.has("orderTimeout"))
 				setOrderTimeout(json.getInt("orderTimeout"));
+			
+			if (json.has("venueImagePath"))
+				setImagePath(WebServices.DOMAIN_NAME + json.getString("venueImagePath"));
 			
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -206,6 +211,18 @@ public class Venue {
 
 	public void setTaxRate(float taxRate) {
 		this.taxRate = taxRate;
+	}
+
+	public boolean hasImagePath() {
+		return imagePath != null;
+	}
+	
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
 	}
 	
 }

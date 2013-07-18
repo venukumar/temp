@@ -979,9 +979,8 @@ public class WebServices {
 	 * 
 	 * @param imageView
 	 */
-	public static void downloadImage(final ImageView imageView, HashMap<String, Bitmap> savedImages) {
+	public static void downloadImage(final String url, final ImageView imageView, HashMap<String, Bitmap> savedImages) {
 
-		final String url = (String) imageView.getTag();
 		// Error handling: Do not proceed if the url is null
 		if(url==null){
 			return;

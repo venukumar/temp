@@ -219,7 +219,7 @@ public class NotificationsActivity extends SherlockActivity {
 		// Set profile image based on the notification type
 		((TextView)view.findViewById(R.id.userNameText)).setText(notification.getVenueName());
 		profileImage.setTag(WebServices.DOMAIN_NAME+notification.getVenueImage());
-		WebServices.downloadImage(profileImage, savedImages);		
+		WebServices.downloadImage(WebServices.DOMAIN_NAME+notification.getVenueImage(), profileImage, savedImages);		
 		
 //		ImageView imageView = ((ImageView)view.findViewById(R.id.messageTypeImage));
 		// If the notification is related to checkout then replace messagetype image with checkout image 
@@ -258,14 +258,15 @@ public class NotificationsActivity extends SherlockActivity {
 			((TextView)view.findViewById(R.id.userNameText)).setText(notification.getVenueName());
 			if(notification.hasVenueImage()){
 				otherProfileImage.setTag(WebServices.DOMAIN_NAME+notification.getVenueImage());
+				WebServices.downloadImage(WebServices.DOMAIN_NAME+notification.getVenueImage(), otherProfileImage, savedImages);
 			}
 			
 		}else if(notification.getOrder()!=null){
 			// Set other person profile image
 			((TextView)view.findViewById(R.id.userNameText)).setText(notification.getOrder().recipientNickname);
 			otherProfileImage.setTag(WebServices.DOMAIN_NAME+notification.getOrder().recipientImagePath);
+			WebServices.downloadImage(WebServices.DOMAIN_NAME+notification.getOrder().recipientImagePath, otherProfileImage, savedImages);
 		}
-		WebServices.downloadImage(otherProfileImage, savedImages);
 		
 		// Add view to the notification list view
 		notificationsListView.addView(view);
