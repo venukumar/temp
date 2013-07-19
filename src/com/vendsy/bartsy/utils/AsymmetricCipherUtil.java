@@ -98,34 +98,26 @@ public class AsymmetricCipherUtil {
 		}
 		return value;
 	}
-	
-	 public static RSAPublicKey readPublicKey(Context context) {
+	/**
+	 * Returns decrypted string from the given argument
+	 * 
+	 * @param encryptedString
+	 * @param context
+	 * @return 
+	 */
+	public static String getDecryptedString(String encryptedString, Context context){
+		try {
+			byte[] bb= Base64.decode(encryptedString, android.util.Base64.NO_WRAP);
+			byte[] bDecryptedKey = AsymmetricCipherUtil.decrypt(bb,AsymmetricCipherUtil.getPemPrivateKey(context));
+			String decCredit = new String(bDecryptedKey, "UTF8");
+			decCredit = decCredit.trim();
 			
-	        InputStream inStream;
-	        RSAPublicKey pubkey = null;
-	        try {
-	        	inStream = context.getAssets().open("bartsy_office.crt");
-			   
-	            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-	            X509Certificate cert =(X509Certificate)cf.generateCertificate(inStream);
-	            inStream.close();
-			
-	            // Read the public key from certificate file
-	            pubkey = (RSAPublicKey) cert.getPublicKey();
-	            System.out.println( "key:"+pubkey);
-			  
-	        } catch (FileNotFoundException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	        } catch (CertificateException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	        } catch (IOException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	        }
-	        return pubkey;
-	    }
+			return decCredit;
+		} catch (Exception e) {
+			Log.e(TAG, "error:: "+e.getMessage());
+		}
+		return encryptedString;
+	}
 	
 	public static PrivateKey getPemPrivateKey(Context context) throws Exception {
 	      
