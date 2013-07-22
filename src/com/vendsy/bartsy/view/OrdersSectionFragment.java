@@ -50,7 +50,7 @@ public class OrdersSectionFragment extends SherlockFragment{
 
 		mInflater = inflater;
 		mContainer = container;
-		mRootView = mInflater.inflate(R.layout.open_closed_orders_main, mContainer, false);
+		mRootView = mInflater.inflate(R.layout.orders_tab, mContainer, false);
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Bartsy Alpha</string>
+    <string name="app_name">Bartsy Beta</string>
+    <string name="app_version">Beta</string>
     
     <!-- Facebook ID -->
     <string name="fb_app_id">451948571568667</string>

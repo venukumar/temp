@@ -63,7 +63,7 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 		LayoutInflater inflater = getActivity().getLayoutInflater();
 
 		// Inflate and set the layout for the dialog. Pass null as the parent view because its going in the dialog layout
-		View view = inflater.inflate(R.layout.dialog_user_profile, null);
+		View view = inflater.inflate(R.layout.user_profile_dialog, null);
 		
 		if (mUser != null){
 			// Customize dialog for this user

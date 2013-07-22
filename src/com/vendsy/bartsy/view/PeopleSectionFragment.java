@@ -44,7 +44,7 @@ public class PeopleSectionFragment extends SherlockFragment{
 
 		mInflater = inflater;
 		mContainer = container;
-		mRootView = inflater.inflate(R.layout.users_main, container, false);
+		mRootView = inflater.inflate(R.layout.people_tab, container, false);
 		peopleLayout = (LinearLayout) mRootView.findViewById(R.id.view_singles);
 		
 		// Make sure the fragment pointed to by the activity is accurate

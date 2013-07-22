@@ -97,7 +97,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 		// Inflate and set the layout for the dialog
 		// Pass null as the parent view because its going in the dialog layout
-		view = inflater.inflate(R.layout.dialog_drink_order, null);
+		view = inflater.inflate(R.layout.order_dialog, null);
 
 		// Set the total, tax and tip amounts
 		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(order.tipAmount));

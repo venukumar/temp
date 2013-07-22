@@ -44,7 +44,7 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 
 		// Inflate and set the layout for the dialog
 		// Pass null as the parent view because its going in the dialog layout
-		mRootView = mInflater.inflate(R.layout.users_main, null);
+		mRootView = mInflater.inflate(R.layout.people_tab, null);
 		
 		
 		LinearLayout peopleLayout = (LinearLayout) mRootView.findViewById(R.id.view_singles);

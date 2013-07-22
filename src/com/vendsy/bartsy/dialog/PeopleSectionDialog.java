@@ -33,7 +33,7 @@ public class PeopleSectionDialog extends Dialog{
 		setCancelable(true);
 		// Inflate and set the layout for the dialog
 				// Pass null as the parent view because its going in the dialog layout
-		setContentView(R.layout.users_main);
+		setContentView(R.layout.people_tab);
 				
 				
 		peopleLayout = (LinearLayout) findViewById(R.id.view_singles);

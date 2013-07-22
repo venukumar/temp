@@ -7,6 +7,8 @@ import java.util.Date;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.jwetherell.quick_response_code.data.Contents;
+import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
@@ -506,7 +513,7 @@ public class Order {
 		Log.v(TAG, "Order sender   :" + orderSender);
 		Log.v(TAG, "Order receiver :" + orderRecipient);
 		
-		view = (View) inflater.inflate(R.layout.orders_open_item_list, container, false);
+		view = (View) inflater.inflate(R.layout.open_orders_item, container, false);
 
 		// Update header
 		((TextView) view.findViewById(R.id.view_order_item_number)).setText(orderId);
@@ -581,6 +588,19 @@ public class Order {
 		case ORDER_STATUS_READY:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is ready for pickup!");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
+			
+			//Encode with a QR Code image
+			QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(userSessionCode, null, Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), 250);
+			try {
+				Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+				
+				((ImageView) view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(bitmap);
+				
+			} catch (WriterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			break;
 		case ORDER_STATUS_INCOMPLETE:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was not picked up. Check with the venue. You werent' charged.");
@@ -746,7 +766,7 @@ public class Order {
 	public void addItemsView(LinearLayout itemsView, LayoutInflater inflater, ViewGroup container ) {
 		
 		for (Item item : items) {
-			LinearLayout view = (LinearLayout) inflater.inflate(R.layout.orders_open_item, container, false);
+			LinearLayout view = (LinearLayout) inflater.inflate(R.layout.open_orders_menu_item, container, false);
 			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(item.getPrice()));
 			((TextView) view.findViewById(R.id.view_order_title)).setText(item.getTitle());
 			if (item.getDescription() == null || item.getDescription().equalsIgnoreCase(""))

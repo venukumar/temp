@@ -54,7 +54,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 		setOrientation(LinearLayout.VERTICAL);
 
 		mInflater = activity.getLayoutInflater();
-		mRootView = mInflater.inflate(R.layout.orders_open_main, mContainer, false);
+		mRootView = mInflater.inflate(R.layout.open_orders, mContainer, false);
 		mOrderListView = (LinearLayout) mRootView.findViewById(R.id.order_list);
 
 		updateOrdersView();

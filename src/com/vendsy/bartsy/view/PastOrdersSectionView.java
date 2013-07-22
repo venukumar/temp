@@ -66,7 +66,7 @@ public class PastOrdersSectionView extends LinearLayout {
 		
 		// Set up views
 		mInflater = activity.getLayoutInflater();
-		mRootView = mInflater.inflate(R.layout.orders_past_main, null);
+		mRootView = mInflater.inflate(R.layout.past_orders, null);
 		ordersTableLayout = (LinearLayout) mRootView.findViewById(R.id.pastordersLayout);
 		
 		addView(mRootView);
@@ -141,7 +141,7 @@ public class PastOrdersSectionView extends LinearLayout {
 	 */
 	private void addNewOrderRow(Order order) {
 		
-		final View itemView = mInflater.inflate(R.layout.orders_past_row, null);
+		final View itemView = mInflater.inflate(R.layout.past_orders_item, null);
 		
 		// Extract time from UTC field
 		String inputText = order.createdDate.replace("T", " ").replace("Z", ""); // example: 2013-06-27 10:20:15

@@ -70,7 +70,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 
 		Log.v(TAG, "onCreateView()");
 		
-		mRootView = inflater.inflate(R.layout.drinks_main, container, false);
+		mRootView = inflater.inflate(R.layout.menu_tab, container, false);
 		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
 		
 		LinearLayout customList = (LinearLayout) mRootView.findViewById(R.id.view_custom_drinks);
