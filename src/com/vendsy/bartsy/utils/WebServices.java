@@ -454,19 +454,14 @@ public class WebServices {
 				String publicKey = Utilities.loadPref(context, "serverKey", "");
 				String encryptedString = AsymmetricCipherUtil.getEncryptedString(user.getCreditCardNumber(), publicKey);
 				
-				// TODO Decrypt and check the credit card is same or not
-				 byte[] bb= Base64.decode(encryptedString, android.util.Base64.NO_WRAP);
-				 byte[] bDecryptedKey = AsymmetricCipherUtil.decrypt(bb,AsymmetricCipherUtil.getPemPrivateKey(context));
-				 String decCredit = new String(bDecryptedKey, "UTF8");
-				 decCredit = decCredit.trim();
+				// TODO Decrypt and check the credit card is same or not - It is only for testing
+				String decCredit = AsymmetricCipherUtil.getDecryptedString(encryptedString, context);
+				Log.d("", "Decrypted number:::: "+decCredit);
 				
 				Log.d("", "Encrypted number:::: "+encryptedString);
-//				Log.d("", "Decrypted number:::: "+decCredit);
 				
-				json.put("encryptedCreditCard", encryptedString);
-				
-				// TODO Must remove after testing
-				json.put("creditCardNumber", user.getCreditCardNumber());
+//				json.put("encryptedCreditCard", encryptedString);
+				json.put("creditCardNumber", encryptedString);
 			}
 			if (user.hasExpMonth())
 				json.put("expMonth", user.getExpMonth());
