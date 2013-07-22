@@ -19,8 +19,8 @@ import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
-import com.jwetherell.quick_response_code.data.Contents;
-import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
+//import com.jwetherell.quick_response_code.data.Contents;
+//import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
