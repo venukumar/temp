@@ -589,7 +589,7 @@ public class Order {
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is ready for pickup!");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
 			
-			//Encode with a QR Code image
+/*			//Encode with a QR Code image
 			QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(userSessionCode, null, Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), 250);
 			try {
 				Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
@@ -600,7 +600,7 @@ public class Order {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+*/			
 			break;
 		case ORDER_STATUS_INCOMPLETE:
 			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was not picked up. Check with the venue. You werent' charged.");
