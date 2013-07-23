@@ -1,5 +1,7 @@
 package com.vendsy.bartsy.model;
 
+import java.util.Comparator;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,7 +10,7 @@ import org.json.JSONObject;
  * @author Seenu Malireddy
  *
  */
-public class MessageData{
+public class MessageData implements Comparator<MessageData>{
 	
 	private int id;
 	private String body;
@@ -103,6 +105,14 @@ public class MessageData{
 
 	public void setCreatedDate(String createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	@Override
+	public int compare(MessageData lhs, MessageData rhs) {
+		if (lhs.getId() > rhs.getId())
+			return 1;
+		else
+			return -1;
 	}
 	
 }

@@ -2,6 +2,7 @@
 package com.vendsy.bartsy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -168,6 +169,7 @@ public class MessagesActivity extends Activity implements AppObserver {
 					JSONObject jsonObj = jsonArray.getJSONObject(i);
 					MessageData message = new MessageData(jsonObj);
 					messages.add(message);
+					Collections.sort(messages,message);
 				}
 				
 				// Update list view with messages data
@@ -182,8 +184,10 @@ public class MessagesActivity extends Activity implements AppObserver {
 	}
 	
 	private void updateMessagesView() {
-		// Make sure that list is empty
+		// Make sure that list is empty and reset to default values
 		messagesLayout.removeAllViews();
+		messagesList = null;
+		isSelfProfile = false;
 		
 		for(MessageData message: messages){
 			addMessageInList(message);
