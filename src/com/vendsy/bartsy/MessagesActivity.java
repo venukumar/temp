@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +44,7 @@ public class MessagesActivity extends Activity implements AppObserver {
 	private ArrayList<MessageData> messages = new ArrayList<MessageData>();
 	private LinearLayout messagesList;
 	private EditText messageTextBox;
+	private ResponsiveScrollView scrollView;
 	
 	private static final String TAG = "MessagesActivity";
 
@@ -74,7 +77,9 @@ public class MessagesActivity extends Activity implements AppObserver {
 				
 			}
 		});
-
+		
+		scrollView = (ResponsiveScrollView)findViewById(R.id.scrollView);
+		
 		// Load messages in the background
 		loadMessagesFromServer();
 	}
@@ -91,6 +96,15 @@ public class MessagesActivity extends Activity implements AppObserver {
 		messageData.setSenderId(mApp.mProfile.getBartsyId());
 		messageData.setReceiverId(mApp.selectedUserProfile.getBartsyId());
 		messageData.setVenueId(mApp.mActiveVenue.getId());
+		// Add message to messages list view
+		addMessageInList(messageData);
+		// Add progress message
+		final TextView errorMessageView = getErrorMessageView("Sending..");
+		messagesList.addView(errorMessageView);
+		
+		// Clear text box
+		messageTextBox.setText("");
+		
 		// Background thread
 		new Thread(){
 			@Override
@@ -105,14 +119,15 @@ public class MessagesActivity extends Activity implements AppObserver {
 							JSONObject json = new JSONObject(response);
 							// Success response
 							if(json.has("errorCode") && json.getInt("errorCode") ==0){
-								addMessageInList(messageData);
-								// Clear 
-								messageTextBox.setText("");
+								messagesList.removeView(errorMessageView);
+								
 							}// Error response
 							else if(json.has("errorMessage")){
 								Toast.makeText(getApplicationContext(), json.getString("errorMessage"), Toast.LENGTH_LONG).show();
+								errorMessageView.setText("Message failed");
 							}
 						}catch (JSONException e) {
+							errorMessageView.setText("Message failed");
 						}
 					}
 				});
@@ -253,6 +268,28 @@ public class MessagesActivity extends Activity implements AppObserver {
 		}
 		
 		messagesList.addView(messageTextView);
+		
+		// Require to scroll down after adding new message
+		scrollView.post(new Runnable() {
+		    @Override
+		    public void run() {
+		        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+		    }
+		});
+		
+	}
+	
+	private TextView getErrorMessageView(String message) {
+		
+		TextView messageTextView = new TextView(this);
+		messageTextView.setTextColor(Color.RED);
+		// Set layout params to the text view
+		messageTextView.setLayoutParams(new LayoutParams(android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+		messageTextView.setText(message);
+		
+		messageTextView.setGravity(Gravity.RIGHT);
+		
+		return messageTextView;
 		
 	}
 	
