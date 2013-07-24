@@ -25,8 +25,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.android.Util;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MessageData;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 
@@ -73,7 +75,9 @@ public class MessagesActivity extends Activity implements AppObserver {
 			
 			@Override
 			public void onClick(View v) {
-				sendMessageSysCall(messageTextBox.getText().toString());
+				if(!messageTextBox.getText().toString().trim().equals("")){
+					sendMessageSysCall(messageTextBox.getText().toString());
+				}
 				
 			}
 		});
@@ -104,6 +108,13 @@ public class MessagesActivity extends Activity implements AppObserver {
 		
 		// Clear text box
 		messageTextBox.setText("");
+		// Require to scroll down after adding new message
+		scrollView.post(new Runnable() {
+				    @Override
+				    public void run() {
+				        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				    }
+		});
 		
 		// Background thread
 		new Thread(){
@@ -207,6 +218,13 @@ public class MessagesActivity extends Activity implements AppObserver {
 		for(MessageData message: messages){
 			addMessageInList(message);
 		}
+		// Require to scroll down after adding new message
+		scrollView.post(new Runnable() {
+			@Override
+			public void run() {
+			     scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+			}
+		});
 	}
 
 	private void addMessageInList(MessageData message) {
@@ -222,6 +240,7 @@ public class MessagesActivity extends Activity implements AppObserver {
 				view = getLayoutInflater().inflate(R.layout.message_self_view, null);
 				((ImageView)view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(mApp.mProfile.getImage());
 				messagesList = ((LinearLayout)view.findViewById(R.id.messages_list));
+				((TextView)view.findViewById(R.id.messages_list_date)).setText(Utilities.getFriendlyDate(message.getCreatedDate(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 				
 				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				params.gravity = Gravity.RIGHT;
@@ -242,7 +261,7 @@ public class MessagesActivity extends Activity implements AppObserver {
 				// Set recipient profile image
 				view = getLayoutInflater().inflate(R.layout.message_view, null);
 				((ImageView)view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(mApp.selectedUserProfile.getImage());
-				
+				((TextView)view.findViewById(R.id.messages_list_date)).setText(Utilities.getFriendlyDate(message.getCreatedDate(), "d MMM yyyy HH:mm:ss 'GMT'"));
 				messagesList = ((LinearLayout)view.findViewById(R.id.messages_list));
 				
 				addMessageView(message);
