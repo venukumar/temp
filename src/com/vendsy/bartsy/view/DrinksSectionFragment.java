@@ -73,29 +73,50 @@ public class DrinksSectionFragment extends SherlockFragment {
 		mRootView = inflater.inflate(R.layout.menu_tab, container, false);
 		mDrinksListView = (ExpandableListView) mRootView.findViewById(R.id.view_drinks_for_me_list);
 		
-		LinearLayout customList = (LinearLayout) mRootView.findViewById(R.id.view_custom_drinks);
-		customList.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// Start custom drink activity
-				startActivity(new Intent().setClass(mActivity, CustomDrinksActivity.class));
-			}
-		});
+//		LinearLayout customList = (LinearLayout) mRootView.findViewById(R.id.view_custom_drinks);
+//		customList.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View v) {
+//				// Start custom drink activity
+//				startActivity(new Intent().setClass(mActivity, CustomDrinksActivity.class));
+//			}
+//		});
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
 		((VenueActivity) getActivity()).mDrinksFragment = this;
 		mActivity = (VenueActivity) getActivity();
+		
+		// Initialize the menu
+		initMenu();
 
 		// Update the view
 		updateView();
+		
+		
 
 		return mRootView;
 	}
+	
+	private void initMenu() {
+		String[] headerTitles = {"Recently ordered", "Top available favorites","Mixed drinks","Bartsy Cocktails"};
+		
+		// Initialize the default headers and items
+		ArrayList<String> headings = new ArrayList<String>();
+		ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
 
-	
-	
+		// Add the default headers and null items for those headers. If there is null then we have to display loading view
+		for (String title : headerTitles) {
+			headings.add(title);
+			items.add(new ArrayList<Item>());
+		}
+		
+		mMenu = new Menu(mApp.mActiveVenue.getId(), headings, items);
+	}
+
+
+
 	/************
 	 * 
 	 * TODO - Menu loader. This function is called as soon as the fragment is created, to expedite the 
@@ -218,7 +239,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 		}
 		
 		// parse the response into a menu in-memory structure
-		mMenu = extractMenuFromResponse (venue, response);
+		addMenuFromResponse (venue, response);
 		// To save menu in application class
 		
 		return response;
@@ -230,7 +251,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 	 * Helper function for downloadAndDisplayMenu. Processes the server response and builds a menu object
 	 */
 	
-	private Menu extractMenuFromResponse (Venue venue, String response) {
+	private void addMenuFromResponse (Venue venue, String response) {
 		
 		ArrayList<String> headings = new ArrayList<String>();
 		ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
@@ -293,8 +314,8 @@ public class DrinksSectionFragment extends SherlockFragment {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
-		return new Menu(venue.getId(), headings, items);
+		mMenu.headings.addAll(headings);
+		mMenu.items.addAll(items);
 	}
 
 	

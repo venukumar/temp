@@ -54,8 +54,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         if( convertView != null )
             view = convertView;
         else
-            view = inflater.inflate(R.layout.drink_item, parent, false); 
+            view = inflater.inflate(R.layout.menu_item, parent, false); 
         Item c = (Item)getChild( groupPosition, childPosition );
+        
 		TextView textView = (TextView)view.findViewById( R.id.view_drink_title );
 		if( textView != null )
 			textView.setText( c.getTitle() );
@@ -106,7 +107,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         if( convertView != null )
             view = convertView;
         else
-            view = inflater.inflate(R.layout.list_item_parent, parent, false); 
+            view = inflater.inflate(R.layout.menu_category, parent, false); 
         String gt = (String)getGroup( groupPosition );
 		TextView colorGroup = (TextView)view.findViewById( R.id.list_item_text_view);
 		if( gt != null )

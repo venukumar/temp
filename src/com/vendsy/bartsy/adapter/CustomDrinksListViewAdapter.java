@@ -38,7 +38,7 @@ public class CustomDrinksListViewAdapter extends ArrayAdapter<Ingredient> {
         if( convertView != null )
             view = convertView;
         else
-        	view = inflater.inflate(R.layout.drink_item, parent, false);
+        	view = inflater.inflate(R.layout.menu_item, parent, false);
 			Ingredient ingredient = items.get(position);
 		 
 			TextView textView = (TextView)view.findViewById( R.id.view_drink_title );

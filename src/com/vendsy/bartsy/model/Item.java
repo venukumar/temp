@@ -74,7 +74,7 @@ public class Item {
 			
 			// Process items of type Locu MENU_ITEM only 
 			if (object.has("type"))
-				if (!object.getString("type").equals("MENU_ITEM"))
+				if (!object.getString("type").equals("ITEM"))
 					return;
 			
 			if (object.has("name"))

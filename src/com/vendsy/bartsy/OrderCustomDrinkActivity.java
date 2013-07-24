@@ -310,7 +310,7 @@ public class OrderCustomDrinkActivity extends Activity{
 		if(mApp.mixers.size()>position){
 			selectedCategory = mApp.mixers.get(position);
 			Log.d("OrderCustomDrinks", "Size : "+mApp.mixers.get(position).getIngredients());
-			mixersListView.setAdapter(new CustomDrinksListViewAdapter(this, R.layout.drink_item, selectedCategory.getIngredients()));
+			mixersListView.setAdapter(new CustomDrinksListViewAdapter(this, R.layout.menu_item, selectedCategory.getIngredients()));
 		}
 		
 		mixersListView.setOnItemClickListener(new OnItemClickListener() {
