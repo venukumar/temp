@@ -188,15 +188,19 @@ public final class Utilities {
 	 * @return
 	 */
 	public static String getFriendlyDate(String input, String format){
-
-		// Parse date using the provided format
-		Date date = getLocalDateFromGMTString(input, format);
-
-		// Make sure the date is valid, if not simply return the input string
-		if(date==null){
-			return input;
+		long time = System.currentTimeMillis();
+		if(input!=null){
+	
+			// Parse date using the provided format
+			Date date = getLocalDateFromGMTString(input, format);
+	
+			// Make sure the date is valid, if not simply return the input string
+			if(date==null){
+				return input;
+			}
+			time = date.getTime();
 		}
-		return (String) DateUtils.getRelativeTimeSpanString(date.getTime(), System.currentTimeMillis(),DateUtils.SECOND_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
+		return (String) DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(),DateUtils.SECOND_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
 	}
 	
 	/*
