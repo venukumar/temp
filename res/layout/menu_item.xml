@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:orientation="horizontal"
+        android:padding="@dimen/activity_vertical_margin">
+			
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="2"
+            android:orientation="vertical">
+            <LinearLayout 
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                      android:id="@+id/ImageView11"
+                      android:layout_width="14dp"
+                      android:layout_height="14dp"
+                      android:layout_gravity="center_vertical"
+                      android:src="@drawable/drink" />
+                <TextView
+                android:id="@+id/view_drink_title"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+                
+                <TextView
+                     android:id="@+id/view_drink_price"
+                     android:layout_width="0dp"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="2"
+                     android:gravity="right"
+                     android:text="$"
+                     android:textAppearance="?android:attr/textAppearanceMedium"
+                     android:textColor="@android:color/holo_blue_light"
+                     android:textStyle="bold" />
+ 
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/view_drink_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
