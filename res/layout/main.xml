@@ -169,7 +169,7 @@
                 android:orientation="vertical" >
 
                 <Button
-                    android:id="@+id/Button01"
+                    android:id="@+id/rewardsButton"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
