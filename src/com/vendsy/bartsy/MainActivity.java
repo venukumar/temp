@@ -74,8 +74,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		((Button) findViewById(R.id.button_my_profile)).setOnClickListener(this);
 		((View) findViewById(R.id.button_active_venue)).setOnClickListener(this);
 		((View) findViewById(R.id.button_notifications)).setOnClickListener(this);
+		((View) findViewById(R.id.rewardsButton)).setOnClickListener(this);
 		((View) findViewById(R.id.button_logout)).setOnClickListener(this);
-
+		
 		// Hide action bar
 		getSupportActionBar().hide();
 		
@@ -142,6 +143,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 			break;
+		case R.id.rewardsButton:
+			intent = new Intent().setClass(this, RewardsActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
+			break;
 		case R.id.button_my_profile:
 			
 			Log.v(TAG, "User profile button");
@@ -165,6 +171,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 			break;
 		}
+		
 
 	}
 
