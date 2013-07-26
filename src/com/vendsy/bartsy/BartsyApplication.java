@@ -50,6 +50,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
@@ -1346,8 +1347,8 @@ public class BartsyApplication extends Application implements AppObservable {
 	 * as the user navigates in different screens.
 	 * 
 	 */
-	public ArrayList<Category> spirits = new ArrayList<Category>();
 	public Ingredient selectedSpirit;
+	public Item selectedMenuItem;
 	
 
 	/**

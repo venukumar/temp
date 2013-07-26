@@ -42,7 +42,6 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -59,7 +58,6 @@ import com.vendsy.bartsy.model.Venue;
 public class WebServices {
 
 	private static final String TAG = "WebServices";
-	
 
 	// Google API project id registered to use GCM.
 //	public static final String SENDER_ID = "227827031375";
@@ -90,10 +88,14 @@ public class WebServices {
 	public static final String URL_GET_PAST_ORDERS = DOMAIN_NAME + PROJECT_NAME + "order/getPastOrders";
 	public static final String URL_UPDATE_ORDER_STATUS = DOMAIN_NAME + PROJECT_NAME + "order/updateOrderStatus";
 	public static final String URL_GET_NOTIFICATIONS = DOMAIN_NAME + PROJECT_NAME + "data/getNotifications";
+	public static final String URL_GET_REWARDS = DOMAIN_NAME + PROJECT_NAME + "UserRewards/getUserRewards";
 	public static final String URL_SEND_MESSAGE = DOMAIN_NAME + PROJECT_NAME + "data/sendMessage";
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
-
+	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
+	
+	public static final String URL_GET_INGREDIENTS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getIngredientsInLocuFormat";
+	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
 
@@ -607,7 +609,7 @@ public class WebServices {
 	 * @param context
 	 * @param venueID
 	 */
-	public static String getMenuList(BartsyApplication context, String venueID) {
+	public static String getMenuList(BartsyApplication context, String url, String venueID) {
 
 		Log.v(TAG, "getting menu for venue: " + venueID);
 
@@ -615,7 +617,7 @@ public class WebServices {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("venueId", venueID);
-			response = postRequest(URL_GET_BAR_LIST, json, context);
+			response = postRequest(url, json, context);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -888,6 +890,32 @@ public class WebServices {
 		// Webservice call to get the notification data from server
 		try {
 			response = WebServices.postRequest(URL_GET_NOTIFICATIONS, postData, context);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return response;
+	}
+	
+	/**
+	 *  Get all rewards information for the user
+	 * @param index 
+	 */
+	public static String getRewards(BartsyApplication context, String bartsyId){
+		String response = null;
+		// Post data to get Rewards which is related to user
+		JSONObject postData = new JSONObject();
+		try {
+			postData.put("bartsyId", bartsyId);
+//			postData.put("index", index);
+//			postData.put("noOfResults", ResponsiveScrollView.PAGE_SIZE);
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		// Webservice call to get the data from server
+		try {
+			response = WebServices.postRequest(URL_GET_REWARDS, postData, context);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

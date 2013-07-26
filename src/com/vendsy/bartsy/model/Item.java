@@ -15,6 +15,14 @@ import com.vendsy.bartsy.R;
  *         A MenuDrink object we are creating.
  */
 public class Item {
+	
+	public static final int TYPE_PAST_ORDER = 0;
+	public static final int TYPE_FAVORITE = 1;
+	public static final int TYPE_MIXED_DRINK = 2;
+	public static final int TYPE_COCKTAIL = 3;
+	public static final int TYPE_LOCU_ITEM = 4;
+	
+	public boolean isDummyLoadingItem; // It is require to add dummy item to display progress view in the Expandable list view
 
 	public String valid = null;
 	
@@ -24,12 +32,12 @@ public class Item {
 	private float price;
 	private String specialPrice;
 	private String venueId;
-	private ArrayList<OptionGroup> optionGroups;
+	private ArrayList<OptionGroup> optionGroups=new ArrayList<Item.OptionGroup>();
 	
-	protected class OptionGroup {
+	public class OptionGroup {
 		protected String type;
 		protected String text;
-		protected ArrayList<Option> options;
+		protected ArrayList<String> options = new ArrayList<String>();
 		
 		public OptionGroup (JSONObject json) throws JSONException {
 			if (json.has("type"))
@@ -39,25 +47,60 @@ public class Item {
 			
 			if (json.has("options")) {
 				JSONArray optionsJSON = json.getJSONArray("options");
-				options = new ArrayList<Option>();
+				options = new ArrayList<String>();
 				for (int i = 0 ; i < optionsJSON.length() ; i++) {
-					JSONObject optionJSON = optionsJSON.getJSONObject(i);
-					options.add(new Option(optionJSON));
+					options.add(optionsJSON.getString(i));
 				}
 			}
 		}
 		
-		protected class Option {
-			protected String name;
-			protected String price;
-			
-			public Option(JSONObject json) throws JSONException {
-				if (json.has("name"))
-					name = json.getString("name");
-				if (json.has("price"))
-					price = json.getString("price");
-			}
+		
+		
+		public ArrayList<String> getOptions() {
+			return options;
 		}
+
+
+
+		public void setOptions(ArrayList<String> options) {
+			this.options = options;
+		}
+
+
+
+//		public class Option {
+//			
+//			protected String name;
+//			protected String price;
+//			
+//			public Option(String name){
+//				this.name = name;
+//			}
+//			
+//			public Option(JSONObject json) throws JSONException {
+//				if (json.has("name"))
+//					name = json.getString("name");
+//				if (json.has("price"))
+//					price = json.getString("price");
+//			}
+//
+//			public String getName() {
+//				return name;
+//			}
+//
+//			public void setName(String name) {
+//				this.name = name;
+//			}
+//
+//			public String getPrice() {
+//				return price;
+//			}
+//
+//			public void setPrice(String price) {
+//				this.price = price;
+//			}
+//			
+//		}
 	}
 	
 	public Item () {
@@ -73,9 +116,11 @@ public class Item {
 		try {
 			
 			// Process items of type Locu MENU_ITEM only 
-			if (object.has("type"))
-				if (!object.getString("type").equals("ITEM"))
-					return;
+			//TODO commented for now
+//			if (object.has("type")){
+//				if (!object.getString("type").equals("ITEM"))
+//					return;
+//			}
 			
 			if (object.has("name"))
 				this.title = object.getString("name");
@@ -96,8 +141,8 @@ public class Item {
 				this.itemId = object.getString("itemId");
 			
 			// Parse options
-			if (object.has("option_groups")) {
-				JSONArray optionGroupsJSON = object.getJSONArray("option_groups");
+			if (object.has("options_groups")) {
+				JSONArray optionGroupsJSON = object.getJSONArray("options_groups");
 				optionGroups = new ArrayList<OptionGroup>();
 				for (int i = 0 ; i < optionGroupsJSON.length() ; i++) {
 					JSONObject optionGroupJSON = optionGroupsJSON.getJSONObject(i);
@@ -195,6 +240,14 @@ public class Item {
 	 */
 	public void setPrice_special(String price_special) {
 		this.specialPrice = price_special;
+	}
+
+	public ArrayList<OptionGroup> getOptionGroups() {
+		return optionGroups;
+	}
+
+	public void setOptionGroups(ArrayList<OptionGroup> optionGroups) {
+		this.optionGroups = optionGroups;
 	}
 
 

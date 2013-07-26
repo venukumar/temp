@@ -15,20 +15,20 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.LinearLayout;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.CustomDrinksActivity;
+import com.vendsy.bartsy.InitActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
+import com.vendsy.bartsy.model.Item.OptionGroup;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
@@ -46,6 +46,8 @@ public class DrinksSectionFragment extends SherlockFragment {
 	private Handler handler = new Handler();
 	private Menu mMenu = null;
 	String TAG = "DrinksSectionFragment";
+	
+	
 
 	/*
 	 * Menu class used to cache the menu to avoid delays in UI response time. For now we save this in the 
@@ -109,7 +111,12 @@ public class DrinksSectionFragment extends SherlockFragment {
 		// Add the default headers and null items for those headers. If there is null then we have to display loading view
 		for (String title : headerTitles) {
 			headings.add(title);
-			items.add(new ArrayList<Item>());
+			ArrayList<Item> itemList = new ArrayList<Item>();
+			Item loadingItem = new Item();
+			loadingItem.isDummyLoadingItem=true;
+			
+			itemList.add(loadingItem);
+			items.add(itemList);
 		}
 		
 		mMenu = new Menu(mApp.mActiveVenue.getId(), headings, items);
@@ -138,11 +145,36 @@ public class DrinksSectionFragment extends SherlockFragment {
 	 */
 	
 	boolean mMenuLoading = false;
+	// List of menu URLs are assigned in the array
+	String[] mMenuURLs = {null, null, WebServices.URL_GET_INGREDIENTS_MENU, WebServices.URL_GET_COCKTAILS_MENU, WebServices.URL_GET_BAR_LIST};
 	
 	public void loadMenu() {
 		
 		Log.v(TAG, "loadMenu()");
 		
+		// Check if menu has already been cached for this venue
+		
+		if (mMenu == null || !mMenu.venueId.equals(mApp.mActiveVenue.getId())) {
+			Log.v(TAG, "Menu not available in memory");
+
+			// Menu is not already in memory, call the appropriate loader
+			new Thread() {
+				@Override
+				public void run() {
+					
+					loadAllMenus();
+				}
+			}.start();
+						
+		} else {
+			// Menu already in memory. Nothing to load so just display it.
+			Log.v(TAG, "Menu available in memory - displaying it...");
+			updateView();
+		}
+	}
+	
+	
+	private void loadAllMenus() {
 		// To avoid calling this function multiple times while it's still running, we have an indicator showing
 		// if the menu is being loaded. We set this indicator when the function stars and clear it when it's done
 		
@@ -156,58 +188,43 @@ public class DrinksSectionFragment extends SherlockFragment {
 		mMenuLoading = true;
 		Log.d(TAG, "Indicate start of menu loading");
 		
-		// Check if menu has already been cached for this venue
-		
-		if (mMenu == null || !mMenu.venueId.equals(mApp.mActiveVenue.getId())) {
-			Log.v(TAG, "Menu not available in memory");
-
-			// Menu is not already in memory, call the appropriate loader
-
-			new Thread() {
-
-				@Override
-				public void run() {
-
-					// Attempt to download the menu from the web
-					downloadAndDisplayMenu();
-					
-					if (mMenu == null) {
-						// Both loaders failed - abort. 
-						Log.d(TAG, "Loaders failed...");
-						
-						// Mark the end end of menu loading as we failed and we're returning.
-						mMenuLoading = false;
-						Log.d(TAG, "Indicate end of menu loading");
-
-						return;
-					}
-					// Loading of the menu successful. Display it using a handler because Android 
-					// doesn't allow manipulating views from separate threads
-					handler.post(new Runnable() {
-						// Use a handler because Android doesn't allow manipulating views from separate threads
-						@Override public void run() {
-							updateView();
-						}
-					});				
-
-					// Mark the end of menu loading
-					mMenuLoading = false;
-					Log.d(TAG, "Indicate end of menu loading");
-				}
-			}.start();
-						
-		} else {
-			// Menu already in memory. Nothing to load so just display it.
-			Log.v(TAG, "Menu available in memory - displaying it...");
-			updateView();
+		for (int i = 0; i < mMenuURLs.length; i++) {
 			
-			// Mark the end of menu loading
+			// if the url is NULL then skip the downloading process
+			if(mMenuURLs[i]==null){
+				continue;
+			}
+			
+			// Attempt to download the LOCU menu from the web
+			downloadAndDisplayMenu(i);
+					
+			if (mMenu == null) {
+				// Both loaders failed - abort. 
+			Log.d(TAG, "Loaders failed...");
+						
+				// Mark the end end of menu loading as we failed and we're returning.
 			mMenuLoading = false;
-			Log.d(TAG, "Indicate end of menu loading");			
+			Log.d(TAG, "Indicate end of menu loading");
+
+				continue;
+			}
+			// Loading of the menu successful. Display it using a handler because Android 
+			// doesn't allow manipulating views from separate threads
+			handler.post(new Runnable() {
+				// Use a handler because Android doesn't allow manipulating views from separate threads
+				@Override 
+				public void run() {
+					updateView();
+				}
+			});				
 		}
+		
+
+		// Mark the end of menu loading
+		mMenuLoading = false;
+		Log.d(TAG, "Indicate end of menu loading");
 	}
-	
-	
+
 	/******
 	 * 
 	 * TODO - Web service functions for menu loader
@@ -218,40 +235,41 @@ public class DrinksSectionFragment extends SherlockFragment {
 	
 	/*
 	 * Web service loader. Downloads the menu from the server using a web service call. 
-	 * This is called from a background thread.
+	 * This is called from a background thread based on the position url array.
 	 */
-	private String downloadAndDisplayMenu() {
+	private void downloadAndDisplayMenu(int position) {
 
 		Log.v(TAG, "downloadAndDisplayMenu()");
 		if(mApp.mActiveVenue==null){
-			return null;
+			return ;
 		}
 		
 		Venue venue = mApp.mActiveVenue;
 		
+		// Build the url based on the position
+		String url = mMenuURLs[position];
+		
 		// Step 1 - get the web service response and display the results in the view
-		String response = WebServices.getMenuList(mApp, venue.getId());
+		String response = WebServices.getMenuList(mApp,url, venue.getId());
 		if (response == null) {
 			Log.d(TAG, "Webservice get menu call failed");
-			return null;
+			return ;
 		} else {
 			Log.v(TAG, "Webservice menu response: " + response == null? "null" : response);
 		}
 		
 		// parse the response into a menu in-memory structure
-		addMenuFromResponse (venue, response);
+		addMenuFromResponse (venue, response, position);
 		// To save menu in application class
 		
-		return response;
 	}
-
-
+	
 	
 	/*
 	 * Helper function for downloadAndDisplayMenu. Processes the server response and builds a menu object
 	 */
 	
-	private void addMenuFromResponse (Venue venue, String response) {
+	private void addMenuFromResponse (Venue venue, String response, int position) {
 		
 		ArrayList<String> headings = new ArrayList<String>();
 		ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
@@ -261,66 +279,87 @@ public class DrinksSectionFragment extends SherlockFragment {
 			JSONObject result = new JSONObject(response);
 			String errorCode = result.getString("errorCode");
 			String errorMessage = result.getString("errorMessage");
-			String menus = result.getString("menu");
+			JSONArray menusArryObj = result.getJSONArray("menus");
+			
+			for(int m=0; m<menusArryObj.length();m++){
+				
+				JSONObject menuObj = menusArryObj.getJSONObject(m);
+				JSONArray sections = menuObj.getJSONArray("sections");
+				Log.v(TAG, "Menus length " + sections.length());
 	
-			JSONArray sections = new JSONArray(menus);
-			Log.v(TAG, "Menus length " + sections.length());
+				// Parse sections 
+				for (int i = 0; i < sections.length(); i++) {
+		
+					JSONObject section = sections.getJSONObject(i);
+					if (section.has("section_name") && section.has("subsections")) {
 	
-			// Parse sections 
-			for (int i = 0; i < sections.length(); i++) {
+						JSONArray subsections = section.getJSONArray("subsections");
+						
+						if (subsections != null && subsections.length() > 0) {
 	
-				JSONObject section = sections.getJSONObject(i);
-				if (section.has("section_name") && section.has("subsections")) {
-
-					JSONArray subsections = section.getJSONArray("subsections");
-					
-					if (subsections != null && subsections.length() > 0) {
-
-						for (int j = 0; j < subsections.length(); j++) {
-							
-							JSONObject subSection = subsections.getJSONObject(j);
-							String subsection_name = subSection.getString("subsection_name");
-
-							String section_name = section.getString("section_name");
-
-							// If it's a top level item (no section or subsection name) use a generic section title
-							if (section_name.trim().length() == 0)
-								section_name = subsection_name;
-							else if (subsection_name.trim().length() > 0)
-								section_name += " - " + subsection_name;
-							if (section_name.trim().length() == 0)
-								section_name = "Various items";
-							
-							// Add the heading title to the headings list 
-							headings.add(section_name);
-
-							// Add the list of items under that heading to the items list
-							JSONArray contents = subSection.getJSONArray("contents");
-							ArrayList<Item> subsection_contents = new ArrayList<Item>();
-							for (int k = 0; k < contents.length(); k++) {
-								Item menuDrink = new Item(contents.getJSONObject(k));
-								// Try to parse price to decimal. if it is succeeded then drink will be added to the subsection list otherwise it will not add the list 
-								if (menuDrink.valid != null) {
-									subsection_contents.add(menuDrink);
+							for (int j = 0; j < subsections.length(); j++) {
+								
+								JSONObject subSection = subsections.getJSONObject(j);
+								String subsection_name = subSection.getString("subsection_name");
+	
+								String section_name = section.getString("section_name");
+	
+								// If it's a top level item (no section or subsection name) use a generic section title
+								if (section_name.trim().length() == 0)
+									section_name = subsection_name;
+								else if (subsection_name.trim().length() > 0)
+									section_name += " - " + subsection_name;
+								if (section_name.trim().length() == 0)
+									section_name = "Various items";
+								
+								// Add the heading title to the headings list 
+								headings.add(section_name);
+	
+								// Add the list of items under that heading to the items list
+								JSONArray contents = subSection.getJSONArray("contents");
+								ArrayList<Item> subsection_contents = new ArrayList<Item>();
+								for (int k = 0; k < contents.length(); k++) {
+									Item menuDrink = new Item(contents.getJSONObject(k));
+									// Try to parse price to decimal. if it is succeeded then drink will be added to the subsection list otherwise it will not add the list 
+									if (menuDrink.valid != null) {
+										subsection_contents.add(menuDrink);
+									}
 								}
+								
+								// Add the contents of the subsection to the list of items
+								items.add(subsection_contents);
 							}
-							
-							// Add the contents of the subsection to the list of items
-							items.add(subsection_contents);
 						}
 					}
-				}
-			}	
+				}	
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		mMenu.headings.addAll(headings);
-		mMenu.items.addAll(items);
+		
+		// Update headings and items based on position
+		updateMenu(headings, items, position);
 	}
 
 	
 	
 	
+	private void updateMenu(ArrayList<String> headings, ArrayList<ArrayList<Item>> items, int position) {
+		
+		if(position == Item.TYPE_LOCU_ITEM){
+			
+			mMenu.headings.addAll(headings);
+			mMenu.items.addAll(items);
+		}
+		// Replace the items with the real data to specific position
+		else if(items.size()>0){
+			mMenu.items.set(position, items.get(0));
+		}else{
+			mMenu.items.set(position, new ArrayList<Item>());
+		}
+		
+	}
+
 	/*****
 	 * 
 	 * TODO - Viewer functions
@@ -376,7 +415,24 @@ public class DrinksSectionFragment extends SherlockFragment {
 					}
 					
 					Item menuDrink = items.get(groupPosition).get(childPosition);
-
+					
+					if(menuDrink.isDummyLoadingItem){
+						// Click should not work for loading item
+						return false;
+					}
+					// Check whether any options exist for this drink
+					if(menuDrink.getOptionGroups().size()>0){
+						OptionGroup group = menuDrink.getOptionGroups().get(0);
+						if(group.getOptions().size()>0){
+							mApp.selectedMenuItem = menuDrink;
+							// Display custom drinks
+							Intent intent = new Intent(mActivity, CustomDrinksActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							mActivity.startActivity(intent);
+							return false;
+						}
+					}
+					
 					// Figure out if we are adding the item to the active order or creating a new order
 					Order order;
 					if (mApp.hasActiveOrder()) {

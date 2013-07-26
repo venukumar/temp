@@ -22,6 +22,7 @@ import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
+import com.vendsy.bartsy.model.Item.OptionGroup;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.CustomDrinksSectionFragment;
@@ -36,6 +37,8 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
 	
+	public ArrayList<Category> spirits = new ArrayList<Category>();
+	
 	// Progress dialog
 	private ProgressDialog progressDialog;
 	private ActionBar actionBar;
@@ -46,7 +49,6 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setTheme(R.style.Theme_Sherlock_Light_DarkActionBar);
 		Log.v(TAG, "onCreate()");
 
 		// Set base view for the activity
@@ -97,7 +99,7 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 	 */
 	protected void parseIngredientsResponse(String response) {
 		try {
-			mApp.spirits.clear();
+			spirits.clear();
 			mApp.mixers.clear();
 			
 			JSONObject json = new JSONObject(response);
@@ -114,14 +116,14 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 						if(type.equalsIgnoreCase(Category.SPIRITS_TYPE) && jsonObject.has("categories")){
 							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
 							if(categoriesArray!=null && categoriesArray.length()>0){
-								updateCategoriesAndIngredients(categoriesArray, mApp.spirits);
+								updateCategoriesAndIngredients(categoriesArray, spirits, false);
 							}
 						}
 						// To parse mixers categories
 						else if(type.equalsIgnoreCase(Category.MIXER_TYPE) && jsonObject.has("categories")){
 							JSONArray categoriesArray = jsonObject.getJSONArray("categories");
 							if(categoriesArray!=null && categoriesArray.length()>0){
-								updateCategoriesAndIngredients(categoriesArray, mApp.mixers);
+								updateCategoriesAndIngredients(categoriesArray, mApp.mixers, true);
 							}
 						}
 					}
@@ -139,13 +141,21 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 	 * 
 	 * @param categoriesArray
 	 */
-	private void updateCategoriesAndIngredients(JSONArray categoriesArray, ArrayList<Category> list) {
+	private void updateCategoriesAndIngredients(JSONArray categoriesArray, ArrayList<Category> list, boolean isMixers) {
 
 		for(int i=0;i<categoriesArray.length();i++){
 			try {
 				JSONObject json = categoriesArray.getJSONObject(i);
 				// To get category name and initialize category object and add to the spirits list
+				
 				String categoryName = json.getString("categoryName");
+				// Verify whether option groups are exist in the ingredients categories or not
+				if(mApp.selectedMenuItem.getOptionGroups().size()>0){
+					OptionGroup group = mApp.selectedMenuItem.getOptionGroups().get(0);
+					if(!group.getOptions().contains(categoryName)){
+						continue;
+					}
+				}
 				Category category = new Category();
 				category.setName(categoryName);
 				
@@ -210,19 +220,19 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 		@Override
 		public Fragment getItem(int position) {
 			
-			return new CustomDrinksSectionFragment(mApp.spirits.get(position));
+			return new CustomDrinksSectionFragment(spirits.get(position));
 		}
 
 		@Override
 		public int getCount() {
-			return mApp.spirits.size();
+			return spirits.size();
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 
-			return mApp.spirits.get(position).getName();
+			return spirits.get(position).getName();
 		}
 	}
 	
