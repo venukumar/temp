@@ -166,6 +166,10 @@
             android:label="Bartsy notifications"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".RewardsActivity"
+            android:label="Bartsy Rewards"
+            android:screenOrientation="portrait">
+        </activity>
         <activity android:name=".MessagesActivity"
             android:screenOrientation="portrait">
         </activity>
