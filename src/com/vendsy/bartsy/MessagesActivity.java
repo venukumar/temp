@@ -25,6 +25,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.facebook.android.Util;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MessageData;
@@ -32,7 +33,7 @@ import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
 
-public class MessagesActivity extends Activity implements AppObserver {
+public class MessagesActivity extends SherlockActivity implements AppObserver {
 
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
