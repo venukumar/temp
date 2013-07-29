@@ -151,6 +151,12 @@
             android:label="Select a base spirit"
             android:screenOrientation="portrait">
         </activity>
+        
+        <activity android:name=".ItemOptionsActivity"
+            android:label="Customize this item">
+        </activity>
+        
+        
         <activity android:name=".OrderCustomDrinkActivity"
             android:label="Customize and order..."
             android:screenOrientation="portrait">
