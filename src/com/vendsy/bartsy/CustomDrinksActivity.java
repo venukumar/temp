@@ -22,7 +22,6 @@ import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.model.Category;
 import com.vendsy.bartsy.model.Ingredient;
-import com.vendsy.bartsy.model.Item.OptionGroup;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.CustomDrinksSectionFragment;
@@ -150,13 +149,13 @@ public class CustomDrinksActivity extends SherlockFragmentActivity implements Ac
 				
 				String categoryName = json.getString("categoryName");
 				// Verify whether option groups are exist in the ingredients categories or not
-				if(mApp.selectedMenuItem.getOptionGroups().size()>0){
+/*				if(mApp.selectedMenuItem.getOptionGroups().size()>0){
 					OptionGroup group = mApp.selectedMenuItem.getOptionGroups().get(0);
 					if(!group.getOptions().contains(categoryName)){
 						continue;
 					}
 				}
-				Category category = new Category();
+*/				Category category = new Category();
 				category.setName(categoryName);
 				
 				

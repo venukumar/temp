@@ -229,9 +229,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 		 
 						// If there are any more orders of the same type and recipient, display them as mini views
 		
-						float taxAmt = order.taxAmount;
-						float tipAmt = order.tipAmount;
-						float totalAmt = order.totalAmount;
+						double taxAmt = order.taxAmount;
+						double tipAmt = order.tipAmount;
+						double totalAmt = order.totalAmount;
 						
 						for (int j = i+1 ; j < orders.size(); j++)
 						{

@@ -44,12 +44,12 @@ public class Order {
 	
 	// total = base + tax + fee + tip
     DecimalFormat df = new DecimalFormat();
-	public float baseAmount	= 0;
-	public float feeAmount	= 0;
-	public float taxAmount	= 0;
-	public float tipAmount	= 0;
-	public float totalAmount= 0;
-	public float taxRate	= 0;
+	public double baseAmount	= 0;
+	public double feeAmount	= 0;
+	public double taxAmount	= 0;
+	public double tipAmount	= 0;
+	public double totalAmount= 0;
+	public double taxRate	= 0;
 
 	// Each order contains the sender and the recipient (another single in the bar or a friend to pick the order up)
 	public UserProfile orderSender;
@@ -109,13 +109,13 @@ public class Order {
 	 */
 	
 	
-	public Order(float taxRate) {
+	public Order(double taxRate) {
 		df.setMaximumFractionDigits(2);
 		df.setMinimumFractionDigits(2);
 		this.taxRate = taxRate;
 	}
 
-	public Order (UserProfile order_sender, UserProfile order_receiver, float taxRate, float tipAmount, Item item) {
+	public Order (UserProfile order_sender, UserProfile order_receiver, double taxRate, double tipAmount, Item item) {
 		
 		this.items.add(item);
 		
@@ -144,7 +144,7 @@ public class Order {
 	 * Constructor for new empty order destined for a given recipient
 	 * @param profile
 	 */
-	public Order(UserProfile sender, UserProfile recipient, float taxRate) {
+	public Order(UserProfile sender, UserProfile recipient, double taxRate) {
 		
 		this.baseAmount = 0;
 		this.tipAmount = 0;
@@ -184,7 +184,7 @@ public class Order {
 					jsonItem.put("itemId", item.getItemId());
 					jsonItem.put("itemName", item.getTitle());
 					jsonItem.put("description", item.getDescription());
-					jsonItem.put("basePrice", Float.toString(item.getPrice()));
+					jsonItem.put("basePrice", Double.toString(item.getPrice()));
 					jsonItems.put(jsonItem);
 				}
 				orderData.put("itemsList", jsonItems);
@@ -311,7 +311,7 @@ public class Order {
 				if (json.has("description"))
 					item.setDescription(json.getString("description"));
 				if (json.has("basePrice"))
-					item.setPrice(Float.valueOf(json.getString("basePrice")));
+					item.setPrice(Double.valueOf(json.getString("basePrice")));
 				if (json.has("itemId"))
 					item.setItemId(json.getString("itemId"));
 				items.add(item);
@@ -322,19 +322,19 @@ public class Order {
 				JSONArray itemsJSON = json.getJSONArray("itemsList");
 				
 				for (int i=0 ; i < itemsJSON.length() ; i++) {
-					items.add(new Item(itemsJSON.getJSONObject(i)));
+					items.add(new Item(itemsJSON.getJSONObject(i), null));
 				}
 			}
 			
 			if (json.has("basePrice"))
-				baseAmount = Float.valueOf(json.getString("basePrice"));
+				baseAmount = Double.valueOf(json.getString("basePrice"));
 
 			if (json.has("tipPercentage"))
-				tipAmount = Float.valueOf(json.getString("tipPercentage"));
+				tipAmount = Double.valueOf(json.getString("tipPercentage"));
 			
 			orderId = json.getString("orderId");
 			
-			totalAmount = Float.valueOf(json.getString("totalPrice"));
+			totalAmount = Double.valueOf(json.getString("totalPrice"));
 			taxAmount = totalAmount - tipAmount - baseAmount;
 
 
@@ -680,7 +680,7 @@ public class Order {
 	/**
 	 * Update the view of the order only with the given tip, tax and total amounts 
 	 */
-	public void updateTipTaxTotalView(float tipAmount,float taxAmount,float totalAmount){
+	public void updateTipTaxTotalView(double tipAmount,double taxAmount,double totalAmount){
 		if(view!=null){
 			((TextView) view.findViewById(R.id.view_order_tip_amount)).setText(df.format(tipAmount));
 			((TextView) view.findViewById(R.id.view_order_tax_amount)).setText(df.format(taxAmount));

@@ -26,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.facebook.android.Util;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.utils.Utilities;

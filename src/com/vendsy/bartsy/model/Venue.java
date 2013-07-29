@@ -20,7 +20,7 @@ public class Venue {
 	private String wifiTypeOfAuthentication;
 	private String status;
 	private int	   orderTimeout;
-	private float  taxRate;
+	private double  taxRate;
 	private String imagePath = null;
 
 	public Venue (JSONObject json) {
@@ -49,7 +49,7 @@ public class Venue {
 				setStatus(json.getString("venueStatus"));
 		
 			if (json.has("totalTaxRate"))
-				taxRate = Float.parseFloat(json.getString("totalTaxRate")) / (float) 100;
+				taxRate = Double.parseDouble(json.getString("totalTaxRate")) / (double) 100;
 			else
 				taxRate = Constants.taxRate;
 		
@@ -201,7 +201,7 @@ public class Venue {
 		this.orderTimeout = orderTimeout;
 	}
 
-	public float getTaxRate() {
+	public double getTaxRate() {
 		
 		if (taxRate == 0)
 			return Constants.taxRate;
@@ -209,7 +209,7 @@ public class Venue {
 			return taxRate;
 	}
 
-	public void setTaxRate(float taxRate) {
+	public void setTaxRate(double taxRate) {
 		this.taxRate = taxRate;
 	}
 

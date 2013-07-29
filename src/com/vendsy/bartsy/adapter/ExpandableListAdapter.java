@@ -54,11 +54,11 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             
 	        Item item = (Item)getChild( groupPosition, childPosition );
 	        // Loading view
-	        if(item==null || item.isDummyLoadingItem){
-	        	view = inflater.inflate(R.layout.menu_loading, parent, false);
-	        }
+//	        if(item==null || item.isDummyLoadingItem){
+//	        	view = inflater.inflate(R.layout.menu_loading, parent, false);
+//	        }
 	        // Drink/Menu item view
-	        else{
+//	        else{
 	        	view = inflater.inflate(R.layout.menu_item, parent, false); 
 	        	
 				TextView textView = (TextView)view.findViewById( R.id.view_drink_title );
@@ -76,7 +76,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 				TextView rgb = (TextView)view.findViewById( R.id.view_drink_price );
 				if( rgb != null )
 					rgb.setText( "$"+df.format(item.getPrice()) );
-	        }
+//	        }
         return view;
     }
     /**

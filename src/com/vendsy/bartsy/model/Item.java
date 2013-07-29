@@ -1,10 +1,17 @@
 package com.vendsy.bartsy.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.vendsy.bartsy.R;
@@ -16,148 +23,177 @@ import com.vendsy.bartsy.R;
  */
 public class Item {
 	
-	public static final int TYPE_PAST_ORDER = 0;
-	public static final int TYPE_FAVORITE = 1;
-	public static final int TYPE_MIXED_DRINK = 2;
-	public static final int TYPE_COCKTAIL = 3;
-	public static final int TYPE_LOCU_ITEM = 4;
+	private static final String TAG = "Item";
+
+	// Menu types
+	private String type = null;
+	public static final String MENU_ITEM 	 = "ITEM";
+	public static final String ITEM_SELECT 	 = "ITEM_SELECT";
+	public static final String SECTION_TEXT  = "SECTION_TEXT";
+	public static final String BARTSY_ITEM 	 = "BARTSY_ITEM";
+	public static final String LOADING		 = "LOADING";
 	
-	public boolean isDummyLoadingItem; // It is require to add dummy item to display progress view in the Expandable list view
-
-	public String valid = null;
+	// For MENU_ITEM type
+	private String itemId = null;
+	private String name = null;
+	private String description = null;
+	private double price;
+	private double specialPrice;
+	private String venueId = null;
+	private ArrayList<OptionGroup> optionGroups = null;
 	
-	private String itemId;
-	private String title;
-	private String description;
-	private float price;
-	private String specialPrice;
-	private String venueId;
-	private ArrayList<OptionGroup> optionGroups=new ArrayList<Item.OptionGroup>();
+	// In addition to above for BARTSY_ITEM type
+	private String glass = null;
+	private String ingredients = null;
+	private String instructions = null;
+	private String category = null;
 	
-	public class OptionGroup {
-		protected String type;
-		protected String text;
-		protected ArrayList<String> options = new ArrayList<String>();
-		
-		public OptionGroup (JSONObject json) throws JSONException {
-			if (json.has("type"))
-				type = json.getString("type");
-			if (json.has("text"))
-				text = json.getString("text");
-			
-			if (json.has("options")) {
-				JSONArray optionsJSON = json.getJSONArray("options");
-				options = new ArrayList<String>();
-				for (int i = 0 ; i < optionsJSON.length() ; i++) {
-					options.add(optionsJSON.getString(i));
-				}
-			}
-		}
-		
-		
-		
-		public ArrayList<String> getOptions() {
-			return options;
-		}
-
-
-
-		public void setOptions(ArrayList<String> options) {
-			this.options = options;
-		}
-
-
-
-//		public class Option {
-//			
-//			protected String name;
-//			protected String price;
-//			
-//			public Option(String name){
-//				this.name = name;
-//			}
-//			
-//			public Option(JSONObject json) throws JSONException {
-//				if (json.has("name"))
-//					name = json.getString("name");
-//				if (json.has("price"))
-//					price = json.getString("price");
-//			}
-//
-//			public String getName() {
-//				return name;
-//			}
-//
-//			public void setName(String name) {
-//				this.name = name;
-//			}
-//
-//			public String getPrice() {
-//				return price;
-//			}
-//
-//			public void setPrice(String price) {
-//				this.price = price;
-//			}
-//			
-//		}
-	}
+	// For SECTION_TEXT type
+	private String text = null;
+	
+	
+	/**
+	 * TODO - Constructors / parsers
+	 */
 	
 	public Item () {
+		this.type = LOADING;
 	}
 	
-	public Item(String title, String description, float price) {
-		this.title = title;
+	public Item(String title, String description, double price) {
+		this.type = MENU_ITEM;
+		this.name = title;
 		this.description = description;
 		this.price = price;
 	}
 	
-	public Item(JSONObject object) {
-		try {
+	public Item(JSONObject json, HashMap<String, OptionGroup> savedSelections) throws JSONException, NumberFormatException {
 			
-			// Process items of type Locu MENU_ITEM only 
-			//TODO commented for now
-//			if (object.has("type")){
-//				if (!object.getString("type").equals("ITEM"))
-//					return;
-//			}
+		// Find the type and parse the json accordingly
+		type = json.getString("type");
+		
+		if (type.equals(MENU_ITEM) || type.equals(BARTSY_ITEM) || type.equals(ITEM_SELECT)) {
 			
-			if (object.has("name"))
-				this.title = object.getString("name");
-			if (object.has("itemName"))
-				this.title = object.getString("itemName");
-
-			if (object.has("description"))
-				this.description = object.getString("description");
-
-			if (object.has("price"))
-				this.price = Float.parseFloat(object.getString("price"));
-			if (object.has("basePrice"))
-				this.price = Float.parseFloat(object.getString("basePrice"));
-
-			if (object.has("id"))
-				this.itemId = object.getString("id");
-			if (object.has("itemId"))
-				this.itemId = object.getString("itemId");
+			// Parse MENU_ITEM type
+			
+			if (json.has("name"))
+				this.name = json.getString("name");
+			if (json.has("itemName"))
+				this.name = json.getString("itemName");
+	
+			if (json.has("description"))
+				this.description = json.getString("description");
+	
+			if (json.has("price"))
+				this.price = Double.parseDouble(json.getString("price"));
+			if (json.has("basePrice"))
+				this.price = Double.parseDouble(json.getString("basePrice"));
+	
+			if (json.has("id"))
+				this.itemId = json.getString("id");
+			if (json.has("itemId"))
+				this.itemId = json.getString("itemId");
+			
+			if (json.has("glass"))
+				glass = json.getString("glass");
+			if (json.has("ingredients"))
+				ingredients = json.getString("ingredients");
+			if (json.has("instructions"))
+				instructions = json.getString("instructions");
+			if (json.has("category"))
+				category = json.getString("category");
 			
 			// Parse options
-			if (object.has("options_groups")) {
-				JSONArray optionGroupsJSON = object.getJSONArray("options_groups");
+			JSONArray optionGroupsJSON = null;
+			if (json.has("option_groups"))
+				optionGroupsJSON = json.getJSONArray("option_groups");
+			if (json.has("options_groups"))
+				optionGroupsJSON = json.getJSONArray("options_groups");
+			if (optionGroupsJSON != null) {
+				
 				optionGroups = new ArrayList<OptionGroup>();
 				for (int i = 0 ; i < optionGroupsJSON.length() ; i++) {
+					
 					JSONObject optionGroupJSON = optionGroupsJSON.getJSONObject(i);
-					optionGroups.add(new OptionGroup(optionGroupJSON));
+
+					// If we're saving a selection with ITEM_SELECT, save the first option
+					if (type.equals(ITEM_SELECT) && i == 0 && savedSelections != null) {
+						Log.v(TAG, "Saving selection " + name + " for: " + optionGroupJSON);
+						savedSelections.put(name, new OptionGroup(optionGroupJSON));
+					}
+					
+					if (optionGroupJSON.getString("type").equals(OptionGroup.OPTION_SELECT)
+							&& savedSelections != null) {
+						
+						// If we're dealing with an OPTION_SELECT group, try to uncompress it or ignore it
+						JSONArray optionsJSON = optionGroupJSON.getJSONArray("options");
+						for (int j = 0 ; j < optionsJSON.length() ; j++) {
+							String selectionName = optionsJSON.getString(j);
+							OptionGroup option = savedSelections.get(selectionName);
+							if (option != null) {
+								Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
+								optionGroups.add(option);
+							} else {
+								Log.e(TAG, "Could not load selection: " + selectionName);
+							}
+						}
+					} else {
+						// If it's not a compressed group just add it to the option groups
+						optionGroups.add(new OptionGroup(optionGroupJSON));
+					}
 				}
 			}
+		} else if (type.equals(SECTION_TEXT)) {
 			
-			valid = "yes";
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+			// Parse SECTION_TEXT type
+			text = json.getString("text");
+		} else {
+			throw new JSONException("Invalid menu item type");
 		}
-
 	}
 
+	
+	/**
+	 * 
+	 * TODO - Views
+	 * 
+	 */
+	
+	public View inflateOrder(LayoutInflater inflater) {
+		
+		View view = inflater.inflate(R.layout.order_item, null);
+		
+		// Set title and description
+		if (hasTitle()) {
+			((TextView) view.findViewById(R.id.view_order_item_name)).setText(getTitle());
+			if (hasDescription())
+				((TextView) view.findViewById(R.id.view_order_item_description)).setText(getDescription());
+			else 
+				((TextView) view.findViewById(R.id.view_order_item_description)).setVisibility(View.GONE);
+		} else {
+			view.findViewById(R.id.view_order_item_header).setVisibility(View.GONE);
+		}
+		
+		// Set options views
+		LinearLayout options = (LinearLayout) view.findViewById(R.id.view_order_item_options);
+		options.setTag(this);
+
+		if (getOptionGroups() != null) {
+			for (OptionGroup optionGroup : getOptionGroups()) {
+				options.addView(optionGroup.inflateOrder(inflater));
+			}
+		}
+		
+		return view;
+	}
+	
+	
+	
+	/**
+	 * 
+	 * TODO Getters and setters
+	 * 
+	 */
 
 	public String getItemId() {
 		return itemId;
@@ -168,77 +204,51 @@ public class Item {
 	}
 
 	
-	/**
-	 * @return the venueId
-	 */
 	public String getVenueId() {
 		return venueId;
 	}
 
-	/**
-	 * @param venueId the venueId to set
-	 */
 	public void setVenueId(String venueId) {
 		this.venueId = venueId;
 	}
 
-	/**
-	 * @return the title
-	 */
+	public boolean hasTitle() {
+		return ! (name == null || name.equals(""));
+	}
+	
 	public String getTitle() {
-		return title;
+		return name;
 	}
 
-	/**
-	 * @param title
-	 *            the title to set
-	 */
 	public void setTitle(String title) {
-		this.title = title;
+		this.name = title;
 	}
 
-	/**
-	 * @return the description
-	 */
+	public boolean hasDescription() {
+		return ! (description == null || description.equals(""));
+	}
+	
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @param description
-	 *            the description to set
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * @return float the price
-	 */
-	public float getPrice() {
+	public double getPrice() {
 		return price;
 	}
 
-	/**
-	 * @param price
-	 *            the price to set
-	 */
-	public void setPrice(float price) {
+	public void setPrice(double price) {
 		this.price = price;
 	}
 
-	/**
-	 * @return the price_special
-	 */
-	public String getPrice_special() {
+	public double getPrice_special() {
 		return specialPrice;
 	}
 
-	/**
-	 * @param price_special
-	 *            the price_special to set
-	 */
-	public void setPrice_special(String price_special) {
+	public void setPrice_special(double price_special) {
 		this.specialPrice = price_special;
 	}
 
@@ -250,5 +260,68 @@ public class Item {
 		this.optionGroups = optionGroups;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getSpecialPrice() {
+		return specialPrice;
+	}
+
+	public void setSpecialPrice(double specialPrice) {
+		this.specialPrice = specialPrice;
+	}
+
+	public String getGlass() {
+		return glass;
+	}
+
+	public void setGlass(String glass) {
+		this.glass = glass;
+	}
+
+	public String getIngredients() {
+		return ingredients;
+	}
+
+	public void setIngredients(String ingredients) {
+		this.ingredients = ingredients;
+	}
+
+	public String getInstructions() {
+		return instructions;
+	}
+
+	public void setInstructions(String instructions) {
+		this.instructions = instructions;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
 
 }

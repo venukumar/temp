@@ -49,7 +49,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	/****************
 	 * 
 	 * 
-	 * TODO - global variables
+	 * TODO - global variablesORDERS_UPDATED
 	 * 
 	 */
 
@@ -262,13 +262,11 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_menu);
 		if (mDrinksFragment == null) {
 			Log.v(TAG, "Drinks fragment not found. Creating one.");
-			mDrinksFragment = new DrinksSectionFragment();
-			mDrinksFragment.mActivity = this;
-			mDrinksFragment.mApp = (BartsyApplication) getApplication();
+			mDrinksFragment = new DrinksSectionFragment(this);
 			
 			// Already Start loading the menu in the background so by the time the OS creates the view of this fragment
 			// we've done some work
-			mDrinksFragment.loadMenu();
+			mDrinksFragment.loadMenus();
 		} else {
 			Log.v(TAG, "Drinks fragment found.");
 			mDrinksFragment = d;
@@ -490,57 +488,41 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				// Invoke the user checkin syscall
 				String response = WebServices.userCheckInOrOut(mApp, mApp.loadBartsyId(), venue.getId(), WebServices.URL_USER_CHECK_OUT);
 
+				String errorCode = "JSON error";
 				if (response != null) {
 					try {
 						JSONObject json = new JSONObject(response);
-						String errorCode = json.getString("errorCode");
+						errorCode = json.getString("errorCode");
 						errorMessage = json.has("errorMessage") ? json.getString("errorMessage") : "";
-
-						if (errorCode.equalsIgnoreCase("0")) {
-							
-							// Host checked user out successfully. Check the user out locally too.
-
-
-							// Check into the venue locally
-							mApp.userCheckOut();
-
-							
-							mHandler.post(new Runnable() {
-								public void run() {
-									
-									Toast.makeText(VenueActivity.this, "Checked out from " + mVenue.getName(), Toast.LENGTH_SHORT).show();
-
-									// Start venue activity and finish this activity
-									Intent intent = new Intent(mActivity, MapActivity.class);
-									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-									startActivity(intent);
-									finish();
-								}
-							});
-						} else {
-							
-							// An error has occurred and the user was not checked in - Toast it
-							
-							mApp.userCheckOut();
-
-							mHandler.post(new Runnable() {
-								public void run() {
-									Toast.makeText(VenueActivity.this, "Error checking out. Please try again or restart application.", Toast.LENGTH_SHORT).show();
-								}
-							});
-						}
-
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
+
+				final String displayText;
+				if (errorCode.equalsIgnoreCase("0")) {
+					displayText = "Checked out from " + mVenue.getName();
+				} else {
+					displayText = "Error checking out. Please try again or restart application.";
+				}
+				
+				// Check the user out locally too.
+				mApp.userCheckOut();
+				mHandler.post(new Runnable() {
+					public void run() {
+							
+						Toast.makeText(VenueActivity.this, displayText, Toast.LENGTH_SHORT).show();
+						// Start map activity and finish this activity
+						Intent intent = new Intent(mActivity, MapActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(intent);
+						finish();
+					}
+				});
+
 				}
 			};
 		}.start();
 	}
-
-	
-	
-	
 	
 	
 	private void updateActionBarStatus() {
@@ -756,6 +738,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
 	private static final int HANDLE_ORDERS_UPDATED_EVENT = 4;
 	private static final int HANDLE_PEOPLE_UPDATED_EVENT = 5;
+	private static final int HANDLE_MENUS_UPDATED_EVENT = 6;
 
 	public synchronized void update(AppObservable o, Object arg) {
 		Log.v(TAG, "update(" + arg + ")");
@@ -785,6 +768,10 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		} else if (qualifier.equals(BartsyApplication.PEOPLE_UPDATED)) {
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
+			mApplicationHandler.sendMessage(message);
+		} else if (qualifier.equals(BartsyApplication.MENUS_UPDATED)) {
+			Message message = mApplicationHandler
+					.obtainMessage(HANDLE_MENUS_UPDATED_EVENT);
 			mApplicationHandler.sendMessage(message);
 		} else if (qualifier.equals(BartsyApplication.NEW_CHAT_MESSAGE_RECEIVED)) {
 			Message message = mApplicationHandler
@@ -831,6 +818,14 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 					Log.v(TAG, "Updating people view and count...");
 					mPeopleFragment.updatePeopleView();
 					updatePeopleCount();
+				}
+				break;
+			case HANDLE_MENUS_UPDATED_EVENT:
+				
+				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_MENUS_UPDATED_EVENT");
+				if (mDrinksFragment != null) {
+					Log.v(TAG, "Updating menus...");
+					mDrinksFragment.loadMenus();
 				}
 				break;
 			default:

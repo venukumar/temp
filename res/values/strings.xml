@@ -141,5 +141,162 @@
     
     <!-- Drinks -->
     <string name="customDrinkLabel">Custom Drinks</string>
+    
+    <!-- Unit tests -->
+   	<string name="test_menu">
+   	    
+{
+    \"menus\": [
+        {
+            \"menu_name\": \"Mixed Drinks\",
+            \"sections\": [
+                {
+                    \"section_name\": \"\",
+                    \"subsections\": [
+                        {
+                            \"subsection_name\": \"\",
+                            \"contents\": [
+                                {
+                                    \"type\": \"ITEM_SELECT\",
+                                    \"name\": \"Vodka\",
+                                    \"description\": \"Mixed with just about anything, Vodka is the drink of choice in any situation.\",
+                                    \"price\": \"1\",
+                                    \"option_groups\": [
+                                        {
+                                            \"type\": \"OPTION_CHOOSE\",
+                                            \"text\": \"Add 1\",
+                                            \"options\": [
+                                                {
+                                                    \"name\": \"Absolut Vodka\",
+                                                    \"text\": \"Recommended\",
+                                                    \"selected\": true,
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"Absolut Pears Vodka\",
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"Absolut Rasberi Vodka\",
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"Absolut Vanilla Vodka\",
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"American Harvest Vodka\",
+                                                    \"price\": \"10\"
+                                                },
+                                                {
+                                                    \"name\": \"Belvedere Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Chopin Potato Vodka\",
+                                                    \"price\": \"14\"
+                                                },
+                                                {
+                                                    \"name\": \"Ciroc Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Ciroc Peach Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Ciroc Coconu Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Couble Cross Vodka\",
+                                                    \"price\": \"10\"
+                                                },
+                                                {
+                                                    \"name\": \"Grey Goose Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Ketel One Vodka\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Stolichnaya Vodka\",
+                                                    \"price\": \"12\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    \"type\": \"ITEM_SELECT\",
+                                    \"name\": \"Gin\",
+                                    \"description\": \"Cheers to that! Gin gin.\",
+                                    \"price\": \"1\",
+                                    \"option_groups\": [
+                                        {
+                                            \"type\": \"OPTION_CHOOSE\",
+                                            \"text\": \"Add 1\",
+                                            \"options\": [
+                                                {
+                                                    \"name\": \"Bombay Saphire Gin\",
+                                                    \"text\": \"Recommended\",
+                                                    \"selected\": true,
+                                                    \"price\": \"12\"
+                                                },
+                                                {
+                                                    \"name\": \"Tanqueray Gin\",
+                                                    \"price\": \"11\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    \"type\": \"ITEM_SELECT\",
+                                    \"name\": \"Tequila\",
+                                    \"description\": \"For him or of her, tequila has taken its place in the top requested drinks category.\",
+                                    \"price\": \"1\",
+                                    \"option_groups\": [
+                                        {
+                                            \"type\": \"OPTION_CHOOSE\",
+                                            \"text\": \"Add 1\",
+                                            \"options\": [
+                                                {
+                                                    \"name\": \"Tequila Avion Silver\",
+                                                    \"text\": \"Recommended\",
+                                                    \"selected\": true,
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"Tequila Avion Reposado\",
+                                                    \"price\": \"11\"
+                                                },
+                                                {
+                                                    \"name\": \"Tequila Avion Anejo\",
+                                                    \"price\": \"13\"
+                                                },
+                                                {
+                                                    \"name\": \"Tequila Don Julio 1942\",
+                                                    \"price\": \"32\"
+                                                },
+                                                {
+                                                    \"name\": \"Tequila Don Julio Anejo\",
+                                                    \"price\": \"15\"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}   
+   	</string>
+    
 
 </resources>

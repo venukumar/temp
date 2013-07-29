@@ -188,14 +188,14 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		case R.id.view_dialog_order_tip_15:
 		case R.id.view_dialog_order_tip_20:
 			
-			float percent = 0;
+			double percent = 0;
 			
 			if (v.getId() == R.id.view_dialog_order_tip_10)
-				percent = (float) 0.10;
+				percent = (double) 0.10;
 			else if (v.getId() == R.id.view_dialog_order_tip_15)
-				percent = (float) 0.15;
+				percent = (double) 0.15;
 			else if (v.getId() == R.id.view_dialog_order_tip_20)
-				percent = (float) 0.20;
+				percent = (double) 0.20;
 			
 			// Set the tip and total amount based on the radio button selected
 			order.tipAmount = order.baseAmount * percent;
@@ -224,9 +224,9 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			String tip="0";
 			if (percentage.getText()!= null)
 				tip = percentage.getText().toString();
-			order.tipAmount = Float.parseFloat(tip) ;
+			order.tipAmount = Double.parseDouble(tip) ;
 		} else 
-			order.tipAmount = Float.parseFloat(b.getText().toString().replace("%", "")) / (float) 100 * order.baseAmount;
+			order.tipAmount = Double.parseDouble(b.getText().toString().replace("%", "")) / (double) 100 * order.baseAmount;
 		order.totalAmount = order.tipAmount + order.taxAmount + order.baseAmount;
 
 		// Send the event to the calling activity

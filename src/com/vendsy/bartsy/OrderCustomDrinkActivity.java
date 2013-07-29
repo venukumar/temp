@@ -57,9 +57,9 @@ public class OrderCustomDrinkActivity extends Activity{
 	private ArrayList<Ingredient> selectedMixers= new ArrayList<Ingredient>();
 	private Order order;
 	
-	private float baseAmount;
-	private float tipAmount;
-	private float totalAmount;
+	private double baseAmount;
+	private double tipAmount;
+	private double totalAmount;
 	private TextView priceText;
 	public UserProfile profile;
 	
@@ -243,10 +243,10 @@ public class OrderCustomDrinkActivity extends Activity{
 //		}
 		
 		tipPercentageValue = tipPercentageValue.replace("%", "");
-		float tipAmount = 0;
+		double tipAmount = 0;
 		
 		try {
-			tipAmount = Float.valueOf(tipPercentageValue) / 100 * totalAmount;
+			tipAmount = Double.valueOf(tipPercentageValue) / 100 * totalAmount;
 		} catch (NumberFormatException e) {
 		}
 

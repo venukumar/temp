@@ -1023,7 +1023,7 @@ public class WebServices {
 	 * 
 	 * @param imageView
 	 */
-	public static void downloadImage(final String url, final ImageView imageView, HashMap<String, Bitmap> savedImages) {
+	public static void downloadImage(final String url, final ImageView imageView, final HashMap<String, Bitmap> savedImages) {
 
 		// Error handling: Do not proceed if the url is null
 		if(url==null){
@@ -1055,6 +1055,9 @@ public class WebServices {
 					if (imageView != null) {
 						imageView.setImageBitmap(result);
 					}
+					
+					// Save the image to avoid downloading in the future
+					savedImages.put(url, result);
 				}
 			}
 
