@@ -240,7 +240,7 @@ public class MessagesActivity extends SherlockActivity implements AppObserver {
 				view = getLayoutInflater().inflate(R.layout.message_self_view, null);
 				((ImageView)view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(mApp.mProfile.getImage());
 				messagesList = ((LinearLayout)view.findViewById(R.id.messages_list));
-				((TextView)view.findViewById(R.id.messages_list_date)).setText(Utilities.getFriendlyDate(message.getCreatedDate(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
+				((TextView)view.findViewById(R.id.messages_list_date)).setText(Utilities.getFriendlyDate(message.getCreatedDate(), "d MMM yyyy HH:mm:ss 'GMT'"));
 				
 				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				params.gravity = Gravity.RIGHT;
