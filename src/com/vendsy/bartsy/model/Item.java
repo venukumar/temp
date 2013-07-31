@@ -72,7 +72,11 @@ public class Item {
 	public Item(JSONObject json, HashMap<String, JSONObject> savedSelections) throws JSONException, NumberFormatException {
 			
 		// Find the type and parse the json accordingly
-		type = json.getString("type");
+		if (json.has("type"))
+			type = json.getString("type");
+		else 
+			// Default as in orders we don't yet get full item details
+			type = MENU_ITEM;
 		
 		if (type.equals(MENU_ITEM) || type.equals(BARTSY_ITEM) || type.equals(ITEM_SELECT)) {
 			
@@ -338,6 +342,9 @@ public class Item {
 	public void calculatePrice() {
 
 		optionsPrice = 0;
+		
+		if (optionGroups == null)
+			return;
 		
 		for (OptionGroup options : optionGroups) {
 			for (Option option : options.options) {
