@@ -152,7 +152,7 @@
             android:screenOrientation="portrait">
         </activity>
         
-        <activity android:name=".ItemOptionsActivity"
+        <activity android:name=".CustomizeActivity"
             android:label="Customize this item">
         </activity>
         

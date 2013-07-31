@@ -36,6 +36,10 @@
     <string name="config_venue_channel_name">Venue</string>
     <string name="config_cardio_token">0f13c2616ead46e7a000674d20743cfe</string>
 
+    <!--  Validation of input parameters for activities called with inputs -->
+    <string name="UserProfileActivity_input_status">UserProfileActivity_input_status</string>
+    <string name="ItemOptionsActivity_input_status">ItemOptionsActivity_input_status</string>
+    
     <string name="prefs_venue">prefs_venue</string>
     
     <!-- Action bar items -->
@@ -164,7 +168,7 @@
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",
-                                            \"text\": \"Add 1\",
+                                            \"text\": \"Vodka\",
                                             \"options\": [
                                                 {
                                                     \"name\": \"Absolut Vodka\",
@@ -236,7 +240,7 @@
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",
-                                            \"text\": \"Add 1\",
+                                            \"text\": \"Gin\",
                                             \"options\": [
                                                 {
                                                     \"name\": \"Bombay Saphire Gin\",
@@ -260,7 +264,7 @@
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",
-                                            \"text\": \"Add 1\",
+                                            \"text\": \"Tequila\",
                                             \"options\": [
                                                 {
                                                     \"name\": \"Tequila Avion Silver\",
@@ -295,7 +299,7 @@
             ]
         }
     ]
-}   
+}
    	</string>
     
 

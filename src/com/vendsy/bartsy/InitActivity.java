@@ -190,7 +190,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 			break;
 		case R.id.view_init_create_account:
 			
-			mApp.mUserProfileActivityInput = null;
+			UserProfileActivity.setInput(mApp, null);
 			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 
@@ -405,7 +405,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 						mHandler.post(new Runnable() {
 							@Override
 							public void run() {
-								mApp.mUserProfileActivityInput = user; // use the application as a buffer to pass the message to the new activity
+								UserProfileActivity.setInput(mApp, user); // use the application as a buffer to pass the message to the new activity
 								Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 								mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);		
 							}
@@ -440,7 +440,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 		} else {
 			
 			// Could not load a user profile. Start a blank profile
-			mApp.mUserProfileActivityInput = null;
+			UserProfileActivity.setInput(mApp, null);
 			Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			mActivity.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 		}

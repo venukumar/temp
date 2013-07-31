@@ -32,7 +32,7 @@ public class Menu {
 		
 	}
 
-	public Menu (JSONArray menusArryObj, HashMap<String, OptionGroup> savedSelections) throws JSONException {
+	public Menu (JSONArray menusArryObj, HashMap<String, JSONObject> savedSelections) throws JSONException {
 		
 //		String errorCode = json.getString("errorCode");
 //		String errorMessage = json.getString("errorMessage");

@@ -103,7 +103,7 @@
         android:layout_gravity="center_vertical" >
 
         <Button
-            android:id="@+id/view_order_item_button"
+            android:id="@+id/view_order_item_submit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

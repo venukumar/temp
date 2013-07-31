@@ -166,7 +166,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 				return;
 			} 
 			
-			mApp.mUserProfileActivityInput = null;
+			UserProfileActivity.setInput(mApp, null);
 			intent = new Intent(getBaseContext(), UserProfileActivity.class);
 			this.startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 			break;
@@ -206,7 +206,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 				mProgressDialog.dismiss();
 			} else {
 				Toast.makeText(mActivity, "Loaded profile", Toast.LENGTH_SHORT).show();
-				mApp.mUserProfileActivityInput = mApp.mProfile;
+				UserProfileActivity.setInput(mApp, mApp.mProfile);
 				Intent intent = new Intent(getBaseContext(), UserProfileActivity.class);
 				startActivityForResult(intent, REQUEST_CODE_USER_PROFILE);
 			}
@@ -319,7 +319,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		case REQUEST_CODE_USER_PROFILE:
 			
 			// Stop showing the dialog that we launched before calling the user profile activity
-			mProgressDialog.dismiss();
+			if (mProgressDialog != null && mProgressDialog.isShowing())
+				mProgressDialog.dismiss();
 
 			switch (responseCode) {
 			case RESULT_OK:
@@ -334,10 +335,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 				break;
 			}
 
-			// Reset parameters passed as inputs using the application object 
-			Log.d(TAG, "Resetting application user input/output buffers");
-			mApp.mUserProfileActivityInput = null;
-			
 			break;
 		}
 		

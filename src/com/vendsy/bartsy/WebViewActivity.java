@@ -1,5 +1,7 @@
 package com.vendsy.bartsy;
 
+import com.actionbarsherlock.app.SherlockActivity;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.webkit.WebView;
@@ -9,7 +11,7 @@ import android.webkit.WebView;
  *
  */
 @SuppressLint("SetJavaScriptEnabled")
-public class WebViewActivity extends Activity {
+public class WebViewActivity extends SherlockActivity {
 	WebView webView;
 
 	protected void onCreate(android.os.Bundle savedInstanceState) {

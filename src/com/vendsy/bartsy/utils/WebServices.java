@@ -451,20 +451,8 @@ public class WebServices {
 				json.put("description", user.getDescription());
 			if (user.hasGender()) 
 				json.put("gender", user.getGender());
-			if (user.hasCreditCardNumber()) {
-				// Encrypt CreditCardNumber(
-				String publicKey = Utilities.loadPref(context, "serverKey", "");
-				String encryptedString = AsymmetricCipherUtil.getEncryptedString(user.getCreditCardNumber(), publicKey);
-				
-				// TODO Decrypt and check the credit card is same or not - It is only for testing
-				String decCredit = AsymmetricCipherUtil.getDecryptedString(encryptedString, context);
-				Log.d("", "Decrypted number:::: "+decCredit);
-				
-				Log.d("", "Encrypted number:::: "+encryptedString);
-				
-//				json.put("encryptedCreditCard", encryptedString);
-				json.put("creditCardNumber", encryptedString);
-			}
+			if (user.hasCreditCardNumberEncrypted())
+				json.put("creditCardNumber", user.getCreditCardNumberEncrypted());
 			if (user.hasExpMonth())
 				json.put("expMonth", user.getExpMonth());
 			if (user.hasExpYear())	
@@ -740,15 +728,14 @@ public class WebServices {
 				if (result.has("facebookId"))
 					user.setFacebookId(result.getString("facebookId"));
 
-				
+				if (result.has("email"))
+					user.setEmail(result.getString("email"));
 				if (result.has("name"))
 					user.setName(result.getString("name"));
 				if (result.has("firstname"))
 					user.setFirstName(result.getString("firstname"));
 				if (result.has("lastname"))
 					user.setLastName(result.getString("lastname"));
-				if (result.has("dateofbirth"))
-					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("dateofbirth"))
 					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("description"))
@@ -766,7 +753,7 @@ public class WebServices {
 				if (result.has("userImage"))
 					user.setImagePath(DOMAIN_NAME + result.getString("userImage"));
 				if (result.has("creditCardNumber"))
-					user.setCreditCardNumber(result.getString("creditCardNumber"));
+					user.setCreditCardDisplay("**** saved");
 				if (result.has("expMonth"))
 					user.setExpMonth(result.getString("expMonth"));
 				if (result.has("expYear"))

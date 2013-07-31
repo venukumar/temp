@@ -38,6 +38,8 @@ public class Item {
 	private String name = null;
 	private String description = null;
 	private double price;
+	private double basePrice;
+	private double optionsPrice;
 	private double specialPrice;
 	private String venueId = null;
 	private ArrayList<OptionGroup> optionGroups = null;
@@ -67,7 +69,7 @@ public class Item {
 		this.price = price;
 	}
 	
-	public Item(JSONObject json, HashMap<String, OptionGroup> savedSelections) throws JSONException, NumberFormatException {
+	public Item(JSONObject json, HashMap<String, JSONObject> savedSelections) throws JSONException, NumberFormatException {
 			
 		// Find the type and parse the json accordingly
 		type = json.getString("type");
@@ -85,10 +87,10 @@ public class Item {
 				this.description = json.getString("description");
 	
 			if (json.has("price"))
-				this.price = Double.parseDouble(json.getString("price"));
+				this.basePrice = Double.parseDouble(json.getString("price"));
 			if (json.has("basePrice"))
-				this.price = Double.parseDouble(json.getString("basePrice"));
-	
+				this.basePrice = Double.parseDouble(json.getString("basePrice"));
+			
 			if (json.has("id"))
 				this.itemId = json.getString("id");
 			if (json.has("itemId"))
@@ -119,7 +121,7 @@ public class Item {
 					// If we're saving a selection with ITEM_SELECT, save the first option
 					if (type.equals(ITEM_SELECT) && i == 0 && savedSelections != null) {
 						Log.v(TAG, "Saving selection " + name + " for: " + optionGroupJSON);
-						savedSelections.put(name, new OptionGroup(optionGroupJSON));
+						savedSelections.put(name, optionGroupJSON);
 					}
 					
 					if (optionGroupJSON.getString("type").equals(OptionGroup.OPTION_SELECT)
@@ -129,7 +131,7 @@ public class Item {
 						JSONArray optionsJSON = optionGroupJSON.getJSONArray("options");
 						for (int j = 0 ; j < optionsJSON.length() ; j++) {
 							String selectionName = optionsJSON.getString(j);
-							OptionGroup option = savedSelections.get(selectionName);
+							OptionGroup option = new OptionGroup(savedSelections.get(selectionName));
 							if (option != null) {
 								Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
 								optionGroups.add(option);
@@ -143,6 +145,10 @@ public class Item {
 					}
 				}
 			}
+			
+			// Calculate the drink price based on selected options, if any.
+			calculatePrice();
+			
 		} else if (type.equals(SECTION_TEXT)) {
 			
 			// Parse SECTION_TEXT type
@@ -324,4 +330,24 @@ public class Item {
 		this.text = text;
 	}
 
+	
+	/**
+	 * TODO - Utilities
+	 */
+	
+	public void calculatePrice() {
+
+		optionsPrice = 0;
+		
+		for (OptionGroup options : optionGroups) {
+			for (Option option : options.options) {
+				if (option.selected) {
+					optionsPrice += option.price;
+				}
+			}
+		}
+		
+		price = basePrice + optionsPrice;
+	}
+	
 }

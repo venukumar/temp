@@ -22,15 +22,20 @@ import android.widget.ExpandableListView;
 import android.widget.Toast;
 import android.widget.ExpandableListView.OnChildClickListener;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
-import com.vendsy.bartsy.ItemOptionsActivity;
+import com.vendsy.bartsy.CustomDrinksActivity;
+import com.vendsy.bartsy.CustomizeActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
+import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Menu;
 import com.vendsy.bartsy.model.OptionGroup;
+import com.vendsy.bartsy.model.Order;
+import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -51,9 +56,11 @@ public class DrinksSectionFragment extends SherlockFragment {
 	
 	private Menu mMenu = null;
 	private String mVenueId = null;
+	
+	private static final int REQUEST_CODE_CUSTOM_DRINK = 9301;
 
 	// We use this to store the json of a "compressed" option and replace compressed options on the fly
-	private HashMap<String, OptionGroup> savedSelections = new HashMap<String, OptionGroup>();
+	private HashMap<String, JSONObject> savedSelections = new HashMap<String, JSONObject>();
 
 	public DrinksSectionFragment(VenueActivity activity) {
 		
@@ -255,29 +262,12 @@ public class DrinksSectionFragment extends SherlockFragment {
 					
 					Item item = items.get(groupPosition).get(childPosition);
 					
-					mApp.selectedMenuItem = item;
-					
-					Intent intent = new Intent(mActivity, ItemOptionsActivity.class);
-//					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					mActivity.startActivity(intent);
+ 					CustomizeActivity.setInput(mApp, item);
+					Intent intent = new Intent(mActivity, CustomizeActivity.class);
+					startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
 					return false;
 					
-/*					
-					// Figure out if we are adding the item to the active order or creating a new order
-					Order order;
-					if (mApp.hasActiveOrder()) {
-						order = mApp.getActiveOrder();
-						order.addItem(item);
-					} else {
-						order = new Order(mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
-					}
-					
-					// Create an instance of the dialog fragment and show it
-					DrinkDialogFragment dialog = new DrinkDialogFragment(order);
-					dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
-
-					return false;
-*/				}
+				}
 			});
 			
 			mDrinksListView.postInvalidate();
@@ -290,6 +280,45 @@ public class DrinksSectionFragment extends SherlockFragment {
 
 	}
 	
+
+	@Override
+	public void onActivityResult(int requestCode, int responseCode, Intent data) {
+		
+		super.onActivityResult(requestCode, responseCode, data);
+
+
+		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
+
+		switch (requestCode) {
+		case REQUEST_CODE_CUSTOM_DRINK:
+			
+			switch (responseCode) {
+			case SherlockActivity.RESULT_OK:
+
+				// Figure out if we are adding the item to the active order or creating a new order
+				Order order;
+				Item item;
+				
+				item = CustomizeActivity.getOutput(mApp);
+				
+				if (mApp.hasActiveOrder()) {
+					order = mApp.getActiveOrder();
+					order.addItem(item);
+				} else {
+					order = new Order(mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
+				}
+				
+				// Create an instance of the dialog fragment and show it
+				DrinkDialogFragment dialog = new DrinkDialogFragment(order);
+				dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
+
+				break;
+			
+			}
+			break;
+		}
+		
+	}
 	
 	@Override
 	public void onDestroy() {

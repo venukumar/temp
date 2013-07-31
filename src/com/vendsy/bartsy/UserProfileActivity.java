@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -35,20 +36,23 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
+import com.vendsy.bartsy.utils.AsymmetricCipherUtil;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
-public class UserProfileActivity extends Activity implements OnClickListener {
+public class UserProfileActivity extends SherlockActivity implements OnClickListener {
 
 	private static final String TAG = "UserProfileActivity";
 	
 	BartsyApplication mApp = null ; // pointer to the application used as an input/output buffer to this activity
 	UserProfileActivity mActivity = this;
 	Handler mHandler = new Handler();
+	UserProfile person = null;
 	
 	EditText locuId, paypal, wifiName, wifiPassword,orderTimeOut;
 	
@@ -63,19 +67,27 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		
-		
+				
 		// Set up pointer to activity used as an input/output buffer
 		mApp = (BartsyApplication) getApplication();
-		UserProfile person = mApp.mUserProfileActivityInput;
+		
+		// Get the activity input 
+		try {
+			person = loadInput(mApp);
+		} catch (Exception e) {
+			// Invalid input
+			e.printStackTrace();
+			Log.e(TAG, "Invalid input");
+			finish();
+			return;
+		}
 
 		Log.v(TAG, "onCreate(" + person + ")");
-		
+
 		// Set the base view then pre-populate it with any existing values found in the application input buffer (mUser)
 		setContentView(R.layout.user_profile);
 
@@ -96,19 +108,8 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 
 			if (person.hasImage())
 				((ImageView) findViewById(R.id.view_profile_user_image)).setImageBitmap(person.getImage());
-			else if (person.hasImagePath()) {
-				// User profile has an image - display it asynchronously and also set it up in the output buffer upon success
-//				new DownloadImageTask().execute((ImageView) findViewById(R.id.view_profile_user_image));
-//				String imagePath;
-//				
-//				if(person.getImagePath().contains("http://") || person.getImagePath().contains("https://")){
-//					imagePath = person.getImagePath();
-//				}else{
-//					imagePath = Constants.DOMAIN_NAME + person.getImagePath();
-//				}
-				
+			else if (person.hasImagePath())
 				WebServices.downloadImage(person, (ImageView) findViewById(R.id.view_profile_user_image));
-			}
 			
 			if (person.hasEmail()) 
 				((TextView) findViewById(R.id.view_profile_email)).setText(person.getEmail());	
@@ -132,10 +133,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			}
 
 			// Setup credit card info if available
-			if (person.hasCreditCardNumber() && person.hasExpMonth() && person.hasExpYear()) {
-				((TextView) findViewById(R.id.view_profile_cc_type)).setText(GetCreditCardType(person.getCreditCardNumber()));
-				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText("****" + person.getCreditCardNumber().substring(12));
-				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(person.getCreditCardNumber());
+			if (person.hasCreditCardDisplay()) {
+				((TextView) findViewById(R.id.view_profile_cc_type)).setText("****");
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(person.getCreditCardDisplay());
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(null);
 				((TextView) findViewById(R.id.view_profile_cc_month)).setText("**");
 				((TextView) findViewById(R.id.view_profile_cc_month)).setTag(person.getExpMonth());
 				((TextView) findViewById(R.id.view_profile_cc_year)).setText("**");
@@ -218,6 +219,49 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		
 	}
 
+	
+	/** 
+	 * TODO - Input validation
+	 */
+	
+	// Used to check the validity of this activity's input
+	private static final int ACTIVITY_INPUT_VALID	= 0;
+	private static final int ACTIVITY_INPUT_INVALID = 1;
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		Log.v(TAG, "onPause()");
+		
+		// Invalidate the input of this activity when exiting to avoid reentering it with invalid data
+		Utilities.savePref(this, R.string.UserProfileActivity_input_status, ACTIVITY_INPUT_INVALID);
+	}
+
+	/*
+	 * Sets the input of this activity and makes it valid
+	 */
+	public static final void setInput(BartsyApplication context, UserProfile profile) {
+		Utilities.savePref(context, R.string.UserProfileActivity_input_status, ACTIVITY_INPUT_VALID);
+		context.mUserProfileActivityInput = profile;
+	}
+	
+	private UserProfile loadInput(BartsyApplication context) throws Exception {
+
+		// Make sure the input is valid
+		if (Utilities.loadPref(this, R.string.UserProfileActivity_input_status, ACTIVITY_INPUT_VALID) != ACTIVITY_INPUT_VALID) {		
+			Log.e(TAG, "Invalid activity input - exiting...");
+			Utilities.removePref(this, R.string.UserProfileActivity_input_status);
+			throw new Exception();
+		}
+		
+		return mApp.mUserProfileActivityInput;
+	}
+	
+	
+	/**
+	 * TODO - Click events
+	 */
 	
 	private static final int SELECT_PHOTO = 100;
 	
@@ -422,14 +466,14 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 	 */
 	private void processProfileData() {
 		
-		Log.v(TAG, "validateProfileData(" + (mApp.mUserProfileActivityInput == null ? "null" : mApp.mUserProfileActivityInput.toString()) + ")");
+		Log.v(TAG, "validateProfileData(" + (person == null ? "null" : person.toString()) + ")");
 		
 		UserProfile user = new UserProfile();
 		
 		String email = ((TextView) findViewById(R.id.view_profile_email)).getText().toString();
 		
-		if ( mApp.mUserProfileActivityInput == null || ((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked() ||
-				(mApp.mUserProfileActivityInput != null && mApp.mUserProfileActivityInput.hasBartsyLogin())) {
+		if ( person == null || ((CheckBox) findViewById(R.id.view_profile_account_checkbox)).isChecked() ||
+				(person != null && person.hasBartsyLogin())) {
 
 			// Make sure there is a login/email and password if logging in with Bartsy
 			if (email.length() > 0) {
@@ -463,12 +507,12 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 		}
 
 		// Set social network connectivity fields if present
-		if( mApp.mUserProfileActivityInput != null){
-			user.setBartsyId(mApp.mUserProfileActivityInput.getBartsyId());
-			user.setFacebookUsername(mApp.mUserProfileActivityInput.getFacebookUsername());
-			user.setFacebookId(mApp.mUserProfileActivityInput.getFacebookId());
-			user.setGoogleUsername(mApp.mUserProfileActivityInput.getGoogleUsername());
-			user.setGoogleId(mApp.mUserProfileActivityInput.getGoogleId());
+		if( person != null){
+			user.setBartsyId(person.getBartsyId());
+			user.setFacebookUsername(person.getFacebookUsername());
+			user.setFacebookId(person.getFacebookId());
+			user.setGoogleUsername(person.getGoogleUsername());
+			user.setGoogleId(person.getGoogleId());
 		} 
 
 		// Make sure there's a nickname
@@ -496,29 +540,27 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			user.setFirstName(first_name);
 			user.setLastName(last_name);
 			
-/*			
-			if (first_name.length() > 0 && last_name.length() > 0)
-				user.setName(first_name + " " + last_name);
-			else if (first_name.length() > 0)
-				user.setName(first_name);
-			else if (last_name.length() > 0)
-				user.setName(last_name);
-			if (first_name.length() > 0)
-				user.setFirstName(first_name);
-			if (last_name.length() > 0)
-					user.setLastName(last_name);
-*/			
 			//Extract card details 	
 			String cc = (String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag();
-			String ecc = Utilities.asymmetricRSAEncode(cc);
-			user.setCreditCardNumber(cc);
-			user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
-			user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
 			
-			String ccType = GetCreditCardType(user.getCreditCardNumber());
-			if (!ccType.equalsIgnoreCase("VISA") && !ccType.equalsIgnoreCase("MasterCard")) {
-				Toast.makeText(this, "Please use VISA or MasterCard.", Toast.LENGTH_SHORT).show();
-				return;			
+			// If the card number string is null it's because we started the activity with a user profile that already has a saved cc number on the server. 
+			// In that case we don't save the number again 
+			if (cc != null) {
+			
+				// Make sure we have a supported credit card number (VISA or MasterCard)
+				String ccType = GetCreditCardType(cc);
+				if (!ccType.equalsIgnoreCase("VISA") && !ccType.equalsIgnoreCase("MasterCard")) {
+					Toast.makeText(this, "Please use VISA or MasterCard.", Toast.LENGTH_SHORT).show();
+					return;			
+				}
+				
+				// Encrypt CreditCardNumber(
+				String ecc = AsymmetricCipherUtil.getEncryptedString(cc, Utilities.loadPref(this, "serverKey", ""));
+	
+				// Save encrypted card number and exp date/month
+				user.setCreditCardNumberEncrypted(ecc);
+				user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
+				user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
 			}
 		}
 		
@@ -672,7 +714,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 						mHandler.post(new Runnable() {
 							public void run() {
 								// Return to calling activity with success code 
-								mActivity.setResult(InitActivity.RESULT_OK);
+								mActivity.setResult(UserProfileActivity.RESULT_OK);
 								finish();
 							}
 						});
@@ -713,10 +755,10 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 			Bitmap bitmap;
 			String url = null;
 
-			if (mApp.mUserProfileActivityInput == null)
+			if (person == null)
 				return null;
 
-			url = mApp.mUserProfileActivityInput.getImagePath();
+			url = person.getImagePath();
 			
 			try {
 				Log.v(TAG, "About to decode image from URL: " + url);
@@ -724,7 +766,7 @@ public class UserProfileActivity extends Activity implements OnClickListener {
 				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url).getContent());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
-				Log.d(TAG, "Bad URL: " + mApp.mUserProfileActivityInput.getImagePath());
+				Log.d(TAG, "Bad URL: " + person.getImagePath());
 				return null;
 			} catch (IOException e) {
 				e.printStackTrace();

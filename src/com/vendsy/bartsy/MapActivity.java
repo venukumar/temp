@@ -23,7 +23,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,14 +33,18 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -58,8 +61,11 @@ import com.vendsy.bartsy.utils.WebServices;
  * the ACTION_MANAGE_NETWORK_USAGE action. This activity provides a settings UI
  * for users to specify network settings to control data usage.
  */
-public class MapActivity extends Activity implements LocationListener,
-		OnClickListener {
+public class MapActivity extends SherlockActivity implements LocationListener, OnClickListener {
+
+	private static final String TAG = "MapActivity";
+
+	
 	private ArrayList<Venue> venues = new ArrayList<Venue>();
 	private GoogleMap mMap = null;
 	private LocationManager locationManager;
@@ -67,9 +73,7 @@ public class MapActivity extends Activity implements LocationListener,
 	private static final float MIN_DISTANCE = 1000;
 	private Handler handler = new Handler();
 	BartsyApplication mApp = null;
-
-	Activity activity = this;
-	private static final String TAG = "MapActivity";
+	SherlockActivity mActivity = this;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -247,7 +251,7 @@ public class MapActivity extends Activity implements LocationListener,
 			invokeUserCheckInSyscall(venue);
 		} else if (venue.getId().trim().equalsIgnoreCase(mApp.mActiveVenue.getId().trim())) {
 			// Selected venue was already active, no need to do anything more
-			Intent intent = new Intent(activity, VenueActivity.class);
+			Intent intent = new Intent(mActivity, VenueActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			finish();
@@ -337,7 +341,7 @@ public class MapActivity extends Activity implements LocationListener,
 									
 
 									// Start venue activity and finish this activity
-									Intent intent = new Intent(activity, VenueActivity.class);
+									Intent intent = new Intent(mActivity, VenueActivity.class);
 									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 									startActivity(intent);
 									finish();

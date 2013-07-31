@@ -8,13 +8,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.utils.Constants;
 /**
  * 
  * @author Seenu Malireddy
  *
  */
-public class NDAActivity extends Activity{
+public class NDAActivity extends SherlockActivity {
 	
 
 	private BartsyApplication mApp;

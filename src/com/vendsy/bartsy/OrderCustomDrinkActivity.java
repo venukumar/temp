@@ -2,6 +2,7 @@ package com.vendsy.bartsy;
 
 import java.util.ArrayList;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.adapter.CustomDrinksListViewAdapter;
 import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleSectionDialog;
@@ -43,7 +44,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
  * @author Seenu Malireddy
  *
  */
-public class OrderCustomDrinkActivity extends Activity{
+public class OrderCustomDrinkActivity extends SherlockActivity {
 	
 	// Progress dialog
 	private ProgressDialog progressDialog;

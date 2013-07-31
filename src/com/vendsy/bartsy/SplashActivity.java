@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -29,7 +30,7 @@ import android.widget.Toast;
  *
  */
 
-public class SplashActivity extends Activity {
+public class SplashActivity extends SherlockActivity {
 
 	private final static String TAG = "SplashActivity";
 	private Handler handler = new Handler();

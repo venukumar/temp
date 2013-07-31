@@ -15,7 +15,7 @@ import android.widget.TextView;
 public class Option {
 		
 	protected String name;		// name of the option
-	protected String price; 	// addition price of the option
+	protected double price; 	// addition price of the option
 	protected String specials;	// specials for this option
 	protected boolean selected = false; // is this option selected?
 	protected String type;
@@ -26,9 +26,9 @@ public class Option {
 		if (json.has("name"))
 			name = json.getString("name");
 		if (json.has("specials"))
-			price = json.getString("specials");
+			specials = json.getString("specials");
 		if (json.has("price"))
-			price = json.getString("price");
+			price = Double.parseDouble(json.getString("price"));
 		if (json.has("selected"))
 			selected = json.getBoolean("selected");
 		
@@ -43,7 +43,7 @@ public class Option {
 		
 		if (name != null) {
 			String viewName = name;
-			if (price != null) {
+			if (price != 0) {
 				if (OptionGroup.OPTION_CHOOSE.equals(type)) {
 					viewName = name + " ($" + price + ")";
 				} else if (OptionGroup.OPTION_ADD.equals(type)) {
@@ -53,8 +53,8 @@ public class Option {
 			optionName.setText(viewName);
 		}
 		
-		if (price != null)
-			((TextView) mView.findViewById(R.id.view_order_option_base_amount)).setText(price);
+		if (price != 0)
+			((TextView) mView.findViewById(R.id.view_order_option_base_amount)).setText(Double.toString(price));
 
 		setChecked(mView, selected);
 		optionName.setTag(this);

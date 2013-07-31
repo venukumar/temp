@@ -49,7 +49,8 @@ public class UserProfile {
 	public String description = null;
 	private String name = null;
 	private String gender  = null;
-	private String creditCardNumber = null;
+	private String creditCardNumberEncrypted = null;
+	private String creditCardDisplay = null;// Show instead of credit card number 
 	private String expMonth = null;
 	private String expYear = null;
 
@@ -104,7 +105,7 @@ public class UserProfile {
 				(!hasDescription() ? "" : ", description: " + description) +
 				(!hasName() ? "" : ", name: " + name) +
 				(!hasGender() ? "" : ", gender: " + gender) +
-				(!hasCreditCardNumber() ? "" : ", creditCardNumber: ****" + creditCardNumber.substring(12)) +
+				(!hasCreditCardNumberEncrypted() ? "" : ", creditCardNumber: ****" + creditCardNumberEncrypted.substring(12)) +
 				(!hasExpMonth() ? "" : ", expMonth: **") +
 				(!hasExpYear() ? "" : ", expYear: **") +
 				(!hasVisibility() ? "" : ", visibility: " + visibility) +
@@ -478,19 +479,19 @@ public class UserProfile {
 		this.gender = gender;
 	}
 
-	public boolean hasCreditCardNumber() {
-		if (creditCardNumber == null || creditCardNumber.equalsIgnoreCase("") || creditCardNumber.length()<13)
+	public boolean hasCreditCardNumberEncrypted() {
+		if (creditCardNumberEncrypted == null || creditCardNumberEncrypted.equalsIgnoreCase("") || creditCardNumberEncrypted.length()<13)
 			return false;
 		else 
 			return true;
 	}
 	
-	public String getCreditCardNumber() {
-		return creditCardNumber;
+	public String getCreditCardNumberEncrypted() {
+		return creditCardNumberEncrypted;
 	}
 
-	public void setCreditCardNumber(String creditCardNumber) {
-		this.creditCardNumber = creditCardNumber;
+	public void setCreditCardNumberEncrypted(String creditCardNumber) {
+		this.creditCardNumberEncrypted = creditCardNumber;
 	}
 
 	public boolean hasExpMonth() {
@@ -665,5 +666,17 @@ public class UserProfile {
 
 		view.setTag(this);
 
+	}
+
+	public boolean hasCreditCardDisplay() {
+		return !(creditCardDisplay == null || creditCardDisplay.equals(""));
+	}
+
+	public String getCreditCardDisplay() {
+		return creditCardDisplay;
+	}
+
+	public void setCreditCardDisplay(String creditCardDisplay) {
+		this.creditCardDisplay = creditCardDisplay;
 	}
 }

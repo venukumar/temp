@@ -155,6 +155,15 @@ public final class Utilities {
 		return sharedPref.getInt(r.getString(key), defaultValue);
 	}
 
+	public static void removePref(Context context, int key) {
+		SharedPreferences sharedPref = context.getSharedPreferences(context.getResources()
+				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
+		Resources r = context.getResources();
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.remove(r.getString(R.string.prefs_venue));
+		editor.commit();	
+	}
+	
 	/**
 	 * Returns a Date with the GMT string provided as input in the local time zone. The 
 	 * @param date
@@ -201,76 +210,6 @@ public final class Utilities {
 			time = date.getTime();
 		}
 		return (String) DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(),DateUtils.SECOND_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
-	}
-	
-	/*
-	function getDecryptedKey(){
-        String baseFolder = servletContext.getRealPath("/")
-        PublicKey userPublicKey=CryptoUtil.readPublicKey(baseFolder+"images/bartsy_office.crt")
-        String creditInfo = "4121212212121212122"
-        String hexOficeAES=AsymmetricCipherTest.encrypt(creditInfo.getBytes(),userPublicKey)
-        PrivateKey bartsyPrivateKey=AsymmetricCipherTest.getPemPrivateKey(baseFolder+"images/bartsy_privateKey.pem","RSA")
-        Base64 b64 = new Base64();
-        byte[] bb=b64.decode(hexOficeAES)
-        byte[] bDecryptedKey = AsymmetricCipherTest.decrypt(bb,bartsyPrivateKey)
-        String decCredit = new String(bDecryptedKey, "UTF8")
-        decCredit = decCredit.trim();
-        println "zxzx "+decCredit
-    }
-*/
-	/**
-	 * Encrypts a string using RSA and returns a Base 64 encoded version of the encoded string
-	 * @param theTestText
-	 * @return - encoded string if all went well, original string in case of exception
-	 */
-	public static String asymmetricRSAEncode (String theTestText) {
-
-        Log.v(TAG, "AsymmetricAlgorithmRSA(" + theTestText + ")");
-
-		
-	    // Generate key pair for 1024-bit RSA encryption and decryption
-	    Key publicKey = null;
-	    Key privateKey = null;
-	    try {
-	        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-	        kpg.initialize(1024);
-	        KeyPair kp = kpg.genKeyPair();
-	        publicKey = kp.getPublic();
-	        privateKey = kp.getPrivate();
-	        Log.v(TAG, "public key: " + publicKey);
-	        Log.v(TAG, "privte key: " + privateKey);
-
-	    } catch (Exception e) {
-	        Log.e(TAG, "RSA key pair error");
-	    }
-
-	    // Encode the original data with RSA private key
-	    byte[] encodedBytes = null;
-	    try {
-	        Cipher c = Cipher.getInstance("RSA");
-	        c.init(Cipher.ENCRYPT_MODE, privateKey);
-	        encodedBytes = c.doFinal(theTestText.getBytes());
-	        Log.v(TAG, "endoded string: " + encodedBytes);
-	    } catch (Exception e) {
-	        Log.e(TAG, "RSA encryption error");
-	        return theTestText;
-	    }
-	    
-	    String encodedText = Base64.encodeToString(encodedBytes, Base64.DEFAULT);
-
-	    // Decode the encoded data with RSA public key
-	    byte[] decodedBytes = null;
-	    try {
-	        Cipher c = Cipher.getInstance("RSA");
-	        c.init(Cipher.DECRYPT_MODE, publicKey);
-	        decodedBytes = c.doFinal(encodedBytes);
-	        Log.v(TAG, "dedoded string: " + decodedBytes);
-	    } catch (Exception e) {
-	        Log.e(TAG, "RSA decryption error");
-			return theTestText;
-	    }
-	    
-	    return encodedText;
 	}
 
 }
