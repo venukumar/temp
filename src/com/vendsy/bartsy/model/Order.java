@@ -170,6 +170,165 @@ public class Order {
 
 	}
 
+	
+	/**
+	 * Constructor to parse all the information from the JSON
+	 * 
+	 * @param json
+	 */
+	public Order(JSONObject json) {
+
+		try {
+
+			// Parse old format item
+			if (json.has("title")  || json.has("description") || json.has("itemId")) {
+				Item item = new Item();
+				if (json.has("itemName"))
+					item.setTitle(json.getString("itemName"));
+				if (json.has("description"))
+					item.setDescription(json.getString("description"));
+				if (json.has("basePrice"))
+					item.setPrice(Double.valueOf(json.getString("basePrice")));
+				if (json.has("itemId"))
+					item.setItemId(json.getString("itemId"));
+				items.add(item);
+			} 
+	
+			// Parse new format item list
+			if (json.has("itemsList")) {
+				JSONArray itemsJSON = json.getJSONArray("itemsList");
+				
+				for (int i=0 ; i < itemsJSON.length() ; i++) {
+					items.add(new Item(itemsJSON.getJSONObject(i), null));
+				}
+			}
+			
+			if (json.has("basePrice"))
+				baseAmount = Double.valueOf(json.getString("basePrice"));
+
+			if (json.has("tipPercentage"))
+				tipAmount = Double.valueOf(json.getString("tipPercentage"));
+			
+			orderId = json.getString("orderId");
+			
+			totalAmount = Double.valueOf(json.getString("totalPrice"));
+			taxAmount = totalAmount - tipAmount - baseAmount;
+
+
+			if (json.has("senderBartsyId"))
+				senderId = json.getString("senderBartsyId");
+			if (json.has("senderNickname"))
+				senderNickname = json.getString("senderNickname");
+			if (json.has("senderImagePath"))
+				senderImagePath = json.getString("senderImagePath");
+
+			if (json.has("bartsyId"))
+				recipientId = json.getString("bartsyId");
+			if (json.has("recieverBartsyId"))
+				recipientId = json.getString("recieverBartsyId");
+			if (json.has("receiverBartsyId"))
+				recipientId = json.getString("receiverBartsyId");			
+			if (json.has("recipientBartsyId"))
+				recipientId = json.getString("recipientBartsyId");
+			if (json.has("recipientNickname"))
+				recipientNickname = json.getString("recipientNickname");
+			if(json.has("recieverName")){
+				recipientNickname = json.getString("recieverName");
+			}
+			if (json.has("recipientImagePath"))
+				recipientImagePath = json.getString("recipientImagePath");
+			if (json.has("recieverImage")){
+				recipientImagePath = json.getString("recieverImage");
+			}
+			
+			// Setup the order status if it exists or set it to NEW_ORDER if it doesn't
+			if (json.has("orderStatus"))
+				status = Integer.parseInt(json.getString("orderStatus"));
+			else 
+				status = ORDER_STATUS_NEW;
+
+			// For now (hack) since the server is sending the wrong status for offered drinks, update it 
+//			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
+//				status = ORDER_STATUS_OFFERED;
+//			}
+			
+			// Used only by the getPastOrders syscall
+			if (json.has("dateCreated")) 
+				createdDate = json.getString("dateCreated");
+
+			// Setup created date (time the order was placed)
+			if (json.has("orderTime")) {
+				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
+				createdDate = json.getString("orderTime");
+				if (json.has("currentTime")) {
+					state_transitions[ORDER_STATUS_NEW] = adjustDate(json.getString("currentTime"), createdDate);
+				} else {
+					state_transitions[ORDER_STATUS_NEW] = Utilities.getLocalDateFromGMTString(createdDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+				}
+			} else {
+				// If no created date use current date for the creation state
+				state_transitions[ORDER_STATUS_NEW] = new Date();
+			}
+
+			// Setup last updated date (time the order was updated last)  *** MAKE SURE to have updated status before getting here ***
+			if (json.has("updateTime")) {
+				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
+				updatedDate = json.getString("updateTime");
+				if (json.has("currentTime")) {
+					state_transitions[status] = adjustDate(json.getString("currentTime"), updatedDate);
+				} else {
+					state_transitions[status] = Utilities.getLocalDateFromGMTString(updatedDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+				}
+			} else {
+				// If no created date use current date for the update time
+				state_transitions[status] = new Date();
+			}
+
+			if (json.has("orderTimeout"))
+				timeOut = json.getInt("orderTimeout");
+			
+			// Set up last status based on current status
+			switch (status) {
+			case ORDER_STATUS_OFFERED:
+				last_status = status;
+				break;
+			case ORDER_STATUS_NEW:
+				last_status = status;
+				break;
+			case ORDER_STATUS_IN_PROGRESS:
+				last_status = ORDER_STATUS_READY;
+				break;
+			case ORDER_STATUS_READY:
+				last_status = ORDER_STATUS_IN_PROGRESS;
+				break;
+			}
+			
+			// Update the last status of the order (this is sent for past orders)
+			if (json.has("lastState"))
+				last_status = Integer.parseInt(json.getString("lastState"));
+			
+			// Set up user session code
+			if (json.has("userSessionCode")) 
+				userSessionCode = json.getString("userSessionCode");
+			
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		this.taxAmount = totalAmount - tipAmount - baseAmount;
+
+		df.setMaximumFractionDigits(2);
+		df.setMinimumFractionDigits(2);
+
+	}
+
+	
+	/**
+	 * TODO - Readers
+	 */
+
 	/**
 	 * It will returns JSON format to place order
 	 */
@@ -294,182 +453,11 @@ public class Order {
 	}
 	
 	
+	
+	
 	/**
-	 * Constructor to parse all the information from the JSON
-	 * 
-	 * @param json
+	 * TODO - States
 	 */
-	public Order(JSONObject json) {
-
-		try {
-
-			// Parse old format item
-			if (json.has("title")  || json.has("description") || json.has("itemId")) {
-				Item item = new Item();
-				if (json.has("itemName"))
-					item.setTitle(json.getString("itemName"));
-				if (json.has("description"))
-					item.setDescription(json.getString("description"));
-				if (json.has("basePrice"))
-					item.setPrice(Double.valueOf(json.getString("basePrice")));
-				if (json.has("itemId"))
-					item.setItemId(json.getString("itemId"));
-				items.add(item);
-			} 
-	
-			// Parse new format item list
-			if (json.has("itemsList")) {
-				JSONArray itemsJSON = json.getJSONArray("itemsList");
-				
-				for (int i=0 ; i < itemsJSON.length() ; i++) {
-					items.add(new Item(itemsJSON.getJSONObject(i), null));
-				}
-			}
-			
-			if (json.has("basePrice"))
-				baseAmount = Double.valueOf(json.getString("basePrice"));
-
-			if (json.has("tipPercentage"))
-				tipAmount = Double.valueOf(json.getString("tipPercentage"));
-			
-			orderId = json.getString("orderId");
-			
-			totalAmount = Double.valueOf(json.getString("totalPrice"));
-			taxAmount = totalAmount - tipAmount - baseAmount;
-
-
-			if (json.has("senderBartsyId"))
-				senderId = json.getString("senderBartsyId");
-			if (json.has("senderNickname"))
-				senderNickname = json.getString("senderNickname");
-			if (json.has("senderImagePath"))
-				senderImagePath = json.getString("senderImagePath");
-
-			if (json.has("bartsyId"))
-				recipientId = json.getString("bartsyId");
-			if (json.has("recieverBartsyId"))
-				recipientId = json.getString("recieverBartsyId");
-			if (json.has("receiverBartsyId"))
-				recipientId = json.getString("receiverBartsyId");			
-			if (json.has("recipientBartsyId"))
-				recipientId = json.getString("recipientBartsyId");
-			if (json.has("recipientNickname"))
-				recipientNickname = json.getString("recipientNickname");
-			if(json.has("recieverName")){
-				recipientNickname = json.getString("recieverName");
-			}
-			if (json.has("recipientImagePath"))
-				recipientImagePath = json.getString("recipientImagePath");
-			if (json.has("recieverImage")){
-				recipientImagePath = json.getString("recieverImage");
-			}
-			
-			// Setup the order status if it exists or set it to NEW_ORDER if it doesn't
-			if (json.has("orderStatus"))
-				status = Integer.parseInt(json.getString("orderStatus"));
-			else 
-				status = ORDER_STATUS_NEW;
-
-			// For now (hack) since the server is sending the wrong status for offered drinks, update it 
-//			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
-//				status = ORDER_STATUS_OFFERED;
-//			}
-			
-			// Used only by the getPastOrders syscall
-			if (json.has("dateCreated")) 
-				createdDate = json.getString("dateCreated");
-
-			// Setup created date (time the order was placed)
-			if (json.has("orderTime")) {
-				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
-				createdDate = json.getString("orderTime");
-				state_transitions[ORDER_STATUS_NEW] = parseWeirdDate(createdDate);
-			} else {
-				// If no created date use current date for the creation state
-				state_transitions[ORDER_STATUS_NEW] = new Date();
-			}
-
-			// Setup last updated date (time the order was updated last)  *** MAKE SURE to have updated status before getting here ***
-			if (json.has("updateTime")) {
-				// User server provided creation date in the following format: 27 Jun 2013 12:03:04 GMT
-				updatedDate = json.getString("updateTime");
-				state_transitions[status] = parseWeirdDate(json.getString("updateTime"));
-			} else {
-				// If no created date use current date for the update time
-				state_transitions[status] = new Date();
-			}
-
-			if (json.has("orderTimeout"))
-				timeOut = json.getInt("orderTimeout");
-			
-			// Set up last status based on current status
-			switch (status) {
-			case ORDER_STATUS_OFFERED:
-				last_status = status;
-				break;
-			case ORDER_STATUS_NEW:
-				last_status = status;
-				break;
-			case ORDER_STATUS_IN_PROGRESS:
-				last_status = ORDER_STATUS_READY;
-				break;
-			case ORDER_STATUS_READY:
-				last_status = ORDER_STATUS_IN_PROGRESS;
-				break;
-			}
-			
-			// Update the last status of the order (this is sent for past orders)
-			if (json.has("lastState"))
-				last_status = Integer.parseInt(json.getString("lastState"));
-			
-			// Set up user session code
-			if (json.has("userSessionCode")) 
-				userSessionCode = json.getString("userSessionCode");
-			
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		this.taxAmount = totalAmount - tipAmount - baseAmount;
-
-		df.setMaximumFractionDigits(2);
-		df.setMinimumFractionDigits(2);
-
-	}
-
-	
-	Date parseWeirdDate(String date) {
-		Date d = Utilities.getLocalDateFromGMTString(createdDate, "dd MMM yyyy HH:mm:ss 'GMT'");
-		if (d == null)
-			d = Utilities.getLocalDateFromGMTString(createdDate, "d MMM yyyy HH:mm:ss 'GMT'");
-		return d;
-	}
-	
-
-	public String getRecipientName(ArrayList<UserProfile> people) {
- 
-		if (recipientNickname != null)
-			return recipientNickname;
-		
-		if (orderRecipient != null)
-			return orderRecipient.getName();
-		
-		if (recipientId == null)
-			return "<unkown>";
-					
-		for (UserProfile p : people) {
-			if (p.getBartsyId().equals(recipientId)) {
-				// User found
-				orderRecipient = p;
-				return p.getName();
-			}
-		}
-		return "<unkown>";
-	}
-	
-	
 
 	public void updateStatus(int status) {
 		
@@ -506,6 +494,10 @@ public class Order {
 		}
 	}
 
+	
+	/**
+	 * TODO - Views
+	 */
 
 	public View updateView(LayoutInflater inflater, ViewGroup container) {
 
@@ -597,7 +589,6 @@ public class Order {
 				((ImageView) view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(bitmap);
 				
 			} catch (WriterException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 */			
@@ -777,7 +768,12 @@ public class Order {
 			itemsView.addView(view);
 		}
 	}
+	
 
+	/**
+	 * TODO - Utilities
+	 */
+	
 	public void addItem(Item item) {
 
 		Log.v(TAG, "Adding item "  + item.getTitle() + " to order " + orderId );
@@ -790,6 +786,34 @@ public class Order {
 		taxAmount	=  taxRate * baseAmount;
 		tipAmount = Constants.defaultTip * baseAmount;
 		totalAmount	=  tipAmount + taxAmount + baseAmount;
+	}
+	
+	Date adjustDate(String serverDate, String orderDate) {
+		Date server = Utilities.getLocalDateFromGMTString(serverDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+		Date order = Utilities.getLocalDateFromGMTString(orderDate, "dd MMM yyyy HH:mm:ss 'GMT'");
+		order.setTime(order.getTime() + (new Date().getTime() - server.getTime()));
+		return order;
+	}
+	
+	public String getRecipientName(ArrayList<UserProfile> people) {
+ 
+		if (recipientNickname != null)
+			return recipientNickname;
+		
+		if (orderRecipient != null)
+			return orderRecipient.getName();
+		
+		if (recipientId == null)
+			return "<unkown>";
+					
+		for (UserProfile p : people) {
+			if (p.getBartsyId().equals(recipientId)) {
+				// User found
+				orderRecipient = p;
+				return p.getName();
+			}
+		}
+		return "<unkown>";
 	}
 
 }
