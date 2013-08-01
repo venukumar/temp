@@ -1010,7 +1010,7 @@ public class WebServices {
 	 * 
 	 * @param imageView
 	 */
-	public static void downloadImage(final String url, final ImageView imageView, final HashMap<String, Bitmap> savedImages) {
+	synchronized public static void downloadImage(final String url, final ImageView imageView, final HashMap<String, Bitmap> savedImages) {
 
 		// Error handling: Do not proceed if the url is null
 		if(url==null){
@@ -1052,7 +1052,7 @@ public class WebServices {
 
 	}
 	
-	public static Bitmap fetchImage(String url) {
+	synchronized public static Bitmap fetchImage(String url) {
 
 		Log.v("file Url: ", url);
 		Bitmap bmImg = null;
