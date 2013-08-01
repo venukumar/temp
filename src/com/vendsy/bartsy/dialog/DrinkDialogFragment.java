@@ -111,8 +111,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 			// Create item view
 			View itemView = inflater.inflate(R.layout.item, null);				
 			((TextView) itemView.findViewById(R.id.view_dialog_drink_title)).setText(item.getTitle());
-			if (item.getDescription() != null && !item.getDescription().equalsIgnoreCase(""))
-				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setText(item.getDescription());
+			if (item.getOptionsDescription() != null && !item.getOptionsDescription().equalsIgnoreCase(""))
+				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setText(item.getOptionsDescription());
 			else
 				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setVisibility(View.GONE);
 			((TextView) itemView.findViewById(R.id.view_dialog_drink_price)).setText(df.format(item.getPrice()));

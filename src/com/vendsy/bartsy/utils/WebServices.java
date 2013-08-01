@@ -93,8 +93,8 @@ public class WebServices {
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
 	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
-	
-	public static final String URL_GET_INGREDIENTS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getIngredientsInLocuFormat";
+	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
+	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavoriteDrinks";
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
@@ -605,6 +605,7 @@ public class WebServices {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("venueId", venueID);
+			json.put("bartsyId", context.loadBartsyId());
 			response = postRequest(url, json, context);
 		} catch (Exception e1) {
 			e1.printStackTrace();

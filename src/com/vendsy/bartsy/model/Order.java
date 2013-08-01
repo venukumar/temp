@@ -760,10 +760,10 @@ public class Order {
 			LinearLayout view = (LinearLayout) inflater.inflate(R.layout.open_orders_menu_item, container, false);
 			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(item.getPrice()));
 			((TextView) view.findViewById(R.id.view_order_title)).setText(item.getTitle());
-			if (item.getDescription() == null || item.getDescription().equalsIgnoreCase(""))
+			if (item.getOptionsDescription() == null || item.getOptionsDescription().equalsIgnoreCase(""))
 				((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
 			else
-				((TextView) view.findViewById(R.id.view_order_description)).setText(item.getDescription());
+				((TextView) view.findViewById(R.id.view_order_description)).setText(item.getOptionsDescription());
 			
 			itemsView.addView(view);
 		}

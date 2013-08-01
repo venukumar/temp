@@ -49,7 +49,7 @@ public class Item {
 	private String category = null;
 
 	private String menuPath = null;
-	private String optionsDescription = null;
+	private String optionsDescription = "Ordered 'as-is.' Click to customize.";
 	
 	private ArrayList<OptionGroup> optionGroups = null;
 
@@ -341,6 +341,22 @@ public class Item {
 		this.text = text;
 	}
 
+	public String getMenuPath() {
+		return menuPath;
+	}
+
+	public void setMenuPath(String menuPath) {
+		this.menuPath = menuPath;
+	}
+
+	public String getOptionsDescription() {
+		return optionsDescription;
+	}
+
+	public void setOptionsDescription(String optionDescription) {
+		this.optionsDescription = optionDescription;
+	}
+	
 	
 	/**
 	 * TODO - Utilities
@@ -361,7 +377,7 @@ public class Item {
 			for (Option option : options.options) {
 				if (option.selected) {
 					optionsPrice += option.price;
-					if (optionsDescription.endsWith(", "))
+					if (optionsDescription.endsWith(", ") || optionsDescription.equals(""))
 						optionsDescription += option.name;
 					else
 						optionsDescription += ", " + option.name;
@@ -399,5 +415,4 @@ public class Item {
 			}
 		}
 	}
-	
 }

@@ -25,6 +25,7 @@ public class Menu {
 
 	private static final String TAG = "Menu";
 	
+	public String name = null;
 	public ArrayList<String> headings = new ArrayList<String>() ;
 	public ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
 	
@@ -41,6 +42,8 @@ public class Menu {
 			
 			JSONObject menuObj = menusArryObj.getJSONObject(m);
 			JSONArray sections = menuObj.getJSONArray("sections");
+			
+			boolean showMenu = menuObj.has("show_menu") ? (menuObj.getString("show_menu").equals("No") ? false : true) : true;
 			
 			// Parse sections 
 			for (int i = 0; i < sections.length(); i++) {
@@ -60,7 +63,7 @@ public class Menu {
 							// Create a heading by flattening the hierarchy of headings into one string
 							String heading = "";
 							if (menuObj.has("menu_name"))
-								heading = menuObj.getString("menu_name");
+								name = heading = menuObj.getString("menu_name");
 							String sectionName = "";
 							if (section.has("section_name"))
 								sectionName = section.getString("section_name");
@@ -98,15 +101,21 @@ public class Menu {
 								
 								// Add the item to the menu
 								subsection_contents.add(item);
+								item.setMenuPath(heading);
 							}
 
-							if (subsection_contents.size() > 0) {
-								// Add the heading title to the headings list 
-								headings.add(heading);
-	
-								// Add the contents of the subsection to the list of items
-								items.add(subsection_contents);
+							if (showMenu) {
+								if (subsection_contents.size() > 0) {
+									// Add the heading title to the headings list 
+									headings.add(heading);
+		
+									// Add the contents of the subsection to the list of items
+									items.add(subsection_contents);
+								}
+							} else {
+								Log.v(TAG, "Skipping hidden section " + heading);
 							}
+
 						}
 					}
 				}

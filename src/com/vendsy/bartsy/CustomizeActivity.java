@@ -7,12 +7,14 @@ import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Utilities;
+import com.vendsy.bartsy.utils.WebServices;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.CheckBox;
 
 /**
  * 
@@ -54,7 +56,8 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		setContentView(mItem.inflateOrder(getLayoutInflater()));
 		
 		// Set up listeners
-		findViewById(R.id.view_order_item_submit).setOnClickListener(this);
+		findViewById(R.id.view_order_item_add).setOnClickListener(this);
+		findViewById(R.id.view_order_item_favorite).setOnClickListener(this);
 	}
 	
 	/** 
@@ -125,10 +128,18 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 
 		switch (arg0.getId()) {
 		
-		case R.id.view_order_item_submit:
-			
+		case R.id.view_order_item_add:
 			mItem.updateOptions();
 			finishWithResult(mApp, mItem);
+			break;
+		case R.id.view_order_item_favorite:
+			CheckBox favorite = (CheckBox) arg0;
+			mItem.updateOptions();
+			
+//			if (favorite.isChecked()) 
+//				WebServices.saveFavorite(mApp, mItem);
+//			else
+//				WebServices.deleteFavorite(mApp, mItem);
 			break;
 		}
 	}
