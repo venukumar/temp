@@ -1,5 +1,7 @@
 package com.vendsy.bartsy.model;
 
+import java.text.DecimalFormat;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,6 +40,11 @@ public class Option {
 	public View inflateOrder(LayoutInflater inflater) {
 
 		mView = inflater.inflate(R.layout.order_option, null);
+		
+	    DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(0);
+		df.setMinimumFractionDigits(0);
+
 		mView.setTag(this);
 		CheckBox optionName = (CheckBox) mView.findViewById(R.id.view_order_option_name);
 		
@@ -45,16 +52,18 @@ public class Option {
 			String viewName = name;
 			if (price != 0) {
 				if (OptionGroup.OPTION_CHOOSE.equals(type)) {
-					viewName = name + " ($" + price + ")";
+					viewName = name + " ($" + df.format(price) + ")";
 				} else if (OptionGroup.OPTION_ADD.equals(type)) {
-					viewName = name + " (add $" + price + ")";
+					viewName = name + " (add $" + df.format(price) + ")";
 				}
 			}
 			optionName.setText(viewName);
 		}
 		
-		if (price != 0)
-			((TextView) mView.findViewById(R.id.view_order_option_base_amount)).setText(Double.toString(price));
+		if (price == 0)
+			mView.findViewById(R.id.view_order_option_price).setVisibility(View.GONE);
+		else
+			((TextView) mView.findViewById(R.id.view_order_option_base_amount)).setText(df.format(price));
 
 		setChecked(mView, selected);
 		optionName.setTag(this);
@@ -97,10 +106,10 @@ public class Option {
 		((CheckBox) mView.findViewById(R.id.view_order_option_name)).setChecked(selected);
 		
 		// Show price if selected
-		if (selected)
+		if (selected && price != 0)
 			view.findViewById(R.id.view_order_option_price).setVisibility(View.VISIBLE);
 		else
-			view.findViewById(R.id.view_order_option_price).setVisibility(View.INVISIBLE);
+			view.findViewById(R.id.view_order_option_price).setVisibility(View.GONE);
 	}
 	
 }

@@ -164,7 +164,7 @@
                                     \"type\": \"ITEM_SELECT\",
                                     \"name\": \"Vodka\",
                                     \"description\": \"Mixed with just about anything, Vodka is the drink of choice in any situation.\",
-                                    \"price\": \"1\",
+                                    \"price\": \"0\",
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",
@@ -236,7 +236,7 @@
                                     \"type\": \"ITEM_SELECT\",
                                     \"name\": \"Gin\",
                                     \"description\": \"Cheers to that! Gin gin.\",
-                                    \"price\": \"1\",
+                                    \"price\": \"0\",
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",
@@ -260,7 +260,7 @@
                                     \"type\": \"ITEM_SELECT\",
                                     \"name\": \"Tequila\",
                                     \"description\": \"For him or of her, tequila has taken its place in the top requested drinks category.\",
-                                    \"price\": \"1\",
+                                    \"price\": \"0\",
                                     \"option_groups\": [
                                         {
                                             \"type\": \"OPTION_CHOOSE\",

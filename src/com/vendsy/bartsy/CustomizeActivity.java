@@ -50,8 +50,10 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			return;
 		}
 		
+		// Set the main view
 		setContentView(mItem.inflateOrder(getLayoutInflater()));
 		
+		// Set up listeners
 		findViewById(R.id.view_order_item_submit).setOnClickListener(this);
 	}
 	
@@ -125,6 +127,7 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		
 		case R.id.view_order_item_submit:
 			
+			mItem.updateOptions();
 			finishWithResult(mApp, mItem);
 			break;
 		}

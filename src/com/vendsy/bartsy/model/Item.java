@@ -42,14 +42,17 @@ public class Item {
 	private double optionsPrice;
 	private double specialPrice;
 	private String venueId = null;
-	private ArrayList<OptionGroup> optionGroups = null;
-	
-	// In addition to above for BARTSY_ITEM type
+
 	private String glass = null;
 	private String ingredients = null;
 	private String instructions = null;
 	private String category = null;
+
+	private String menuPath = null;
+	private String optionsDescription = null;
 	
+	private ArrayList<OptionGroup> optionGroups = null;
+
 	// For SECTION_TEXT type
 	private String text = null;
 	
@@ -150,8 +153,12 @@ public class Item {
 				}
 			}
 			
+			// If the item is a cocktail (marked with a special item type called BARTSY_ITEM), adjust the prices accordingly
+			if (type.equals(BARTSY_ITEM))
+				adjustCocktailPrices();
+			
 			// Calculate the drink price based on selected options, if any.
-			calculatePrice();
+			updateOptions();
 			
 		} else if (type.equals(SECTION_TEXT)) {
 			
@@ -339,9 +346,13 @@ public class Item {
 	 * TODO - Utilities
 	 */
 	
-	public void calculatePrice() {
+	/*
+	 * Build the price of the item from the options and updates the optionsDescription
+	 */
+	public void updateOptions() {
 
 		optionsPrice = 0;
+		optionsDescription = "";
 		
 		if (optionGroups == null)
 			return;
@@ -350,11 +361,43 @@ public class Item {
 			for (Option option : options.options) {
 				if (option.selected) {
 					optionsPrice += option.price;
+					if (optionsDescription.endsWith(", "))
+						optionsDescription += option.name;
+					else
+						optionsDescription += ", " + option.name;
 				}
 			}
 		}
 		
 		price = basePrice + optionsPrice;
+	}
+	
+	/*
+	 * Set the price of the option groups of a cocktail to zero except for first option
+	 */
+	public void adjustCocktailPrices() {
+
+		price = 0;
+		basePrice = 0;
+		optionsPrice = 0;
+		
+		if (optionGroups == null)
+			return;
+		
+		for (int i = 0 ; i < optionGroups.size() ; i++) {
+			
+			OptionGroup options = optionGroups.get(i);
+			
+			for (Option option : options.options) {
+				
+				if (i == 0) {
+					// The first option group of a cocktail sets the price of the item so don't zero it out
+				} else {
+					// The price of other options should be zero
+					option.price = 0;
+				}
+			}
+		}
 	}
 	
 }

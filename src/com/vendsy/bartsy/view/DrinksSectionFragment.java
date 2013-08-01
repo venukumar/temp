@@ -213,7 +213,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 
 	/*****
 	 * 
-	 * TODO - Viewer functions
+	 * TODO - Views
 	 * 
 	 */
 	
