@@ -14,6 +14,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -111,24 +113,21 @@ public class DrinksSectionFragment extends SherlockFragment {
 			}
 			
 			// First add a test menu to test options
-			try {
+/*			try {
 				mMenu = createTestMenu();
 			} catch (JSONException e) {
 				e.printStackTrace();
 				mMenu = new Menu();
 			}
-			
+*/			
 			// Get the menus for that venue
 			new Thread() {
 				@Override
 				public void run() {
-//					addMenu(WebServices.URL_GET_INGREDIENTS_MENU);
+					addMenu(WebServices.URL_GET_FAVORITES_MENU);
+					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU);
 					addMenu(WebServices.URL_GET_COCKTAILS_MENU);
 					addMenu(WebServices.URL_GET_BAR_LIST);
-					
-					
-					
-					
 				}
 			}.start();
 						
@@ -309,9 +308,21 @@ public class DrinksSectionFragment extends SherlockFragment {
 				}
 				
 				// Create an instance of the dialog fragment and show it
-				DrinkDialogFragment dialog = new DrinkDialogFragment(order);
+				DrinkDialogFragment dialog = new DrinkDialogFragment(order);				
 				dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
+/*
+			    FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+			    DrinkDialogFragment newFragment = new DrinkDialogFragment(order);
+			    
+		        // The device is smaller, so show the fragment fullscreen
+		        FragmentTransaction transaction = fragmentManager.beginTransaction();
 
+		        // For a little polish, specify a transition animation
+		        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+		        
+		        // To make it fullscreen, use the 'content' root view as the container for the fragment, which is always the root view for the activity
+		        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+*/				
 				break;
 			
 			}
