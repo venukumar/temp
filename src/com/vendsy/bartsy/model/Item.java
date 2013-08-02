@@ -204,6 +204,55 @@ public class Item {
 		return view;
 	}
 	
+	public JSONArray getJSONForFavorite(){
+		
+		// Create JSON Array for the items
+		JSONArray array = new JSONArray();
+		
+		JSONObject itemInjson = new JSONObject();
+		// Prepare the item information for MENU_ITEM and BARTSY_ITEM
+		try {
+			if(getOptionGroups().size()==0){
+				
+				itemInjson.put("title", getTitle());
+				itemInjson.put("itemName", getTitle());
+				itemInjson.put("description", getDescription());
+				
+				// TODO hard coded quantity as 1 for now
+				itemInjson.put("quantity", "1");
+				itemInjson.put("itemId", getItemId());
+				
+				array.put(itemInjson);
+			}
+			// Prepare the item information for the type ITEM_SELECT
+			else if(ITEM_SELECT.equals(type)){
+				for (OptionGroup optionGroup : getOptionGroups()) {
+					// if the item has option choose types then get the options from options array
+					if(OptionGroup.OPTION_CHOOSE.equals(optionGroup.type)){
+						
+						for (Option option : optionGroup.options) {
+							if(option.selected){
+								JSONObject optionInjson = new JSONObject();
+								optionInjson.put("itemName", option.name);
+							}
+						}
+					}
+					// if the item has option choose types then get the options from options array
+					else if(OptionGroup.OPTION_SELECT.equals(optionGroup.type)){
+						
+						for (String option : optionGroup.selections) {
+							JSONObject optionInjson = new JSONObject();
+							optionInjson.put("itemName", option);
+						}
+					}
+				}
+			}
+		} catch (JSONException e) {
+		}
+		
+		return array;
+	}
+	
 	
 	
 	/**
