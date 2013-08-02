@@ -1,12 +1,18 @@
 package com.vendsy.bartsy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,9 +24,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.model.UserProfile;
+import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.utils.WifiConfigManager;
 
 public class MainActivity extends SherlockFragmentActivity implements OnClickListener {
 
@@ -31,6 +39,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	MainActivity mActivity = null;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 	private ProgressDialog mProgressDialog;
+
+	private WifiManager wifiManager;
 
 
 
@@ -43,7 +53,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
 		
-		
+		wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 		
 		
 		setContentView(R.layout.main);
@@ -90,9 +100,97 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("Server: PROD");
 		else 
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("** INCONSISTENT DEPLOYMENT **");
+		
+		
+		checkNetworkAvailability();
 	}
 
+	/**
+	 * Check the wifi enabled or not and scan the nearest wifi names.
+	 */
+	private void checkNetworkAvailability() {
+		
+		if(wifiManager==null) return;
+		
+					
+		final ProgressDialog progressDialog = Utilities.progressDialog(this, "Fixing the wifi..");
+		progressDialog.show();
+
+		new Thread(){
+			public void run() {
+				
+				boolean networkAvailable =false;
+				try {
+					networkAvailable = WebServices.isNetworkAvailable(MainActivity.this);
+				} catch (Exception e) {}
+				
+				// if the network is not available then try to turn on wifi
+				if(!networkAvailable){
+					WifiConfigManager.enableWifi(wifiManager);
+				}
+				// Check the network is available or not
+				try {
+					networkAvailable = WebServices.isNetworkAvailable(MainActivity.this);
+				} catch (Exception e) {}
+				// If the network is not available then scan nearest wifi names
+				if(!networkAvailable){
+					searchAvailableWifi();
+				}
+				
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						progressDialog.dismiss();
+					}
+				});
+			}
+		}.start();
+		
+	}
 	
+	/***
+	 * 
+	 * Scans List of Available Wifi Networks 
+	 * 
+	 **/
+	public void searchAvailableWifi() {
+		List<ScanResult> mScanResults = wifiManager.getScanResults();
+		ScanResult bestResult = null;
+		Venue bestVenue = null;
+		
+		if(mScanResults != null && mScanResults.size()>0){
+			String response = Utilities.loadPref(mActivity, Venue.Shared_Pref_KEY,"");
+			
+			if(response.equals("")){
+				return;
+			}
+			ArrayList<Venue> venues = Utilities.getVenueListResponse(response);
+			
+			for(Venue venue:venues){
+				
+				if(!venue.hasWifi()) continue;
+				
+				for(ScanResult results : mScanResults){
+					Log.d("Available Networks", results.SSID);
+					
+					if((bestResult == null && results.SSID.equals(venue.getWifiName())) || WifiManager.compareSignalLevel(bestResult.level, results.level) < 0){
+						bestResult = results;
+						bestVenue = venue;
+					}
+				}
+			}
+			// 
+			if(bestVenue != null){
+				String networkType = bestVenue.getWifiNetworkType();
+				if(bestVenue.getWifiPassword()==null || bestVenue.getWifiPassword().equals("")){
+					networkType = "nopass";
+				}
+				WifiConfigManager.configure(wifiManager, bestVenue.getWifiName(), bestVenue.getWifiPassword(), networkType);
+			}
+		}
+	}
+
 	@Override
 	public void onStop() {
 		super.onStop();
