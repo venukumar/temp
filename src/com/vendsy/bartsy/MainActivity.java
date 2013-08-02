@@ -160,6 +160,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		Venue bestVenue = null;
 		
 		if(mScanResults != null && mScanResults.size()>0){
+			// Get the venues from the shared preference
 			String response = Utilities.loadPref(mActivity, Venue.Shared_Pref_KEY,"");
 			
 			if(response.equals("")){
@@ -167,6 +168,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 			}
 			ArrayList<Venue> venues = Utilities.getVenueListResponse(response);
 			
+			// Try to find the best wifi network based on Signal Level which is available in the venues
 			for(Venue venue:venues){
 				
 				if(!venue.hasWifi()) continue;
@@ -180,7 +182,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 					}
 				}
 			}
-			// 
+			// Enable the wifi network of the best venue
 			if(bestVenue != null){
 				String networkType = bestVenue.getWifiNetworkType();
 				if(bestVenue.getWifiPassword()==null || bestVenue.getWifiPassword().equals("")){

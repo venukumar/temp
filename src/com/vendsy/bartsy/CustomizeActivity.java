@@ -1,5 +1,8 @@
 package com.vendsy.bartsy;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -9,12 +12,15 @@ import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
+import android.widget.EditText;
 
 /**
  * 
@@ -28,11 +34,11 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 	
 	private BartsyApplication mApp;
 	private Item mItem;
+	private Handler handler = new Handler();
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 
 		// Set up the action bar custom view
 		final ActionBar actionBar = getSupportActionBar();
@@ -136,12 +142,62 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			CheckBox favorite = (CheckBox) arg0;
 			mItem.updateOptions();
 			
-//			if (favorite.isChecked()) 
-//				WebServices.saveFavorite(mApp, mItem);
-//			else
-//				WebServices.deleteFavorite(mApp, mItem);
+			addOrRemovefavorite(favorite);
+			
 			break;
 		}
+	}
+
+	private void addOrRemovefavorite(final CheckBox favoriteCheckBox) {
+		
+		final String specialInstructions = ((EditText)findViewById(R.id.view_order_item_instructions)).getText().toString();
+		String message = "Deleting favorite...";
+		if(favoriteCheckBox.isChecked()){
+			message = "Saving to favorites...";
+		}
+		favoriteCheckBox.setText(message);
+		new Thread(){
+			public void run() {
+				// Add to favorites
+				if (favoriteCheckBox.isChecked()){ 
+					String response = WebServices.saveFavorites(mItem, mApp.mActiveVenue.getId(), specialInstructions, mApp.mProfile.getBartsyId(), mApp);
+					try {
+						JSONObject json = new JSONObject(response);
+						mItem.setFavoriteId(json.getString("favoriteDrinkId"));
+						updateText(favoriteCheckBox,"Saved to favorites");
+					} catch (Exception e) {
+						updateText(favoriteCheckBox,"Save to favorites");
+					}
+				}
+				// Remove from favorites
+				else if(mItem.getFavoriteId()!=null){
+					WebServices.deleteFavorite(mItem.getFavoriteId(), mApp.mActiveVenue.getId(), mApp.mProfile.getBartsyId(), mApp);
+					updateText(favoriteCheckBox,"Save to favorites");
+				}
+				
+				
+			}
+		}.start();
+		
+	}
+	/**
+	 * Update the check box label name with new label name
+	 * 
+	 * @param checkBox
+	 * @param label
+	 */
+	private void updateText(final CheckBox checkBox, final String label){
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				if(checkBox.isChecked()){
+					checkBox.setText(label);
+				}else{
+					checkBox.setText(label);
+				}
+			}
+		});
 	}
 
 }
