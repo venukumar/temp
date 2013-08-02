@@ -95,10 +95,10 @@ public class WebServices {
 	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
 
 	
-	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavoriteDrink";
-	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavoriteDrink";
+	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavorite";
+	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavorite";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
-	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavoriteDrinks";
+	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavorite";
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
@@ -153,7 +153,6 @@ public class WebServices {
 				status = isNetworkAvailable(context);
 			} catch (Exception e) {
 				e.printStackTrace();
-				
 			}
 			
 			if (status == true) {
