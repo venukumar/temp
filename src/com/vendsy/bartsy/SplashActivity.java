@@ -103,6 +103,7 @@ public class SplashActivity extends SherlockActivity {
 		
 		@Override
 		protected void onPostExecute(Void params){
+			mProgressDialog.dismiss();
 			if (mApp.mProfile != null)
 				Toast.makeText(mActivity, "Logged in as " + mApp.mProfile.getNickname(), Toast.LENGTH_SHORT).show();
 			Intent intent = new Intent().setClass(SplashActivity.this, MainActivity.class);
