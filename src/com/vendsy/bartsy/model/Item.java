@@ -56,6 +56,7 @@ public class Item {
 	// For SECTION_TEXT type
 	private String text = null;
 	
+	private String favoriteId;
 	
 	/**
 	 * TODO - Constructors / parsers
@@ -140,12 +141,14 @@ public class Item {
 						JSONArray optionsJSON = optionGroupJSON.getJSONArray("options");
 						for (int j = 0 ; j < optionsJSON.length() ; j++) {
 							String selectionName = optionsJSON.getString(j);
-							OptionGroup option = new OptionGroup(savedSelections.get(selectionName));
-							if (option != null) {
-								Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
-								optionGroups.add(option);
-							} else {
-								Log.e(TAG, "Could not load selection: " + selectionName);
+							if(savedSelections.containsKey(selectionName)){
+								OptionGroup option = new OptionGroup(savedSelections.get(selectionName));
+								if (option != null) {
+									Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
+									optionGroups.add(option);
+								} else {
+									Log.e(TAG, "Could not load selection: " + selectionName);
+								}
 							}
 						}
 					} else {
@@ -170,8 +173,15 @@ public class Item {
 			throw new JSONException("Invalid menu item type");
 		}
 	}
-
 	
+	public String getFavoriteId() {
+		return favoriteId;
+	}
+
+	public void setFavoriteId(String favoriteId) {
+		this.favoriteId = favoriteId;
+	}
+
 	/**
 	 * TODO - Serializers
 	 */
@@ -282,24 +292,14 @@ public class Item {
 				array.put(itemInjson);
 			}
 			// Prepare the item information for the type ITEM_SELECT
-			else if(ITEM_SELECT.equals(type)){
+			else{
 				for (OptionGroup optionGroup : getOptionGroups()) {
-					// if the item has option choose types then get the options from options array
-					if(OptionGroup.OPTION_CHOOSE.equals(optionGroup.type)){
-						
-						for (Option option : optionGroup.options) {
-							if(option.selected){
-								JSONObject optionInjson = new JSONObject();
-								optionInjson.put("itemName", option.name);
-							}
-						}
-					}
-					// if the item has option choose types then get the options from options array
-					else if(OptionGroup.OPTION_SELECT.equals(optionGroup.type)){
-						
-						for (String option : optionGroup.selections) {
+					// Get the options from options array and add to the JSON array	
+					for (Option option : optionGroup.options) {
+						if(option.selected){
 							JSONObject optionInjson = new JSONObject();
-							optionInjson.put("itemName", option);
+							optionInjson.put("itemName", option.name);
+							array.put(optionInjson);
 						}
 					}
 				}
