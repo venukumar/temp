@@ -334,7 +334,13 @@ public class WebServices {
 	 */
 	public static boolean postOrderTOServer(final BartsyApplication app, final Order order, 
 			String venueID, final Handler processOrderDataHandler) {
-		final JSONObject orderData = order.getPlaceOrderJSON();
+		final JSONObject orderData;
+		try {
+			orderData = order.toJson();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+			return true;
+		}
 		
 		String bartsyId = app.loadBartsyId();
 

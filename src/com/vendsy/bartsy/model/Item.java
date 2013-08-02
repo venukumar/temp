@@ -49,7 +49,7 @@ public class Item {
 	private String category = null;
 
 	private String menuPath = null;
-	private String optionsDescription = "Ordered 'as-is.' Click to customize.";
+	private String optionsDescription = null;
 	
 	private ArrayList<OptionGroup> optionGroups = null;
 
@@ -92,6 +92,8 @@ public class Item {
 	
 			if (json.has("description"))
 				this.description = json.getString("description");
+			if (json.has("optionsDescription"))
+				this.description = json.getString("optionsDescription");
 	
 			if (json.has("price"))
 				this.basePrice = Double.parseDouble(json.getString("price"));
@@ -169,6 +171,61 @@ public class Item {
 		}
 	}
 
+	
+	/**
+	 * TODO - Serializers
+	 */
+	
+	public JSONObject toJson() throws JSONException {
+
+		JSONObject json = new JSONObject();
+		json.put("itemId", itemId);
+		json.put("itemName", name);
+		json.put("description", description);
+		json.put("basePrice", Double.toString(price));
+		
+		 
+		if (has(type))
+			json.put("type", type);
+		
+		if (has(name))
+			json.put("name", name);
+
+		if (has(description))
+			json.put("description", description);
+		if (has(optionsDescription))
+			json.put("options_description", optionsDescription);
+
+		if (has(basePrice))
+			json.put("price", Double.toString(basePrice));
+		
+		if (has(itemId))
+			json.put("id", itemId);
+		
+		if (has(glass))
+			json.put("glass", glass);
+		if (has(ingredients))
+			json.put("ingredients", ingredients);
+		if (has(instructions))
+			json.put("instructions", instructions);
+		if (has(category))
+			json.put("category", category);
+		
+//		if (has(optionGroups))
+//			json.putJSONArray("option_groups", optionGroups.toJson());
+		
+		return json;
+	}
+	
+	@Override 
+	public String toString ()  {
+		try {
+			return toJson().toString();
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return "Item serializer error";
+		}
+	}
 	
 	/**
 	 * 
@@ -261,6 +318,14 @@ public class Item {
 	 * 
 	 */
 
+	public boolean has(String field) {
+		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(Object object) {
+		return object != null;
+	}
+	
 	public String getItemId() {
 		return itemId;
 	}
@@ -419,8 +484,10 @@ public class Item {
 		optionsPrice = 0;
 		optionsDescription = "";
 		
-		if (optionGroups == null)
+		if (optionGroups == null) {
+			optionsDescription = "Ordered 'as-is.'";
 			return;
+		}
 		
 		for (OptionGroup options : optionGroups) {
 			for (Option option : options.options) {

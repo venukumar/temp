@@ -35,7 +35,7 @@ import com.vendsy.bartsy.model.Venue;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 import com.vendsy.bartsy.view.AppObserver;
-import com.vendsy.bartsy.view.DrinksSectionFragment;
+import com.vendsy.bartsy.view.MenuSectionFragment;
 import com.vendsy.bartsy.view.OrdersSectionFragment;
 import com.vendsy.bartsy.view.PeopleSectionFragment;
 import com.actionbarsherlock.app.ActionBar;
@@ -54,7 +54,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 */
 
 	public static final String TAG = "VenueActivity";
-	public DrinksSectionFragment mDrinksFragment = null;
+	public MenuSectionFragment mDrinksFragment = null;
 	public OrdersSectionFragment mOrdersFragment = null; 
 	public PeopleSectionFragment mPeopleFragment = null; 
 
@@ -259,14 +259,14 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		}
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
-		DrinksSectionFragment d = (DrinksSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_menu);
+		MenuSectionFragment d = (MenuSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_menu);
 		if (mDrinksFragment == null) {
 			Log.v(TAG, "Drinks fragment not found. Creating one.");
-			mDrinksFragment = new DrinksSectionFragment(this);
+			mDrinksFragment = new MenuSectionFragment();
 			
 			// Already Start loading the menu in the background so by the time the OS creates the view of this fragment
 			// we've done some work
-			mDrinksFragment.loadMenus();
+			mDrinksFragment.loadMenus(this);
 		} else {
 			Log.v(TAG, "Drinks fragment found.");
 			mDrinksFragment = d;
@@ -825,7 +825,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_MENUS_UPDATED_EVENT");
 				if (mDrinksFragment != null) {
 					Log.v(TAG, "Updating menus...");
-					mDrinksFragment.loadMenus();
+					mDrinksFragment.loadMenus(VenueActivity.this);
 				}
 				break;
 			default:

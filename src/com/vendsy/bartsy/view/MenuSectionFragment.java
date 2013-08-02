@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -44,7 +45,7 @@ import com.vendsy.bartsy.utils.WebServices;
  * @author peterkellis
  * 
  */
-public class DrinksSectionFragment extends SherlockFragment {
+public class MenuSectionFragment extends SherlockFragment {
 	
 	String TAG = "DrinksSectionFragment";
 
@@ -64,13 +65,16 @@ public class DrinksSectionFragment extends SherlockFragment {
 	// We use this to store the json of a "compressed" option and replace compressed options on the fly
 	private HashMap<String, JSONObject> savedSelections = new HashMap<String, JSONObject>();
 
-	public DrinksSectionFragment(VenueActivity activity) {
+	@Override
+	public void onAttach(Activity activity) {
+		
+		super.onAttach(activity);
 		
 		Log.v(TAG, "DrinksSectionFragment()");
 
 		// Make sure the fragment pointed to by the activity is accurate
-		mActivity = activity;
-		mApp = (BartsyApplication) activity.getApplication();
+		mActivity = (VenueActivity) activity;
+		mApp = (BartsyApplication) mActivity.getApplication();
 		mActivity.mDrinksFragment = this;
 	}
 	
@@ -91,9 +95,14 @@ public class DrinksSectionFragment extends SherlockFragment {
 	/**
 	 * Menu loader
 	 */
-	synchronized public void loadMenus() {
+	synchronized public void loadMenus(VenueActivity activity) {
 		
 		Log.v(TAG, "loadMenus()");
+		
+		// Make sure the fragment pointed to by the activity is accurate
+		mActivity = (VenueActivity) activity;
+		mApp = (BartsyApplication) mActivity.getApplication();
+		mActivity.mDrinksFragment = this;
 		
 		// Check if menus were already cached for this venue
 		
@@ -231,7 +240,7 @@ public class DrinksSectionFragment extends SherlockFragment {
 		
 		if (mMenu == null ) {
 			Log.d(TAG, "Menu not available for display");
-			loadMenus();
+			loadMenus(mActivity);
 			return;
 		}
 

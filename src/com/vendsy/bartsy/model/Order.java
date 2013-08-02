@@ -115,12 +115,12 @@ public class Order {
 		this.taxRate = taxRate;
 	}
 
-	public Order (UserProfile order_sender, UserProfile order_receiver, double taxRate, double tipAmount, Item item) {
+	public Order (UserProfile order_sender, UserProfile order_receiver, double taxRate, double tipRate, Item item) {
 		
 		this.items.add(item);
 		
 		this.baseAmount = item.getPrice();
-		this.tipAmount = tipAmount;
+		this.tipAmount = tipRate * this.baseAmount;
 		this.taxAmount = baseAmount * taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
 		this.taxRate = taxRate;
@@ -180,21 +180,6 @@ public class Order {
 
 		try {
 
-			// Parse old format item
-			if (json.has("title")  || json.has("description") || json.has("itemId")) {
-				Item item = new Item();
-				if (json.has("itemName"))
-					item.setTitle(json.getString("itemName"));
-				if (json.has("description"))
-					item.setDescription(json.getString("description"));
-				if (json.has("basePrice"))
-					item.setPrice(Double.valueOf(json.getString("basePrice")));
-				if (json.has("itemId"))
-					item.setItemId(json.getString("itemId"));
-				items.add(item);
-			} 
-	
-			// Parse new format item list
 			if (json.has("itemsList")) {
 				JSONArray itemsJSON = json.getJSONArray("itemsList");
 				
@@ -330,42 +315,23 @@ public class Order {
 	 */
 
 	/**
-	 * It will returns JSON format to place order
+	 * Returns the item structure in JSON format
+	 * @throws JSONException 
 	 */
-	public JSONObject getPlaceOrderJSON() {
-		final JSONObject orderData = new JSONObject();
-		try {
+	public JSONObject toJson() throws JSONException {
+		final JSONObject json = new JSONObject();
 
-			if (items.size() > 1) {
-				JSONArray jsonItems = new JSONArray();
-				for (Item item : items) {
-					JSONObject jsonItem = new JSONObject();
-					jsonItem.put("itemId", item.getItemId());
-					jsonItem.put("itemName", item.getTitle());
-					jsonItem.put("description", item.getDescription());
-					jsonItem.put("basePrice", Double.toString(item.getPrice()));
-					jsonItems.put(jsonItem);
-				}
-				orderData.put("itemsList", jsonItems);
-			} else if (items.size() == 1) {
-				orderData.put("itemId", items.get(0).getItemId());
-				orderData.put("itemName", items.get(0).getTitle());
-				orderData.put("description", items.get(0).getDescription());
-			}
-		
-			orderData.put("basePrice", String.valueOf(baseAmount));
-			orderData.put("tipPercentage", String.valueOf(tipAmount));
-			orderData.put("totalPrice", String.valueOf(totalAmount));
-			orderData.put("orderStatus", Integer.toString(status));
-			
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		df.setMaximumFractionDigits(2);
-		df.setMinimumFractionDigits(2);
+		JSONArray jsonItems = new JSONArray();
+		for (Item item : items)
+			jsonItems.put(item.toJson());
+		json.put("itemsList", jsonItems);
+	
+		json.put("basePrice", String.valueOf(baseAmount));
+		json.put("tipPercentage", String.valueOf(tipAmount));
+		json.put("totalPrice", String.valueOf(totalAmount));
+		json.put("orderStatus", Integer.toString(status));
 
-		return orderData;
+		return json;
 	}
 
 	/**
@@ -401,7 +367,12 @@ public class Order {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		return getPlaceOrderJSON() + orderData.toString();
+		try {
+			return toJson() + orderData.toString();
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return orderData.toString();
+		}
 	}
 	
 	public String readableStatus() {
