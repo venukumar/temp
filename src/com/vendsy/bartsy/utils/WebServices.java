@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
@@ -35,7 +36,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -48,9 +48,9 @@ import android.widget.Toast;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
-import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.ResponsiveScrollView;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.model.Venue;
@@ -93,6 +93,10 @@ public class WebServices {
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
 	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
+
+	
+	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavoriteDrink";
+	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavoriteDrink";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
 	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavoriteDrinks";
 	
@@ -209,7 +213,49 @@ public class WebServices {
 		return response;
 	}
 
+
+	public static String saveFavorites(Item item, String venueId, String specialInstructions, String bartsyId, BartsyApplication context){
+		
+		try {
+			// Prepare Json object to post the data to server
+			JSONObject json = new JSONObject();
+			json.put("venueId", venueId);
+			json.put("bartsyId", bartsyId);
+			json.put("specialInstructions", specialInstructions);
+			
+			json.put("itemsList", item.getJSONForFavorite());
+			
+			// Web service call
+			String response = postRequest(URL_SAVE_FAVORITE, json, context);
+			Log.i("saveFavorites response: ",response);
+			return response;
+			
+		} catch (JSONException e) {
+		} catch (Exception e) {
+		}
+		
+		return null;
+	}
 	
+	public static String deleteFavorite(String favoriteDrinkId, String venueId, String bartsyId, BartsyApplication context){
+		try {
+			// Prepare Json object to post the data to server
+			JSONObject json = new JSONObject();
+			json.put("venueId", venueId);
+			json.put("bartsyId", bartsyId);
+			json.put("favoriteDrinkId", favoriteDrinkId);
+			
+			// Web service call
+			String response = postRequest(URL_REMOVE_FAVORITE, json, context);
+			Log.i("delete Favorites response: ",response);
+			return response;
+			
+		} catch (JSONException e) {
+		} catch (Exception e) {
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * Service call for user check in and check out
@@ -220,12 +266,7 @@ public class WebServices {
 	 */
 	public static String userCheckInOrOut (final BartsyApplication context, String bartsyID, String venueId, String url) {
 		String response = null;
-		SharedPreferences sharedPref = context.getSharedPreferences(
-				context.getResources().getString(
-						R.string.config_shared_preferences_name),
-				Context.MODE_PRIVATE);
-		Resources r = context.getResources();
-
+		
 		Log.v(TAG, "bartsyId ::: " + bartsyID);
 		final JSONObject json = new JSONObject();
 		try {
