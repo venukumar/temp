@@ -20,11 +20,16 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.crypto.Cipher;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -36,6 +41,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.model.Venue;
 
 /**
  * Helper class providing methods and constants common to other classes in the
@@ -187,6 +193,51 @@ public final class Utilities {
 			return null;
 		}
 		return output; 
+	}
+	
+	/**
+	 * To parse JSON format to list of venues
+	 * 
+	 * @param response
+	 * @return
+	 */
+	public static ArrayList<Venue> getVenueListResponse(String response) {
+
+		ArrayList<Venue> list = new ArrayList<Venue>();
+		
+		JSONArray array = null;
+		try {
+			JSONObject json = new JSONObject(response);
+			if(json.has("venues")){
+				array = json.getJSONArray("venues");
+			}
+		} catch (JSONException e) {
+			return null;
+		}
+		// Make sure that array should not be null
+		if(array==null){
+			return list;
+		}
+		
+		for (int i = 0; i < array.length(); i++) {
+
+			try {
+
+				JSONObject json = array.getJSONObject(i);
+
+				Venue venue = new Venue(json);
+
+				list.add(venue);
+				
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
+		}
+		
+		
+		return list;
 	}
 	
 	/**
