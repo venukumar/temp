@@ -2,7 +2,11 @@ package com.vendsy.bartsy.utils;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -20,33 +24,8 @@ public final class WifiConfigManager {
                                final String ssid, 
                                final String password, 
                                final String networkTypeString) {
-    Runnable configureRunnable = new Runnable() {
-      public void run() {
-        // Start WiFi, otherwise nothing will work
-        if (!wifiManager.isWifiEnabled()) {
-          Log.i(TAG, "Enabling wi-fi...");
-          if (wifiManager.setWifiEnabled(true)) {
-            Log.i(TAG, "Wi-fi enabled");
-          } else {
-            Log.w(TAG, "Wi-fi could not be enabled!");
-            return;
-          }
-          // This happens very quickly, but need to wait for it to enable. A little busy wait?
-          int count = 0;
-          while (!wifiManager.isWifiEnabled()) {
-            if (count >= 10) {
-              Log.i(TAG, "Took too long to enable wi-fi, quitting");
-              return;
-            }
-            Log.i(TAG, "Still waiting for wi-fi to enable...");
-            try {
-              Thread.sleep(1000L);
-            } catch (InterruptedException ie) {
-              // continue
-            }
-            count++;
-          }
-        }
+        enableWifi(wifiManager);
+        
         NetworkType networkType = NetworkType.forIntentValue(networkTypeString);
         if (networkType == NetworkType.NO_PASSWORD) {
           changeNetworkUnEncrypted(wifiManager, ssid);
@@ -58,13 +37,43 @@ public final class WifiConfigManager {
             changeNetworkWEP(wifiManager, ssid, password);
           } else if (networkType == NetworkType.WPA) {
             changeNetworkWPA(wifiManager, ssid, password);
-          }        }
-      }
-    };
-    new Thread(configureRunnable).start();
+          }        
+        }
   }
 
-  /**
+  public static boolean enableWifi(final WifiManager wifiManager) {
+	  
+	// Start WiFi, otherwise nothing will work
+      if (!wifiManager.isWifiEnabled()) {
+        Log.i(TAG, "Enabling wi-fi...");
+        if (wifiManager.setWifiEnabled(true)) {
+          Log.i(TAG, "Wi-fi enabled");
+        } else {
+          Log.w(TAG, "Wi-fi could not be enabled!");
+          return false;
+        }
+        // This happens very quickly, but need to wait for it to enable. A little busy wait?
+        int count = 0;
+        while (!wifiManager.isWifiEnabled()) {
+          if (count >= 10) {
+            Log.i(TAG, "Took too long to enable wi-fi, quitting");
+            return false;
+          }
+          Log.i(TAG, "Still waiting for wi-fi to enable...");
+          try {
+            Thread.sleep(1000L);
+          } catch (InterruptedException ie) {
+            // continue
+          }
+          count++;
+        }
+      }
+      
+      return true;
+  }
+  
+
+/**
    * Update the network: either create a new network or modify an existing network
    * @param config the new network configuration
    * @return network ID of the connected network.
@@ -153,6 +162,62 @@ public final class WifiConfigManager {
   private static String quoteNonHex(String value, int... allowedLengths) {
     return isHexOfLength(value, allowedLengths) ? value : convertToQuotedString(value);
   }
+  
+  /***
+	 * Checks Data Connection.
+	 * 
+	 * @param manager
+	 * @return true if there is data connection else returns false.
+	 */
+	public static boolean isNetworkAvailable(ConnectivityManager manager) {
+		NetworkInfo info = manager.getActiveNetworkInfo();
+		if(info != null){
+			return info.isConnectedOrConnecting();
+		}
+		return false;
+	}
+	
+	/***
+	 * 
+	 * Scans List of Available Wifi Networks 
+	 * 
+	 **/
+	public static void getAvailableWifiScanResults(final WifiManager wifiManager) {
+		List<ScanResult> mScanResults = wifiManager.getScanResults();
+		ScanResult bestResult = null;
+		
+		if(mScanResults != null){
+			for(ScanResult results : mScanResults){
+				Log.d("Available Networks", results.SSID);
+				if(bestResult == null || WifiManager.compareSignalLevel(bestResult.level, results.level) < 0){
+					bestResult = results;
+				}
+			}
+			
+			if(mScanResults.size() > 0 && bestResult != null){
+				String message = String.format("%s networks found. %s is the strongest.", mScanResults.size(), bestResult.SSID);
+			}
+		}
+	}
+	
+	/***
+	 * 
+	 * gets the currently connected Wifi Networks Information.
+	 * 
+	 **/
+	public static void getConnectedNetWorkInformation(final WifiManager wifiManager) {
+		WifiInfo mWifiInfo = wifiManager.getConnectionInfo();
+		String message;
+		if(mWifiInfo != null){
+			String ssid = mWifiInfo.getSSID();
+			int wifiSignalStrength = WifiManager.calculateSignalLevel(mWifiInfo.getRssi(), 4);
+			int link_speed = mWifiInfo.getLinkSpeed();
+			message = String.format("connected to %s with signal strength %s and link speed of %s", ssid, wifiSignalStrength, link_speed);
+		}
+		else{
+			message = "Not Conntected to Any Wifi Network";
+		}
+	}
 
   /**
    * Encloses the incoming string inside double quotes, if it isn't already quoted.
