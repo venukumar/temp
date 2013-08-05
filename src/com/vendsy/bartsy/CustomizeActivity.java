@@ -158,7 +158,7 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 
 	private void addOrRemovefavorite(final CheckBox favoriteCheckBox) {
 		
-		final String specialInstructions = ((EditText)findViewById(R.id.item_order_special_instructions)).getText().toString();
+		final String specialInstructions = ((EditText)findViewById(R.id.view_order_item_special_instructions)).getText().toString();
 		String message = "Deleting favorite...";
 		if(favoriteCheckBox.isChecked()){
 			message = "Saving to favorites...";

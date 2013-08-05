@@ -321,7 +321,7 @@ public class Item {
 				
 				array.put(itemInjson);
 			}
-			// Prepare the item information for the type ITEM_SELECT
+			// Prepare the item information
 			else{
 				for (OptionGroup optionGroup : getOptionGroups()) {
 					// Get the options from options array and add to the JSON array	
