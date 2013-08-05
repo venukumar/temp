@@ -59,7 +59,7 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		}
 		
 		// Set the main view
-		setContentView(mItem.inflateOrder(getLayoutInflater()));
+		setContentView(mItem.customizeView(getLayoutInflater()));
 		
 		// Set up listeners
 		findViewById(R.id.view_order_item_add).setOnClickListener(this);
@@ -135,12 +135,20 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		switch (arg0.getId()) {
 		
 		case R.id.view_order_item_add:
-			mItem.updateOptions();
+			mItem.updateOptionsDescription();
+			
+			String specialInstructions = ((EditText) findViewById(R.id.view_order_item_special_instructions)).getText().toString();
+				
+			if (Utilities.has(specialInstructions))
+				mItem.setSpecialInstructions(specialInstructions);
+			
 			finishWithResult(mApp, mItem);
+			
 			break;
+			
 		case R.id.view_order_item_favorite:
 			CheckBox favorite = (CheckBox) arg0;
-			mItem.updateOptions();
+			mItem.updateOptionsDescription();
 			
 			addOrRemovefavorite(favorite);
 			
@@ -150,7 +158,7 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 
 	private void addOrRemovefavorite(final CheckBox favoriteCheckBox) {
 		
-		final String specialInstructions = ((EditText)findViewById(R.id.view_order_item_instructions)).getText().toString();
+		final String specialInstructions = ((EditText)findViewById(R.id.item_order_special_instructions)).getText().toString();
 		String message = "Deleting favorite...";
 		if(favoriteCheckBox.isChecked()){
 			message = "Saving to favorites...";

@@ -2,6 +2,7 @@ package com.vendsy.bartsy.model;
 
 import java.text.DecimalFormat;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,10 +21,14 @@ public class Option {
 	protected double price; 	// addition price of the option
 	protected String specials;	// specials for this option
 	protected boolean selected = false; // is this option selected?
-	protected String type;
 	
 	private View mView = null;
 	
+	
+	/**
+	 * TODO - Constructors / parsers
+	 */
+
 	Option (JSONObject json, String type) throws JSONException {
 		if (json.has("name"))
 			name = json.getString("name");
@@ -33,11 +38,34 @@ public class Option {
 			price = Double.parseDouble(json.getString("price"));
 		if (json.has("selected"))
 			selected = json.getBoolean("selected");
+	}
+
+	/**
+	 * TODO - Serializers
+	 */
+	
+	public JSONObject toJson() throws JSONException {
+
+		JSONObject json = new JSONObject();
 		
-		this.type = type;
+		if (has(name))
+			json.put("name", name);
+		if (has(price))
+			json.put("price", price);
+		if (has(specials))
+			json.put("specials", specials);
+		if (has(selected))
+			json.put("selected", selected);
+		
+		return json;
 	}
 	
-	public View inflateOrder(LayoutInflater inflater) {
+	
+	/**
+	 * TODO - Views
+	 */
+	
+	public View customizeView(LayoutInflater inflater) {
 
 		mView = inflater.inflate(R.layout.order_option, null);
 		
@@ -50,13 +78,8 @@ public class Option {
 		
 		if (name != null) {
 			String viewName = name;
-			if (price != 0) {
-				if (OptionGroup.OPTION_CHOOSE.equals(type)) {
-					viewName = name + " ($" + df.format(price) + ")";
-				} else if (OptionGroup.OPTION_ADD.equals(type)) {
-					viewName = name + " (add $" + df.format(price) + ")";
-				}
-			}
+			if (price != 0)
+				viewName = name + " (add $" + df.format(price) + ")";
 			optionName.setText(viewName);
 		}
 		
@@ -112,4 +135,26 @@ public class Option {
 			view.findViewById(R.id.view_order_option_price).setVisibility(View.GONE);
 	}
 	
+	/**
+	 * 
+	 * TODO Getters and setters
+	 * 
+	 */
+
+	public boolean has(String field) {
+		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(double field) {
+		return field != 0;
+	}
+
+	public boolean has(boolean field) {
+		return field;
+	}
+	
+	public boolean has(Object field) {
+		return field != null;
+	}
+
 }

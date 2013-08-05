@@ -19,8 +19,6 @@ import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
-//import com.jwetherell.quick_response_code.data.Contents;
-//import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
@@ -62,6 +60,7 @@ public class Order {
 	public String recipientNickname = null;
 	public String recipientImagePath = null;
 	public String userSessionCode = null;
+	private String orderInstructions = null;
 
 	// The view displaying this order or null. The view is the display of the  order in a list.
 	// The list could be either on the client or the server and it looks different in both cases but the code manages the differences.
@@ -102,7 +101,7 @@ public class Order {
 
 	/**
 	 * 
-	 * TODO - CONSTRUCTORS
+	 * TODO - Constructors/parsers
 	 * 
 	 * When an order is initialized the state transition times are undefined except for the first state, 
 	 * which is when the order is received
@@ -139,11 +138,6 @@ public class Order {
 		df.setMinimumFractionDigits(2);
 	}
 
-	
-	/** 
-	 * Constructor for new empty order destined for a given recipient
-	 * @param profile
-	 */
 	public Order(UserProfile sender, UserProfile recipient, double taxRate) {
 		
 		this.baseAmount = 0;
@@ -170,12 +164,6 @@ public class Order {
 
 	}
 
-	
-	/**
-	 * Constructor to parse all the information from the JSON
-	 * 
-	 * @param json
-	 */
 	public Order(JSONObject json) {
 
 		try {
@@ -232,11 +220,6 @@ public class Order {
 			else 
 				status = ORDER_STATUS_NEW;
 
-			// For now (hack) since the server is sending the wrong status for offered drinks, update it 
-//			if (json.has("drinkOffered") && json.getBoolean("drinkOffered") && status == ORDER_STATUS_NEW) {
-//				status = ORDER_STATUS_OFFERED;
-//			}
-			
 			// Used only by the getPastOrders syscall
 			if (json.has("dateCreated")) 
 				createdDate = json.getString("dateCreated");
@@ -311,15 +294,12 @@ public class Order {
 
 	
 	/**
-	 * TODO - Readers
+	 * TODO - Serializers
 	 */
 
-	/**
-	 * Returns the item structure in JSON format
-	 * @throws JSONException 
-	 */
 	public JSONObject toJson() throws JSONException {
-		final JSONObject json = new JSONObject();
+		
+		JSONObject json = new JSONObject();
 
 		JSONArray jsonItems = new JSONArray();
 		for (Item item : items)
@@ -330,6 +310,9 @@ public class Order {
 		json.put("tipPercentage", String.valueOf(tipAmount));
 		json.put("totalPrice", String.valueOf(totalAmount));
 		json.put("orderStatus", Integer.toString(status));
+		
+		if (has(orderInstructions))
+			json.put("orderInstructions", orderInstructions);
 
 		return json;
 	}
@@ -338,7 +321,7 @@ public class Order {
 	 * It will returns JSON format to update order status
 	 */
 	public JSONObject getStatusChangedJSON(){
-		final JSONObject orderData = new JSONObject();
+		JSONObject orderData = new JSONObject();
 		try {
 			orderData.put("orderId", orderId);
 			orderData.put("orderStatus", status);
@@ -480,11 +463,10 @@ public class Order {
 
 		// Update header
 		((TextView) view.findViewById(R.id.view_order_item_number)).setText(orderId);
-		((TextView) view.findViewById(R.id.view_order_pickup_code)).setText(userSessionCode);
 		
-
 		// Add the item list
-		addItemsView((LinearLayout) view.findViewById(R.id.view_order_mini), inflater, container);
+		LinearLayout itemsView = (LinearLayout) view.findViewById(R.id.view_order_mini);
+		for (Item item : items) itemsView.addView(item.orderView(inflater));
 		
 		// Update the order's tip, tax and total
 		updateTipTaxTotalView(tipAmount, taxAmount, totalAmount);
@@ -497,7 +479,7 @@ public class Order {
 		if (orderStatus == ORDER_STATUS_REMOVED)
 			orderStatus = last_status;
 
-		
+		// Set the status related fields of the view
 		switch (orderStatus) {
 		case ORDER_STATUS_OFFERED:
 			if (senderId.equals(bartsyId)) {
@@ -529,43 +511,31 @@ public class Order {
 			}
 			break;
 		case ORDER_STATUS_NEW:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was placed. You'll be notified when accepted.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order placed. You'll be notified when accepted.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
 			break;
 		case ORDER_STATUS_REJECTED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was rejected. Please check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order rejected. Please check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_FAILED:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order failed. Please check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order failed. Please check with the venue. You werent' charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
 			break;
 		case ORDER_STATUS_IN_PROGRESS:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was accepted and is being worked on.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order accepted. You'll be notified when it's ready.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_orange_dark);
 			break;
 		case ORDER_STATUS_READY:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order is ready for pickup!");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order ready. Please pick it up before it expires.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_green_dark);
-			
-/*			//Encode with a QR Code image
-			QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(userSessionCode, null, Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), 250);
-			try {
-				Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
-				
-				((ImageView) view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(bitmap);
-				
-			} catch (WriterException e) {
-				e.printStackTrace();
-			}
-*/			
 			break;
 		case ORDER_STATUS_INCOMPLETE:
-			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Your order was not picked up. Check with the venue. You werent' charged.");
+			((TextView) view.findViewById(R.id.view_order_state_description)).setText("Order not picked up. Check with the venue. You weren't charged.");
 			((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.holo_red_dark);
 			view.findViewById(R.id.view_order_notification_button).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.view_order_notification_button).setTag(this);
@@ -656,9 +626,15 @@ public class Order {
 	 * @param profile
 	 */
 	private void updateProfileView() {
+
+		if (senderId != null && recipientId != null && senderId.equals(recipientId)) {
+			view.findViewById(R.id.view_order_images).setVisibility(View.GONE);
+			view.findViewById(R.id.view_order_sender_recipient_text).setVisibility(View.GONE);
+			return;
+		}
 		
 		// Show sender details
-		if (orderSender != null && senderId != null && recipientId != null && !senderId.equals(recipientId)) {
+		if (orderSender != null) {
 
 			// Display or download image if available
 			if (orderSender.hasImage()) {
@@ -725,21 +701,6 @@ public class Order {
 		return recipient;
 	}
 	
-	public void addItemsView(LinearLayout itemsView, LayoutInflater inflater, ViewGroup container ) {
-		
-		for (Item item : items) {
-			LinearLayout view = (LinearLayout) inflater.inflate(R.layout.open_orders_menu_item, container, false);
-			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(item.getPrice()));
-			((TextView) view.findViewById(R.id.view_order_title)).setText(item.getTitle());
-			if (item.getOptionsDescription() == null || item.getOptionsDescription().equalsIgnoreCase(""))
-				((TextView) view.findViewById(R.id.view_order_description)).setVisibility(View.GONE);
-			else
-				((TextView) view.findViewById(R.id.view_order_description)).setText(item.getOptionsDescription());
-			
-			itemsView.addView(view);
-		}
-	}
-	
 
 	/**
 	 * TODO - Utilities
@@ -785,6 +746,29 @@ public class Order {
 			}
 		}
 		return "<unkown>";
+	}
+
+	
+	/**
+	 * 
+	 * TODO Getters and setters
+	 * 
+	 */
+
+	public boolean has(String field) {
+		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(double field) {
+		return field != 0;
+	}
+
+	public boolean has(boolean field) {
+		return field;
+	}
+	
+	public boolean has(Object field) {
+		return field != null;
 	}
 
 }

@@ -7,18 +7,27 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
+import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
+import com.jwetherell.quick_response_code.data.Contents;
+import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 /**
@@ -86,9 +95,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 	
 	private void displayOrders() {
 		
-		// Use a swallow copy of the global structure to be able to remove orders from the global structure in the iterator
+		// Use a shallow copy of the global structure to be able to remove orders from the global structure in the iterator
 		ArrayList<Order> orders = mApp.cloneOrders();
-		
+		String pickupCode = null;
 
 		// Update people count in people tab
 		mActivity.updateOrdersCount();
@@ -132,10 +141,31 @@ public class OpenOrdersSectionView extends LinearLayout{
 				}
 			});
 			
+			// Find orders for us
+			if (mApp.mProfile.getBartsyId().equals(order.recipientId))
+				pickupCode = order.userSessionCode;
 			
 			mOrderListView.addView(view);
-
 		}
+		
+		// Update the header with the pickup code if an order exists
+		if (Utilities.has(pickupCode)) {
+			((TextView) mRootView.findViewById(R.id.open_orders_pickup_code)).setText(pickupCode);
+			mRootView.findViewById(R.id.open_orders_pickup_field).setVisibility(View.VISIBLE);
+			
+			//Encode with a QR Code image
+			QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(pickupCode, null, Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), 250);
+			try {
+				Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+				((ImageView) mRootView.findViewById(R.id.open_orders_qr_code)).setImageBitmap(bitmap);
+			} catch (WriterException e) {
+				e.printStackTrace();
+				mRootView.findViewById(R.id.open_orders_qr_code).setVisibility(View.GONE);
+			}
+		} else {
+			mRootView.findViewById(R.id.open_orders_pickup_field).setVisibility(View.GONE);
+		}
+		
 	}
 	
 
@@ -245,8 +275,9 @@ public class OpenOrdersSectionView extends LinearLayout{
 							if (miniStatus == status && order.recipientId.equals(mini.recipientId))  
 							{
 								Log.v(TAG, "Adding mini order " + mini.orderId + " to order " + order.orderId);
-								mini.addItemsView((LinearLayout)order.view.findViewById(R.id.view_order_mini), mInflater, mContainer);
-		
+								LinearLayout itemsView = (LinearLayout) order.view.findViewById(R.id.view_order_mini);
+								for (Item item : mini.items) itemsView.addView(item.orderView(mInflater));
+
 								// Collect prices from mini views						
 								taxAmt+=mini.taxAmount;
 								tipAmt+=mini.tipAmount;

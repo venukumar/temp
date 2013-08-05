@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -36,10 +37,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.text.format.DateUtils;
 import android.util.Base64;
 import android.util.Log;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.vendsy.bartsy.MainActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.model.Venue;
 
@@ -262,5 +268,119 @@ public final class Utilities {
 		}
 		return (String) DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(),DateUtils.SECOND_IN_MILLIS,DateUtils.FORMAT_ABBREV_RELATIVE);
 	}
+	
+	/**
+	 * 
+	 * TODO Getters and setters
+	 * 
+	 */
 
+	public static boolean has(String field) {
+		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(double field) {
+		return field != 0;
+	}
+
+	public boolean has(boolean field) {
+		return field;
+	}
+	
+	public boolean has(Object field) {
+		return field != null;
+	}
+
+
+
+	/**
+	 * Check the wifi enabled or not and scan the nearest wifi names.
+	 */
+	public void checkNetworkAvailability(final SherlockActivity activity, final Handler handler) {
+		
+		final WifiManager wifiManager = (WifiManager)activity.getSystemService(Context.WIFI_SERVICE);
+
+		if(wifiManager==null) return;
+		
+		final ProgressDialog progressDialog = Utilities.progressDialog(activity, "Fixing the wifi..");
+		progressDialog.show();
+
+		new Thread(){
+			public void run() {
+				
+				boolean networkAvailable =false;
+				try {
+					networkAvailable = WebServices.isNetworkAvailable(activity);
+				} catch (Exception e) {}
+				
+				// if the network is not available then try to turn on wifi
+				if(!networkAvailable){
+					WifiConfigManager.enableWifi(wifiManager);
+				}
+				// Check the network is available or not
+				try {
+					networkAvailable = WebServices.isNetworkAvailable(activity);
+				} catch (Exception e) {}
+				// If the network is not available then scan nearest wifi names
+				if(!networkAvailable){
+					searchAvailableWifi(activity);
+				}
+				
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						progressDialog.dismiss();
+					}
+				});
+			}
+		}.start();
+		
+	}
+	
+	/***
+	 * 
+	 * Scans List of Available Wifi Networks 
+	 * 
+	 **/
+	public void searchAvailableWifi(final SherlockActivity activity) {
+		
+		final WifiManager wifiManager = (WifiManager)activity.getSystemService(Context.WIFI_SERVICE);
+		
+		List<ScanResult> mScanResults = wifiManager.getScanResults();
+		ScanResult bestResult = null;
+		Venue bestVenue = null;
+		
+		if(mScanResults != null && mScanResults.size()>0){
+			String response = Utilities.loadPref(activity, Venue.Shared_Pref_KEY,"");
+			
+			if(response.equals("")){
+				return;
+			}
+			ArrayList<Venue> venues = Utilities.getVenueListResponse(response);
+			
+			for(Venue venue:venues){
+				
+				if(!venue.hasWifi()) continue;
+				
+				for(ScanResult results : mScanResults){
+					Log.d("Available Networks", results.SSID);
+					
+					if((bestResult == null && results.SSID.equals(venue.getWifiName())) || WifiManager.compareSignalLevel(bestResult.level, results.level) < 0){
+						bestResult = results;
+						bestVenue = venue;
+					}
+				}
+			}
+			// 
+			if(bestVenue != null){
+				String networkType = bestVenue.getWifiNetworkType();
+				if(bestVenue.getWifiPassword()==null || bestVenue.getWifiPassword().equals("")){
+					networkType = "nopass";
+				}
+				WifiConfigManager.configure(wifiManager, bestVenue.getWifiName(), bestVenue.getWifiPassword(), networkType);
+			}
+		}
+	}
+	
 }

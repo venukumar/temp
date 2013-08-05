@@ -17,6 +17,7 @@ import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
+import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class UserProfile {
@@ -162,19 +163,35 @@ public class UserProfile {
 			Log.v(TAG, "Dateofbirth: " + bd + " -> " + birthday);
 		}
 		
-		if(person.getName()!=null && person.getName().hasGivenName())
+		if(person.hasName() && person.getName().hasGivenName())
 			firstName = person.getName().getGivenName();
-
-		if (person.getNickname() != null) 
-			nickname = person.getNickname();
-		else
-			nickname = firstName;
-
-		if(person.getName() != null && person.getName().hasFamilyName())
+		if(person.hasName() && person.getName().hasFamilyName())
 			lastName = person.getName().getFamilyName();
+		if (person.hasNickname()) 
+			nickname = person.getNickname();
+		else {
+			if (Utilities.has(firstName))
+				nickname = firstName;
+			if (Utilities.has(lastName)) {
+				if (Utilities.has(nickname))
+					nickname += " " + lastName.substring(0, 1) + ".";
+				else
+					nickname = lastName.substring(0, 1) + ".";
+			}
+		}
+
 		
-		if (person.hasImage())
-			setImagePath(person.getImage().getUrl());
+		if (person.hasImage()) {
+			String path = person.getImage().getUrl();
+
+			// Get a bigger image if there's a size default
+			int index = path.indexOf("?sz=");
+			if (index != -1) {
+				path = path.substring(0, index) + "?sz=200";
+			}
+			
+			setImagePath(path);
+		}
 			
 	}
 	

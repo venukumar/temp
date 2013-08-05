@@ -1,5 +1,6 @@
 package com.vendsy.bartsy.model;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,14 +39,13 @@ public class Item {
 	private String name = null;
 	private String description = null;
 	private double price;
-	private double basePrice;
-	private double optionsPrice;
 	private double specialPrice;
 	private String venueId = null;
 
 	private String glass = null;
 	private String ingredients = null;
 	private String instructions = null;
+	private String specialInstructions = null;
 	private String category = null;
 
 	private String menuPath = null;
@@ -85,33 +85,30 @@ public class Item {
 		if (type.equals(MENU_ITEM) || type.equals(BARTSY_ITEM) || type.equals(ITEM_SELECT)) {
 			
 			// Parse MENU_ITEM type
-			
 			if (json.has("name"))
 				this.name = json.getString("name");
 			if (json.has("itemName"))
 				this.name = json.getString("itemName");
-	
 			if (json.has("description"))
 				this.description = json.getString("description");
 			if (json.has("optionsDescription"))
 				this.description = json.getString("optionsDescription");
-	
+			if (json.has("options_description"))
+				this.description = json.getString("options_description");
 			if (json.has("price"))
-				this.basePrice = Double.parseDouble(json.getString("price"));
-			if (json.has("basePrice"))
-				this.basePrice = Double.parseDouble(json.getString("basePrice"));
-			
+				this.price = Double.parseDouble(json.getString("price"));
 			if (json.has("id"))
 				this.itemId = json.getString("id");
 			if (json.has("itemId"))
 				this.itemId = json.getString("itemId");
-			
 			if (json.has("glass"))
 				glass = json.getString("glass");
 			if (json.has("ingredients"))
 				ingredients = json.getString("ingredients");
 			if (json.has("instructions"))
 				instructions = json.getString("instructions");
+			if (json.has("special_instructions"))
+				this.specialInstructions = json.getString("special_instructions");
 			if (json.has("category"))
 				category = json.getString("category");
 			
@@ -163,7 +160,10 @@ public class Item {
 				adjustCocktailPrices();
 			
 			// Calculate the drink price based on selected options, if any.
-			updateOptions();
+			updateOptionsDescription();
+			
+			// Restore normal menu type
+			type = MENU_ITEM;
 			
 		} else if (type.equals(SECTION_TEXT)) {
 			
@@ -189,40 +189,47 @@ public class Item {
 	public JSONObject toJson() throws JSONException {
 
 		JSONObject json = new JSONObject();
-		json.put("itemId", itemId);
-		json.put("itemName", name);
-		json.put("description", description);
-		json.put("basePrice", Double.toString(price));
-		
-		 
+
+		if (has(itemId)) {
+			json.put("itemId", itemId);
+			json.put("id", itemId);
+		}
+		if (has(name)) {
+			json.put("name", name);
+			json.put("title", name);
+			json.put("itemName", name);
+		}
+		// Hard-code quantity for now
+			json.put("quantity", "1");
 		if (has(type))
 			json.put("type", type);
-		
-		if (has(name))
-			json.put("name", name);
-
 		if (has(description))
 			json.put("description", description);
 		if (has(optionsDescription))
 			json.put("options_description", optionsDescription);
 
-		if (has(basePrice))
-			json.put("price", Double.toString(basePrice));
-		
-		if (has(itemId))
-			json.put("id", itemId);
-		
+		if (has(price))
+			json.put("price", Double.toString(price));
 		if (has(glass))
 			json.put("glass", glass);
 		if (has(ingredients))
 			json.put("ingredients", ingredients);
 		if (has(instructions))
 			json.put("instructions", instructions);
+		if (has(specialInstructions))
+			json.put("special_instructions", specialInstructions);
 		if (has(category))
 			json.put("category", category);
 		
-//		if (has(optionGroups))
-//			json.putJSONArray("option_groups", optionGroups.toJson());
+		if (has(optionGroups)) {
+			JSONArray optionGroupsJson = new JSONArray();
+			for (OptionGroup optionGroup : optionGroups)
+				optionGroupsJson.put(optionGroup.toJson());
+			json.put("option_groups", optionGroupsJson);
+		}
+		
+		// Send the price for the bartender app
+		json.put("basePrice", Double.toString(getPrice()));
 		
 		return json;
 	}
@@ -243,9 +250,9 @@ public class Item {
 	 * 
 	 */
 	
-	public View inflateOrder(LayoutInflater inflater) {
+	public View customizeView(LayoutInflater inflater) {
 		
-		View view = inflater.inflate(R.layout.order_item, null);
+		View view = inflater.inflate(R.layout.item_customize, null);
 		
 		// Set title and description
 		if (hasTitle()) {
@@ -264,13 +271,36 @@ public class Item {
 
 		if (getOptionGroups() != null) {
 			for (OptionGroup optionGroup : getOptionGroups()) {
-				options.addView(optionGroup.inflateOrder(inflater));
+				options.addView(optionGroup.customizeView(inflater));
 			}
 		}
 		
 		return view;
 	}
 	
+	public View orderView(LayoutInflater inflater) {
+
+	    DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(0);
+		df.setMinimumFractionDigits(0);
+
+		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.item_order, null);
+		
+		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(getPrice()));
+		((TextView) view.findViewById(R.id.view_order_title)).setText(getTitle());
+		if (has(optionsDescription))
+			((TextView) view.findViewById(R.id.view_order_description)).setText(getOptionsDescription());
+		else
+			view.findViewById(R.id.item_order_description_field).setVisibility(View.GONE);
+		if (has(specialInstructions))
+			((TextView) view.findViewById(R.id.item_order_special_instructions)).setText(getSpecialInstructions());
+		else
+			view.findViewById(R.id.item_order_special_instructions_field).setVisibility(View.GONE);
+		
+		
+		return view;
+	}
+
 	public JSONArray getJSONForFavorite(){
 		
 		// Create JSON Array for the items
@@ -309,8 +339,6 @@ public class Item {
 		
 		return array;
 	}
-	
-	
 	
 	/**
 	 * 
@@ -368,6 +396,19 @@ public class Item {
 	}
 
 	public double getPrice() {
+
+		Double price = this.price;
+		
+		if (optionGroups == null)
+			return price;
+		
+		for (OptionGroup options : optionGroups) {
+			for (Option option : options.options) {
+				if (option.selected)
+					price += option.price;
+			}
+		}
+		
 		return price;
 	}
 
@@ -471,17 +512,24 @@ public class Item {
 		this.optionsDescription = optionDescription;
 	}
 	
+	public String getSpecialInstructions() {
+		return specialInstructions;
+	}
+
+	public void setSpecialInstructions(String specialInstructions) {
+		this.specialInstructions = specialInstructions;
+	}
+	
 	
 	/**
 	 * TODO - Utilities
 	 */
 	
 	/*
-	 * Build the price of the item from the options and updates the optionsDescription
+	 * Updates the optionsDescription
 	 */
-	public void updateOptions() {
+	public void updateOptionsDescription() {
 
-		optionsPrice = 0;
 		optionsDescription = "";
 		
 		if (optionGroups == null) {
@@ -492,7 +540,6 @@ public class Item {
 		for (OptionGroup options : optionGroups) {
 			for (Option option : options.options) {
 				if (option.selected) {
-					optionsPrice += option.price;
 					if (optionsDescription.endsWith(", ") || optionsDescription.equals(""))
 						optionsDescription += option.name;
 					else
@@ -500,8 +547,6 @@ public class Item {
 				}
 			}
 		}
-		
-		price = basePrice + optionsPrice;
 	}
 	
 	/*
@@ -510,8 +555,6 @@ public class Item {
 	public void adjustCocktailPrices() {
 
 		price = 0;
-		basePrice = 0;
-		optionsPrice = 0;
 		
 		if (optionGroups == null)
 			return;
@@ -531,4 +574,6 @@ public class Item {
 			}
 		}
 	}
+
+
 }

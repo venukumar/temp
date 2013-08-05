@@ -57,17 +57,38 @@ public class OptionGroup {
 		}
 	}
 	
+	
+	/**
+	 * TODO - Serializers
+	 */
+	
+	public JSONObject toJson() throws JSONException {
+		JSONObject json = new JSONObject();
+		
+		if (has(type))
+			json.put("type", type);
+		if (has(text))
+			json.put("text", text);
+		if (has(options)) {
+			JSONArray optionsJson = new JSONArray();
+			for (Option option : options)
+				optionsJson.put(option.toJson());
+			json.put("options", optionsJson);
+		}
+		
+		return json;
+	}
+	
 	/**
 	 * TODO - Views
 	 */
 	
-	public View inflateOrder(LayoutInflater inflater) {
+	public View customizeView(LayoutInflater inflater) {
 		
 		View view = inflater.inflate(R.layout.order_option_group, null);
 		
 		if (text != null)
 			((TextView) view.findViewById(R.id.view_order_option_group_name)).setText(text);
-		
 		if (OPTION_ADD.equals(type))
 			((TextView) view.findViewById(R.id.view_order_option_group_type)).setText("(choose any)");
 		if (OPTION_CHOOSE.equals(type))
@@ -78,10 +99,24 @@ public class OptionGroup {
 		LinearLayout optionsView = (LinearLayout) view.findViewById(R.id.view_order_options);
 		optionsView.setTag(this);
 		for (Option option : options) {
-			optionsView.addView(option.inflateOrder(inflater));
+			optionsView.addView(option.customizeView(inflater));
 		}
 		
 		return view;
+	}
+	
+	/**
+	 * 
+	 * TODO Getters and setters
+	 * 
+	 */
+
+	public boolean has(String field) {
+		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(Object field) {
+		return field != null;
 	}
 	
 }

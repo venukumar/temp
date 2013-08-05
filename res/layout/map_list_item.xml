@@ -44,7 +44,7 @@
                     android:id="@+id/view_map_venue_address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2435 Main St, Santa Monica, CA 90405"
+                    android:text="2435 Main St"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textSize="11sp" />
             </LinearLayout>

@@ -226,11 +226,12 @@ public class WebServices {
 			
 			// Web service call
 			String response = postRequest(URL_SAVE_FAVORITE, json, context);
-			Log.i("saveFavorites response: ",response);
 			return response;
 			
 		} catch (JSONException e) {
+			e.printStackTrace();
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		return null;
@@ -246,7 +247,6 @@ public class WebServices {
 			
 			// Web service call
 			String response = postRequest(URL_REMOVE_FAVORITE, json, context);
-			Log.i("delete Favorites response: ",response);
 			return response;
 			
 		} catch (JSONException e) {
@@ -799,12 +799,8 @@ public class WebServices {
 					user.setStatus(result.getString("status"));
 				if (result.has("userImage"))
 					user.setImagePath(DOMAIN_NAME + result.getString("userImage"));
-				if (result.has("creditCardNumber"))
-					user.setCreditCardDisplay("**** saved");
-				if (result.has("expMonth"))
-					user.setExpMonth(result.getString("expMonth"));
-				if (result.has("expYear"))
-					user.setExpYear(result.getString("expYear"));
+				if (result.has("redactedCardNumber"))
+					user.setCreditCardDisplay(result.getString("redactedCardNumber"));
 					
 				return user;
 			}

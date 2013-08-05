@@ -106,20 +106,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 		
 		// If we already have an open order add its items to the layout
-		for (Item item : order.items) {
-
-			// Create item view
-			View itemView = inflater.inflate(R.layout.item, null);				
-			((TextView) itemView.findViewById(R.id.view_dialog_drink_title)).setText(item.getTitle());
-			if (item.getOptionsDescription() != null && !item.getOptionsDescription().equalsIgnoreCase(""))
-				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setText(item.getOptionsDescription());
-			else
-				((TextView) itemView.findViewById(R.id.view_dialog_drink_description)).setVisibility(View.GONE);
-			((TextView) itemView.findViewById(R.id.view_dialog_drink_price)).setText(df.format(item.getPrice()));
-			
-			// Add the item to the order view
-			((LinearLayout) view.findViewById(R.id.view_dialog_drink_items)).addView(itemView);
-		}
+		for (Item item : order.items)
+			((LinearLayout) view.findViewById(R.id.view_dialog_drink_items)).addView(item.orderView(inflater));
 
 		// Show profile information by default
 		if (order.orderRecipient != null) updateProfileView(order.orderRecipient);
