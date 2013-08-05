@@ -40,7 +40,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
 	private ProgressDialog mProgressDialog;
 
-	private WifiManager wifiManager;
 
 
 
@@ -53,7 +52,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
 		
-		wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 		
 		
 		setContentView(R.layout.main);
@@ -101,97 +99,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnClickLis
 		else 
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("** INCONSISTENT DEPLOYMENT **");
 		
-		
-		checkNetworkAvailability();
 	}
 
-	/**
-	 * Check the wifi enabled or not and scan the nearest wifi names.
-	 */
-	private void checkNetworkAvailability() {
-		
-		if(wifiManager==null) return;
-		
-					
-		final ProgressDialog progressDialog = Utilities.progressDialog(this, "Fixing the wifi..");
-		progressDialog.show();
-
-		new Thread(){
-			public void run() {
-				
-				boolean networkAvailable =false;
-				try {
-					networkAvailable = WebServices.isNetworkAvailable(MainActivity.this);
-				} catch (Exception e) {}
-				
-				// if the network is not available then try to turn on wifi
-				if(!networkAvailable){
-					WifiConfigManager.enableWifi(wifiManager);
-				}
-				// Check the network is available or not
-				try {
-					networkAvailable = WebServices.isNetworkAvailable(MainActivity.this);
-				} catch (Exception e) {}
-				// If the network is not available then scan nearest wifi names
-				if(!networkAvailable){
-					searchAvailableWifi();
-				}
-				
-				handler.post(new Runnable() {
-					
-					@Override
-					public void run() {
-						progressDialog.dismiss();
-					}
-				});
-			}
-		}.start();
-		
-	}
-	
-	/***
-	 * 
-	 * Scans List of Available Wifi Networks 
-	 * 
-	 **/
-	public void searchAvailableWifi() {
-		List<ScanResult> mScanResults = wifiManager.getScanResults();
-		ScanResult bestResult = null;
-		Venue bestVenue = null;
-		
-		if(mScanResults != null && mScanResults.size()>0){
-			// Get the venues from the shared preference
-			String response = Utilities.loadPref(mActivity, Venue.Shared_Pref_KEY,"");
-			
-			if(response.equals("")){
-				return;
-			}
-			ArrayList<Venue> venues = Utilities.getVenueListResponse(response);
-			
-			// Try to find the best wifi network based on Signal Level which is available in the venues
-			for(Venue venue:venues){
-				
-				if(!venue.hasWifi()) continue;
-				
-				for(ScanResult results : mScanResults){
-					Log.d("Available Networks", results.SSID);
-					
-					if((bestResult == null && results.SSID.equals(venue.getWifiName())) || WifiManager.compareSignalLevel(bestResult.level, results.level) < 0){
-						bestResult = results;
-						bestVenue = venue;
-					}
-				}
-			}
-			// Enable the wifi network of the best venue
-			if(bestVenue != null){
-				String networkType = bestVenue.getWifiNetworkType();
-				if(bestVenue.getWifiPassword()==null || bestVenue.getWifiPassword().equals("")){
-					networkType = "nopass";
-				}
-				WifiConfigManager.configure(wifiManager, bestVenue.getWifiName(), bestVenue.getWifiPassword(), networkType);
-			}
-		}
-	}
 
 	@Override
 	public void onStop() {
