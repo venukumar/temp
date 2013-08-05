@@ -25,7 +25,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.MessageData;
 import com.vendsy.bartsy.utils.Utilities;
@@ -53,6 +55,11 @@ public class MessagesActivity extends SherlockActivity implements AppObserver {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// Set up the action bar custom view
+		final ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayShowHomeEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
 		
 		// Set the view
 		setContentView(R.layout.messages_main);
@@ -86,6 +93,21 @@ public class MessagesActivity extends SherlockActivity implements AppObserver {
 		
 		// Load messages in the background
 		loadMessagesFromServer();
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		switch (item.getItemId()) {
+		
+		case android.R.id.home:
+			finish();
+			return super.onOptionsItemSelected(item);
+		default:
+			break;
+		}
+		
+		return super.onOptionsItemSelected(item);
 	}
 
 	/**
@@ -238,12 +260,12 @@ public class MessagesActivity extends SherlockActivity implements AppObserver {
 				isSelfProfile = true;
 				// Set self profile image
 				view = getLayoutInflater().inflate(R.layout.message_self_view, null);
+				
 				((ImageView)view.findViewById(R.id.view_user_list_image_resource)).setImageBitmap(mApp.mProfile.getImage());
 				messagesList = ((LinearLayout)view.findViewById(R.id.messages_list));
 				((TextView)view.findViewById(R.id.messages_list_date)).setText(Utilities.getFriendlyDate(message.getCreatedDate(), "d MMM yyyy HH:mm:ss 'GMT'"));
 				
-				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-				params.gravity = Gravity.RIGHT;
+				LayoutParams params = new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				view.setLayoutParams(params);
 				
 				addMessageView(message);
@@ -303,7 +325,7 @@ public class MessagesActivity extends SherlockActivity implements AppObserver {
 		TextView messageTextView = new TextView(this);
 		messageTextView.setTextColor(Color.RED);
 		// Set layout params to the text view
-		messageTextView.setLayoutParams(new LayoutParams(android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+		messageTextView.setLayoutParams(new LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
 		messageTextView.setText(message);
 		
 		messageTextView.setGravity(Gravity.RIGHT);
