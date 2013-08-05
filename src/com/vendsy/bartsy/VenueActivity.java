@@ -250,7 +250,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
 		PeopleSectionFragment p = (PeopleSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_people);
-		if (mPeopleFragment == null) {
+		if (p == null) {
 			Log.v(TAG, "People fragment not found. Creating one.");
 			mPeopleFragment = new PeopleSectionFragment();
 		} else {
@@ -260,7 +260,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 
 		// Initialize people fragment - reuse the fragment if it's already in memory
 		MenuSectionFragment d = (MenuSectionFragment) getSupportFragmentManager().findFragmentById(R.string.title_menu);
-		if (mDrinksFragment == null) {
+		if (d == null) {
 			Log.v(TAG, "Drinks fragment not found. Creating one.");
 			mDrinksFragment = new MenuSectionFragment();
 			
