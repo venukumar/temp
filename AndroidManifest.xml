@@ -176,7 +176,8 @@
             android:label="Bartsy Rewards"
             android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".MessagesActivity"
+        <activity android:name=".MessagesActivity" 
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait">
         </activity>
         
