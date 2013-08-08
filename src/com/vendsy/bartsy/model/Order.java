@@ -87,8 +87,8 @@ public class Order {
 
 	
 	// These are local state (not sent to the  server used only for user notification purposes)
-	public static final int ORDER_STATUS_TIMEOUT = 11;  // this is a local status used on the phone for orders expired locally
-	public static final int ORDER_STATUS_COUNT = 12;
+	public static final int ORDER_STATUS_TIMEOUT 		= 11;  // this is a local status used on the phone for orders expired locally
+	public static final int ORDER_STATUS_COUNT 			= 12;
 	
 	public String type = "Custom";
 
@@ -118,7 +118,7 @@ public class Order {
 		
 		this.items.add(item);
 		
-		this.baseAmount = item.getPrice();
+		this.baseAmount = item.getOrderPrice();
 		this.tipAmount = tipRate * this.baseAmount;
 		this.taxAmount = baseAmount * taxRate;
 		this.totalAmount = this.taxAmount + this.tipAmount + this.baseAmount;
@@ -714,7 +714,7 @@ public class Order {
 		items.add(item);
 		
 		// Update totals - notice that we compute the tip here using the default of the order dialog, that's where it will be changed if needed
-		baseAmount	+= item.getPrice();
+		baseAmount	+= item.getOrderPrice();
 		taxAmount	=  taxRate * baseAmount;
 		tipAmount = Constants.defaultTip * baseAmount;
 		totalAmount	=  tipAmount + taxAmount + baseAmount;

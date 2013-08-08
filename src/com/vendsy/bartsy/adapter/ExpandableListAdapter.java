@@ -75,7 +75,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 		
 				TextView rgb = (TextView)view.findViewById( R.id.view_drink_price );
 				if( rgb != null )
-					rgb.setText( "$"+df.format(item.getPrice()) );
+					rgb.setText( "$"+df.format(item.getOrderPrice()) );
 //	        }
         return view;
     }

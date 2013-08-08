@@ -145,7 +145,10 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		switch (arg0.getId()) {
 		
 		case R.id.view_order_item_add:
+			
+			// Update price and description based on the selections
 			mItem.updateOptionsDescription();
+			mItem.updateOrderPrice();
 			
 			String specialInstructions = ((EditText) findViewById(R.id.view_order_item_special_instructions)).getText().toString();
 				

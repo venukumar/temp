@@ -32,15 +32,14 @@ public class Item {
 	public static final String ITEM_SELECT 	 = "ITEM_SELECT";
 	public static final String SECTION_TEXT  = "SECTION_TEXT";
 	public static final String BARTSY_ITEM 	 = "BARTSY_ITEM";
-	public static final String LOADING		 = "LOADING";
 	
 	// For MENU_ITEM type
 	private String itemId = null;
 	private String favoriteId = null;
 	private String name = null;
 	private String description = null;
-	private double price;
-	private double specialPrice;
+	private double price;		// the base price of the item minus the price of the options selected
+	private double orderPrice; // the total price of the item including the price of the selected options
 	private String venueId = null;
 
 	private String glass = null;
@@ -61,10 +60,6 @@ public class Item {
 	/**
 	 * TODO - Constructors / parsers
 	 */
-	
-	public Item () {
-		this.type = LOADING;
-	}
 	
 	public Item(String title, String description, double price) {
 		this.type = MENU_ITEM;
@@ -142,12 +137,8 @@ public class Item {
 							String selectionName = optionsJSON.getString(j);
 							if(savedSelections.containsKey(selectionName)){
 								OptionGroup option = new OptionGroup(savedSelections.get(selectionName));
-								if (option != null) {
-									Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
-									optionGroups.add(option);
-								} else {
-									Log.e(TAG, "Could not load selection: " + selectionName);
-								}
+								Log.v(TAG, "Loading selection " + selectionName + " for: " + name + ", " + optionGroupJSON);
+								optionGroups.add(option);
 							}
 						}
 					} else {
@@ -162,6 +153,9 @@ public class Item {
 				adjustCocktailPrices();
 			
 			// Calculate the drink price based on selected options, if any.
+			updateOrderPrice();
+			
+			// Update the options description
 			updateOptionsDescription();
 			
 			// Restore normal menu type
@@ -205,7 +199,7 @@ public class Item {
 			json.put("options_description", optionsDescription);
 
 		if (has(price))
-			json.put("price", Double.toString(getPrice()));
+			json.put("price", Double.toString(price));
 		if (has(glass))
 			json.put("glass", glass);
 		if (has(ingredients))
@@ -225,8 +219,7 @@ public class Item {
 		}
 		
 		// Send the price for the bartender app
-		json.put("basePrice", Double.toString(getPrice()));
-		json.put("order_price", Double.toString(getPrice()));
+		json.put("order_price", Double.toString(getOrderPrice()));
 		
 		return json;
 	}
@@ -283,7 +276,7 @@ public class Item {
 
 		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.item_order, null);
 		
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(getPrice()));
+		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(getOrderPrice()));
 		((TextView) view.findViewById(R.id.view_order_title)).setText(getTitle());
 		if (has(optionsDescription))
 			((TextView) view.findViewById(R.id.view_order_description)).setText(getOptionsDescription());
@@ -362,33 +355,12 @@ public class Item {
 		this.description = description;
 	}
 
-	public double getPrice() {
-
-		Double price = this.price;
-		
-		if (optionGroups == null)
-			return price;
-		
-		for (OptionGroup options : optionGroups) {
-			for (Option option : options.options) {
-				if (option.selected)
-					price += option.price;
-			}
-		}
-		
-		return price;
+	public double getOrderPrice() {
+		return orderPrice;
 	}
 
-	public void setPrice(double price) {
-		this.price = price;
-	}
-
-	public double getPrice_special() {
-		return specialPrice;
-	}
-
-	public void setPrice_special(double price_special) {
-		this.specialPrice = price_special;
+	public void setOrderPrice(double order_price) {
+		this.orderPrice = order_price;
 	}
 
 	public ArrayList<OptionGroup> getOptionGroups() {
@@ -413,14 +385,6 @@ public class Item {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public double getSpecialPrice() {
-		return specialPrice;
-	}
-
-	public void setSpecialPrice(double specialPrice) {
-		this.specialPrice = specialPrice;
 	}
 
 	public String getGlass() {
@@ -514,6 +478,22 @@ public class Item {
 				}
 			}
 		}
+	}
+	
+	public void updateOrderPrice() {
+
+		orderPrice = price;
+		
+		if (optionGroups == null)
+			return;
+		
+		for (OptionGroup options : optionGroups) {
+			for (Option option : options.options) {
+				if (option.selected)
+					orderPrice += option.price;
+			}
+		}
+		
 	}
 	
 	/*

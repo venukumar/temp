@@ -201,7 +201,7 @@ public class PastOrdersSectionView extends LinearLayout {
 			df.setMaximumFractionDigits(0);
 			df.setMinimumFractionDigits(0);
 
-			title += item.getTitle() + "  ($"+ df.format(item.getPrice()) + ")";
+			title += item.getTitle() + "  ($"+ df.format(item.getOrderPrice()) + ")";
 			if (i != size && size > 1)
 				title +="\n";
 		}

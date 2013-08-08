@@ -24,7 +24,6 @@ public class Option {
 	
 	private View mView = null;
 	
-	
 	/**
 	 * TODO - Constructors / parsers
 	 */
