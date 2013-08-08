@@ -98,7 +98,7 @@ public class WebServices {
 	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavorite";
 	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavorite";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
-	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavorite";
+	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavorites";
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
