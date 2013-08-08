@@ -33,46 +33,52 @@ public class Menu {
 		
 	}
 
-	public Menu (JSONArray menusArryObj, HashMap<String, JSONObject> savedSelections) throws JSONException {
+	public Menu (JSONArray menus, HashMap<String, JSONObject> savedSelections) throws JSONException {
 		
 //		String errorCode = json.getString("errorCode");
 //		String errorMessage = json.getString("errorMessage");
 		
-		for(int m=0; m<menusArryObj.length();m++){
+		for(int m=0; m<menus.length();m++){
 			
-			JSONObject menuObj = menusArryObj.getJSONObject(m);
-			JSONArray sections = menuObj.getJSONArray("sections");
+			JSONObject menuJson = menus.getJSONObject(m);
+			JSONArray sectionsJson = menuJson.getJSONArray("sections");
 			
-			boolean showMenu = menuObj.has("show_menu") ? (menuObj.getString("show_menu").equals("No") ? false : true) : true;
+			boolean showMenu = menuJson.has("show_menu") ? (menuJson.getString("show_menu").equals("No") ? false : true) : true;
 			
 			// Parse sections 
-			for (int i = 0; i < sections.length(); i++) {
+			for (int i = 0; i < sectionsJson.length(); i++) {
 	
-				JSONObject section = sections.getJSONObject(i);
+				JSONObject sectionJson = sectionsJson.getJSONObject(i);
 				
-				if (section.has("subsections")) {
+				if (sectionJson.has("subsections")) {
 
-					JSONArray subsections = section.getJSONArray("subsections");
+					JSONArray subsections = sectionJson.getJSONArray("subsections");
 					
 					if (subsections != null && subsections.length() > 0) {
 
 						for (int j = 0; j < subsections.length(); j++) {
 							
-							JSONObject subSection = subsections.getJSONObject(j);
+							JSONObject subsectionJson = subsections.getJSONObject(j);
+							
+							// Hack - for now correction menu and sub section names for favorites
+							if (sectionJson.has("favoriteDrinkId")) {
+								menuJson.put("menu_name", "Available favorites");
+								subsectionJson.remove("subsection_name");
+							}
 							
 							// Create a heading by flattening the hierarchy of headings into one string
 							String heading = "";
-							if (menuObj.has("menu_name"))
-								name = heading = menuObj.getString("menu_name");
+							if (menuJson.has("menu_name"))
+								name = heading = menuJson.getString("menu_name");
 							String sectionName = "";
-							if (section.has("section_name"))
-								sectionName = section.getString("section_name");
+							if (sectionJson.has("section_name"))
+								sectionName = sectionJson.getString("section_name");
 							if (!heading.equals("") && !sectionName.equals(""))
 								heading += " > ";
 							heading += sectionName;
 							String subsectionName = "";
-							if (subSection.has("subsection_name"))
-								subsectionName = subSection.getString("subsection_name");
+							if (subsectionJson.has("subsection_name"))
+								subsectionName = subsectionJson.getString("subsection_name");
 							if (!heading.equals("") && !subsectionName.equals(""))
 								heading += " > ";
 							heading += subsectionName;
@@ -81,7 +87,7 @@ public class Menu {
 
 
 							// Add the list of items under that heading to the items list
-							JSONArray contents = subSection.getJSONArray("contents");
+							JSONArray contents = subsectionJson.getJSONArray("contents");
 							ArrayList<Item> subsection_contents = new ArrayList<Item>();
 							
 							Log.v(TAG, "Parsing " + heading + " with " + contents.length() + " items");
@@ -89,7 +95,14 @@ public class Menu {
 							for (int k = 0; k < contents.length(); k++) {
 								Item item = null;
 								try {
-									item = new Item(contents.getJSONObject(k), savedSelections);
+									JSONObject itemJson = contents.getJSONObject(k);
+
+									// Hack - for now insert favorite id from section as it's in the wrong place
+									if (sectionJson.has("favoriteDrinkId"))
+										itemJson.put("favorite_id", sectionJson.getString("favoriteDrinkId"));
+									
+									item = new Item(itemJson, savedSelections);
+
 								} catch (JSONException e) {
 									// Couldn't parse the item. Skip it.
 									e.printStackTrace();

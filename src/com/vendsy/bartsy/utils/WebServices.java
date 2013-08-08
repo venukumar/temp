@@ -213,16 +213,18 @@ public class WebServices {
 	}
 
 
-	public static String saveFavorites(Item item, String venueId, String specialInstructions, String bartsyId, BartsyApplication context){
+	public static String saveFavorites(Item item, String venueId, String bartsyId, BartsyApplication context){
 		
 		try {
 			// Prepare Json object to post the data to server
 			JSONObject json = new JSONObject();
 			json.put("venueId", venueId);
 			json.put("bartsyId", bartsyId);
-			json.put("specialInstructions", specialInstructions);
 			
-			json.put("itemsList", item.getJSONForFavorite());
+			// Add a list of items to save as favorites - for now this code only adds one item
+			JSONArray items = new JSONArray();
+			items.put(item.toJson());
+			json.put("itemsList", items);
 			
 			// Web service call
 			String response = postRequest(URL_SAVE_FAVORITE, json, context);

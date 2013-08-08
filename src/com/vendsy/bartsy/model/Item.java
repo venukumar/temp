@@ -36,6 +36,7 @@ public class Item {
 	
 	// For MENU_ITEM type
 	private String itemId = null;
+	private String favoriteId = null;
 	private String name = null;
 	private String description = null;
 	private double price;
@@ -56,7 +57,6 @@ public class Item {
 	// For SECTION_TEXT type
 	private String text = null;
 	
-	private String favoriteId;
 	
 	/**
 	 * TODO - Constructors / parsers
@@ -99,6 +99,8 @@ public class Item {
 				this.price = Double.parseDouble(json.getString("price"));
 			if (json.has("id"))
 				this.itemId = json.getString("id");
+			if (json.has("favorite_id"))
+				this.favoriteId = json.getString("favorite_id");
 			if (json.has("itemId"))
 				this.itemId = json.getString("itemId");
 			if (json.has("glass"))
@@ -173,14 +175,6 @@ public class Item {
 			throw new JSONException("Invalid menu item type");
 		}
 	}
-	
-	public String getFavoriteId() {
-		return favoriteId;
-	}
-
-	public void setFavoriteId(String favoriteId) {
-		this.favoriteId = favoriteId;
-	}
 
 	/**
 	 * TODO - Serializers
@@ -194,6 +188,8 @@ public class Item {
 			json.put("itemId", itemId);
 			json.put("id", itemId);
 		}
+		if (has(favoriteId))
+			json.put("favorite_id", favoriteId);
 		if (has(name)) {
 			json.put("name", name);
 			json.put("title", name);
@@ -209,7 +205,7 @@ public class Item {
 			json.put("options_description", optionsDescription);
 
 		if (has(price))
-			json.put("price", Double.toString(price));
+			json.put("price", Double.toString(getPrice()));
 		if (has(glass))
 			json.put("glass", glass);
 		if (has(ingredients))
@@ -230,6 +226,7 @@ public class Item {
 		
 		// Send the price for the bartender app
 		json.put("basePrice", Double.toString(getPrice()));
+		json.put("order_price", Double.toString(getPrice()));
 		
 		return json;
 	}
@@ -301,44 +298,6 @@ public class Item {
 		return view;
 	}
 
-	public JSONArray getJSONForFavorite(){
-		
-		// Create JSON Array for the items
-		JSONArray array = new JSONArray();
-		
-		JSONObject itemInjson = new JSONObject();
-		// Prepare the item information for MENU_ITEM and BARTSY_ITEM
-		try {
-			if(getOptionGroups().size()==0){
-				
-				itemInjson.put("title", getTitle());
-				itemInjson.put("itemName", getTitle());
-				itemInjson.put("description", getDescription());
-				
-				// TODO hard coded quantity as 1 for now
-				itemInjson.put("quantity", "1");
-				itemInjson.put("itemId", getItemId());
-				
-				array.put(itemInjson);
-			}
-			// Prepare the item information
-			else{
-				for (OptionGroup optionGroup : getOptionGroups()) {
-					// Get the options from options array and add to the JSON array	
-					for (Option option : optionGroup.options) {
-						if(option.selected){
-							JSONObject optionInjson = new JSONObject();
-							optionInjson.put("itemName", option.name);
-							array.put(optionInjson);
-						}
-					}
-				}
-			}
-		} catch (JSONException e) {
-		}
-		
-		return array;
-	}
 	
 	/**
 	 * 
@@ -363,6 +322,14 @@ public class Item {
 	}
 
 	
+	public String getFavoriteId() {
+		return favoriteId;
+	}
+
+	public void setFavoriteId(String favoriteDrinkId) {
+		this.favoriteId = favoriteDrinkId;
+	}
+
 	public String getVenueId() {
 		return venueId;
 	}
