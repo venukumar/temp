@@ -83,8 +83,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 			message = processPushNotification(GCMmessage);
 		
 		// notifies user
-		if (message != null && GCMmessage!=null)
-			generateNotification(context, message, GCMmessage, count);
+		if (message != null && GCMmessage!=null){
+			BartsyApplication app = (BartsyApplication) getApplication();
+			app.generateNotification("", message, Integer.parseInt(count), GCMmessage, null);
+		}
 	}
 
 	/**
@@ -151,7 +153,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					app.updateMessages(json);
 					// Generate Notification
 					try {
-						app.generateNotification("Message Received", json.getString("body"), 1, message);
+						app.generateNotification("Message Received", json.getString("body"), 1, message, null);
 					} catch (JSONException e) {
 					}
 				} else if(json.getString("messageType").equals("menuUpdated")) {
@@ -185,42 +187,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// log message
 		Log.v(TAG, "Received recoverable error: " + errorId);
 		return super.onRecoverableError(context, errorId);
-	}
-
-	/**
-	 * Issues a notification to inform the user that server has sent a message.
-	 * 
-	 * @param count
-	 * @param count
-	 */
-	private static void generateNotification(Context context, String message, String GCMMessage,
-			String count) {
-		int icon = R.drawable.ic_launcher;
-		long when = System.currentTimeMillis();
-		NotificationManager notificationManager = (NotificationManager) context
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		Notification notification = new Notification(icon, message, when);
-		String title = context.getString(R.string.app_name);
-
-		Intent notificationIntent = new Intent(context, VenueActivity.class);
-		notificationIntent.putExtra(Utilities.EXTRA_MESSAGE, GCMMessage);
-		
-		// set intent so it does not start a new activity
-		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent intent = PendingIntent.getActivity(context, 0,
-				notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		notification.setLatestEventInfo(context, title, message, intent);
-		notification.flags |= Notification.FLAG_AUTO_CANCEL;
-		try {
-			int countValue = Integer.parseInt(count);
-			notification.number = countValue;
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		}
-
-		notification.defaults = Notification.DEFAULT_ALL;
-		notificationManager.notify(0, notification);
 	}
 
 }
