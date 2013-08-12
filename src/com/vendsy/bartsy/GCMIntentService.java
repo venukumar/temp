@@ -134,25 +134,30 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 					app.syncOrders();
 
-				}
-				// When other person reject offer drink
-				else if(json.getString("messageType").equals("DrinkOfferRejected")){
+				} else if(json.getString("messageType").equals("DrinkOfferRejected")){
+
+					// When other person reject offer drink
+
 					if(json.has("body")){
 //						messageTypeMSG = json.getString("body");
 					}
 				
 					app.syncOrders();
 
-				}
-				// When other person sends the chat message
-				else if(json.getString("messageType").equals("message")){
+				} else if(json.getString("messageType").equals("message")){
 					
+					// When other person sends the chat message
+
 					app.updateMessages(json);
 					// Generate Notification
 					try {
 						app.generateNotification("Message Received", json.getString("body"), 1, message);
 					} catch (JSONException e) {
 					}
+				} else if(json.getString("messageType").equals("menuUpdated")) {
+
+					// Menus updated 
+					app.notifyObservers(BartsyApplication.MENU_UPDATED);
 				}
 			}
 		} catch (JSONException e) {

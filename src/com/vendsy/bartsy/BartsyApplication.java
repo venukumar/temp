@@ -284,7 +284,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		
 		notifyObservers(PEOPLE_UPDATED);
 		notifyObservers(ORDERS_UPDATED); 
-		notifyObservers(MENUS_UPDATED);
+		notifyObservers(MENU_UPDATED);
 	}
 	
 	public Venue loadActiveVenue () {
@@ -596,7 +596,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 	
 	public static final String ORDERS_UPDATED = "ORDERS_UPDATED";
-	public static final String MENUS_UPDATED = "MENUS_UPDATED";
+	public static final String MENU_UPDATED = "MENUS_UPDATED";
 	private ArrayList<Order> mOrders = new ArrayList<Order>();
 	
 	@SuppressWarnings("unchecked")

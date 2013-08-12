@@ -92,9 +92,8 @@ public class WebServices {
 	public static final String URL_SEND_MESSAGE = DOMAIN_NAME + PROJECT_NAME + "data/sendMessage";
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
-	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
-
 	
+	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
 	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavorite";
 	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavorite";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
@@ -383,6 +382,10 @@ public class WebServices {
 						// Error code 0 means the order was placed successfully. Set the serverID of the order from the syscall.
 						order.orderId = json.getString("orderId");
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS);
+					} else if (errorCode.equals("99")){
+						// Special success code to indicate the order succeeded but no points were collected
+						order.orderId = json.getString("orderId");
+						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_SUCCESS_WITH_CODE, json.getString("errorMessage"));
 					} else {
 						// Controlled failure with error code from host.
 						msg = processOrderDataHandler.obtainMessage(VenueActivity.HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE, json.getString("errorMessage"));

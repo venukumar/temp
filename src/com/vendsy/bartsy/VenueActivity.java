@@ -769,7 +769,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_PEOPLE_UPDATED_EVENT);
 			mApplicationHandler.sendMessage(message);
-		} else if (qualifier.equals(BartsyApplication.MENUS_UPDATED)) {
+		} else if (qualifier.equals(BartsyApplication.MENU_UPDATED)) {
 			Message message = mApplicationHandler
 					.obtainMessage(HANDLE_MENUS_UPDATED_EVENT);
 			mApplicationHandler.sendMessage(message);
@@ -825,6 +825,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				Log.v(TAG, "BartsyActivity.mhandler.handleMessage(): HANDLE_MENUS_UPDATED_EVENT");
 				if (mDrinksFragment != null) {
 					Log.v(TAG, "Updating menus...");
+					mDrinksFragment.deleteMenu();
 					mDrinksFragment.loadMenus(VenueActivity.this);
 				}
 				break;
@@ -906,9 +907,10 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	VenueActivity mActivity = this;
 	
 	// Response codes
-	public static final int HANDLE_ORDER_RESPONSE_SUCCESS = 0;
-	public static final int HANDLE_ORDER_RESPONSE_FAILURE = 1;
-	public static final int HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE = 2;
+	public static final int HANDLE_ORDER_RESPONSE_SUCCESS 			= 0;
+	public static final int HANDLE_ORDER_RESPONSE_SUCCESS_WITH_CODE = 1;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE 			= 2;
+	public static final int HANDLE_ORDER_RESPONSE_FAILURE_WITH_CODE = 3;
 	
 	// The handler code
 	public Handler processOrderDataHandler = new Handler() {
@@ -918,7 +920,10 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			Log.v(TAG, "VenueActivity.processOrderDataHandler.handleMessage(" + msg.arg1 + ", " + msg.arg2 + ", " + msg.obj + ")");
 			
 			switch (msg.what) {
+			
+			
 			case HANDLE_ORDER_RESPONSE_SUCCESS:
+			case HANDLE_ORDER_RESPONSE_SUCCESS_WITH_CODE:
 				
 				// If there is an active order, remove it
 				if (mApp.hasActiveOrder())
@@ -932,6 +937,8 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				
 				// The order was placed successfully 
 				Toast.makeText(mActivity, "Your order was placed.", Toast.LENGTH_SHORT).show();
+				if (msg.what == HANDLE_ORDER_RESPONSE_SUCCESS_WITH_CODE)
+					Toast.makeText(mActivity, msg.obj.toString(), Toast.LENGTH_SHORT).show();
 
 				break;
 				

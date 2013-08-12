@@ -172,7 +172,7 @@ public final class Utilities {
 				.getString(R.string.config_shared_preferences_name), Context.MODE_PRIVATE);
 		Resources r = context.getResources();
 		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.remove(r.getString(R.string.prefs_venue));
+		editor.remove(r.getString(key));
 		editor.commit();	
 	}
 	

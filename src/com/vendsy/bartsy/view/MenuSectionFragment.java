@@ -133,10 +133,10 @@ public class MenuSectionFragment extends SherlockFragment {
 			new Thread() {
 				@Override
 				public void run() {
-					addMenu(WebServices.URL_GET_FAVORITES_MENU);
-					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU);
-					addMenu(WebServices.URL_GET_COCKTAILS_MENU);
-					addMenu(WebServices.URL_GET_BAR_LIST);
+					addMenu(WebServices.URL_GET_FAVORITES_MENU, false);
+					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true);
+					addMenu(WebServices.URL_GET_COCKTAILS_MENU, true);
+					addMenu(WebServices.URL_GET_BAR_LIST, true);
 				}
 			}.start();
 						
@@ -162,7 +162,7 @@ public class MenuSectionFragment extends SherlockFragment {
 	 * Web service loader. Downloads the menu from the server using a web service call. 
 	 * This is called from a background thread based on the position url array.
 	 */
-	private void addMenu(String url) {
+	private void addMenu(String url, boolean showErrors) {
 
 		Log.v(TAG, "addMenu(" + url + ")");
 		
@@ -207,16 +207,21 @@ public class MenuSectionFragment extends SherlockFragment {
 			e1.printStackTrace();
 		}
 		
-		// Error condition
-		mApp.makeText("Error downloading menu", Toast.LENGTH_SHORT);
-		Log.e(TAG, "Error downloading menu");
-		
-		if (error != null) {
-			mApp.makeText(error, Toast.LENGTH_SHORT);
-			Log.e(TAG, error);
+		if (showErrors) {
+			// Error condition
+			mApp.makeText("Error downloading menu", Toast.LENGTH_SHORT);
+			Log.e(TAG, "Error downloading menu");
+			
+			if (error != null) {
+				mApp.makeText(error, Toast.LENGTH_SHORT);
+				Log.e(TAG, error);
+			}
 		}
 	}
 
+	public void deleteMenu() {
+		this.mMenu = null;
+	}
 
 
 	/*****
