@@ -43,6 +43,9 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Builder;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -214,30 +217,29 @@ public class BartsyApplication extends Application implements AppObservable {
 		});
 	}
 	
-	public void generateNotification(final String title, final String body, final int count, final String gcmMessage) {
+	public void generateNotification(final String title, final String body, final int count,final String PNmessage, final Bitmap largeIcon) {
 		mHandler.post(new Runnable() {
 			public void run() {
+					// Create notification builder and set title and content text
+					NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+				            .setContentTitle(title)
+				            .setContentText(body);
+					// Set app icon for the notification
+					Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+					mBuilder.setLargeIcon(largeIcon);
+					
+					TaskStackBuilder stackBuilder = getStackBuilder(PNmessage);
+				    
+				    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+				    mBuilder.setContentIntent(resultPendingIntent);
+				    mBuilder.setNumber(count);
+				    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+				    
+				    // Play default notification sound
+					mBuilder.setDefaults(Notification.DEFAULT_SOUND);
+				    // mId allows you to update the notification later on.
+				    mNotificationManager.notify(0, mBuilder.build());
 				
-				int icon = R.drawable.ic_launcher;
-				long when = System.currentTimeMillis();
-				NotificationManager notificationManager = (NotificationManager) BartsyApplication.this
-						.getSystemService(Context.NOTIFICATION_SERVICE);
-				Notification notification = new Notification(icon, body, when);
-		
-				Intent notificationIntent = new Intent(BartsyApplication.this, VenueActivity.class);
-				notificationIntent.putExtra(Utilities.EXTRA_MESSAGE, gcmMessage);
-				// set intent so it does not start a new activity
-				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-						| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-				PendingIntent intent = PendingIntent.getActivity(BartsyApplication.this, 0,
-						notificationIntent, 0);
-				notification.setLatestEventInfo(BartsyApplication.this, title, body, intent);
-				notification.flags |= Notification.FLAG_AUTO_CANCEL;
-				notification.number = count;
-
-				// // Play default notification sound
-				notification.defaults = Notification.DEFAULT_SOUND;
-				notificationManager.notify(0, notification);
 			}
 		});
 	}
@@ -912,7 +914,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				ArrayList<Order> remoteOrders = extractOrders(json);
 		
 				// Find new orders, existing orders and missing orders.
-				ArrayList<Order> addedOrders = processAddedOrders(mOrders, remoteOrders);
+				final ArrayList<Order> addedOrders = processAddedOrders(mOrders, remoteOrders);
 				ArrayList<Order> removedOrders = processRemovedOrders(mOrders, remoteOrders);
 				ArrayList<Order> updatedOrders = processExistingOrders(mOrders, remoteOrders);
 		
@@ -920,31 +922,16 @@ public class BartsyApplication extends Application implements AppObservable {
 				// Generate notifications
 				if (addedOrders.size() > 0 || removedOrders.size() > 0 || updatedOrders.size() > 0) {
 					String message = "";
-					int count = 0;
 					if (addedOrders.size() > 0) {
 						for (Order order : addedOrders) {
-							message += order.readableStatus() + "\n";
-							count++;
-						}
-						message += "\n";
-					}	
-					if (updatedOrders.size() > 0) {
-						for (Order order : updatedOrders) {
-							message +=  order.readableStatus() + "\n";
-							count++;
-						}
-						message += "\n";
-					}	
-					if (removedOrders.size() > 0) {
-						for (Order order : removedOrders) {
-							message += order.readableStatus() + "\n";
-							count++;
+							if(order.status==Order.ORDER_STATUS_OFFERED){
+								generateOfferDrinkNotification(order);
+							}
 						}
 					}	
 		
 					// Print and generate modifications
 					Log.w(TAG, message);
-					generateNotification("Orders updated", message, count, "");
 				}		
 		
 				// Print orders after update
@@ -953,6 +940,22 @@ public class BartsyApplication extends Application implements AppObservable {
 					ordersString += order + "\n";
 				}
 				Log.w(TAG, ">>> Open orders after update:\n" + ordersString);
+				//TODO Bundle all the orders in single notification for now
+				
+				
+				NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+				
+				Builder addedBuilder = getInboxNotificationBuilder(addedOrders,"");
+				if(addedBuilder!=null){
+					// mId allows you to update the notification later on.
+					mNotificationManager.notify(0, addedBuilder.build());
+				}
+				// For updated orders
+				Builder updatedBuilder = getInboxNotificationBuilder(updatedOrders,"");
+				if(updatedBuilder!=null){
+					// mId allows you to update the notification later on.
+					mNotificationManager.notify(0, updatedBuilder.build());
+				}
 			}
 		}
 		
@@ -963,6 +966,132 @@ public class BartsyApplication extends Application implements AppObservable {
 		return null;
 	}
 	
+	private void generateOfferDrinkNotification(Order order) {
+		// Set app icon for the notification
+		Bitmap largeIcon= WebServices.fetchImage(WebServices.DOMAIN_NAME+order.recipientImagePath);
+		if(largeIcon==null){
+			largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+		}
+						
+		String title = order.recipientNickname;
+		String body = "Sent you a free item. Click to accept/reject";
+					
+		NotificationCompat.InboxStyle inboxStyle =   new NotificationCompat.InboxStyle();
+		// Sets a title for the inbox style big view
+		inboxStyle.setBigContentTitle("Items:");
+//		mBuilder.setAutoCancel(true);
+		
+		for(Item item: order.items){
+			inboxStyle.addLine(item.getName()+" \n "+item.getDescription());
+		}
+		
+		// Create notification builder and set title and content text
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+						.setAutoCancel(true)
+						.setSmallIcon(R.drawable.ic_launcher)
+						.setLargeIcon(largeIcon)
+			            .setContentTitle(title)
+			            .setContentText(body);
+						
+		mBuilder.setStyle(inboxStyle);
+		TaskStackBuilder stackBuilder = getStackBuilder("");
+	    
+	    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+	    mBuilder.setContentIntent(resultPendingIntent);
+	    
+	    // At most three two buttons can be added (Optional)
+	  	mBuilder.addAction(android.R.drawable.ic_input_get, "Accept", resultPendingIntent);
+	  	mBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Reject", resultPendingIntent);
+	  	
+	    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+	    
+	    // Play default notification sound
+		mBuilder.setDefaults(Notification.DEFAULT_SOUND);
+		
+	    // mId allows you to update the notification later on.
+	    mNotificationManager.notify(0, mBuilder.build());
+		
+		
+	}
+	/**
+	 * Inbox Notification Style - Bundling the notifications for new orders
+	 */
+	private NotificationCompat.Builder getInboxNotificationBuilder(ArrayList<Order> orders, String PNmessage) {
+				
+			String title = "";
+			String body = "";
+			String imageURL="";
+			
+			
+			NotificationCompat.InboxStyle inboxStyle =   new NotificationCompat.InboxStyle();
+			// Sets a title for the Inbox style big view
+			
+			// Moves lines into the big view
+			
+			for (Order order : orders) {
+				// Skip the offer drink order
+				if(order.status == Order.ORDER_STATUS_OFFERED) continue;
+				
+				imageURL = order.recipientImagePath;
+				title = order.recipientNickname;
+				inboxStyle.addLine(order.orderId +" - "+order.readableStatus());
+			}
+			
+			if(title.length()==0){
+				return null;
+			}
+			
+			// Download image from server
+			Bitmap bitmap= WebServices.fetchImage(WebServices.DOMAIN_NAME+imageURL);
+			// If the large icon is null then we have to show app icon.
+			Bitmap largeIcon;
+			if(bitmap==null){
+				largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+			}else{
+				largeIcon = bitmap;
+			}
+			inboxStyle.setBigContentTitle(title);
+			
+			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+            .setAutoCancel(true) 
+            .setSmallIcon(R.drawable.ic_launcher)
+			.setLargeIcon(largeIcon)
+			.setContentTitle(title)
+			.setContentText(body);
+			// Moves the big view style object into the notification object.
+			mBuilder.setStyle(inboxStyle);
+			
+			// Creates an explicit intent for an Activity in your app
+			Intent resultIntent = new Intent(getApplicationContext(), VenueActivity.class);
+			resultIntent.putExtra(Utilities.EXTRA_MESSAGE, PNmessage);
+			resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+				    
+			PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+			mBuilder = mBuilder.setContentIntent(resultPendingIntent);
+			// Play default notification sound
+			mBuilder.setDefaults(Notification.DEFAULT_SOUND);
+			
+			return mBuilder;
+	}
+
+	private TaskStackBuilder getStackBuilder(String PNmessage) {
+		
+		// Creates an explicit intent for an Activity in your app
+		Intent resultIntent = new Intent(getApplicationContext(), VenueActivity.class);
+		resultIntent.putExtra(Utilities.EXTRA_MESSAGE, PNmessage);
+		// The stack builder object will contain an artificial back stack for the
+		// started Activity.
+		// This ensures that navigating backward from the Activity leads out of
+		// your application to the Home screen.
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+		// Adds the back stack for the Intent (but not the Intent itself)
+		stackBuilder.addParentStack(MainActivity.class);
+		// Adds the Intent that starts the Activity to the top of the stack
+		stackBuilder.addNextIntent(resultIntent);
+		
+		return stackBuilder;
+	}
+
 	ArrayList<Order> extractOrders(JSONObject json) {
 		
 		ArrayList<Order> orders = new ArrayList<Order>();
