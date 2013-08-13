@@ -47,6 +47,7 @@ import android.util.Log;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.MainActivity;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.dialog.WifiNetworksDialog;
 import com.vendsy.bartsy.model.Venue;
 
 /**
@@ -296,46 +297,35 @@ public final class Utilities {
 	/**
 	 * Check the wifi enabled or not and scan the nearest wifi names.
 	 */
-	public void checkNetworkAvailability(final SherlockActivity activity, final Handler handler) {
+	public static void checkNetworkAvailability(final Context activity, final Handler handler) {
 		
 		final WifiManager wifiManager = (WifiManager)activity.getSystemService(Context.WIFI_SERVICE);
 
 		if(wifiManager==null) return;
-		
-		final ProgressDialog progressDialog = Utilities.progressDialog(activity, "Fixing the wifi..");
-		progressDialog.show();
 
-		new Thread(){
-			public void run() {
+			ArrayList<Venue> networks = null;
 				
-				boolean networkAvailable =false;
-				try {
+			boolean networkAvailable =false;
+			try {
 					networkAvailable = WebServices.isNetworkAvailable(activity);
-				} catch (Exception e) {}
+			} catch (Exception e) {}
 				
-				// if the network is not available then try to turn on wifi
-				if(!networkAvailable){
-					WifiConfigManager.enableWifi(wifiManager);
-				}
-				// Check the network is available or not
-				try {
-					networkAvailable = WebServices.isNetworkAvailable(activity);
-				} catch (Exception e) {}
-				// If the network is not available then scan nearest wifi names
-				if(!networkAvailable){
-					searchAvailableWifi(activity);
-				}
-				
-				handler.post(new Runnable() {
-					
-					@Override
-					public void run() {
-						progressDialog.dismiss();
-					}
-				});
+			// if the network is not available then try to turn on wifi
+			if(!networkAvailable){
+				WifiConfigManager.enableWifi(wifiManager);
 			}
-		}.start();
-		
+			// Check the network is available or not
+			try {
+				networkAvailable = WebServices.isNetworkAvailable(activity);
+			} catch (Exception e) {}
+			// If the network is not available then scan nearest wifi names
+			if(!networkAvailable){
+				networks = searchAvailableWifiNetworks(activity);
+			}
+			if(networks!=null && networks.size()>0){
+				WifiNetworksDialog dialog = new WifiNetworksDialog(activity, networks);
+				dialog.show();
+			}
 	}
 	
 	/***
@@ -343,44 +333,39 @@ public final class Utilities {
 	 * Scans List of Available Wifi Networks 
 	 * 
 	 **/
-	public void searchAvailableWifi(final SherlockActivity activity) {
-		
-		final WifiManager wifiManager = (WifiManager)activity.getSystemService(Context.WIFI_SERVICE);
-		
+	public static ArrayList<Venue> searchAvailableWifiNetworks(final Context context) {
+		// Try to get wifi service
+		final WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+		// Get list of wifi networks
 		List<ScanResult> mScanResults = wifiManager.getScanResults();
-		ScanResult bestResult = null;
-		Venue bestVenue = null;
+		// Nearest networks which are exist in the venues
+		ArrayList<Venue> venueNetworks = new ArrayList<Venue>();
 		
 		if(mScanResults != null && mScanResults.size()>0){
-			String response = Utilities.loadPref(activity, Venue.Shared_Pref_KEY,"");
-			
+			// Load venue JSON format from shared preference. 
+			String response = Utilities.loadPref(context, Venue.Shared_Pref_KEY,"");
+			// We should not proceed if the response is empty
 			if(response.equals("")){
-				return;
+				return null;
 			}
+			// Parse venue JSON format and get it in the array list
 			ArrayList<Venue> venues = Utilities.getVenueListResponse(response);
 			
 			for(Venue venue:venues){
-				
+				// if the venue does not have wifi then we should not add to the list
 				if(!venue.hasWifi()) continue;
-				
+				// Make sure that venue network is available in the nearest wifi networks. If it is available then it is require to add to the array list.
 				for(ScanResult results : mScanResults){
 					Log.d("Available Networks", results.SSID);
 					
-					if((bestResult == null && results.SSID.equals(venue.getWifiName())) || WifiManager.compareSignalLevel(bestResult.level, results.level) < 0){
-						bestResult = results;
-						bestVenue = venue;
+					if((results.SSID.equals(venue.getWifiName())) ){
+						venueNetworks.add(venue);
 					}
 				}
 			}
-			// 
-			if(bestVenue != null){
-				String networkType = bestVenue.getWifiNetworkType();
-				if(bestVenue.getWifiPassword()==null || bestVenue.getWifiPassword().equals("")){
-					networkType = "nopass";
-				}
-				WifiConfigManager.configure(wifiManager, bestVenue.getWifiName(), bestVenue.getWifiPassword(), networkType);
-			}
+			
 		}
+		return venueNetworks;
 	}
 	
 }
