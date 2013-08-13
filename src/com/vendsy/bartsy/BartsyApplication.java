@@ -207,6 +207,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 
 	public Handler mHandler = new Handler();
+	public int NOTIFICATION_IMAGE_SIZE = 120;
 
 	public void makeText(final String toast, final int length) {
 		mHandler.post(new Runnable() {
@@ -226,6 +227,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				            .setContentText(body);
 					// Set app icon for the notification
 					Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+					largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
 					mBuilder.setLargeIcon(largeIcon);
 					
 					TaskStackBuilder stackBuilder = getStackBuilder(PNmessage);
@@ -972,7 +974,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		if(largeIcon==null){
 			largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 		}
-						
+		largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
 		String title = order.recipientNickname;
 		String body = "Sent you a free item. Click to accept/reject";
 					
@@ -1050,14 +1052,16 @@ public class BartsyApplication extends Application implements AppObservable {
 			}else{
 				largeIcon = bitmap;
 			}
+			// Scale bitmap to fit in the notification
+			largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
 			inboxStyle.setBigContentTitle(title);
 			
 			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-            .setAutoCancel(true) 
-            .setSmallIcon(R.drawable.ic_launcher)
-			.setLargeIcon(largeIcon)
-			.setContentTitle(title)
-			.setContentText(body);
+				            .setAutoCancel(true) 
+				            .setSmallIcon(R.drawable.ic_launcher)
+							.setLargeIcon(largeIcon)
+							.setContentTitle(title)
+							.setContentText(body);
 			// Moves the big view style object into the notification object.
 			mBuilder.setStyle(inboxStyle);
 			
