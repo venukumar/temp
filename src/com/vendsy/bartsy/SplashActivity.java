@@ -51,6 +51,9 @@ public class SplashActivity extends SherlockActivity {
 		// Setup application pointer
 		mApp = (BartsyApplication) getApplication();
 		mActivity = this;
+		
+		// Check the network is enabled or not and find the nearest wifi networks which are available in the venue details
+		Utilities.checkNetworkAvailability(this,handler);
 
 		// Display progress dialog
 		mProgressDialog = Utilities.progressDialog(this, "Loading..");
