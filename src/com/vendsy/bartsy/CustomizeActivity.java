@@ -194,6 +194,9 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 					WebServices.deleteFavorite(mItem.getFavoriteId(), mApp.mActiveVenue.getId(), mApp.mProfile.getBartsyId(), mApp);
 					updateCheckbox(favoriteCheckBox, false);
 				}
+				
+				// Update menus to show change in favorites
+				mApp.notifyObservers(BartsyApplication.MENU_UPDATED);
 			}
 			
 			private void updateCheckbox(final CheckBox favoriteCheckBox, final boolean checked) {
