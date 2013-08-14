@@ -133,10 +133,10 @@ public class MenuSectionFragment extends SherlockFragment {
 			new Thread() {
 				@Override
 				public void run() {
-					addMenu(WebServices.URL_GET_FAVORITES_MENU, false);
-					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true);
-					addMenu(WebServices.URL_GET_COCKTAILS_MENU, true);
-					addMenu(WebServices.URL_GET_BAR_LIST, true);
+					addMenu(WebServices.URL_GET_FAVORITES_MENU, false, true);
+					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true, true);
+					addMenu(WebServices.URL_GET_COCKTAILS_MENU, true, true);
+					addMenu(WebServices.URL_GET_BAR_LIST, true, false); // Hide the menu name itself for Locu menus
 				}
 			}.start();
 						
@@ -154,15 +154,18 @@ public class MenuSectionFragment extends SherlockFragment {
 		Log.i(TAG, "Test Menu created:\n" + testMenu);
 		
 		JSONObject json = new JSONObject(testMenu);
-		return new Menu(json.getJSONArray("menus"), savedSelections);
+		return new Menu(json.getJSONArray("menus"), savedSelections, true);
 	}
 	
 	
 	/*
 	 * Web service loader. Downloads the menu from the server using a web service call. 
 	 * This is called from a background thread based on the position url array.
+	 * @param url
+	 * @param showErrors	- show errors if menu unavailable?
+	 * @param showMenuName	- display the menu name?
 	 */
-	private void addMenu(String url, boolean showErrors) {
+	private void addMenu(String url, boolean showErrors, boolean showMenuName) {
 
 		Log.v(TAG, "addMenu(" + url + ")");
 		
@@ -185,7 +188,7 @@ public class MenuSectionFragment extends SherlockFragment {
 				// Success condition
 				
 				JSONArray menusArryObj = json.getJSONArray("menus");
-				Menu menu = new Menu(menusArryObj, savedSelections);
+				Menu menu = new Menu(menusArryObj, savedSelections, showMenuName);
 				
 				mMenu.headings.addAll(menu.headings);
 				mMenu.items.addAll(menu.items);

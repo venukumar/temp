@@ -33,7 +33,7 @@ public class Menu {
 		
 	}
 
-	public Menu (JSONArray menus, HashMap<String, JSONObject> savedSelections) throws JSONException {
+	public Menu (JSONArray menus, HashMap<String, JSONObject> savedSelections, boolean showMenuName) throws JSONException {
 		
 //		String errorCode = json.getString("errorCode");
 //		String errorMessage = json.getString("errorMessage");
@@ -68,7 +68,7 @@ public class Menu {
 							
 							// Create a heading by flattening the hierarchy of headings into one string
 							String heading = "";
-							if (menuJson.has("menu_name"))
+							if (menuJson.has("menu_name") && showMenuName)
 								name = heading = menuJson.getString("menu_name");
 							String sectionName = "";
 							if (sectionJson.has("section_name"))
