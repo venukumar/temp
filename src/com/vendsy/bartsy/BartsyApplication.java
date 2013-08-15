@@ -1113,7 +1113,7 @@ public class BartsyApplication extends Application implements AppObservable {
 					if (!orderJSON.has("orderTimeout") && json.has("orderTimeout"))
 						orderJSON.put("orderTimeout", json.getInt("orderTimeout"));
 					
-					Order order = new Order(orderJSON);
+					Order order = new Order(loadBartsyId(), orderJSON);
 					orders.add(order);
 				}
 			}

@@ -160,7 +160,7 @@ public class NotificationsActivity extends SherlockActivity {
 				JSONArray jsonArray = json.getJSONArray("notifications");
 				for (int i=0; i<jsonArray.length() ; i++) {
 					JSONObject jsonObj = jsonArray.getJSONObject(i);
-					Notification notification = new Notification(jsonObj);
+					Notification notification = new Notification(mApp.loadBartsyId(), jsonObj);
 					notificationList.add(notification);
 				}
 				// if the notifications list size is zero then we have to disable the scroll listener

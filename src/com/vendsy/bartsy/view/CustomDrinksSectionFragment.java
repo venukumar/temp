@@ -71,7 +71,7 @@ public class CustomDrinksSectionFragment extends SherlockFragment {
 		});
 		// Try to set the adapter for list view
 		if(category!=null){
-			venueList.setAdapter(new CustomDrinksListViewAdapter(getActivity(), R.layout.map_list_item, category.getIngredients()));
+//			venueList.setAdapter(new CustomDrinksListViewAdapter(getActivity(), R.layout.map_list_item, category.getIngredients()));
 		}
 				
 		return mRootView;

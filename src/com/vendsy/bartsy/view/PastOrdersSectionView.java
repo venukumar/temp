@@ -124,7 +124,7 @@ public class PastOrdersSectionView extends LinearLayout {
 				// Add rows one by one
 				for (int i = 0; i < array.length(); i++) {
 					JSONObject json =  array.getJSONObject(i);
-					Order order = new Order(json);
+					Order order = new Order(mApp.loadBartsyId(), json);
 					addNewOrderRow(order);
 				}
 			}
@@ -140,91 +140,7 @@ public class PastOrdersSectionView extends LinearLayout {
 	 * @param order
 	 */
 	private void addNewOrderRow(Order order) {
-		
-		final View itemView = mInflater.inflate(R.layout.past_orders_item, null);
-		
-		// Extract time from UTC field
-		String inputText = order.createdDate.replace("T", " ").replace("Z", ""); // example: 2013-06-27 10:20:15
-        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
-        Date date;
-        String time = "";
-        try {
-			date = inputFormat.parse(inputText);
-			time = outputFormat.format(date);
-		} catch (ParseException e) {
-			// Bad date format - leave time blank
-			e.printStackTrace();
-			Log.e(TAG, "Bad date format in getPastOrders syscall");
-		} 
-		time = Utilities.getFriendlyDate(order.createdDate.replace("T", " ").replace("Z", ""), "yyyy-MM-dd HH:mm:ss");
-		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
-		((TextView) itemView.findViewById(R.id.orderId)).setText(order.orderId);
-		
-		String status = "?";
-		switch(order.last_status) {
-		case Order.ORDER_STATUS_CANCELLED:
-			status = "Cancelled";
-			break;
-		case Order.ORDER_STATUS_COMPLETE:
-			status = "Complete";
-			break;
-		case Order.ORDER_STATUS_READY:
-			status = "Ready";
-			break;
-		case Order.ORDER_STATUS_FAILED:
-			status = "Failed";
-			break;
-		case Order.ORDER_STATUS_IN_PROGRESS:
-			status = "In progress";
-			break;
-		case Order.ORDER_STATUS_INCOMPLETE:
-			status = "Incomplete";
-			break;
-		case Order.ORDER_STATUS_NEW:
-			status = "New";
-			break;
-		case Order.ORDER_STATUS_REJECTED:
-			status = "Rejected";
-			break;
-		}
-		
-		((TextView) itemView.findViewById(R.id.orderStatus)).setText(String.valueOf(status));
-
-		// Set title
-		String title = "";
-		int size = order.items.size();
-		for (int i=0; i< size ; i++) {
-			Item item = order.items.get(i);
-		    DecimalFormat df = new DecimalFormat();
-			df.setMaximumFractionDigits(0);
-			df.setMinimumFractionDigits(0);
-
-			title += item.getTitle() + "  ($"+ df.format(item.getOrderPrice()) + ")";
-			if (i != size && size > 1)
-				title +="\n";
-		}
-		((TextView) itemView.findViewById(R.id.itemName)).setText(title);
-
-		// Set sender/recipient string
-		String us = mApp.loadBartsyId();
-		String text;
-		if (us.equals(order.senderId) && !us.equals(order.recipientId))
-			text = "To: " + order.recipientNickname;
-		else if (!us.equals(order.senderId) && us.equals(order.recipientId))
-			text = "From: " + order.senderNickname;
-		else
-			text = "";
-		((TextView) itemView.findViewById(R.id.sender_recipient)).setText(text);
-
-		// Set total
-	    DecimalFormat df = new DecimalFormat();
-		df.setMaximumFractionDigits(2);
-		df.setMinimumFractionDigits(2);
-		((TextView) itemView.findViewById(R.id.totalPrice)).setText(String.valueOf("$" + df.format(order.totalAmount)));
-
-		ordersTableLayout.addView(itemView);
+		ordersTableLayout.addView(order.pastView(mInflater));
 	}
 
 }

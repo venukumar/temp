@@ -133,9 +133,9 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 			}
 
 			// Setup credit card info if available
-			if (person.hasCreditCardDisplay()) {
+			if (person.hasRedactedCardNumber()) {
 				((TextView) findViewById(R.id.view_profile_cc_type)).setText("****");
-				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(person.getCreditCardDisplay());
+				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setText(person.getRedactedCardNumber());
 				((TextView) findViewById(R.id.view_profile_cc_number_redacted)).setTag(null);
 				((TextView) findViewById(R.id.view_profile_cc_month)).setText("**");
 				((TextView) findViewById(R.id.view_profile_cc_month)).setTag(person.getExpMonth());
@@ -541,6 +541,7 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 			user.setLastName(last_name);
 			
 			//Extract card details 	
+			String redactedNumber = ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getText().toString();
 			String cc = (String) ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getTag();
 			
 			// If the card number string is null it's because we started the activity with a user profile that already has a saved cc number on the server. 
@@ -559,6 +560,7 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 	
 				// Save encrypted card number and exp date/month
 				user.setCreditCardNumberEncrypted(ecc);
+				user.setRedactedCardNumber(redactedNumber);
 				user.setExpMonth((String) ((TextView) findViewById(R.id.view_profile_cc_month)).getTag());
 				user.setExpYear((String) ((TextView) findViewById(R.id.view_profile_cc_year)).getTag());
 			}

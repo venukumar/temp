@@ -158,8 +158,9 @@ public class Item {
 			// Update the options description
 			updateOptionsDescription();
 			
-			// Restore normal menu type
-			type = MENU_ITEM;
+			// Restore normal menu type for proceed ITEM_SELECTs
+			if (ITEM_SELECT.equalsIgnoreCase(type))
+				type = MENU_ITEM;
 			
 		} else if (type.equals(SECTION_TEXT)) {
 			
@@ -240,6 +241,9 @@ public class Item {
 	 * 
 	 */
 	
+	/* 
+	 * Inflates the item for viewing inside the customization activity
+	 */
 	public View customizeView(LayoutInflater inflater) {
 		
 		View view = inflater.inflate(R.layout.item_customize, null);
@@ -268,16 +272,38 @@ public class Item {
 		return view;
 	}
 	
+	/*
+	 * Inflates the item for viewing inside an order dialog
+	 */
 	public View orderView(LayoutInflater inflater) {
+		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.item_order, null);
+		return updateView(view);
+	}
 
-	    DecimalFormat df = new DecimalFormat();
+	/* 
+	 * Inflates the item for viewing inside the menu tab
+	 */
+	public View menuView(LayoutInflater inflater) {
+		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.menu_item, null);
+		return updateView(view);
+	}
+
+	/*
+	 * Updates common item fields for the given view
+	 */
+	public View updateView(View view) {
+		DecimalFormat df = new DecimalFormat();
 		df.setMaximumFractionDigits(0);
 		df.setMinimumFractionDigits(0);
 
-		LinearLayout view = (LinearLayout) inflater.inflate(R.layout.item_order, null);
-		
-		((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(getOrderPrice()));
-		((TextView) view.findViewById(R.id.view_order_title)).setText(getTitle());
+		if (has(orderPrice))
+			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(orderPrice));
+		else
+			((TextView) view.findViewById(R.id.view_order_mini_price)).setVisibility(View.GONE);
+		if (has(name))
+			((TextView) view.findViewById(R.id.view_order_title)).setText(name);
+		else
+			((TextView) view.findViewById(R.id.view_order_title)).setVisibility(View.GONE);
 		if (has(optionsDescription))
 			((TextView) view.findViewById(R.id.view_order_description)).setText(getOptionsDescription());
 		else
@@ -286,11 +312,9 @@ public class Item {
 			((TextView) view.findViewById(R.id.item_order_special_instructions)).setText(getSpecialInstructions());
 		else
 			view.findViewById(R.id.item_order_special_instructions_field).setVisibility(View.GONE);
-		
-		
 		return view;
 	}
-
+	
 	
 	/**
 	 * 

@@ -38,7 +38,7 @@ public class Notification {
 				"}";
 	}
 	
-	public Notification(JSONObject json) {
+	public Notification(String ourBartsyId, JSONObject json) {
 		try {
 			message = json.getString("message");
 			type = json.getString("type");
@@ -47,7 +47,7 @@ public class Notification {
 			venueImage = json.getString("venueImage"); 
 			if(json.has("orderType")){
 				orderType = json.getString("orderType");
-				order = new Order(json);
+				order = new Order(ourBartsyId, json);
 			}
 			
 		} catch (JSONException e) {

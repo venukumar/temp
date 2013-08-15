@@ -1,8 +1,12 @@
 package com.vendsy.bartsy.model;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -114,9 +118,10 @@ public class Order {
 		this.taxRate = taxRate;
 	}
 
-	public Order (UserProfile order_sender, UserProfile order_receiver, double taxRate, double tipRate, Item item) {
+	public Order (String ourBartsyId, UserProfile order_sender, UserProfile order_receiver, double taxRate, double tipRate, Item item) {
 		
 		this.items.add(item);
+		this.bartsyId = ourBartsyId;
 		
 		this.baseAmount = item.getOrderPrice();
 		this.tipAmount = tipRate * this.baseAmount;
@@ -138,8 +143,10 @@ public class Order {
 		df.setMinimumFractionDigits(2);
 	}
 
-	public Order(UserProfile sender, UserProfile recipient, double taxRate) {
+	public Order(String ourBartsyId, UserProfile sender, UserProfile recipient, double taxRate) {
 		
+		this.bartsyId = ourBartsyId;
+
 		this.baseAmount = 0;
 		this.tipAmount = 0;
 		this.taxAmount = 0;
@@ -164,7 +171,9 @@ public class Order {
 
 	}
 
-	public Order(JSONObject json) {
+	public Order(String ourBartsyId, JSONObject json) {
+
+		this.bartsyId = ourBartsyId;
 
 		try {
 
@@ -609,7 +618,7 @@ public class Order {
 
 	}
 	
-	/**
+	/*
 	 * Update the view of the order only with the given tip, tax and total amounts 
 	 */
 	public void updateTipTaxTotalView(double tipAmount,double taxAmount,double totalAmount){
@@ -620,10 +629,8 @@ public class Order {
 		}
 	}
 
-	/**
-	 * To update profile information in orders view
-	 * 
-	 * @param profile
+	/*
+	 * Update profile information in orders view
 	 */
 	private void updateProfileView() {
 
@@ -680,8 +687,6 @@ public class Order {
 			view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
 			view.findViewById(R.id.view_order_for).setVisibility(View.GONE);
 		}
-		
-		
 	}
 
 	private String getTitleModifier() {
@@ -699,6 +704,80 @@ public class Order {
 				recipient = "\n(from another user)";
 		}
 		return recipient;
+	}
+	
+	
+	public View pastView(LayoutInflater inflater) {
+
+		final View itemView = inflater.inflate(R.layout.order_past, null);
+		
+		// Extract time from UTC field
+		String inputText = createdDate.replace("T", " ").replace("Z", ""); // example: 2013-06-27 10:20:15
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        inputFormat.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
+        Date date;
+        String time = "";
+        try {
+			date = inputFormat.parse(inputText);
+			time = outputFormat.format(date);
+		} catch (ParseException e) {
+			// Bad date format - leave time blank
+			e.printStackTrace();
+			Log.e(TAG, "Bad date format in getPastOrders syscall");
+		} 
+		time = Utilities.getFriendlyDate(createdDate.replace("T", " ").replace("Z", ""), "yyyy-MM-dd HH:mm:ss");
+		((TextView) itemView.findViewById(R.id.dateCreated)).setText(time);
+		((TextView) itemView.findViewById(R.id.orderId)).setText(orderId);
+		
+		// Set status - either price if successful or the actual status otherwise
+		String status = "";
+		switch(last_status) {
+		case Order.ORDER_STATUS_CANCELLED:
+			status = "Cancelled";
+			break;
+		case Order.ORDER_STATUS_NEW:
+		case Order.ORDER_STATUS_READY:
+		case Order.ORDER_STATUS_IN_PROGRESS:
+		case Order.ORDER_STATUS_COMPLETE:
+			// Set total
+		    DecimalFormat df = new DecimalFormat();
+			df.setMaximumFractionDigits(2);
+			df.setMinimumFractionDigits(2);
+			status = String.valueOf("$" + df.format(totalAmount));
+			break;
+		case Order.ORDER_STATUS_FAILED:
+			status = "Failed";
+			break;
+		case Order.ORDER_STATUS_INCOMPLETE:
+			status = "Incomplete";
+			break;
+		case Order.ORDER_STATUS_REJECTED:
+			status = "Rejected";
+			break;
+		default:
+			status = "<status " + last_status + ">";
+			break;
+		}
+		((TextView) itemView.findViewById(R.id.order_past_status)).setText(String.valueOf(status));
+
+		// Show sender/recipient string
+		String us = bartsyId;
+		String text = "";
+		if (us.equals(senderId) && !us.equals(recipientId))
+			text = "To: " + recipientNickname;
+		else if (!us.equals(senderId) && us.equals(recipientId))
+			text = "From: " + senderNickname;
+		else
+			itemView.findViewById(R.id.sender_recipient).setVisibility(View.GONE);
+		((TextView) itemView.findViewById(R.id.sender_recipient)).setText(text);
+
+		// Show items
+		LinearLayout itemsLayout = (LinearLayout) itemView.findViewById(R.id.order_past_items);
+		for (Item item : items) 
+			itemsLayout.addView(item.orderView(inflater));
+
+		return itemView;
 	}
 	
 

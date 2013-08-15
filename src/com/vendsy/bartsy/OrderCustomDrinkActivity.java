@@ -256,7 +256,7 @@ public class OrderCustomDrinkActivity extends SherlockActivity {
 			mixers += i.getName() + ", ";
 		}
 		
-		Order order = new Order(mApp.mProfile, profile,  mApp.mActiveVenue.getTaxRate(), tipAmount, 
+		Order order = new Order(mApp.mProfile.getBartsyId(), mApp.mProfile, profile,  mApp.mActiveVenue.getTaxRate(), tipAmount, 
 				new Item(mApp.selectedSpirit.getName(), mixers, totalAmount));
 		
 		// invokePaypalPayment(); // To enable paypal payment
@@ -311,7 +311,7 @@ public class OrderCustomDrinkActivity extends SherlockActivity {
 		if(mApp.mixers.size()>position){
 			selectedCategory = mApp.mixers.get(position);
 			Log.d("OrderCustomDrinks", "Size : "+mApp.mixers.get(position).getIngredients());
-			mixersListView.setAdapter(new CustomDrinksListViewAdapter(this, R.layout.menu_item, selectedCategory.getIngredients()));
+//			mixersListView.setAdapter(new CustomDrinksListViewAdapter(this, R.layout.menu_item, selectedCategory.getIngredients()));
 		}
 		
 		mixersListView.setOnItemClickListener(new OnItemClickListener() {

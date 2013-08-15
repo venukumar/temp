@@ -118,7 +118,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 					// Process offered drink order
 					
 					json.put("orderStatus", Order.ORDER_STATUS_OFFERED);
-					Order order = new Order(json);
+					Order order = new Order(app.loadBartsyId(), json);
 //					app.addOrder(order);
 					
 					if(json.has("body")){

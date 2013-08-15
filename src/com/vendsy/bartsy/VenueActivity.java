@@ -970,7 +970,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		Log.v(TAG, "Sending drink to: " + dialog.mUser.getNickname());
 
 		// Start a blank order for the given user
-		mApp.setActiveOrder(new Order(mApp.mProfile, dialog.mUser, mApp.mActiveVenue.getTaxRate()));
+		mApp.setActiveOrder(new Order(mApp.loadBartsyId(), mApp.mProfile, dialog.mUser, mApp.mActiveVenue.getTaxRate()));
 		updateActionBarStatus();
 		
 		// Let the user know that they can select the item to send and take them to the menu tab

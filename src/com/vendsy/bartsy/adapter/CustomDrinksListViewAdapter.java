@@ -16,16 +16,13 @@ import com.vendsy.bartsy.model.Ingredient;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Venue;
 
-public class CustomDrinksListViewAdapter extends ArrayAdapter<Ingredient> {
+public class CustomDrinksListViewAdapter extends ArrayAdapter<Item> {
 
-	private List<Ingredient> items;
+	private List<Item> items;
 	private LayoutInflater inflater;
 
-	public CustomDrinksListViewAdapter(Context context, int resource,
-			List<Ingredient> items) {
-
+	public CustomDrinksListViewAdapter(Context context, int resource, List<Item> items) {
 		super(context, resource, items);
-
 		this.items = items;
 		inflater = LayoutInflater.from( context );
 	}
@@ -39,18 +36,8 @@ public class CustomDrinksListViewAdapter extends ArrayAdapter<Ingredient> {
             view = convertView;
         else
         	view = inflater.inflate(R.layout.menu_item, parent, false);
-			Ingredient ingredient = items.get(position);
-		 
-			TextView textView = (TextView)view.findViewById( R.id.view_drink_title );
-			// Try to set ingredient name
-			if( textView != null )
-				textView.setText( ingredient.getName() );
-			
-			// Try to set ingredient price
-			TextView rgb = (TextView)view.findViewById( R.id.view_drink_price );
-			if( rgb != null )
-				rgb.setText( "$"+ingredient.getPrice() );
-			
+		Item ingredient = items.get(position);
+		ingredient.updateView(view);
 		return view;
 	}
 	
