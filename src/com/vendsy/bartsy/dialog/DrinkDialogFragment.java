@@ -9,23 +9,31 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.BartsyApplication;
+import com.vendsy.bartsy.CustomizeActivity;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.adapter.ItemAdapter;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
 import com.vendsy.bartsy.model.UserProfile;
@@ -38,6 +46,12 @@ import com.vendsy.bartsy.utils.WebServices;
  */
 public class DrinkDialogFragment extends SherlockDialogFragment implements DialogInterface.OnClickListener, OnClickListener, OnTouchListener {
 
+	private static final int REQUEST_CODE_CUSTOM_DRINK = 2340;
+
+	private static final String TAG = "DrinkDialogFragment";
+
+	BartsyApplication mApp;
+	
 	// Inputs/outputs
 	public Order order;
 	
@@ -49,8 +63,9 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	 * Constructors
 	 */
 
-	public DrinkDialogFragment (Order order) {
+	public DrinkDialogFragment (BartsyApplication app, Order order) {
 		this.order = order;
+		this.mApp = app;
 	}
 	
 	
@@ -106,9 +121,21 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 		
 		// If we already have an open order add its items to the layout
-		for (Item item : order.items)
-			((LinearLayout) view.findViewById(R.id.view_dialog_drink_items)).addView(item.orderView(inflater));
+		ListView itemList = (ListView) view.findViewById(R.id.item_list);
+		ItemAdapter itemAdapter = new ItemAdapter(getActivity(), R.layout.item_order, order.items);
+		itemList.setAdapter(itemAdapter);
+		itemList.setOnItemClickListener(new OnItemClickListener() {
 
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				Item item = order.items.get(arg2);
+				CustomizeActivity.setInput(mApp, item);
+				Intent intent = new Intent(getActivity(), CustomizeActivity.class);
+				startActivity(intent);
+//				startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
+			}
+		});
+		
 		// Show profile information by default
 		if (order.orderRecipient != null) updateProfileView(order.orderRecipient);
 		
@@ -136,6 +163,31 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		return builder.create();
 	}
 
+	@Override
+	public void onActivityResult(int requestCode, int responseCode, Intent data) {
+		
+		super.onActivityResult(requestCode, responseCode, data);
+
+
+		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
+
+		switch (requestCode) {
+		case REQUEST_CODE_CUSTOM_DRINK:
+			
+			switch (responseCode) {
+			case SherlockActivity.RESULT_OK:
+
+				// Figure out if we are adding the item to the active order or creating a new order
+				Item item;
+				item = CustomizeActivity.getOutput(mApp);
+//				order(item);
+				break;
+			}
+			break;
+		}
+		
+	}
+	
 	private void updateProfileView(UserProfile profile) {
 		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));
 		

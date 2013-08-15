@@ -359,7 +359,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			if (mApp.hasActiveOrder()) {
 				
 				// if we have an order, show the order dialog 
-				new DrinkDialogFragment(mApp.getActiveOrder()).show(getSupportFragmentManager(),"Order drink");
+				new DrinkDialogFragment(mApp, mApp.getActiveOrder()).show(getSupportFragmentManager(),"Order drink");
 
 			} else {
 				
