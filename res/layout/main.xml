@@ -60,7 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="4dp"
-                android:text="Beta"
+                android:text="@string/app_version"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#f83ab3"
                 android:textStyle="bold" />
@@ -180,7 +180,7 @@
                     android:layout_marginTop="9dp"
                     android:drawableTop="@drawable/star_icon"
                     android:padding="@dimen/activity_vertical_margin"
-                    android:text="Rewards"
+                    android:text="My Venues"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
 
                 <FrameLayout
