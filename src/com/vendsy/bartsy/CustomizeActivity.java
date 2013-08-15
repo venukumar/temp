@@ -180,6 +180,17 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			public void run() {
 				// Add to favorites
 				if (favoriteCheckBox.isChecked()){ 
+					
+					// Update price and description based on the selections
+					mItem.updateOptionsDescription();
+					mItem.updateOrderPrice();
+					
+					// Update special instructions
+					String specialInstructions = ((EditText) findViewById(R.id.view_order_item_special_instructions)).getText().toString();
+					if (Utilities.has(specialInstructions))
+						mItem.setSpecialInstructions(specialInstructions);
+					
+					// Save the favorite
 					String response = WebServices.saveFavorites(mItem, mApp.mActiveVenue.getId(), mApp.mProfile.getBartsyId(), mApp);
 					try {
 						JSONObject json = new JSONObject(response);
