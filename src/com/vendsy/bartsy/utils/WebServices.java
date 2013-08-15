@@ -98,6 +98,7 @@ public class WebServices {
 	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavorite";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
 	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavorites";
+	public static final String URL_GET_RECENT_ORDERS_MENU = DOMAIN_NAME + PROJECT_NAME + "order/getRecentOrders";
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
@@ -502,13 +503,15 @@ public class WebServices {
 				json.put("description", user.getDescription());
 			if (user.hasGender()) 
 				json.put("gender", user.getGender());
-			if (user.hasCreditCardNumberEncrypted())
+			if (user.hasCreditCardNumberEncrypted()) {
 				json.put("creditCardNumber", user.getCreditCardNumberEncrypted());
-			if (user.hasExpMonth())
-				json.put("expMonth", user.getExpMonth());
-			if (user.hasExpYear())	
-				json.put("expYear", user.getExpYear());
-			
+				if (user.hasRedactedCardNumber())
+					json.put("redactedCardNumber", user.getRedactedCardNumber());
+				if (user.hasExpMonth())
+					json.put("expMonth", user.getExpMonth());
+				if (user.hasExpYear())	
+					json.put("expYear", user.getExpYear());
+			}			
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 			return null;
@@ -805,7 +808,7 @@ public class WebServices {
 				if (result.has("userImage"))
 					user.setImagePath(DOMAIN_NAME + result.getString("userImage"));
 				if (result.has("redactedCardNumber"))
-					user.setCreditCardDisplay(result.getString("redactedCardNumber"));
+					user.setRedactedCardNumber(result.getString("redactedCardNumber"));
 					
 				return user;
 			}
