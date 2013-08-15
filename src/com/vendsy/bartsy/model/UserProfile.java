@@ -51,7 +51,7 @@ public class UserProfile {
 	private String name = null;
 	private String gender  = null;
 	private String creditCardNumberEncrypted = null;
-	private String creditCardDisplay = null;// Show instead of credit card number 
+	private String redactedCardNumber = null;// Show instead of credit card number 
 	private String expMonth = null;
 	private String expYear = null;
 
@@ -685,15 +685,15 @@ public class UserProfile {
 
 	}
 
-	public boolean hasCreditCardDisplay() {
-		return !(creditCardDisplay == null || creditCardDisplay.equals(""));
+	public boolean hasRedactedCardNumber() {
+		return !(redactedCardNumber == null || redactedCardNumber.equals(""));
 	}
 
-	public String getCreditCardDisplay() {
-		return creditCardDisplay;
+	public String getRedactedCardNumber() {
+		return redactedCardNumber;
 	}
 
-	public void setCreditCardDisplay(String creditCardDisplay) {
-		this.creditCardDisplay = creditCardDisplay;
+	public void setRedactedCardNumber(String creditCardDisplay) {
+		this.redactedCardNumber = creditCardDisplay;
 	}
 }
