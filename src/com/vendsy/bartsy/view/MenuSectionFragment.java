@@ -57,8 +57,49 @@ public class MenuSectionFragment extends SherlockFragment {
 	private ExpandableListView mDrinksListView = null;
 	ExpandableListAdapter mAdapter = null;
 	
-	private Menu mMenu = null;
+	private MenuList mMenu = null;
 	private String mVenueId = null;
+	
+	private class MenuList {
+
+		Menu recent = null;
+		Menu favorites = null;
+		Menu mixedDrinks = null;
+		Menu cocktails = null;
+		Menu locuMenu = null;
+		
+		synchronized ArrayList<String> getHeadings() {
+			ArrayList<String> headings = new ArrayList<String>() ;
+			if (recent != null)
+				headings.addAll(recent.headings);
+			if (favorites != null)
+				headings.addAll(favorites.headings);
+			if (mixedDrinks != null)
+				headings.addAll(mixedDrinks.headings);
+			if (cocktails != null)
+				headings.addAll(cocktails.headings);
+			if (locuMenu != null)
+				headings.addAll(locuMenu.headings);
+			return headings;
+		}
+		
+		synchronized ArrayList<ArrayList<Item>> getItems () {
+			ArrayList<ArrayList<Item>> items = new ArrayList<ArrayList<Item>>();
+			
+			if (recent != null)
+				items.addAll(recent.items);
+			if (favorites != null)
+				items.addAll(favorites.items);
+			if (mixedDrinks != null)
+				items.addAll(mixedDrinks.items);
+			if (cocktails != null)
+				items.addAll(cocktails.items);
+			if (locuMenu != null)
+				items.addAll(locuMenu.items);
+			
+			return items;
+		}
+	}
 	
 	private static final int REQUEST_CODE_CUSTOM_DRINK = 9301;
 
@@ -112,7 +153,7 @@ public class MenuSectionFragment extends SherlockFragment {
 				Log.v(TAG, "Menu not available in memory - downloading it from the server");
 			else
 				Log.v(TAG, "Wrong menu - downloading this venue's menu from the server");
-			mMenu = new Menu();
+			mMenu = new MenuList();
 
 			// Set the venue we're checked in
 			mVenueId = mApp.mActiveVenue.getId();
@@ -133,10 +174,16 @@ public class MenuSectionFragment extends SherlockFragment {
 			new Thread() {
 				@Override
 				public void run() {
-					addMenu(WebServices.URL_GET_FAVORITES_MENU, false, true);
-					addMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true, true);
-					addMenu(WebServices.URL_GET_COCKTAILS_MENU, true, true);
-					addMenu(WebServices.URL_GET_BAR_LIST, true, false); // Hide the menu name itself for Locu menus
+					mMenu.recent = getMenu(WebServices.URL_GET_RECENT_ORDERS_MENU, false, true);
+					showMenus();
+					mMenu.favorites = getMenu(WebServices.URL_GET_FAVORITES_MENU, false, true);
+					showMenus();
+					mMenu.mixedDrinks = getMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true, true);
+					showMenus();
+					mMenu.cocktails = getMenu(WebServices.URL_GET_COCKTAILS_MENU, true, true);
+					showMenus();
+					mMenu.locuMenu = getMenu(WebServices.URL_GET_BAR_LIST, true, false); // Hide the menu name itself for Locu menus
+					showMenus();
 				}
 			}.start();
 						
@@ -157,6 +204,15 @@ public class MenuSectionFragment extends SherlockFragment {
 		return new Menu(json.getJSONArray("menus"), savedSelections, true);
 	}
 	
+	private void showMenus() {
+		// Show the newly downloaded menu. Use a handler because Android doesn't allow manipulating views from separate threads
+		handler.post(new Runnable() {
+			@Override 
+			public void run() {
+				updateView();
+			}
+		});	
+	}
 	
 	/*
 	 * Web service loader. Downloads the menu from the server using a web service call. 
@@ -165,16 +221,18 @@ public class MenuSectionFragment extends SherlockFragment {
 	 * @param showErrors	- show errors if menu unavailable?
 	 * @param showMenuName	- display the menu name?
 	 */
-	private void addMenu(String url, boolean showErrors, boolean showMenuName) {
+	private Menu getMenu(String url, boolean showErrors, boolean showMenuName) {
 
 		Log.v(TAG, "addMenu(" + url + ")");
+		
+		Menu menu = null;
 		
 		// Get the data from the server
 		String response = WebServices.getMenuList(mApp,url, mVenueId);
 		if (response == null) {
 			Log.d(TAG, "Webservice failed: " + url);
 			mApp.makeText("Error downloading menu", Toast.LENGTH_SHORT);
-			return ;
+			return null;
 		} 
 		
 		// Extract the menu from the web services response and add the headings and the items to the view's list
@@ -188,19 +246,10 @@ public class MenuSectionFragment extends SherlockFragment {
 				// Success condition
 				
 				JSONArray menusArryObj = json.getJSONArray("menus");
-				Menu menu = new Menu(menusArryObj, savedSelections, showMenuName);
+				menu = new Menu(menusArryObj, savedSelections, showMenuName);
 				
-				mMenu.headings.addAll(menu.headings);
-				mMenu.items.addAll(menu.items);
-			
-				// Show the newly downloaded menu. Use a handler because Android doesn't allow manipulating views from separate threads
-				handler.post(new Runnable() {
-					@Override 
-					public void run() {
-						updateView();
-					}
-				});	
-				return;
+				return menu;
+				
 			} 
 			
 			if (json.has("errorMessage")) {
@@ -220,6 +269,7 @@ public class MenuSectionFragment extends SherlockFragment {
 				Log.e(TAG, error);
 			}
 		}
+		return null;
 	}
 
 	public void deleteMenu() {
@@ -261,8 +311,8 @@ public class MenuSectionFragment extends SherlockFragment {
 		
 		// Display menu from memory into the view
 		
-		ArrayList<String> headings = mMenu.headings;
-		final ArrayList<ArrayList<Item>> items = mMenu.items;
+		ArrayList<String> headings = mMenu.getHeadings();
+		final ArrayList<ArrayList<Item>> items = mMenu.getItems();
 
 		Log.v(TAG, "Menu is in cache. Displaying " + headings.size() + " headings");
 
@@ -321,7 +371,7 @@ public class MenuSectionFragment extends SherlockFragment {
 					order = mApp.getActiveOrder();
 					order.addItem(item);
 				} else {
-					order = new Order(mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
+					order = new Order(mApp.loadBartsyId(), mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
 				}
 				
 				// Create an instance of the dialog fragment and show it
