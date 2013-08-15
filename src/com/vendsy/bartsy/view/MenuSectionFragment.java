@@ -328,11 +328,18 @@ public class MenuSectionFragment extends SherlockFragment {
 					
 					Item item = items.get(groupPosition).get(childPosition);
 					
- 					CustomizeActivity.setInput(mApp, item);
-					Intent intent = new Intent(mActivity, CustomizeActivity.class);
-					startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
+					if (item.has(item.getOptionGroups())) {
+
+						// We have options - show customization activity
+						CustomizeActivity.setInput(mApp, item);
+						Intent intent = new Intent(mActivity, CustomizeActivity.class);
+						startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
+					} else {
+
+						// No options - simply add item to the order
+						order(item);
+					}
 					return false;
-					
 				}
 			});
 			
@@ -345,7 +352,23 @@ public class MenuSectionFragment extends SherlockFragment {
 		}
 
 	}
-	
+
+	private void order(Item item) {
+		
+		Order order;
+		
+		if (mApp.hasActiveOrder()) {
+			order = mApp.getActiveOrder();
+			order.addItem(item);
+		} else {
+			order = new Order(mApp.loadBartsyId(), mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
+		}
+		
+		// Create an instance of the dialog fragment and show it
+		DrinkDialogFragment dialog = new DrinkDialogFragment(order);				
+		dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
+
+	}
 
 	@Override
 	public void onActivityResult(int requestCode, int responseCode, Intent data) {
@@ -362,36 +385,10 @@ public class MenuSectionFragment extends SherlockFragment {
 			case SherlockActivity.RESULT_OK:
 
 				// Figure out if we are adding the item to the active order or creating a new order
-				Order order;
 				Item item;
-				
 				item = CustomizeActivity.getOutput(mApp);
-				
-				if (mApp.hasActiveOrder()) {
-					order = mApp.getActiveOrder();
-					order.addItem(item);
-				} else {
-					order = new Order(mApp.loadBartsyId(), mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
-				}
-				
-				// Create an instance of the dialog fragment and show it
-				DrinkDialogFragment dialog = new DrinkDialogFragment(order);				
-				dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
-/*
-			    FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
-			    DrinkDialogFragment newFragment = new DrinkDialogFragment(order);
-			    
-		        // The device is smaller, so show the fragment fullscreen
-		        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-		        // For a little polish, specify a transition animation
-		        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		        
-		        // To make it fullscreen, use the 'content' root view as the container for the fragment, which is always the root view for the activity
-		        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
-*/				
+				order(item);
 				break;
-			
 			}
 			break;
 		}
