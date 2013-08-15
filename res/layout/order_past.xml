@@ -12,7 +12,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/holo_blue_dark" >
+            android:background="@android:color/holo_blue_dark"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin" >
 
             <TextView
                 android:id="@+id/TextView02"
@@ -52,21 +54,29 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/sender_recipient"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="From/to: Peter"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#ffffff" />
-
         <LinearLayout
-            android:id="@+id/order_past_items"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:divider="?android:dividerHorizontal"
             android:orientation="vertical"
-            android:showDividers="middle" >
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin" >
+
+            <TextView
+                android:id="@+id/sender_recipient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="From/to: Peter"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#ffffff" />
+
+            <LinearLayout
+                android:id="@+id/order_past_items"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:dividerHorizontal"
+                android:orientation="vertical"
+                android:showDividers="middle" >
+            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
