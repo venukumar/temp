@@ -11,11 +11,13 @@ import org.json.JSONObject;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.utils.Utilities;
 
 /**
  * @author Seenu
@@ -248,7 +250,7 @@ public class Item {
 		
 		View view = inflater.inflate(R.layout.item_customize, null);
 		
-		// Set title and description
+		// Show title and description
 		if (hasTitle()) {
 			((TextView) view.findViewById(R.id.view_order_item_name)).setText(getTitle());
 			if (hasDescription())
@@ -259,15 +261,18 @@ public class Item {
 			view.findViewById(R.id.view_order_item_header).setVisibility(View.GONE);
 		}
 		
-		// Set options views
+		// Show options views
 		LinearLayout options = (LinearLayout) view.findViewById(R.id.view_order_item_options);
 		options.setTag(this);
-
 		if (getOptionGroups() != null) {
 			for (OptionGroup optionGroup : getOptionGroups()) {
 				options.addView(optionGroup.customizeView(inflater));
 			}
 		}
+		
+		// Show special instructions
+		if (has(specialInstructions))
+			((EditText) view.findViewById(R.id.view_order_item_special_instructions)).setText(specialInstructions);
 		
 		return view;
 	}
