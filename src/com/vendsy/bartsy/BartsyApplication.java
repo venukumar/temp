@@ -137,7 +137,7 @@ public class BartsyApplication extends Application implements AppObservable {
 				Log.e(TAG, "onCreate(): failed to startService()");
 			}
 		}
-
+		
 		// load user profile if it exists. this is an application-wide variable.
 		loadUserProfileBasics();
 
@@ -221,14 +221,16 @@ public class BartsyApplication extends Application implements AppObservable {
 	public void generateNotification(final String title, final String body, final int count,final String PNmessage, final Bitmap largeIcon) {
 		mHandler.post(new Runnable() {
 			public void run() {
-					// Create notification builder and set title and content text
-					NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
-				            .setContentTitle(title)
-				            .setContentText(body);
 					// Set app icon for the notification
 					Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 					largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
-					mBuilder.setLargeIcon(largeIcon);
+				
+					// Create notification builder and set title and content text
+					NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
+				            .setContentTitle(title)
+				            .setContentText(body)
+				            .setSmallIcon(R.drawable.ic_launcher)
+							.setLargeIcon(largeIcon);
 					
 					TaskStackBuilder stackBuilder = getStackBuilder(PNmessage);
 				    
