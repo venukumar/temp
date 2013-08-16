@@ -8,19 +8,16 @@
         android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="bottom"
             android:layout_weight="2">
 		     <com.vendsy.bartsy.ResponsiveScrollView 
 		          android:layout_width="match_parent"
-			      android:layout_height="match_parent"
-			      android:gravity="bottom"
-			      android:stackFromBottom="true"
-                  android:transcriptMode="alwaysScroll"
+			      android:layout_height="wrap_content"
                   android:id="@+id/scrollView">
 			      <LinearLayout
 					     android:id="@+id/messagesLayout"
 					     android:layout_width="match_parent"
 					     android:orientation="vertical"
-					     android:layout_gravity="bottom"
 					     android:layout_height="wrap_content"/>
 		       </com.vendsy.bartsy.ResponsiveScrollView>
 			</LinearLayout>
