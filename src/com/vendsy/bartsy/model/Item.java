@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,6 +28,9 @@ import com.vendsy.bartsy.utils.Utilities;
 public class Item {
 	
 	private static final String TAG = "Item";
+	
+	// The order this item is associated with (if any and only in some cases)
+	private Order order = null;
 
 	// Menu types
 	private String type = null;
@@ -251,15 +255,10 @@ public class Item {
 		View view = inflater.inflate(R.layout.item_customize, null);
 		
 		// Show title and description
-		if (hasTitle()) {
-			((TextView) view.findViewById(R.id.view_order_item_name)).setText(getTitle());
-			if (hasDescription())
-				((TextView) view.findViewById(R.id.view_order_item_description)).setText(getDescription());
-			else 
-				((TextView) view.findViewById(R.id.view_order_item_description)).setVisibility(View.GONE);
-		} else {
-			view.findViewById(R.id.view_order_item_header).setVisibility(View.GONE);
-		}
+		if (hasDescription())
+			((TextView) view.findViewById(R.id.view_order_item_description)).setText(getDescription());
+		else if (has(optionGroups))
+			((TextView) view.findViewById(R.id.view_order_item_description)).setVisibility(View.GONE);
 		
 		// Show options views
 		LinearLayout options = (LinearLayout) view.findViewById(R.id.view_order_item_options);
@@ -273,6 +272,15 @@ public class Item {
 		// Show special instructions
 		if (has(specialInstructions))
 			((EditText) view.findViewById(R.id.view_order_item_special_instructions)).setText(specialInstructions);
+		
+		// Adjust buttons text depending on if there is an order already or not
+		if (has(order)) {
+			((Button) view.findViewById(R.id.item_customize_positive)).setText("Update");
+			((Button) view.findViewById(R.id.item_customize_negative)).setText("Remove");
+		} else {
+			((Button) view.findViewById(R.id.item_customize_positive)).setText("Add");
+			((Button) view.findViewById(R.id.item_customize_negative)).setText("Cancel");
+		}
 		
 		return view;
 	}
@@ -480,7 +488,14 @@ public class Item {
 		this.specialInstructions = specialInstructions;
 	}
 	
-	
+	public Order getOrder() {
+		return order;
+	}
+
+	public void setOrder(Order order) {
+		this.order = order;
+	}
+
 	/**
 	 * TODO - Utilities
 	 */

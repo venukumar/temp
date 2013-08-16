@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -41,14 +42,10 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// Set up the action bar custom view
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayShowHomeEnabled(true);
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		
 		
 		mApp = (BartsyApplication) getApplication();
 		
+		// Make sure the input is still valid (in case we're lost the application object when this activity started)
 		try {
 			mItem = loadInput(mApp);
 		} catch (Exception e) {
@@ -58,6 +55,14 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			finish();
 			return;
 		}
+	
+		// Set up the action bar custom view
+		final ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayShowHomeEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
+		if (mItem.hasTitle()) actionBar.setTitle(mItem.getName());
+		actionBar.setIcon(R.drawable.circle_pink);
+		
 		
 		// Set the main view
 		setContentView(mItem.customizeView(getLayoutInflater()));
@@ -72,7 +77,8 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		}
 		
 		// Set up listeners
-		findViewById(R.id.view_order_item_add).setOnClickListener(this);
+		findViewById(R.id.item_customize_positive).setOnClickListener(this);
+		findViewById(R.id.item_customize_negative).setOnClickListener(this);
 		findViewById(R.id.view_order_item_favorite).setOnClickListener(this);
 	}
 	
@@ -102,9 +108,9 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		context.selectedMenuItem = item;
 	}
 	
-	private void finishWithResult(BartsyApplication context, Item item) {
+	private void finishWithResult(BartsyApplication context, Item item, int result) {
 		context.selectedMenuItem = item;
-		setResult(UserProfileActivity.RESULT_OK);
+		setResult(result);
 		finish();
 	}
 	
@@ -144,7 +150,7 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 
 		switch (arg0.getId()) {
 		
-		case R.id.view_order_item_add:
+		case R.id.item_customize_positive:
 			
 			// Update price and description based on the selections
 			mItem.updateOptionsDescription();
@@ -155,8 +161,14 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			if (Utilities.has(specialInstructions))
 				mItem.setSpecialInstructions(specialInstructions);
 			
-			finishWithResult(mApp, mItem);
+			finishWithResult(mApp, mItem, UserProfileActivity.RESULT_OK);
 			
+			break;
+
+		case R.id.item_customize_negative:
+		
+			// Discard changes
+			finishWithResult(mApp, mItem, UserProfileActivity.RESULT_FIRST_USER);
 			break;
 			
 		case R.id.view_order_item_favorite:

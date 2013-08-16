@@ -7,6 +7,35 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_blue_dark"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/view_order_item_favorite"
+            style="?android:attr/starStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Save to favorites    " />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/holo_blue_light" >
+    </FrameLayout>
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="0dp"
@@ -24,29 +53,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:orientation="vertical" >
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2" >
-
-                    <TextView
-                        android:id="@+id/view_order_item_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:layout_weight="2"
-                        android:text="Title"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                </LinearLayout>
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_weight="2"
-                    android:background="@android:color/holo_blue_light" >
-                </FrameLayout>
 
                 <TextView
                     android:id="@+id/view_order_item_description"
@@ -70,7 +76,7 @@
                 android:id="@+id/LinearLayout06"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginTop="24dp"
                 android:orientation="vertical" >
 
                 <TextView
@@ -107,24 +113,29 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical" >
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical" >
 
-        <CheckBox
-            android:id="@+id/view_order_item_favorite"
-            style="?android:attr/starStyle"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="2"
-            android:text="Save to favorites    " />
+            android:layout_weight="2" >
 
-        <Button
-            android:id="@+id/view_order_item_add"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="2"
-            android:text="Add to order" />
+            <Button
+                android:id="@+id/item_customize_negative"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="Remove" />
+
+            <Button
+                android:id="@+id/item_customize_positive"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="Add" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -871,7 +871,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, dialog.order, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
+		if (WebServices.postOrderTOServer(mApp, dialog.mOrder, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
 			// Failed to place syscall due to internal error
 			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 		}
@@ -889,7 +889,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		}
 
 		// Make this order the active order
-		mApp.setActiveOrder(dialog.order);
+		mApp.setActiveOrder(dialog.mOrder);
 		
 		// Update action bar
 		updateActionBarStatus();

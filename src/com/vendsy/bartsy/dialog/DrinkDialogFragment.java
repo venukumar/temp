@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -51,9 +52,10 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	private static final String TAG = "DrinkDialogFragment";
 
 	BartsyApplication mApp;
+	ItemAdapter mItemAdapter;
 	
 	// Inputs/outputs
-	public Order order;
+	public Order mOrder;
 	
 	// Local
 	private View view;
@@ -64,7 +66,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	 */
 
 	public DrinkDialogFragment (BartsyApplication app, Order order) {
-		this.order = order;
+		this.mOrder = order;
 		this.mApp = app;
 	}
 	
@@ -114,34 +116,33 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		// Pass null as the parent view because its going in the dialog layout
 		view = inflater.inflate(R.layout.order_dialog, null);
 
-		// Set the total, tax and tip amounts
-		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(order.tipAmount));
-		((TextView) view.findViewById(R.id.view_dialog_drink_tax_amount)).setText(df.format(order.taxAmount));
-		((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(order.totalAmount));
-
+		// Show the total, tax and tip amounts
+		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(mOrder.tipAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_tax_amount)).setText(df.format(mOrder.taxAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(mOrder.totalAmount));
 		
 		// If we already have an open order add its items to the layout
 		ListView itemList = (ListView) view.findViewById(R.id.item_list);
-		ItemAdapter itemAdapter = new ItemAdapter(getActivity(), R.layout.item_order, order.items);
-		itemList.setAdapter(itemAdapter);
+		mItemAdapter = new ItemAdapter(getActivity(), R.layout.item_order, mOrder.items);
+		itemList.setAdapter(mItemAdapter);
 		itemList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				Item item = order.items.get(arg2);
+				Item item = mOrder.items.get(arg2);
+				item.setOrder(mOrder);	// This item is part of an order. this will tell customize activity to show different text for the buttons
 				CustomizeActivity.setInput(mApp, item);
 				Intent intent = new Intent(getActivity(), CustomizeActivity.class);
-				startActivity(intent);
-//				startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
+				startActivityForResult(intent, REQUEST_CODE_CUSTOM_DRINK);
 			}
 		});
 		
 		// Show profile information by default
-		if (order.orderRecipient != null) updateProfileView(order.orderRecipient);
+		if (mOrder.orderRecipient != null) updateProfileView(mOrder.orderRecipient);
 		
 		// Setup up title and buttons
 		builder.setView(view);
-		if (order.items.isEmpty()) {
+		if (mOrder.items.isEmpty()) {
 			// No items in this open order. Don't allow to place the order
 		} else {
 			builder.setPositiveButton("Place order", this);
@@ -174,13 +175,37 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		switch (requestCode) {
 		case REQUEST_CODE_CUSTOM_DRINK:
 			
+			Item item = CustomizeActivity.getOutput(mApp);
+			Order order = item.getOrder();
+			item.setOrder(null);
+
+
 			switch (responseCode) {
-			case SherlockActivity.RESULT_OK:
+			case CustomizeActivity.RESULT_OK:
+
+				// Update the item list
+				updateTotals();
+				mItemAdapter.notifyDataSetChanged();
+				Toast.makeText(mApp, "Item updated", Toast.LENGTH_SHORT).show();
+				
+				break;
+				
+			case CustomizeActivity.RESULT_FIRST_USER:
 
 				// Figure out if we are adding the item to the active order or creating a new order
-				Item item;
-				item = CustomizeActivity.getOutput(mApp);
-//				order(item);
+				order.items.remove(item);
+				
+				// Close activity if there are no more items
+				if (order.items.size() == 0) {
+					mListener.onOrderDialogNegativeClick(DrinkDialogFragment.this);
+					Toast.makeText(mApp, "Order cancelled", Toast.LENGTH_SHORT).show();
+					mApp.setActiveOrder(null);
+					dismiss();
+				} else {
+					mItemAdapter.notifyDataSetChanged();
+					updateTotals();
+					Toast.makeText(mApp, "Item removed", Toast.LENGTH_SHORT).show();
+				}
 				break;
 			}
 			break;
@@ -215,8 +240,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 				@Override
 				protected void selectedProfile(UserProfile userProfile) {
 					// Update profile with new selected profile
-					order.orderRecipient = userProfile;
-					order.recipientId = userProfile.getBartsyId();
+					mOrder.orderRecipient = userProfile;
+					mOrder.recipientId = userProfile.getBartsyId();
 					updateProfileView(userProfile);
 					super.selectedProfile(userProfile);
 				}
@@ -238,10 +263,10 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 				percent = (double) 0.20;
 			
 			// Set the tip and total amount based on the radio button selected
-			order.tipAmount = order.baseAmount * percent;
-			order.totalAmount = order.tipAmount + order.taxAmount + order.baseAmount;
-			((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(order.tipAmount));
-			((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(order.totalAmount));
+			mOrder.tipAmount = mOrder.baseAmount * percent;
+			mOrder.totalAmount = mOrder.tipAmount + mOrder.taxAmount + mOrder.baseAmount;
+			((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(mOrder.tipAmount));
+			((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(mOrder.totalAmount));
 
 			break;
 		}
@@ -251,23 +276,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	@Override
 	public void onClick(DialogInterface dialog, int id) {
 		
-		RadioGroup tipPercentage = (RadioGroup) view.findViewById(R.id.view_dialog_drink_tip);
-		EditText percentage = (EditText) view.findViewById(R.id.view_dialog_drink_tip_amount);
-		
-		// Send the positive button event back to the host activity
-
-		int selected = tipPercentage.getCheckedRadioButtonId();
-
-		// Gets a reference to our "selected" radio button
-		RadioButton b = (RadioButton) tipPercentage.findViewById(selected);
-		if (b == null || b.getText().toString().trim().length() == 0) {
-			String tip="0";
-			if (percentage.getText()!= null)
-				tip = percentage.getText().toString();
-			order.tipAmount = Double.parseDouble(tip) ;
-		} else 
-			order.tipAmount = Double.parseDouble(b.getText().toString().replace("%", "")) / (double) 100 * order.baseAmount;
-		order.totalAmount = order.tipAmount + order.taxAmount + order.baseAmount;
+		updateTotals();
 
 		// Send the event to the calling activity
 		switch (id) {
@@ -280,6 +289,39 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		}
 	}
 
+	/* 
+	 * Update and show price fields
+	 */
+	void updateTotals() {
+
+		// Update order base amount
+		mOrder.baseAmount = 0;
+		for (Item item : mOrder.items)
+			mOrder.baseAmount += item.getOrderPrice();
+		
+		// Update tip
+		RadioGroup tipPercentage = (RadioGroup) view.findViewById(R.id.view_dialog_drink_tip);
+		EditText percentage = (EditText) view.findViewById(R.id.view_dialog_drink_tip_amount);
+		int selected = tipPercentage.getCheckedRadioButtonId();
+		RadioButton b = (RadioButton) tipPercentage.findViewById(selected);
+		if (b == null || b.getText().toString().trim().length() == 0) {
+			String tip="0";
+			if (percentage.getText()!= null)
+				tip = percentage.getText().toString();
+			mOrder.tipAmount = Double.parseDouble(tip) ;
+		} else {
+			mOrder.tipAmount = Double.parseDouble(b.getText().toString().replace("%", "")) / (double) 100 * mOrder.baseAmount;
+		}
+		
+		// Update total
+		mOrder.totalAmount = mOrder.tipAmount + mOrder.taxAmount + mOrder.baseAmount;
+		
+		// Show the total, tax and tip amounts
+		((EditText) view.findViewById(R.id.view_dialog_drink_tip_amount)).setText(df.format(mOrder.tipAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_tax_amount)).setText(df.format(mOrder.taxAmount));
+		((TextView) view.findViewById(R.id.view_dialog_drink_total_amount)).setText(df.format(mOrder.totalAmount));
+	}
+	
 	@Override
 	public boolean onTouch(View arg0, MotionEvent arg1) {
 		switch (arg0.getId()) {
