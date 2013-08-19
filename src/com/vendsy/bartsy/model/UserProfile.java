@@ -1,6 +1,7 @@
 package com.vendsy.bartsy.model;
 
 import java.util.ArrayList;
+import java.util.Currency;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,6 +61,7 @@ public class UserProfile {
 	private String firstName = null;
 	private String lastName = null;
 	private String birthday  = null;		// MM/DD/YYYY
+	private String age  = null;
 	private String status = null; 			// relationship status ("single", "attached", 
 	private String orientation = null;  	// sexual orientation
 
@@ -229,6 +231,60 @@ public class UserProfile {
 
 	public void setImageDownloaded(boolean imageDownloaded) {
 		this.imageDownloaded = imageDownloaded;
+	}
+	
+	/*
+	 * to parse the json format and to set the values
+	 */
+	public void setPublicDetails(JSONObject user){
+		try {
+			gender=user.getString("gender");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			age=user.getString("age");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			orientation=user.getString("orientation");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			visibility=user.getString("showProfile");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		try {
+//			imagePath=user.getString("userImagePath");
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		try {
+			status=user.getString("status");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			description=user.getString("description");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			user.getString("currentTime");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/*
@@ -404,6 +460,14 @@ public class UserProfile {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getAge() {
+		return age;
+	}
+
+	public void setAge(String age) {
+		this.age = age;
 	}
 
 	public boolean hasVisibility() {

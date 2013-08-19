@@ -99,6 +99,7 @@ public class WebServices {
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
 	public static final String URL_GET_FAVORITES_MENU = DOMAIN_NAME + PROJECT_NAME + "favorites/getFavorites";
 	public static final String URL_GET_RECENT_ORDERS_MENU = DOMAIN_NAME + PROJECT_NAME + "order/getRecentOrders";
+	public static final String URL_GET_USER_PUBLIC_DETAILS = DOMAIN_NAME + PROJECT_NAME + "user/getUserPublicDetails";
 	
 	// Current ApiVersion number
 	public static final String 	API_VERSION = "3";
@@ -281,6 +282,37 @@ public class WebServices {
 
 			response = postRequest(url, json, context);
 			Log.v(TAG, "CheckIn or Check Out response :: " + response);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	
+	/**
+	 * Service call to fetch user public details
+	 * 
+	 * @param url
+	 * @param context
+	 * @return
+	 */
+	public static String userPublicDetails (final BartsyApplication context,String bartsyId) {
+		String response = null;
+		
+		Log.v(TAG, "bartsyId ::: " + bartsyId);
+		final JSONObject json = new JSONObject();
+		try {
+			json.put("bartsyId", bartsyId);
+			json.put("venueId", context.mActiveVenue.getId());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		try {
+
+			response = postRequest(URL_GET_USER_PUBLIC_DETAILS, json, context);
+			Log.v(TAG, "User Public Details Response::: " + response);
 
 		} catch (Exception e) {
 			e.printStackTrace();
