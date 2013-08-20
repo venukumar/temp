@@ -207,7 +207,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	 */
 
 	public Handler mHandler = new Handler();
-	public int NOTIFICATION_IMAGE_SIZE = 120;
+	public int NOTIFICATION_IMAGE_SIZE = 100;
 
 	public void makeText(final String toast, final int length) {
 		mHandler.post(new Runnable() {
@@ -972,13 +972,30 @@ public class BartsyApplication extends Application implements AppObservable {
 	
 	private void generateOfferDrinkNotification(Order order) {
 		// Set app icon for the notification
-		Bitmap largeIcon= WebServices.fetchImage(WebServices.DOMAIN_NAME+order.recipientImagePath);
-		if(largeIcon==null){
-			largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-		}
-		largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
+		Bitmap largeIcon = null;
+		String imagePath;
 		String title = order.recipientNickname;
 		String body = "Sent you a free item. Click to accept/reject";
+		
+		//to display recipient image, in the notification received by the sender 
+        if(order.senderId ==null || order.senderId.equalsIgnoreCase(mProfile.getBartsyId())){
+        	title = order.recipientNickname;
+        	imagePath = order.recipientImagePath;
+        	body = "Waiting for "+order.recipientNickname+" to accept/reject your offer";
+		}
+        //to display sender image ,in the notification received by the recipient
+        else{
+        	title = order.senderNickname;
+        	imagePath = order.senderImagePath;
+        	
+        }
+        largeIcon= WebServices.fetchImage(WebServices.DOMAIN_NAME+imagePath);
+        if(largeIcon==null){
+    		Log.d("BarstyApplication", "largeicon is null");
+			largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+		}
+		largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);	
+//		Bitmap largeIcon= WebServices.fetchImage(WebServices.DOMAIN_NAME+order.recipientImagePath);
 					
 		NotificationCompat.InboxStyle inboxStyle =   new NotificationCompat.InboxStyle();
 		// Sets a title for the inbox style big view
@@ -1013,7 +1030,14 @@ public class BartsyApplication extends Application implements AppObservable {
 		mBuilder.setDefaults(Notification.DEFAULT_SOUND);
 		
 	    // mId allows you to update the notification later on.
-	    mNotificationManager.notify(0, mBuilder.build());
+		int id = 0;
+		try {
+			 id=Integer.parseInt(order.bartsyId);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+	    mNotificationManager.notify(id, mBuilder.build());
 		
 		
 	}
@@ -1037,8 +1061,13 @@ public class BartsyApplication extends Application implements AppObservable {
 				if(order.status == Order.ORDER_STATUS_OFFERED) continue;
 				
 				imageURL = order.recipientImagePath;
-				title = order.recipientNickname;
+				
+//				title = order.recipientNickname;
 				inboxStyle.addLine(order.orderId +" - "+order.readableStatus());
+				//to display orderID in the notification title
+				title=order.orderId;
+				//to display the order status in the notification body
+				body=order.readableStatus();
 			}
 			
 			if(title.length()==0){
@@ -1046,14 +1075,17 @@ public class BartsyApplication extends Application implements AppObservable {
 			}
 			
 			// Download image from server
-			Bitmap bitmap= WebServices.fetchImage(WebServices.DOMAIN_NAME+imageURL);
+//			Bitmap bitmap= WebServices.fetchImage(WebServices.DOMAIN_NAME+imageURL);
 			// If the large icon is null then we have to show app icon.
 			Bitmap largeIcon;
-			if(bitmap==null){
+//			if(bitmap==null)
+			//Displaying the Bartsy icon when placed order
+			{
 				largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-			}else{
-				largeIcon = bitmap;
 			}
+//			else{
+//				largeIcon = bitmap;
+//			}
 			// Scale bitmap to fit in the notification
 			largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
 			inboxStyle.setBigContentTitle(title);
