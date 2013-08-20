@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -462,7 +463,7 @@ public class Order {
 	 * TODO - Views
 	 */
 
-	public View updateView(LayoutInflater inflater, ViewGroup container) {
+	public View updateView(LayoutInflater inflater, ViewGroup container, HashMap<String, Bitmap> cache) {
 
 		Log.v(TAG, "updateView()");
 		Log.v(TAG, "Order sender   :" + orderSender);
@@ -481,7 +482,7 @@ public class Order {
 		updateTipTaxTotalView(tipAmount, taxAmount, totalAmount);
 		
 		// To display order receiver profile information in orders view
-		updateProfileView();
+		updateProfileView(cache);
 
 		// If the order has been removed already (and we're showing for UI reasons), use the last status for showing the state
 		int orderStatus = status;
@@ -632,7 +633,7 @@ public class Order {
 	/*
 	 * Update profile information in orders view
 	 */
-	private void updateProfileView() {
+	private void updateProfileView(HashMap<String, Bitmap> cache) {
 
 		if (senderId != null && recipientId != null && senderId.equals(recipientId)) {
 			view.findViewById(R.id.view_order_images).setVisibility(View.GONE);
@@ -647,7 +648,7 @@ public class Order {
 			if (orderSender.hasImage()) {
 				((ImageView)view.findViewById(R.id.view_order_sender_image)).setImageBitmap(orderSender.getImage());
 			} else if (orderSender.hasImagePath()) {
-				WebServices.downloadImage(orderSender, ((ImageView)view.findViewById(R.id.view_order_sender_image)));
+				WebServices.downloadImage(orderSender, ((ImageView)view.findViewById(R.id.view_order_sender_image)), cache);
 			} else {
 				view.findViewById(R.id.view_sender).setVisibility(View.GONE);
 				view.findViewById(R.id.view_order_from).setVisibility(View.GONE);
@@ -671,7 +672,7 @@ public class Order {
 			if (orderRecipient.hasImage()) {
 				((ImageView)view.findViewById(R.id.view_order_recipient_image)).setImageBitmap(orderRecipient.getImage());
 			} else if (orderRecipient.hasImagePath()) {
-				WebServices.downloadImage(orderRecipient, ((ImageView)view.findViewById(R.id.view_order_recipient_image)));
+				WebServices.downloadImage(orderRecipient, ((ImageView)view.findViewById(R.id.view_order_recipient_image)), cache);
 			} else {
 				view.findViewById(R.id.view_recipient).setVisibility(View.GONE);
 				view.findViewById(R.id.view_order_for).setVisibility(View.GONE);

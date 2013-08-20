@@ -4,12 +4,14 @@
 package com.vendsy.bartsy.dialog;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -31,9 +33,11 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.CustomizeActivity;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ItemAdapter;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Order;
@@ -60,6 +64,8 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 	// Local
 	private View view;
 	private DecimalFormat df = new DecimalFormat();
+
+	private VenueActivity mActivity;
 
 	/**
 	 * Constructors
@@ -111,6 +117,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 
 		// Get the layout inflater
 		LayoutInflater inflater = getActivity().getLayoutInflater();
+		mActivity = (VenueActivity) getActivity();
 
 		// Inflate and set the layout for the dialog
 		// Pass null as the parent view because its going in the dialog layout
@@ -217,7 +224,7 @@ public class DrinkDialogFragment extends SherlockDialogFragment implements Dialo
 		ImageView profileImageView = ((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));
 		
 		if (!profile.hasImage()) {
-			WebServices.downloadImage(profile, profileImageView);
+			WebServices.downloadImage(profile, profileImageView, mActivity.mImageCache);
 		} else {
 			profileImageView.setImageBitmap(profile.getImage());
 		}

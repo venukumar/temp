@@ -1,5 +1,7 @@
 package com.vendsy.bartsy;
 
+import java.util.HashMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.app.AlertDialog;
@@ -8,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -49,7 +52,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	/****************
 	 * 
 	 * 
-	 * TODO - global variablesORDERS_UPDATED
+	 * TODO - global variables
 	 * 
 	 */
 
@@ -57,7 +60,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	public MenuSectionFragment mDrinksFragment = null;
 	public OrdersSectionFragment mOrdersFragment = null; 
 	public PeopleSectionFragment mPeopleFragment = null; 
-
+	public HashMap<String, Bitmap> mImageCache = new HashMap<String, Bitmap>();
 
 	public void appendStatus(String status) {
 		Log.d(TAG, status);

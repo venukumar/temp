@@ -49,6 +49,8 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.vendsy.bartsy.adapter.VenueListViewAdapter;
@@ -222,7 +224,8 @@ public class MapActivity extends SherlockActivity implements LocationListener, O
 			if (venue.hasLatLong()) {
 				LatLng coord = new LatLng(Float.valueOf(venue.getLatitude()), Float.valueOf(venue.getLongitude()));
 				mMap.addMarker(new MarkerOptions().position(coord).title(venue.getName())
-						.snippet(venue.getUserCount() == 1 ? "person" : "people checked in: " + venue.getUserCount()));
+						.snippet(venue.getUserCount() == 1 ? "1 person checked in" : venue.getUserCount() + " people checked in")
+						.icon(BitmapDescriptorFactory.defaultMarker(325)));
 			}
 		}
 	}

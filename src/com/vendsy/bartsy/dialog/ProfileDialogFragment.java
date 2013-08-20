@@ -141,7 +141,7 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 									JSONObject json = new JSONObject(response);
 									// Success response
 									if(json.has("errorCode") && json.getInt("errorCode") ==0){
-										mUser.setPublicDetails(json);
+										mUser.parsePublicInfo(json);
                                     //to update user profile information from the sys call								
 										updateMoreUserInformation();
 									}// Error response

@@ -3,6 +3,9 @@
  */
 package com.vendsy.bartsy.view;
 
+import java.util.HashMap;
+
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -32,8 +35,6 @@ public class PeopleSectionFragment extends SherlockFragment{
 	public LinearLayout peopleLayout = null;
 	public BartsyApplication mApp = null;
 	private VenueActivity mActivity = null;
-	private Handler handler = new Handler();
-
 	private PeopleListView mPeopleListView;
 
 	@Override
@@ -45,7 +46,7 @@ public class PeopleSectionFragment extends SherlockFragment{
 		mInflater = inflater;
 		mContainer = container;
 		mRootView = inflater.inflate(R.layout.people_tab, container, false);
-		peopleLayout = (LinearLayout) mRootView.findViewById(R.id.view_singles);
+		peopleLayout = (LinearLayout) mRootView.findViewById(R.id.people_list);
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
@@ -53,7 +54,7 @@ public class PeopleSectionFragment extends SherlockFragment{
 		((VenueActivity) getActivity()).mPeopleFragment = this;
 		
 		// Add People list view object to the liner layout
-		mPeopleListView = new PeopleListView(mActivity, mApp, inflater){
+		mPeopleListView = new PeopleListView(mActivity, mApp, inflater, mActivity.mImageCache){
 			@Override
 			protected void selectedUserProfile(UserProfile profile) {
 				// if this view has been used by VenueActivity then enable the PeopleProfileDialog
@@ -74,7 +75,7 @@ public class PeopleSectionFragment extends SherlockFragment{
 	 */
 	public void updatePeopleView(){
 		if(mPeopleListView!=null){
-			mPeopleListView.loadPeopleList();
+			mPeopleListView.loadPeopleList(mActivity.mImageCache);
 		}
 	}
 	

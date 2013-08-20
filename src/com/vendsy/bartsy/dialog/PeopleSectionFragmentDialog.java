@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.view.PeopleListView;
 
@@ -26,6 +27,7 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 	
 	View mRootView = null;
 	public BartsyApplication mApp = null;
+	private VenueActivity mActivity = null;
 
 	private LayoutInflater mInflater;
 
@@ -47,13 +49,14 @@ public class PeopleSectionFragmentDialog extends SherlockDialogFragment{
 		mRootView = mInflater.inflate(R.layout.people_tab, null);
 		
 		
-		LinearLayout peopleLayout = (LinearLayout) mRootView.findViewById(R.id.view_singles);
+		LinearLayout peopleLayout = (LinearLayout) mRootView.findViewById(R.id.people_list);
 		
 		// Make sure the fragment pointed to by the activity is accurate
 		mApp = (BartsyApplication) getActivity().getApplication();
+		mActivity = (VenueActivity) getActivity();
 		
 		// Add People list view object to the liner layout
-		mPeopleListView = new PeopleListView(getActivity(), mApp, mInflater){
+		mPeopleListView = new PeopleListView(getActivity(), mApp, mInflater, mActivity.mImageCache){
 			@Override
 			protected void selectedUserProfile(UserProfile profile) {
 				selectedProfile(profile);

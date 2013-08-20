@@ -46,7 +46,12 @@ public class OptionGroup {
 			if (type.equals(OPTION_ADD) || type.equals(OPTION_CHOOSE)) {
 				options = new ArrayList<Option>();
 				for (int i = 0 ; i < optionsJSON.length() ; i++) {
-					options.add(new Option(optionsJSON.getJSONObject(i),type));
+					try {
+						options.add(new Option(optionsJSON.getJSONObject(i),type));
+					} catch (NumberFormatException e) {
+						// If the option's price cannot be parsed, skip that option
+						e.printStackTrace();
+					}
 				}
 			} else if (type.equals(OPTION_SELECT)) {
 				selections = new ArrayList<String>();

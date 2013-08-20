@@ -2,20 +2,20 @@ package com.vendsy.bartsy.model;
 
 import java.util.ArrayList;
 import java.util.Currency;
+import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.NDAActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
@@ -29,6 +29,7 @@ public class UserProfile {
 	// User login information
 	private String bartsyLogin  = null; 	// required and doubles as email for the user
 	private String bartsyId ;				// Unique ID enforced by Bartsy server
+	private boolean localUser = false;		// It this the profile of the local user?
 	private String bartsyPassword = null;	// required
 			
 	// Optional Google login parameters
@@ -201,170 +202,141 @@ public class UserProfile {
 		return TYPE_MESSAGE_NEW.equals(messagesStatus);
 	}
 	
+	public boolean hasReadMessages(){
+		return TYPE_MESSAGE_OLD.equals(messagesStatus);
+	}
+	
+	public boolean hasMessages(){
+		return !TYPE_MESSAGE_NONE.equals(messagesStatus);
+	}
+	
 	/**
 	 * Constructor using Facebook profile as a base.  
 	 * 
 	 * @param user
 	 * @return
 	 */
-/*	public UserProfile (GraphUser user) {
-		
-		// Set all the user details
-		
-		setFacebookUsername(user.getUsername());
-		
-		setFacebookId(user.getId());
-		
-		setFirstName(user.getFirstName());
-		
-		setLastName(user.getLastName());
-		
-		setBirthday(user.getBirthday());
-		
-		this.setImagePath(Constants.FB_PICTURE+user.getId()+"/picture");
-			
-	}
-	*/
-	public boolean isImageDownloaded() {
-		return imageDownloaded;
-	}
 
-	public void setImageDownloaded(boolean imageDownloaded) {
-		this.imageDownloaded = imageDownloaded;
-	}
-	
-	/*
-	 * to parse the json format and to set the values
-	 */
-	public void setPublicDetails(JSONObject user){
-		try {
-			gender=user.getString("gender");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			age=user.getString("age");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			orientation=user.getString("orientation");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			visibility=user.getString("showProfile");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		try {
-//			imagePath=user.getString("userImagePath");
-//		} catch (JSONException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		try {
-			status=user.getString("status");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			description=user.getString("description");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			user.getString("currentTime");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	/*
-	 * Constructor using Facebook profile JSON as a base.  
+	 * Constructor using server-sent JSON as a base.  
 	 * 
 	 * @param person
 	 * @return
 	 */
-	public UserProfile (JSONObject person) {
+	public UserProfile (JSONObject json) throws JSONException {
 
-		try {
-			setFacebookUsername(person.getString("username"));
-		} catch (JSONException e1) {
-			e1.printStackTrace();
-		}
-		try {
-			setFacebookId(person.getString("id"));
-		} catch (JSONException e1) {
-			e1.printStackTrace();
-		}
+		if (json.has("nickName"))
+			nickname = json.getString("nickName");
+		if (json.has("gender"))
+			gender = json.getString("gender");
+		if (json.has("bartsyId"))
+			bartsyId = json.getString("bartsyId");
+		if (json.has("userImagePath")) 
+			imagePath = WebServices.DOMAIN_NAME + json.getString("userImagePath");
+		if (json.has("hasMessages"))
+			messagesStatus = json.getString("hasMessages");
+
 		
-		if (person.has("first_name"))
-			try {
-				setFirstName(person.getString("first_name"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		if (person.has("last_name"))
-			try {
-				setLastName(person.getString("last_name"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		if (person.has("email"))
-			try {
-				setLastName(person.getString("email"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+		if (json.has("email"))
+			setLastName(json.getString("email"));
 		
-		if (person.has("bio"))
-			try {
-				setDescription(person.getString("bio"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		if (person.has("email"))
-			try {
-				setBartsyLogin(person.getString("email"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		if (person.has("id")){ 
+		if (json.has("bio"))
+			setDescription(json.getString("bio"));
+		if (json.has("email"))
+			setBartsyLogin(json.getString("email"));
+		if (json.has("id")) { 
 			String id;
-			try {
-				id = person.getString("id");
-				this.setImagePath(Constants.FB_PICTURE+id+"/picture");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+			id = json.getString("id");
+			this.setImagePath(Constants.FB_PICTURE+id+"/picture");
 		}
-		if(person.has("hasMessages")){
-			try {
-				messagesStatus = person.getString("hasMessages");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
+		if(json.has("hasMessages"))
+			messagesStatus = json.getString("hasMessages");
+		
 	}
 	
-	
-	
-	public String getMessagesStatus() {
-		return messagesStatus;
+	/*
+	 * Parse the json format and to set the values for the public information in the user profile
+	 */
+	public void parsePublicInfo(JSONObject json) throws JSONException{
+		if (json.has("gender"))
+			gender=json.getString("gender");
+		if (json.has("age"))
+			age=json.getString("age");
+		if (json.has("orientation"))
+			orientation=json.getString("orientation");
+		if (json.has("showProfile"))
+			visibility=json.getString("showProfile");
+		if (json.has("status"))
+			status=json.getString("status");
+		if (json.has("description"))
+			description=json.getString("description");
+
+		// This is not useful
+		if (json.has("currentTime"))
+			json.getString("currentTime");
 	}
 
-	public void setMessagesStatus(String messagesStatus) {
-		this.messagesStatus = messagesStatus;
+	/**
+	 * 
+	 * TODO - Views
+	 */
+
+	/*
+	 * Show profile in a list view
+	 * @param inflater
+	 * @param local		- is this profile our own local profile or a remote one?
+	 * @return
+	 */
+	public View listView(LayoutInflater inflater, OnClickListener listener, HashMap<String, Bitmap> cache) {
+		
+		View view = updateView(inflater.inflate(R.layout.user_item, null), cache);
+		view.setOnClickListener(listener);
+		view.setTag(this);
+		return view;
+	}
+	
+
+
+	/*
+	 * Show profile in a list view
+	 * @param inflater
+	 * @param local		- is this profile our own local profile or a remote one?
+	 * @return
+	 */
+	public View updateView(View view, HashMap<String, Bitmap> cache) {
+
+		// Show nickname
+		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
+
+		// Snow user image
+		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
+		if (image == null) {
+			WebServices.downloadImage(this, profileImageView, cache);
+		} else {
+			profileImageView.setImageBitmap(image);
+		}
+		
+		// Show messages
+		if (localUser || !hasMessages()) {
+			// User can not send message to self
+			view.findViewById(R.id.user_chat_field).setVisibility(View.GONE);
+		} else {
+			// Show message icon (pink for new messages) and show text
+			if(hasReadMessages()) {
+				((ImageView) view.findViewById(R.id.user_mail_icon)).setImageResource(R.drawable.mail_read);
+				((TextView) view.findViewById(R.id.user_chat_text)).setText("You've chatted");
+			} else {
+				((ImageView) view.findViewById(R.id.user_mail_icon)).setImageResource(R.drawable.mail);
+				((TextView) view.findViewById(R.id.user_chat_text)).setText("You have new chats!");
+			}
+		}
+
+		// Return the view
+		return view;
 	}
 
+	
 	/**
 	 * 
 	 * TODO - Setters/Getters
@@ -731,24 +703,6 @@ public class UserProfile {
 		this.image = image;
 	}
 
-	public void updateView(OnClickListener listener) {
-
-		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
-
-		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
-		
-		if (image == null) {
-			WebServices.downloadImage(this, profileImageView);
-		} else {
-			profileImageView.setImageBitmap(image);
-		}
-
-		view.setOnClickListener(listener);
-
-		view.setTag(this);
-
-	}
-
 	public boolean hasRedactedCardNumber() {
 		return !(redactedCardNumber == null || redactedCardNumber.equals(""));
 	}
@@ -760,4 +714,21 @@ public class UserProfile {
 	public void setRedactedCardNumber(String creditCardDisplay) {
 		this.redactedCardNumber = creditCardDisplay;
 	}
+	
+	public String getMessagesStatus() {
+		return messagesStatus;
+	}
+
+	public void setMessagesStatus(String messagesStatus) {
+		this.messagesStatus = messagesStatus;
+	}
+	
+	public boolean isImageDownloaded() {
+		return imageDownloaded;
+	}
+
+	public void setImageDownloaded(boolean imageDownloaded) {
+		this.imageDownloaded = imageDownloaded;
+	}
+
 }

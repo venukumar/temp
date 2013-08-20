@@ -566,7 +566,7 @@ public class BartsyApplication extends Application implements AppObservable {
 	public static final String PEOPLE_UPDATED = "PEOPLE_UPDATED";
 
 	/*
-	 * Called when we have a new person check in a venue
+	 * Called when we add a new person to the list of people
 	 */
 
 	synchronized public void addPerson(UserProfile profile) {
@@ -911,9 +911,6 @@ public class BartsyApplication extends Application implements AppObservable {
 			JSONObject json = WebServices.getOpenOrders(BartsyApplication.this);
 			if(json != null) {
 	
-				// Synchronize people 
-				updatePeople(json);
-				
 				// Get remote orders list
 				ArrayList<Order> remoteOrders = extractOrders(json);
 		
@@ -922,7 +919,6 @@ public class BartsyApplication extends Application implements AppObservable {
 				ArrayList<Order> removedOrders = processRemovedOrders(mOrders, remoteOrders);
 				ArrayList<Order> updatedOrders = processExistingOrders(mOrders, remoteOrders);
 		
-				
 				// Generate notifications
 				if (addedOrders.size() > 0 || removedOrders.size() > 0 || updatedOrders.size() > 0) {
 					String message = "";
@@ -1489,6 +1485,7 @@ public class BartsyApplication extends Application implements AppObservable {
 		notifyObservers(PEOPLE_UPDATED);
 
 	}
+	
 	/**
 	 * TODO - Chat messages
 	 * 

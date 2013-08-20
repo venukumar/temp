@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.R;
+import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.view.PeopleListView;
 
@@ -36,13 +37,13 @@ public class PeopleSectionDialog extends Dialog{
 		setContentView(R.layout.people_tab);
 				
 				
-		peopleLayout = (LinearLayout) findViewById(R.id.view_singles);
+		peopleLayout = (LinearLayout) findViewById(R.id.people_list);
 				
 		// Make sure the fragment pointed to by the activity is accurate
 		BartsyApplication mApp = (BartsyApplication)context.getApplication();
 		
-		// Add People list view object to the liner layout
-		mPeopleListView = new PeopleListView(context, mApp, getLayoutInflater()){
+		// Add People list view object to the layout
+		mPeopleListView = new PeopleListView(context, mApp, getLayoutInflater(), ((VenueActivity) context).mImageCache){
 			@Override
 			protected void selectedUserProfile(UserProfile profile) {
 				selectedProfile(profile);

@@ -110,7 +110,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 			Order order= orders.get(i);
 			Log.v(TAG, "Processing order " + order.orderId + " with status " + order.status + " and last status " + order.last_status);
 
-			View view = order.updateView(mInflater, mContainer);
+			View view = order.updateView(mInflater, mContainer, mActivity.mImageCache);
 			
 			view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
 				@Override
@@ -225,7 +225,7 @@ public class OpenOrdersSectionView extends LinearLayout{
 						
 						// Display header based on the current order
 						
-						View view = order.updateView(mInflater, mContainer);
+						View view = order.updateView(mInflater, mContainer, mActivity.mImageCache);
 						view.findViewById(R.id.view_order_notification_button).setOnClickListener(new OnClickListener() {
 							@Override
 							public void onClick(View v) {

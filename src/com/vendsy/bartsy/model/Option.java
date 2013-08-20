@@ -28,7 +28,7 @@ public class Option {
 	 * TODO - Constructors / parsers
 	 */
 
-	Option (JSONObject json, String type) throws JSONException {
+	Option (JSONObject json, String type) throws JSONException, NumberFormatException {
 		if (json.has("name"))
 			name = json.getString("name");
 		if (json.has("specials"))

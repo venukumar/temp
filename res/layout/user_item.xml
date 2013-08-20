@@ -31,35 +31,29 @@
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/user_chat_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
                 <ImageView
-                    android:id="@+id/ImageView15"
-                    android:layout_width="17dp"
-                    android:layout_height="17dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/tickmark" />
+                    android:id="@+id/user_mail_icon"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="2dp"
+                    android:src="@drawable/mail" />
 
                 <TextView
-                    android:id="@+id/TextView10"
+                    android:id="@+id/user_chat_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="Checked in"
+                    android:text="You have new chats"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
+
         </LinearLayout>
-
-        <Button
-            android:id="@+id/view_user_list_chat_button"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableTop="@drawable/mail"
-            android:text="Chat" />
-
     </LinearLayout>
 
 </LinearLayout>

@@ -1049,16 +1049,35 @@ public class WebServices {
 	 * @param profile
 	 * @param imageView
 	 */
+
+	
 	public static void downloadImage( final UserProfile profile, final ImageView imageView) {
+		downloadImage(profile, imageView, null);
+	}
+	
+	public static void downloadImage( final UserProfile profile, final ImageView imageView, final HashMap<String, Bitmap> cache) {
 
 		if (!profile.hasImagePath()) return;
 		final String url = profile.getImagePath();
+		
+		// Use image cache if available
+		Bitmap img = null;
+		if (cache != null)
+			img = cache.get(url);
+		if (img != null) {
+			profile.setImage(img);
+			profile.setImageDownloaded(true);
+			if (imageView != null) {
+				imageView.setImageBitmap(img);
+				imageView.setTag(img);
+			}
+			return;
+		}
 		
 		new AsyncTask<String, Void, Bitmap>() {
 
 			protected void onPreExecute() {
 				super.onPreExecute();
-
 			}
 
 			protected Bitmap doInBackground(String... params) {
@@ -1078,11 +1097,13 @@ public class WebServices {
 						imageView.setImageBitmap(result);
 						imageView.setTag(result);
 					}
+					
+					// Save the image to the cache for next time
+					if (cache != null)
+						cache.put(url, result);
 				}
 			}
-
 		}.execute();
-
 	}
 	
 	/**

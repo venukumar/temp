@@ -1,6 +1,7 @@
 package com.vendsy.bartsy.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import com.vendsy.bartsy.utils.WebServices;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.Log;
@@ -38,7 +40,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 	
 	static final String TAG = "PeopleListView";
 	
-	public PeopleListView(Activity activity, BartsyApplication mApp, LayoutInflater inflater) {
+	public PeopleListView(Activity activity, BartsyApplication mApp, LayoutInflater inflater, HashMap<String, Bitmap> cache) {
 		super(activity);
 		this.activity = activity;
 		this.mApp = mApp;
@@ -55,7 +57,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 		
 //		setPadding(5, 5, 5, 5);
 		
-		loadPeopleList();
+		loadPeopleList(cache);
 		
 	}
 		
@@ -63,7 +65,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 	/**
 	 * To get CheckedIn People from the server
 	 */
-	public void loadPeopleList() {
+	public void loadPeopleList(final HashMap<String, Bitmap> cache) {
 
 		Log.v(TAG, "PeopleSectionFragment.loadPeopleList()");
 		
@@ -99,7 +101,7 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 					}
 					// CheckedIn people web service Response handling
 					if (response != null)
-						processCheckedInUsersResponse(response);
+						processCheckedInUsersResponse(response, cache);
 
 				};
 			}.start();
@@ -114,120 +116,53 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 	 * 
 	 * @param response
 	 */
-	private synchronized void processCheckedInUsersResponse(String response) {
+	private synchronized void processCheckedInUsersResponse(String response, final HashMap<String, Bitmap> cache) {
 		// Save the list of people and use it as an image cache, resetting the global structure
-				ArrayList<UserProfile> knownPeople = mApp.mPeople;
+		ArrayList<UserProfile> knownPeople = mApp.mPeople;
 
-				mApp.mPeople = new ArrayList<UserProfile>();
+		mApp.mPeople = new ArrayList<UserProfile>();
 
-				try {
-					JSONObject peopleData = new JSONObject(response);
+		try {
+			JSONObject peopleData = new JSONObject(response);
 
-					if (peopleData.has("checkedInUsers")) {
+			if (peopleData.has("checkedInUsers")) {
+				
+				// Get list of people from API call. If a person is known, copy known version as an optimization
+				JSONArray array = peopleData.getJSONArray("checkedInUsers");
+				for (int i = 0; i < array.length(); i++) {
+
+					// Construct user profile from json
+					JSONObject json = array.getJSONObject(i);
+					UserProfile profile = new UserProfile(json);
+
+					// Add profile to the people list
+					mApp.addPerson(profile);
+				}
+
+				// Call UI thread and display checkedIn people list
+				handler.post(new Runnable() {
+
+					@Override
+					public void run() {
 						
-						// Get list of people from API call. If a person is known, copy known version as an optimization
-						JSONArray array = peopleData.getJSONArray("checkedInUsers");
-						for (int i = 0; i < array.length(); i++) {
-							String nickName = null, gender = null, imagepath = null;
-							String bartsyID = null;
-							JSONObject json = array.getJSONObject(i);
-							if (json.has("nickName"))
-								nickName = json.getString("nickName");
-							if (json.has("gender"))
-								gender = json.getString("gender");
-							if (json.has("bartsyId"))
-								bartsyID = json.getString("bartsyId");
-							if (json.has("userImagePath")) {
-								imagepath = json.getString("userImagePath");
-							}
-							String messagesStatus = "";
-							if(json.has("hasMessages")){
-								try {
-									messagesStatus = json.getString("hasMessages");
-								} catch (JSONException e) {
-									e.printStackTrace();
-								}
-							}
-							
-							// Go over the list of people in the global structure looking for images
-							UserProfile profile = null;
-							boolean found = false;
-							for (UserProfile p : knownPeople) {
-								if (p.getBartsyId().equalsIgnoreCase(bartsyID) && p.hasImage()) {
-									// Found the profile and it has an image. Shamelessly reuse it
-									Log.v(TAG, "Reusing image for profile " + bartsyID);
-									profile = p;
-									found = true;
-									break;
-								}
-							}
-							
-							// If an existing profile was not found, create one
-							if (!found) {
-								// Create new instance for profile - this is for now incomplete!!
+														
+						// Make sure the list view is empty
+						removeAllViews();
+						
+						// Add any existing people in the layout, one by one
+						
+						Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
+						
+						for (UserProfile profile : mApp.mPeople) {
+							Log.v(TAG, "Adding a user item to the layout");
+							profile.view = profile.listView(mInflater, PeopleListView.this, cache);
+							addView(profile.view);
+						};
 
-								profile = new UserProfile();
-								profile.setBartsyId(bartsyID);
-								profile.setNickname(nickName);
-								profile.setImagePath(WebServices.DOMAIN_NAME + imagepath);
-								profile.setMessagesStatus(messagesStatus);
-							}
-							
-							// Add profile (new or old) to the existing people list
-							mApp.addPerson(profile);
+						// Update people count in people tab
+						if(activity!=null && activity instanceof VenueActivity){
+							((VenueActivity)activity).updatePeopleCount();
 						}
-
-						// Call UI thread and display checkedIn people list
-						handler.post(new Runnable() {
-
-							@Override
-							public void run() {
-								
-																
-								// Make sure the list view is empty
-								removeAllViews();
-								
-								// Add any existing people in the layout, one by one
-								
-								Log.v(TAG, "mApp.mPeople list size = " + mApp.mPeople.size());
-								final Drawable drawableTop = getResources().getDrawable(R.drawable.mail_read);
-								
-								for (UserProfile profile : mApp.mPeople) {
-									Log.v(TAG, "Adding a user item to the layout");
-									profile.view = mInflater.inflate(R.layout.user_item, null);
-									profile.updateView(PeopleListView.this); // sets up view specifics and sets listener to this
-									
-									final UserProfile userProfile = profile;
-									Button messagesButton = (Button)profile.view.findViewById(R.id.view_user_list_chat_button);
-									
-									// User can not send message to self. So, message option should be visible to others
-									if(profile.getBartsyId().equals(mApp.mProfile.getBartsyId())){
-										messagesButton.setVisibility(View.GONE);
-									}else{
-										if(!userProfile.hasUnreadMessages()){
-											
-											messagesButton.setCompoundDrawablesWithIntrinsicBounds(null, drawableTop , null, null);
-										}
-										// Set message button listener
-										messagesButton.setOnClickListener(new OnClickListener() {
-											
-											@Override
-											public void onClick(View v) {
-												
-												mApp.selectedUserProfile = userProfile;
-												
-												Intent intent = new Intent(activity, MessagesActivity.class);
-												activity.startActivity(intent);
-											}
-										});
-									}
-									addView(profile.view);
-								};
-		
-								// Update people count in people tab
-								if(activity!=null && activity instanceof VenueActivity){
-									((VenueActivity)activity).updatePeopleCount();
-								}
 					}
 				});
 
