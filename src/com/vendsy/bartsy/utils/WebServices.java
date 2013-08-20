@@ -61,14 +61,14 @@ public class WebServices {
 
 	// Google API project id registered to use GCM.
 //	public static final String SENDER_ID = "227827031375";
-	public static final String SENDER_ID = "605229245886"; // dev 
-//	public static final String SENDER_ID = "560663323691"; // prod
+//	public static final String SENDER_ID = "605229245886"; // dev 
+	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
 // 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.165:8080/";  // local machine
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
-//	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
+//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	// API calls 
 	public static final String PROJECT_NAME = "Bartsy/";
