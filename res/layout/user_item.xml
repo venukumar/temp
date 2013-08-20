@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="20&apos;s / F / Straight / Single"
+                    android:text="- / - / -"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
@@ -71,7 +71,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="Friends/Singles"
+                    android:text="-"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
