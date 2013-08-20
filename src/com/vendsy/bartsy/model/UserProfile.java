@@ -336,12 +336,12 @@ public class UserProfile {
 
 		// Show user info string
 		String info = getAge() + " / " + getGender() + " / " + getOrientation();
-		info.replace("null", "-");
+		info = info.replace("null", "-");
 		((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(info);
 
 		// Show user preference
 		info = getStatus() + "";
-		info.replace("null", "-");
+		info = info.replace("null", "-");
 		((TextView) view.findViewById(R.id.user_profile_preference)).setText(info);
 		
 		// Show description
