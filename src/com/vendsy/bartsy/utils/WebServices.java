@@ -66,7 +66,7 @@ public class WebServices {
 
 	// Server IP
 // 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
-//	public static final String DOMAIN_NAME = "http://192.168.0.72:8080/";  // local machine
+//	public static final String DOMAIN_NAME = "http://192.168.0.165:8080/";  // local machine
 	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
 //	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
@@ -93,7 +93,7 @@ public class WebServices {
 	public static final String URL_GET_MESSAGES = DOMAIN_NAME + PROJECT_NAME + "data/getMessages";
 	public static final String URL_GET_SERVER_KEY = DOMAIN_NAME + PROJECT_NAME + "user/getServerPublicKey";
 	
-	public static final String URL_GET_COCKTAILS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getCocktails";
+	public static final String URL_GET_SPECIAL_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getSpecialMenus";
 	public static final String URL_SAVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/saveFavorite";
 	public static final String URL_REMOVE_FAVORITE = DOMAIN_NAME + PROJECT_NAME + "favorites/deleteFavorite";
 	public static final String URL_GET_MIXED_DRINKS_MENU = DOMAIN_NAME + PROJECT_NAME + "inventory/getMixedDrinks";
@@ -142,7 +142,6 @@ public class WebServices {
 		try {
 			postData.put("apiVersion", API_VERSION);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		String data = postData.toString();
