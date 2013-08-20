@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:divider="?android:dividerHorizontal"
@@ -7,184 +7,167 @@
         android:showDividers="middle" >
 
         <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="2" >
-
-            <ImageView
-                android:id="@+id/view_user_dialog_image_resource"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:scaleType="centerCrop" />
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="@dimen/activity_horizontal_margin" >
-
-                <TextView
-                    android:id="@+id/view_user_dialog_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:text="Name"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:id="@+id/ImageView05"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/exclamatory_icon_ping" />
-
-                    <TextView
-                        android:id="@+id/view_user_dialog_info"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:text="20&apos;s / F / Straight / Single"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:id="@+id/ImageView11"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/map_point_icon" />
-
-                    <TextView
-                        android:id="@+id/TextView09"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:text="Santa Monica, CA"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/view_user_profile_like"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" >
-
-                    <ImageView
-                        android:id="@+id/ImageView07"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/heart" />
-
-                    <TextView
-                        android:id="@+id/TextView13"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:text="You like each other"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:id="@+id/ImageView01"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/mail" />
-
-                    <TextView
-                        android:id="@+id/TextView06"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:text="You chatted"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:visibility="gone" >
+            android:orientation="vertical" >
 
-            <Button
-                android:id="@+id/Button02"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
-                android:layout_weight="2"
-                android:background="@drawable/rounded_corner"
-                android:drawableLeft="@drawable/likechecked"
-                android:text=" Like"
-                android:textColor="#aaaaaa"
-                android:textSize="14sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
-            <Button
-                android:id="@+id/Button03"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
-                android:layout_weight="2"
-                android:background="@drawable/rounded_corner"
-                android:drawableLeft="@drawable/messageschecked"
-                android:text="Message"
-                android:textColor="#aaaaaa"
-                android:textSize="14sp" />
+                <ImageView
+                    android:id="@+id/user_profile_image"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:scaleType="centerCrop" />
 
-            <Button
-                android:id="@+id/button1"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:layout_marginTop="8dp"
-                android:layout_weight="2"
-                android:background="@drawable/rounded_corner"
-                android:drawableLeft="@android:drawable/ic_menu_share"
-                android:text="Share"
-                android:textColor="#aaaaaa"
-                android:textSize="14sp" />
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="@dimen/activity_horizontal_margin" >
 
-            <RatingBar
-                android:id="@+id/ratingBar1"
+                    <TextView
+                        android:id="@+id/user_profile_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/activity_vertical_margin"
+                        android:layout_weight="2"
+                        android:text="Name"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2" >
+
+                        <ImageView
+                            android:id="@+id/ImageView05"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/exclamatory_icon_ping" />
+
+                        <TextView
+                            android:id="@+id/view_user_dialog_info"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="20&apos;s / F / Straight / Single"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/user_profile_preference_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2" >
+
+                        <ImageView
+                            android:id="@+id/ImageView02"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/heart" />
+
+                        <TextView
+                            android:id="@+id/user_profile_preference"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="Friends/Singles"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:visibility="gone" >
+
+                        <ImageView
+                            android:id="@+id/ImageView11"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/map_point_icon" />
+
+                        <TextView
+                            android:id="@+id/TextView09"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="Santa Monica, CA"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/view_user_profile_like"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:visibility="gone" >
+
+                        <ImageView
+                            android:id="@+id/ImageView07"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/heart" />
+
+                        <TextView
+                            android:id="@+id/TextView13"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="You like each other"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/user_profile_chat_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2" >
+
+                        <ImageView
+                            android:id="@+id/user_mail_icon"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_gravity="center_vertical"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/mail" />
+
+                        <TextView
+                            android:id="@+id/user_chat_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                            android:text="You chatted"
+                            android:textAppearance="?android:attr/textAppearanceSmall" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/view_user_dialog_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:max="1"
-                android:numStars="1"
-                android:progress="1"
-                android:rating="1"
-                android:stepSize="1" />
-
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:padding="@dimen/activity_vertical_margin"
+                android:text="I like long walks on the beach and dirty martinis, but you can start by buying me a drink. "
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/view_user_dialog_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="I like long walks on the beach and dirty martinis, but you can start by buying me a drink. "
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    </LinearLayout>
+    </ScrollView>
 

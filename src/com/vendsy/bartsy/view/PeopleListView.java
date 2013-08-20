@@ -155,8 +155,8 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 						
 						for (UserProfile profile : mApp.mPeople) {
 							Log.v(TAG, "Adding a user item to the layout");
-							profile.view = profile.listView(mInflater, PeopleListView.this, cache);
-							addView(profile.view);
+							View view = profile.listView(mInflater, PeopleListView.this, cache);
+							addView(view);
 						};
 
 						// Update people count in people tab

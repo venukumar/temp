@@ -317,6 +317,10 @@ public class Item {
 			((TextView) view.findViewById(R.id.view_order_title)).setText(name);
 		else
 			((TextView) view.findViewById(R.id.view_order_title)).setVisibility(View.GONE);
+		if (has(description))
+			((TextView) view.findViewById(R.id.item_description)).setText(description);
+		else
+			((TextView) view.findViewById(R.id.item_description)).setVisibility(View.GONE);
 		if (has(optionsDescription))
 			((TextView) view.findViewById(R.id.view_order_description)).setText(getOptionsDescription());
 		else
@@ -507,10 +511,8 @@ public class Item {
 
 		optionsDescription = "";
 		
-		if (optionGroups == null) {
-			optionsDescription = "Ordered 'as-is.'";
+		if (optionGroups == null)
 			return;
-		}
 		
 		for (OptionGroup options : optionGroups) {
 			for (Option option : options.options) {

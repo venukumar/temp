@@ -75,52 +75,24 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 		LayoutInflater inflater = getActivity().getLayoutInflater();
 
 		// Inflate and set the layout for the dialog. Pass null as the parent view because its going in the dialog layout
-		view = inflater.inflate(R.layout.user_profile_dialog, null);
-		
-		if (mUser != null){
-			// Customize dialog for this user
-			((TextView) view.findViewById(R.id.view_user_dialog_name)).setText(mUser.getNickname());
+		if (mUser == null)
+			view = inflater.inflate(R.layout.user_profile_dialog, null);
+		else
+			view = mUser.dialogView(inflater, null);
 			
-	
-			// Set up user image 
-			((ImageView) view.findViewById(R.id.view_user_dialog_image_resource)).setImageBitmap(mUser.getImage());
-//	    new DownloadImageTask().execute((ImageView)view.findViewById(R.id.view_user_dialog_image_resource));	  
-	      
-			updateMoreUserInformation();
-			
-	
-			// Each dialog knows the user its displaying
-			view.findViewById(R.id.view_user_dialog_name).setTag(this.mUser);
-		}
-
 		// Set view and add click listeners by calling the listeners in the calling activity
 		builder.setView(view);
-		
-		
 	    builder.setTitle("User Profile");
-	    
 	    builder.setPositiveButton("Send Drink", this);
 	    builder.setNegativeButton("Send Message", this);
-
 	    
+	    // Update details from server
 	    getUserPublicDetailsSysCall();
 	    
 		return builder.create();
 	}
 	
-    /**
-     * method to update user profile information in the dialog view
-     */
-	private void updateMoreUserInformation() {
-		// Set up user info string
-		String info = mUser.getAge() + " / " + mUser.getGender() + " / " + mUser.getStatus() +" / "+mUser.getOrientation();
-		info.replace("null", " - ");
-		((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(info);
-		String description=mUser.getDescription();
-		if(description!=null){
-			((TextView)view.findViewById(R.id.view_user_dialog_description)).setText(description);
-		}
-	}
+
 	
 	//Web service call to fetch user public details to display User Profile Information.
 	private void getUserPublicDetailsSysCall() {
@@ -141,9 +113,9 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 									JSONObject json = new JSONObject(response);
 									// Success response
 									if(json.has("errorCode") && json.getInt("errorCode") ==0){
-										mUser.parsePublicInfo(json);
-                                    //to update user profile information from the sys call								
-										updateMoreUserInformation();
+										mUser.updatePublicInfo(json);
+										//to update user profile information from the sys call								
+										mUser.updateView(view, null);
 									}// Error response
 									else if(json.has("errorMessage")){
 										Toast.makeText(getActivity(), json.getString("errorMessage"), Toast.LENGTH_SHORT).show();

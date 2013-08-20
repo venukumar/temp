@@ -253,12 +253,13 @@ public class UserProfile {
 		if(json.has("hasMessages"))
 			messagesStatus = json.getString("hasMessages");
 		
+		updatePublicInfo(json);
 	}
 	
 	/*
 	 * Parse the json format and to set the values for the public information in the user profile
 	 */
-	public void parsePublicInfo(JSONObject json) throws JSONException{
+	public void updatePublicInfo(JSONObject json) throws JSONException{
 		if (json.has("gender"))
 			gender=json.getString("gender");
 		if (json.has("age"))
@@ -276,18 +277,13 @@ public class UserProfile {
 		if (json.has("currentTime"))
 			json.getString("currentTime");
 	}
+	
 
 	/**
 	 * 
 	 * TODO - Views
 	 */
 
-	/*
-	 * Show profile in a list view
-	 * @param inflater
-	 * @param local		- is this profile our own local profile or a remote one?
-	 * @return
-	 */
 	public View listView(LayoutInflater inflater, OnClickListener listener, HashMap<String, Bitmap> cache) {
 		
 		View view = updateView(inflater.inflate(R.layout.user_item, null), cache);
@@ -296,21 +292,27 @@ public class UserProfile {
 		return view;
 	}
 	
+	public View dialogView(LayoutInflater inflater, HashMap<String, Bitmap> cache) {
+		
+		// Inflate and set the layout for the dialog. Pass null as the parent view because its going in the dialog layout
+		View view = inflater.inflate(R.layout.user_profile_dialog, null);
+		
+		view = updateView(view, cache);
+		
+		// Each dialog knows the user its displaying
+		view.findViewById(R.id.user_profile_name).setTag(this);
 
+		return view;
+	}
 
-	/*
-	 * Show profile in a list view
-	 * @param inflater
-	 * @param local		- is this profile our own local profile or a remote one?
-	 * @return
-	 */
 	public View updateView(View view, HashMap<String, Bitmap> cache) {
 
-		// Show nickname
-		((TextView) view.findViewById(R.id.view_user_list_name)).setText(getNickname());
+		// Show name
+		((TextView) view.findViewById(R.id.user_profile_name)).setText(getNickname());
+		
 
 		// Snow user image
-		ImageView profileImageView = (ImageView) view.findViewById(R.id.view_user_list_image_resource);
+		ImageView profileImageView = (ImageView) view.findViewById(R.id.user_profile_image);
 		if (image == null) {
 			WebServices.downloadImage(this, profileImageView, cache);
 		} else {
@@ -320,7 +322,7 @@ public class UserProfile {
 		// Show messages
 		if (localUser || !hasMessages()) {
 			// User can not send message to self
-			view.findViewById(R.id.user_chat_field).setVisibility(View.GONE);
+			view.findViewById(R.id.user_profile_chat_field).setVisibility(View.GONE);
 		} else {
 			// Show message icon (pink for new messages) and show text
 			if(hasReadMessages()) {
@@ -331,6 +333,21 @@ public class UserProfile {
 				((TextView) view.findViewById(R.id.user_chat_text)).setText("You have new chats!");
 			}
 		}
+
+		// Show user info string
+		String info = getAge() + " / " + getGender() + " / " + getOrientation();
+		info.replace("null", "-");
+		((TextView) view.findViewById(R.id.view_user_dialog_info)).setText(info);
+
+		// Show user preference
+		info = getStatus() + "";
+		info.replace("null", "-");
+		((TextView) view.findViewById(R.id.user_profile_preference)).setText(info);
+		
+		// Show description
+		String description= getDescription();
+		if(Utilities.has(description))
+			((TextView)view.findViewById(R.id.view_user_dialog_description)).setText(description);
 
 		// Return the view
 		return view;

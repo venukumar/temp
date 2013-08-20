@@ -49,6 +49,12 @@
                        android:textStyle="bold" />
                </LinearLayout>
 
+               <TextView
+                   android:id="@+id/item_description"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:textAppearance="?android:attr/textAppearanceSmall" />
+
                <LinearLayout
                    android:id="@+id/item_order_description_field"
                    android:layout_width="match_parent"

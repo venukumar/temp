@@ -798,6 +798,10 @@ public class Order {
 		taxAmount	=  taxRate * baseAmount;
 		tipAmount = Constants.defaultTip * baseAmount;
 		totalAmount	=  tipAmount + taxAmount + baseAmount;
+		
+		// Add an options description if there isn't one
+		if (!item.has(item.getOptionGroups()))
+			item.setOptionsDescription("Ordered 'as-is.'");
 	}
 	
 	Date adjustDate(String serverDate, String orderDate) {
