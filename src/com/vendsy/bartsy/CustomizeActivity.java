@@ -161,6 +161,11 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			if (Utilities.has(specialInstructions))
 				mItem.setSpecialInstructions(specialInstructions);
 			
+			if (mItem.getOrderPrice() == 0 && mItem.getOptionsPrice(false) != 0 ) {
+				mApp.makeText("Please select at least one option", Toast.LENGTH_SHORT);
+				return;
+			}
+			
 			finishWithResult(mApp, mItem, UserProfileActivity.RESULT_OK);
 			
 			break;

@@ -20,7 +20,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/TextView02"
+            android:id="@+id/view_order_currency"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_gravity="top"
@@ -47,7 +47,6 @@
         android:id="@+id/item_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <LinearLayout
@@ -94,7 +93,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:text="Extra drity"
+            android:text="Extra dirty"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 

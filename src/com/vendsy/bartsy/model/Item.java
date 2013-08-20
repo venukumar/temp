@@ -309,10 +309,11 @@ public class Item {
 		df.setMaximumFractionDigits(0);
 		df.setMinimumFractionDigits(0);
 
-		if (has(orderPrice))
-			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(orderPrice));
-		else
+		if (orderPrice == 0 && getOptionsPrice(false) != 0 ) {
+			((TextView) view.findViewById(R.id.view_order_currency)).setVisibility(View.GONE);
 			((TextView) view.findViewById(R.id.view_order_mini_price)).setVisibility(View.GONE);
+		} else 
+			((TextView) view.findViewById(R.id.view_order_mini_price)).setText(df.format(orderPrice));
 		if (has(name))
 			((TextView) view.findViewById(R.id.view_order_title)).setText(name);
 		else
@@ -341,6 +342,10 @@ public class Item {
 
 	public boolean has(String field) {
 		return !(field == null || field.equals(""));
+	}
+	
+	public boolean has(double object) {
+		return object != 0;
 	}
 	
 	public boolean has(Object object) {
@@ -528,18 +533,24 @@ public class Item {
 	
 	public void updateOrderPrice() {
 
-		orderPrice = price;
+		orderPrice = price + getOptionsPrice(true);
+
+	}
+	
+	public double getOptionsPrice(boolean selected) {
 		
 		if (optionGroups == null)
-			return;
+			return 0;
 		
+		double price = 0;
 		for (OptionGroup options : optionGroups) {
 			for (Option option : options.options) {
-				if (option.selected)
-					orderPrice += option.price;
+				if (!selected || option.selected)
+					price += option.price;
 			}
 		}
 		
+		return price;
 	}
 	
 	/*

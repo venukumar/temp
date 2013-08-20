@@ -332,6 +332,7 @@ public class UserProfile {
 				((ImageView) view.findViewById(R.id.user_mail_icon)).setImageResource(R.drawable.mail);
 				((TextView) view.findViewById(R.id.user_chat_text)).setText("You have new chats!");
 			}
+			view.findViewById(R.id.user_profile_chat_field).setVisibility(View.VISIBLE);
 		}
 
 		// Show user info string

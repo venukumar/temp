@@ -68,8 +68,11 @@ public class Menu {
 							
 							// Create a heading by flattening the hierarchy of headings into one string
 							String heading = "";
-							if (menuJson.has("menu_name") && showMenuName)
-								name = heading = menuJson.getString("menu_name");
+							if (menuJson.has("menu_name")) {
+								name = menuJson.getString("menu_name");
+								if(showMenuName)
+									heading = name;
+							}
 							String sectionName = "";
 							if (sectionJson.has("section_name"))
 								sectionName = sectionJson.getString("section_name");
@@ -78,14 +81,34 @@ public class Menu {
 							heading += sectionName;
 							String subsectionName = "";
 							if (subsectionJson.has("subsection_name"))
-								subsectionName = subsectionJson.getString("subsection_name");
-							if (!heading.equals("") && !subsectionName.equals(""))
+							subsectionName = subsectionJson.getString("subsection_name");
+							if (!heading.equals("") && !subsectionName.equals("")) 
 								heading += " > ";
 							heading += subsectionName;
-							if (heading.equals(""))
-								heading += "Various items";
-
-
+							if (heading.equals("")) {
+								if (menuJson.has("menu_name"))
+									heading = menuJson.getString("menu_name");
+								else
+									heading = "Various items";
+							}
+							
+/*							// For now only show the last section name for Nikki's beta 
+							heading = "";
+							if (menuJson.has("menu_name")) {
+								name = menuJson.getString("menu_name");
+								heading = name;
+							}
+							if (sectionJson.has("section_name"))
+								heading = sectionJson.getString("section_name");
+							if (subsectionJson.has("subsection_name"))
+								heading = subsectionJson.getString("subsection_name");
+							if (heading.equals("")) {
+								if (menuJson.has("menu_name"))
+									heading = menuJson.getString("menu_name");
+								else
+									heading = "Various items";
+							}
+							*/
 							// Add the list of items under that heading to the items list
 							JSONArray contents = subsectionJson.getJSONArray("contents");
 							ArrayList<Item> subsection_contents = new ArrayList<Item>();
@@ -111,6 +134,10 @@ public class Menu {
 									e1.printStackTrace();
 									continue;
 								}
+								
+								// Skip blank items
+								if (!item.has(item.getName()))
+									continue;
 								
 								// Add the item to the menu
 								subsection_contents.add(item);
