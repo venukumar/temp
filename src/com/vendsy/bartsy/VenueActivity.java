@@ -942,6 +942,9 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 				Toast.makeText(mActivity, "Your order was placed.", Toast.LENGTH_SHORT).show();
 				if (msg.what == HANDLE_ORDER_RESPONSE_SUCCESS_WITH_CODE)
 					Toast.makeText(mActivity, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+				
+				// Update the menu to get this order in past orders
+				mApp.notifyObservers(BartsyApplication.MENU_UPDATED);
 
 				break;
 				
