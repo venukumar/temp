@@ -178,11 +178,11 @@ public class MenuSectionFragment extends SherlockFragment {
 					showMenus();
 					mMenu.favorites = getMenu(WebServices.URL_GET_FAVORITES_MENU, false, true);
 					showMenus();
-					mMenu.mixedDrinks = getMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, true, true);
+					mMenu.mixedDrinks = getMenu(WebServices.URL_GET_MIXED_DRINKS_MENU, false, true);
 					showMenus();
-					mMenu.cocktails = getMenu(WebServices.URL_GET_SPECIAL_MENU, true, true);
+					mMenu.cocktails = getMenu(WebServices.URL_GET_SPECIAL_MENU, false, true);
 					showMenus();
-					mMenu.locuMenu = getMenu(WebServices.URL_GET_BAR_LIST, true, false); // Hide the menu name itself for Locu menus
+					mMenu.locuMenu = getMenu(WebServices.URL_GET_BAR_LIST, false, false); // Hide the menu name itself for Locu menus
 					showMenus();
 				}
 			}.start();
