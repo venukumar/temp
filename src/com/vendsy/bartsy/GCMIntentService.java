@@ -22,6 +22,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
@@ -151,9 +152,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 					// When other person sends the chat message
 
 					app.updateMessages(json);
-					// Generate Notification
+					
 					try {
-						app.generateNotification("Message Received", json.getString("body"), 1, message, null);
+						String imagePath=json.getString("senderImage");
+						// Download the sender's image
+					    Bitmap largeIcon= WebServices.fetchImage(WebServices.DOMAIN_NAME+imagePath);
+					    // Generate Notification
+						app.generateNotification(json.getString("body"), json.getString("message"), 1, message,largeIcon);
 					} catch (JSONException e) {
 					}
 				} else if(json.getString("messageType").equals("menuUpdated")) {

@@ -222,16 +222,19 @@ public class BartsyApplication extends Application implements AppObservable {
 		mHandler.post(new Runnable() {
 			public void run() {
 					// Set app icon for the notification
-					Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-					largeIcon = Bitmap.createScaledBitmap(largeIcon, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
+				Bitmap largeImage = largeIcon;
+				if(largeImage==null){
+					largeImage = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+				}
+				largeImage = Bitmap.createScaledBitmap(largeImage, NOTIFICATION_IMAGE_SIZE, NOTIFICATION_IMAGE_SIZE, true);
 				
 					// Create notification builder and set title and content text
 					NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext())
 				            .setContentTitle(title)
 				            .setContentText(body)
 				            .setSmallIcon(R.drawable.ic_launcher)
-							.setLargeIcon(largeIcon);
-					
+							.setLargeIcon(largeImage);
+					mBuilder.setAutoCancel(true);
 					TaskStackBuilder stackBuilder = getStackBuilder(PNmessage);
 				    
 				    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
