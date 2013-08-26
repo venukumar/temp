@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -21,6 +22,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionLoginBehavior;
+import com.facebook.SessionState;
+import com.facebook.UiLifecycleHelper;
+import com.facebook.model.GraphUser;
+import com.facebook.widget.LoginButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -31,9 +40,6 @@ import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.dialog.LoginDialogFragment;
 import com.vendsy.bartsy.dialog.LoginDialogFragment.LoginDialogListener;
 import com.vendsy.bartsy.model.UserProfile;
-import com.vendsy.bartsy.model.Venue;
-import com.vendsy.bartsy.utils.Constants;
-import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
 
 public class InitActivity extends SherlockFragmentActivity implements
@@ -46,7 +52,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 	private ConnectionResult mConnectionResult = null;
 	private static final int REQUEST_CODE_RESOLVE_ERR = 9000;
 	private static final int REQUEST_CODE_USER_PROFILE = 9001;
-	private static final int REQUEST_CODE_USER_FB = 9002;
+	private static final int REQUEST_CODE_USER_FB = 64206;
 	public static final String REQUEST_CODE_USER_FB_RESULT = "AndroidFacebookConnectActivity.result";
 	static final String[] SCOPES = new String[] { Scopes.PLUS_LOGIN };
 	public ProgressDialog mConnectionProgressDialog;
@@ -55,6 +61,16 @@ public class InitActivity extends SherlockFragmentActivity implements
 	InitActivity mActivity = this;
 	String mAccountName = null;
 	Handler mHandler = new Handler();
+	LoginButton loginButton;
+	private UiLifecycleHelper uiHelper;
+	
+	 //Callback for Facebook session status
+		private Session.StatusCallback callback = new Session.StatusCallback() {
+		        @Override
+		        public void call(Session session, SessionState state, Exception exception) {
+		            onSessionStateChange(session, state, exception);
+		        }
+		    };
 
 	
 	/** 
@@ -64,6 +80,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		uiHelper = new UiLifecycleHelper(this, callback);
 
 
 		// Setup pointers
@@ -87,9 +104,18 @@ public class InitActivity extends SherlockFragmentActivity implements
 		findViewById(R.id.view_init_create_account).setOnClickListener(this);
 		findViewById(R.id.view_init_toggle_sign_in).setOnClickListener(this);
 		findViewById(R.id.view_init_google).setOnClickListener(this);
-		findViewById(R.id.view_init_facebook).setOnClickListener(this);
 		findViewById(R.id.view_init_sign_in).setOnClickListener(this);
 		findViewById(R.id.view_init_toggle_sign_up).setOnClickListener(this);
+		loginButton=(LoginButton) findViewById(R.id.view_init_facebook);
+		
+		//Before opening the session, asking for force login, even If the user has open facebook session from facebook application
+	    loginButton.setLoginBehavior(SessionLoginBehavior.SUPPRESS_SSO);
+	    //set email permission to read email id from facebook
+	    loginButton.setReadPermissions(Arrays.asList("email","user_about_me"));
+	    //set birthday permission to read birthday from facebook
+	    loginButton.setReadPermissions(Arrays.asList("birthday","user_about_me"));
+	    //set read friends lists permission to read friends from facebook
+	    loginButton.setReadPermissions(Arrays.asList("read_friendlists","user_about_me"));
 		
 		if (mApp.loadBartsyId() == null) 
 			signUpListeners();
@@ -107,6 +133,27 @@ public class InitActivity extends SherlockFragmentActivity implements
 			((TextView) findViewById(R.id.view_main_deployment_environment)).setText("** INCONSISTENT DEPLOYMENT **");
 		
 	}
+	
+	private void onSessionStateChange(Session session, SessionState state, Exception exception) {if (session != null && session.isOpened()) {
+        if (!state.equals(SessionState.OPENED_TOKEN_UPDATED)) {
+             makeMeRequest(session);
+        }
+     }
+   }
+	
+	/**
+	 * Fetch Facebook graph user information
+	 * @param session
+	 */
+	private void makeMeRequest(final Session session) {
+        Request request = Request.newMeRequest(session, new Request.GraphUserCallback() {
+            @Override
+            public void onCompleted(GraphUser user, Response response) {
+            	Log.d(TAG, "Received response");
+            }
+        });
+        request.executeAsync();
+    }
 
 	@Override
 	protected void onStart() {
@@ -178,15 +225,6 @@ public class InitActivity extends SherlockFragmentActivity implements
 				mPlusClient.disconnect();
 				mPlusClient.connect();
 			}
-			break;
-		case R.id.view_init_facebook:
-
-			mConnectionProgressDialog.show();
-
-			// Start Face book connection
-			Intent fbIntent = new Intent(InitActivity.this, FacebookActivity.class);
-			startActivityForResult(fbIntent, REQUEST_CODE_USER_FB);
-			
 			break;
 		case R.id.view_init_create_account:
 			
@@ -312,14 +350,40 @@ public class InitActivity extends SherlockFragmentActivity implements
 				// Stop Progress dialog
 				if (mConnectionProgressDialog.isShowing())
 					mConnectionProgressDialog.dismiss();
+				 uiHelper.onActivityResult(requestCode, responseCode, intent);
 				
-				if(mApp.mUserProfileActivityInput == null){
-					Toast.makeText(this, "Could not download Facebook information", Toast.LENGTH_SHORT).show();
-					return;
-				}
-				
-				Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
-				this.startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);		
+				 Session.openActiveSession(this, true, new Session.StatusCallback() {
+
+				        @Override
+				        public void call(final Session session, SessionState state, Exception exception) {
+
+				            if (session.isOpened()) {
+				                Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+				                    @Override
+				                    public void onCompleted(GraphUser user, Response response) {
+				                        if (user != null) {
+				                        	Log.d(TAG, response.toString());
+				                            Log.d("Access_token", session.getAccessToken());
+				                        }
+				                    }
+				                });
+				            } else {
+				                Log.d("SESSION NOT OPENED", "SESSION NOT OPENED");
+								 loginButton.setSessionStatusCallback(callback);
+				            }
+				        }
+				    });
+
+				 loginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
+			            @Override
+			            public void onUserInfoFetched(GraphUser user) {
+			            	if(user!=null){
+			                UserProfileActivity.setInput(mApp,new UserProfile(user));
+			            	Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
+			                startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);
+			            	}
+			            }
+			        });	
 				break;
 			default:
 				Log.v(TAG, "Failed to get FACEBOOK information");

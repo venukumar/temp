@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.model.GraphUser;
 import com.google.android.gms.plus.model.people.Person;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
@@ -127,6 +128,47 @@ public class UserProfile {
 	 * 
 	 */
 	
+	/**
+	 * Constructor using Facebook profile as a base.  
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public UserProfile (GraphUser user) {
+		
+		// Set all the user details
+		try {
+			if(Utilities.has(user.getUsername())){
+				setFacebookUsername(user.getUsername());
+			}
+			
+			if(Utilities.has(user.getId())){
+				setFacebookId(user.getId());
+				this.setImagePath(Constants.FB_PICTURE+user.getId()+"/picture");
+			}
+			
+			if(Utilities.has(user.getFirstName())){
+				setFirstName(user.getFirstName());
+			}
+			
+			if(Utilities.has(user.getLastName())){
+				setLastName(user.getLastName());
+			}
+			
+			if(Utilities.has(user.getBirthday())){
+			setBirthday(user.getBirthday());
+			}
+			
+			if(user.getProperty("email")!=null){
+			setEmail(user.getProperty("email").toString());
+			}
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+			
+	}
 	
 	/*
 	 * Constructor using Google+ profile as a base.  
