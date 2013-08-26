@@ -110,15 +110,8 @@
             android:gravity="left|center_vertical"
             android:text="Sign in with Google"
             android:textAppearance="?android:attr/textAppearanceLargeInverse" />
-       <!--  <com.facebook.widget.LoginButton
-            android:id="@+id/login_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp" /> -->
-    
-        <com.facebook.widget.LoginButton 
+
+        <Button
             android:id="@+id/view_init_facebook"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
@@ -128,7 +121,7 @@
             android:gravity="left|center_vertical"
             android:text="Sign in with Facebook"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:visibility="visible" /> 
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/view_init_toggle_sign_up"
