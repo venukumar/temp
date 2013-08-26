@@ -1,8 +1,10 @@
 package com.vendsy.bartsy.utils;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -12,10 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -48,6 +52,7 @@ import android.widget.Toast;
 
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.GCMIntentService;
+import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.ResponsiveScrollView;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.model.Item;
@@ -60,14 +65,14 @@ public class WebServices {
 	private static final String TAG = "WebServices";
 
 	// Google API project id registered to use GCM.
-//	public static final String SENDER_ID = "227827031375";
-	public static final String SENDER_ID = "605229245886"; // dev 
+	public static final String SENDER_ID = "227827031375";
+//	public static final String SENDER_ID = "605229245886"; // dev 
 //	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
-// 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
+ 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.165:8080/";  // local machine
-	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
 //	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	// API calls 
@@ -211,6 +216,52 @@ public class WebServices {
 				}
 		return response;
 	}
+	/**
+	 * Fetch facebook friend's list.Can't be called on the main thread.
+	 * @param token-Access token which we fetch from Facebook
+	 * @return
+	 */
+	public static String getFacebookFriendList(String token,Context context)
+	{
+	    InputStream is = null;
+	    String result = "";
+
+	    try
+	    {
+	    	HttpClient httpclient = new DefaultHttpClient();
+	        HttpGet httpGet = new HttpGet("https://graph.facebook.com/me/friends?access_token=" + token);
+	        HttpResponse response = httpclient.execute(httpGet);
+	        HttpEntity entity = response.getEntity();
+	        is = entity.getContent();
+	    }
+	    catch(Exception e)
+	    {
+	        Log.e("ERROR", "Error in http connection "+e.toString());
+	    }
+	    //convert response to string
+	    try
+	    {
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(is),8);
+	        StringBuilder sb = new StringBuilder();
+	        String line = null;
+	        while ((line = reader.readLine()) != null) 
+	        {
+	            sb.append(line + "\n");
+	        }
+	        is.close();
+	        result=sb.toString();
+	        Log.i("RESULT",result);
+	        // Store the facebook friend's list in Shared Preference
+	        Utilities.savePref(context,R.string.prefs_facebook_friends,result);
+	    }
+	    catch(Exception e)
+	    {
+	            Log.e("ERROR", "Error converting result "+e.toString());
+	    }
+
+	    return result;  
+	}
+
 
 
 	public static String saveFavorites(Item item, String venueId, String bartsyId, BartsyApplication context){

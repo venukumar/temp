@@ -364,6 +364,13 @@ public class InitActivity extends SherlockFragmentActivity implements
 				                        if (user != null) {
 				                        	Log.d(TAG, response.toString());
 				                            Log.d("Access_token", session.getAccessToken());
+				                            // Get facebook friends list in background thread
+				                            new Thread(){
+				            					@Override
+				            					public void run() {
+				            					WebServices.getFacebookFriendList(session.getAccessToken(),InitActivity.this);	
+				            					}
+				                            }.start();
 				                        }
 				                    }
 				                });
