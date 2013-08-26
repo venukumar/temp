@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.HashMap;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,6 +84,9 @@ public class UserProfile {
 	ArrayList<UserProfile> favorites  = null;
 
 	private boolean imageDownloaded;
+
+
+	private boolean isFriendsOnFacebook;
 	
 	/**
 	 * Default constructor
@@ -294,6 +298,8 @@ public class UserProfile {
 		}
 		if(json.has("hasMessages"))
 			messagesStatus = json.getString("hasMessages");
+		if(json.has("faceBookId"))
+			facebookId=json.getString("faceBookId");
 		
 		updatePublicInfo(json);
 	}
@@ -320,6 +326,32 @@ public class UserProfile {
 			json.getString("currentTime");
 	}
 	
+	/**
+	 * update the visibility of the user's facebook field if the user is friends with checked in users on Facebook
+	 */
+	public void updateFacebookFriends(JSONArray facebookFriends,View view){
+		for (int i = 0; i < facebookFriends.length() ; i++) {
+	    	JSONObject jsonObject;
+			try {
+				jsonObject = facebookFriends.getJSONObject(i);
+				if(jsonObject.has("id")){
+					String friendId=jsonObject.getString("id");
+				
+					if(Utilities.has(getFacebookId())){
+					// Check whether the user's friend id is equal to the check in user's id
+						if(friendId.equalsIgnoreCase(getFacebookId())){
+						// Set the visibility of facebook field to true if friends on facebook
+						view.findViewById(R.id.user_facebook_field).setVisibility(View.VISIBLE);
+						isFriendsOnFacebook=true;
+						}
+					}
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 
 	/**
 	 * 
@@ -343,7 +375,10 @@ public class UserProfile {
 		
 		// Each dialog knows the user its displaying
 		view.findViewById(R.id.user_profile_name).setTag(this);
-
+		//set the visibility of facebook field to true if friends on facebook
+		if(isFriendsOnFacebook=true){
+			view.findViewById(R.id.user_facebook_field).setVisibility(View.VISIBLE);
+		}
 		return view;
 	}
 
@@ -391,6 +426,8 @@ public class UserProfile {
 		String description= getDescription();
 		if(Utilities.has(description))
 			((TextView)view.findViewById(R.id.view_user_dialog_description)).setText(description);
+		
+		
 
 		// Return the view
 		return view;
