@@ -24,6 +24,7 @@
     
     <string name="config_facebook_username">facebookUsername</string>
     <string name="config_facebook_id">facebookId</string>
+    
   
     <string name="config_google_username">googleUsername</string>
     <string name="config_google_id">googleId</string>
@@ -41,6 +42,8 @@
     <string name="ItemOptionsActivity_input_status">ItemOptionsActivity_input_status</string>
     
     <string name="prefs_venue">prefs_venue</string>
+    
+    <string name="prefs_facebook_friends">prefs_facebook_friends</string>
     
     <!-- Action bar items -->
 
