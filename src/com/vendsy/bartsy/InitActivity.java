@@ -6,6 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import org.json.JSONException;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -385,7 +387,12 @@ public class InitActivity extends SherlockFragmentActivity implements
 			            @Override
 			            public void onUserInfoFetched(GraphUser user) {
 			            	if(user!=null){
-			                UserProfileActivity.setInput(mApp,new UserProfile(user));
+			                try {
+								UserProfileActivity.setInput(mApp,new UserProfile(user));
+							} catch (JSONException e) {
+								Toast.makeText(InitActivity.this,"Could not download user details", Toast.LENGTH_SHORT).show();
+								e.printStackTrace();
+							}
 			            	Intent userProfileintent = new Intent(getBaseContext(), UserProfileActivity.class);
 			                startActivityForResult(userProfileintent, REQUEST_CODE_USER_PROFILE);
 			            	}

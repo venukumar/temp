@@ -133,45 +133,40 @@ public class UserProfile {
 	 */
 	
 	/**
-	 * Constructor using Facebook profile as a base.  
+	 * Constructor using Facebook profile as a base.
 	 * 
 	 * @param user
 	 * @return
 	 */
-	public UserProfile (GraphUser user) {
-		
+	public UserProfile(GraphUser user) throws JSONException {
+
 		// Set all the user details
-		try {
-			if(Utilities.has(user.getUsername())){
-				setFacebookUsername(user.getUsername());
-			}
-			
-			if(Utilities.has(user.getId())){
-				setFacebookId(user.getId());
-				this.setImagePath(Constants.FB_PICTURE+user.getId()+"/picture");
-			}
-			
-			if(Utilities.has(user.getFirstName())){
-				setFirstName(user.getFirstName());
-			}
-			
-			if(Utilities.has(user.getLastName())){
-				setLastName(user.getLastName());
-			}
-			
-			if(Utilities.has(user.getBirthday())){
-			setBirthday(user.getBirthday());
-			}
-			
-			if(user.getProperty("email")!=null){
-			setEmail(user.getProperty("email").toString());
-			}
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
+
+		if ( Utilities.has(user.getUsername()) ) {
+			setFacebookUsername(user.getUsername());
 		}
-			
+
+		if ( Utilities.has(user.getId()) ) {
+			setFacebookId(user.getId());
+			this.setImagePath(Constants.FB_PICTURE + user.getId() + "/picture");
+		}
+
+		if ( Utilities.has(user.getFirstName()) ) {
+			setFirstName(user.getFirstName());
+		}
+
+		if ( Utilities.has(user.getLastName()) ) {
+			setLastName(user.getLastName());
+		}
+
+		if ( Utilities.has(user.getBirthday()) ) {
+			setBirthday(user.getBirthday());
+		}
+
+		if ( user.getProperty("email") != null ) {
+			setEmail(user.getProperty("email").toString());
+		}
+
 	}
 	
 	/*
@@ -256,14 +251,6 @@ public class UserProfile {
 		return !TYPE_MESSAGE_NONE.equals(messagesStatus);
 	}
 	
-	/**
-	 * Constructor using Facebook profile as a base.  
-	 * 
-	 * @param user
-	 * @return
-	 */
-
-
 	/*
 	 * Constructor using server-sent JSON as a base.  
 	 * 
@@ -327,23 +314,27 @@ public class UserProfile {
 	}
 	
 	/**
-	 * update the visibility of the user's facebook field if the user is friends with checked in users on Facebook
+	 * Update the visibility of the user's facebook field if the user is friends
+	 * with checked in users on Facebook
 	 */
-	public void updateFacebookFriends(JSONArray facebookFriends,View view){
-		for (int i = 0; i < facebookFriends.length() ; i++) {
-	    	JSONObject jsonObject;
+	public void updateFacebookFriends(JSONArray facebookFriends, View view) {
+		for (int i = 0; i < facebookFriends.length(); i++) {
+			JSONObject jsonObject;
 			try {
 				jsonObject = facebookFriends.getJSONObject(i);
-				if(jsonObject.has("id")){
-					String friendId=jsonObject.getString("id");
-				
-					if(Utilities.has(getFacebookId())){
-					// Check whether the user's friend id is equal to the check in user's id
-						if(friendId.equalsIgnoreCase(getFacebookId())){
-						// Set the visibility of facebook field to true if friends on facebook
-						view.findViewById(R.id.user_facebook_field).setVisibility(View.VISIBLE);
-						isFriendsOnFacebook=true;
-						}
+				if (jsonObject.has("id")) {
+					String friendId = jsonObject.getString("id");
+
+					if (Utilities.has(getFacebookId())) {
+						// Check whether the user's friend id is equal to the
+						// check in user's id
+						if (friendId.equalsIgnoreCase(getFacebookId())) {
+							// Set the visibility of facebook field to true if
+							// friends on facebook
+							view.findViewById(R.id.user_facebook_field)
+									.setVisibility(View.VISIBLE);
+							isFriendsOnFacebook = true;
+						} 
 					}
 				}
 			} catch (JSONException e) {
@@ -376,7 +367,7 @@ public class UserProfile {
 		// Each dialog knows the user its displaying
 		view.findViewById(R.id.user_profile_name).setTag(this);
 		//set the visibility of facebook field to true if friends on facebook
-		if(isFriendsOnFacebook=true){
+		if(isFriendsOnFacebook){
 			view.findViewById(R.id.user_facebook_field).setVisibility(View.VISIBLE);
 		}
 		return view;
