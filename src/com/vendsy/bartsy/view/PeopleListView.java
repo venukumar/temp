@@ -157,7 +157,9 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 						for (UserProfile profile : mApp.mPeople) {
 							Log.v(TAG, "Adding a user item to the layout");
 							View view = profile.listView(mInflater, PeopleListView.this, cache);
-							checkFacebookFriends(view);
+							if (profile.hasFacebookId()) {
+								checkFacebookFriends(view);
+							}
 							addView(view);
 						};
 
