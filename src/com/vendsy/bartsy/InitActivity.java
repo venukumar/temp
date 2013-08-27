@@ -83,7 +83,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		uiHelper = new UiLifecycleHelper(this, callback);
-
+		uiHelper.onCreate(savedInstanceState);
 
 		// Setup pointers
 		mApp = (BartsyApplication) getApplication();
@@ -111,7 +111,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 		loginButton=(LoginButton) findViewById(R.id.view_init_facebook);
 		
 		//Before opening the session, asking for force login, even If the user has open facebook session from facebook application
-	    loginButton.setLoginBehavior(SessionLoginBehavior.SUPPRESS_SSO);
+//	    loginButton.setLoginBehavior(SessionLoginBehavior.SUPPRESS_SSO);
 	    //set email permission to read email id from facebook
 	    loginButton.setReadPermissions(Arrays.asList("email","user_about_me"));
 	    //set birthday permission to read birthday from facebook
@@ -175,8 +175,14 @@ public class InitActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		
+		uiHelper.onDestroy();
 	}
+	
+	@Override
+    public void onPause() {
+        super.onPause();
+        uiHelper.onPause();
+    }
 	
 	void signUpListeners() {
 		findViewById(R.id.view_init_create_account).setVisibility(View.VISIBLE);
@@ -318,12 +324,17 @@ public class InitActivity extends SherlockFragmentActivity implements
 		
 	}
 
-	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		uiHelper.onResume();
+	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
 		
 		super.onActivityResult(requestCode, responseCode, intent);
+		uiHelper.onActivityResult(requestCode, responseCode, intent);
 
 		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
 
