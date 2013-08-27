@@ -180,37 +180,31 @@ public class PeopleListView extends LinearLayout implements OnClickListener {
 		}
 	}
 
-   /**
-    * Fetch the facebook user's friend list from shared preference.
-    * Parse the retrieved friend list
-    * Check whether friends on facebook
-    * @param view
-    */
+	/**
+	 * Fetch the facebook user's friend list from shared preference. Parse the
+	 * retrieved friend list Check whether friends on facebook
+	 * 
+	 * @param view
+	 */
 	protected void checkFacebookFriends(View view) {
-		String result=Utilities.loadPref(activity, R.string.prefs_facebook_friends, "");
-		 JSONObject responseObject = null;
-		 JSONArray friendListArray=null;
-		 //try parse the string to a JSON object
-	    try
-	    {
-	    	responseObject = new JSONObject(result);
-			 friendListArray = responseObject
-					.getJSONArray("data");
-	        Log.i("RESULT","JSON ARRAY"+friendListArray.toString());
-	    }
-	    catch(JSONException e)
-	    {
-	            Log.e("ERROR", "Error parsing data "+e.toString());
-	    }
-	    
-	    UserProfile profile = (UserProfile) view.getTag();
-	    profile.updateFacebookFriends(friendListArray,view);
-	    
-	    
+		String result = Utilities.loadPref(activity,
+				R.string.prefs_facebook_friends, "");
+		JSONObject responseObject = null;
+		JSONArray friendListArray = null;
+		// try parse the string to a JSON object
+		try {
+			responseObject = new JSONObject(result);
+			friendListArray = responseObject.getJSONArray("data");
+			Log.i("RESULT", "JSON ARRAY" + friendListArray.toString());
+		} catch (JSONException e) {
+			Log.e("ERROR", "Error parsing data " + e.toString());
+			return;
+		}
+
+		UserProfile profile = (UserProfile) view.getTag();
+		profile.updateFacebookFriends(friendListArray, view);
 
 	}
-
-		
 
 	@Override
 	public void onClick(View v) {
