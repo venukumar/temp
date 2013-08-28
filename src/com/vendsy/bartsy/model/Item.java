@@ -93,9 +93,9 @@ public class Item {
 			if (json.has("description"))
 				this.description = json.getString("description");
 			if (json.has("optionsDescription"))
-				this.description = json.getString("optionsDescription");
+				this.optionsDescription = json.getString("optionsDescription");
 			if (json.has("options_description"))
-				this.description = json.getString("options_description");
+				this.optionsDescription = json.getString("options_description");
 			if (json.has("price"))
 				this.price = Double.parseDouble(json.getString("price"));
 			if (json.has("id"))
