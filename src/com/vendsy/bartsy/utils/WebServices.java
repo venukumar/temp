@@ -65,14 +65,14 @@ public class WebServices {
 	private static final String TAG = "WebServices";
 
 	// Google API project id registered to use GCM.
-	public static final String SENDER_ID = "227827031375";
-//	public static final String SENDER_ID = "605229245886"; // dev 
+//	public static final String SENDER_ID = "227827031375";
+	public static final String SENDER_ID = "605229245886"; // dev 
 //	public static final String SENDER_ID = "560663323691"; // prod
 
 	// Server IP
- 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
+// 	public static final String DOMAIN_NAME = "http://192.168.0.172:8080/";  // Srikanth local machine
 //	public static final String DOMAIN_NAME = "http://192.168.0.165:8080/";  // local machine
-//	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
+	public static final String DOMAIN_NAME = "http://54.235.76.180:8080/";	// dev
 //	public static final String DOMAIN_NAME = "http://app.bartsy.vendsy.com/"; // prod
 
 	// API calls 
@@ -575,6 +575,14 @@ public class WebServices {
 				json.put("firstname", user.getFirstName());
 			if (user.hasLastName())
 				json.put("lastname", user.getLastName());
+			if(user.hasEthnicity())
+				json.put("ethnicity", user.getEthnicity());
+			if(user.hasCity())
+				json.put("homeCity", user.getCity());
+			if(user.hasState())
+				json.put("state", user.getState());
+			if(user.hasZipcode())
+				json.put("zipCode", user.getZipcode());
 			if (user.hasBirthday())
 				json.put("dateofbirth", user.getBirthday());
 			if (user.hasStatus())
@@ -873,6 +881,14 @@ public class WebServices {
 					user.setFirstName(result.getString("firstname"));
 				if (result.has("lastname"))
 					user.setLastName(result.getString("lastname"));
+				if(result.has("homeCity"))
+					user.setCity(result.getString("homeCity"));
+				if (result.has("ethnicity"))
+					user.setEthnicity(result.getString("ethnicity"));
+				if (result.has("state"))
+					user.setState(result.getString("state"));
+				if (result.has("zipCode"))
+					user.setZipcode(result.getString("zipCode"));
 				if (result.has("dateofbirth"))
 					user.setBirthday(result.getString("dateofbirth"));
 				if (result.has("description"))
@@ -891,6 +907,7 @@ public class WebServices {
 					user.setImagePath(DOMAIN_NAME + result.getString("userImage"));
 				if (result.has("redactedCardNumber"))
 					user.setRedactedCardNumber(result.getString("redactedCardNumber"));
+				
 					
 				return user;
 			}
