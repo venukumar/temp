@@ -258,13 +258,19 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 		postParams.putString("description", mItem.getDescription());
 		postParams.putString("link", "");
 		postParams.putString("picture", mApp.mActiveVenue.getImagePath());
-		
+
 		Request.Callback callback = new Request.Callback() {
 			public void onCompleted(Response response) {
 				if (response != null) {
 					Log.i(TAG, response.toString());
-					JSONObject graphResponse = response.getGraphObject()
+					 JSONObject graphResponse;
+					 GraphObject graphObject = response.getGraphObject();
+					 if(graphObject!=null){
+					 graphResponse = response.getGraphObject()
 							.getInnerJSONObject();
+					 }else{
+						 return;
+					 }
 					String postId = null;
 					try {
 						// PostId obtained after publishing the feed
