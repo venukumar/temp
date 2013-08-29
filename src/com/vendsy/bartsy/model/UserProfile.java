@@ -67,6 +67,10 @@ public class UserProfile {
 	private String age  = null;
 	private String status = null; 			// relationship status ("single", "attached", 
 	private String orientation = null;  	// sexual orientation
+	private String ethnicity=null;
+	private String city=null;				// home city
+	private String state=null;				// state
+	private String zipcode=null;			// zipcode of the particular place 
 
 	// The view of a particular user in the people list (expects a layout type of user_item.xml)
 	public View view = null; 	
@@ -120,6 +124,10 @@ public class UserProfile {
 				(!hasVisibility() ? "" : ", visibility: " + visibility) +
 				(!hasFirstName() ? "" : ", firstName: " + firstName) +
 				(!hasLastName() ? "" : ", lastName: " + lastName) +
+				(!hasEthnicity() ? "" : ", ethnicity: " + ethnicity) +
+				(!hasCity() ? "" : ", homeCity: " + city) +
+				(!hasState() ? "" : ", state: " + state) +
+				(!hasZipcode() ? "" : ", zipCode: " + zipcode) +
 				(!hasBirthday() ? "" : ", birthday : " + birthday) +
 				(!hasStatus() ? "" : ", status: " + status) +
 				(!hasOrientation() ? "" : ", orientation: " + orientation) +
@@ -578,6 +586,61 @@ public class UserProfile {
 	
 	public void setLastName(String name) {
 		this.lastName = name;
+	}
+	public boolean hasEthnicity() {
+		if (ethnicity == null || ethnicity.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	public String getEthnicity() {
+		return ethnicity;
+	}
+
+	public void setEthnicity(String ethnicity) {
+		this.ethnicity = ethnicity;
+	}
+	
+	public boolean hasCity() {
+		if (city == null || city.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+	
+	public boolean hasState() {
+		if (state == null || state.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+	
+	public boolean hasZipcode() {
+		if (zipcode == null || zipcode.equalsIgnoreCase(""))
+			return false;
+		else 
+			return true;
+	}
+	public String getZipcode() {
+		return zipcode;
+	}
+
+	public void setZipcode(String zipcode) {
+		this.zipcode = zipcode;
 	}
 
 	public boolean hasNickname() {
