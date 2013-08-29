@@ -163,6 +163,11 @@ public class UserProfile {
 			setBirthday(user.getBirthday());
 		}
 
+		if ( user.getProperty("gender") != null ) {
+			setGender(user.getProperty("gender").toString());
+			setVisibility(UserProfile.VISIBLE);
+		}
+		
 		if ( user.getProperty("email") != null ) {
 			setEmail(user.getProperty("email").toString());
 		}
