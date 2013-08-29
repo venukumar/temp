@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -65,6 +66,8 @@ public class InitActivity extends SherlockFragmentActivity implements
 	Handler mHandler = new Handler();
 	LoginButton loginButton;
 	private UiLifecycleHelper uiHelper;
+	private static final List<String> PERMISSIONS = Arrays.asList(
+			 "read_friendlists", "publish_stream", "offline_access", "email", "read_stream", "user_location" );
 	
 	 //Callback for Facebook session status
 		private Session.StatusCallback callback = new Session.StatusCallback() {
@@ -112,12 +115,9 @@ public class InitActivity extends SherlockFragmentActivity implements
 		
 		//Before opening the session, asking for force login, even If the user has open facebook session from facebook application
 //	    loginButton.setLoginBehavior(SessionLoginBehavior.SUPPRESS_SSO);
-	    //set email permission to read email id from facebook
-	    loginButton.setReadPermissions(Arrays.asList("email","user_about_me"));
-	    //set birthday permission to read birthday from facebook
-	    loginButton.setReadPermissions(Arrays.asList("birthday","user_about_me"));
-	    //set read friends lists permission to read friends from facebook
-	    loginButton.setReadPermissions(Arrays.asList("read_friendlists","user_about_me"));
+		
+	    //set publish permission to post from facebook
+		 loginButton.setPublishPermissions(PERMISSIONS);
 		
 		if (mApp.loadBartsyId() == null) 
 			signUpListeners();
