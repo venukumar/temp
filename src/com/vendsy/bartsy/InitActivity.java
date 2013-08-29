@@ -67,7 +67,7 @@ public class InitActivity extends SherlockFragmentActivity implements
 	LoginButton loginButton;
 	private UiLifecycleHelper uiHelper;
 	private static final List<String> PERMISSIONS = Arrays.asList(
-			 "read_friendlists", "publish_stream", "offline_access", "email", "read_stream", "user_location" );
+			 "read_friendlists", "publish_stream", "offline_access", "email", "read_stream", "user_location","user_birthday" );
 	
 	 //Callback for Facebook session status
 		private Session.StatusCallback callback = new Session.StatusCallback() {
