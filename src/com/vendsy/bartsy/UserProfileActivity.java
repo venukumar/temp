@@ -144,7 +144,15 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 				findViewById(R.id.view_profile_has_cc).setVisibility(View.VISIBLE);
 				findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
 			}
-			
+			// Set up credit card information
+			if(person.hasEthnicity())
+				((TextView) findViewById(R.id.view_profile_ethnicity)).setText(person.getEthnicity());
+			if(person.hasCity())
+				((TextView) findViewById(R.id.view_profile_city)).setText(person.getCity());
+			if(person.hasState())
+				((TextView) findViewById(R.id.view_profile_state)).setText(person.getState());
+			if(person.hasZipcode())
+				((TextView) findViewById(R.id.view_profile_zipcode)).setText(person.getZipcode());
 			
 
 			// Setup visibility preference
@@ -531,14 +539,30 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 			// Extract first and last name
 			String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
 			String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
+			// Extract the ethnicity, city, state and zipcode
+			String ethnicity=((TextView)findViewById(R.id.view_profile_ethnicity)).getText().toString();
+			String city=((TextView)findViewById(R.id.view_profile_city)).getText().toString();
+			String state=((TextView)findViewById(R.id.view_profile_state)).getText().toString();
+			String zipcode=((TextView)findViewById(R.id.view_profile_zipcode)).getText().toString();
 
 			// Require first and last names
 			if (first_name == null || first_name.equals("") || last_name == null || last_name.equals("")) {
 				Toast.makeText(this, "First and last names are required", Toast.LENGTH_SHORT).show();
 				return;			
 			}
+			// Requires location details such as city,ethnicity,state and zipcode
+			if (ethnicity == null || ethnicity.equals("") || city == null
+					|| city.equals("") || state == null || state.equals("")
+					|| zipcode == null || zipcode.equals("")) {
+				Toast.makeText(this, "Location details are required", Toast.LENGTH_SHORT).show();
+				return;
+			}
 			user.setFirstName(first_name);
 			user.setLastName(last_name);
+			user.setEthnicity(ethnicity);
+			user.setCity(city);
+			user.setState(state);
+			user.setZipcode(zipcode);
 			
 			//Extract card details 	
 			String redactedNumber = ((TextView) findViewById(R.id.view_profile_cc_number_redacted)).getText().toString();
