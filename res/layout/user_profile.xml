@@ -258,7 +258,90 @@
                         android:inputType="text"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
 
+                    <TextView
+                        android:layout_width="90dp"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_vertical"
+                        android:text="Ethnicity*" />
+
+                    <EditText
+                        android:id="@+id/view_profile_ethnicity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="14"
+                        android:hint="Your ethnicity"
+                        android:inputType="text"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="90dp"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_vertical"
+                        android:text="City*" />
+
+                    <EditText
+                        android:id="@+id/view_profile_city"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="14"
+                        android:hint="Your home city"
+                        android:inputType="text"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
+				<LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="90dp"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_vertical"
+                        android:text="State*" />
+
+                    <EditText
+                        android:id="@+id/view_profile_state"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="14"
+                        android:hint="Your state"
+                        android:inputType="text"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="90dp"
+                        android:layout_height="fill_parent"
+                        android:gravity="center_vertical"
+                        android:text="ZipCode*" />
+
+                    <EditText
+                        android:id="@+id/view_profile_zipcode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="14"
+                        android:hint="Your zipcode"
+                        android:inputType="number"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="25dp"
