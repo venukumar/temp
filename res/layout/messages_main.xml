@@ -21,17 +21,29 @@
 					     android:layout_height="wrap_content"/>
 		       </com.vendsy.bartsy.ResponsiveScrollView>
 			</LinearLayout>
-		    <LinearLayout android:layout_width="match_parent" 
-		        android:layout_height="wrap_content">
-		        <EditText android:id="@+id/messageTextBox"
+
+		    <LinearLayout
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginTop="@dimen/activity_vertical_margin" >
+
+		        <EditText
+		            android:id="@+id/messageTextBox"
+		            android:layout_width="0dp"
+		            android:layout_height="wrap_content"
+		            android:layout_gravity="bottom"
 		            android:layout_weight="2"
-		            android:layout_width="match_parent"
-		            android:layout_height="wrap_content"/>
-		        <Button android:id="@+id/sendButton" 
-		            android:layout_weight="2"
-		            android:layout_width="200dp"
-		            android:layout_height="wrap_content" 
-		            android:text="Send"/>
+		            android:ems="10" />
+
+		        <Button
+		            android:id="@+id/sendButton"
+		            style="?android:attr/borderlessButtonStyle"
+		            android:layout_width="70dp"
+		            android:layout_height="40dp"
+		            android:drawableTop="@drawable/send_arrow"
+		            android:paddingLeft="7dp"
+		            android:paddingTop="7dp" />
+
 		    </LinearLayout>
 		    
 </LinearLayout>
