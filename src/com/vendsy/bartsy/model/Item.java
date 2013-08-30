@@ -558,11 +558,11 @@ public class Item {
 	 */
 	public void adjustCocktailPrices() {
 
-		price = 0;
-		
-		if (optionGroups == null)
+		if (optionGroups == null || optionGroups.size() == 0)
 			return;
 		
+		price = 0;
+
 		for (int i = 0 ; i < optionGroups.size() ; i++) {
 			
 			OptionGroup options = optionGroups.get(i);
