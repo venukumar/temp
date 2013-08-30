@@ -87,7 +87,7 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 	    builder.setNegativeButton("Send Message", this);
 	    
 	    // Update details from server
-	    getUserPublicDetailsSysCall();
+	    getUserPublicDetailsSysCall(mUser);
 	    
 		return builder.create();
 	}
@@ -95,7 +95,7 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 
 	
 	//Web service call to fetch user public details to display User Profile Information.
-	private void getUserPublicDetailsSysCall() {
+	private void getUserPublicDetailsSysCall(final UserProfile user) {
 		
 		final BartsyApplication app=(BartsyApplication) getActivity().getApplication();
 		
@@ -103,7 +103,7 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 				new Thread(){
 					@Override
 					public void run() {
-						final String response = WebServices.userPublicDetails(app,mUser.getBartsyId());
+						final String response = WebServices.userPublicDetails(app,user.getBartsyId());
 						Log.d(TAG, "getUserPublicDetailsSysCall() Response: "+response);
 						// Post handler to access UI 
 						handler.post(new Runnable() {
@@ -113,15 +113,17 @@ public class ProfileDialogFragment extends SherlockDialogFragment implements OnC
 									JSONObject json = new JSONObject(response);
 									// Success response
 									if(json.has("errorCode") && json.getInt("errorCode") ==0){
-										mUser.updatePublicInfo(json);
+										user.updatePublicInfo(json);
 										//to update user profile information from the sys call								
-										mUser.updateView(view, null);
+										user.updateView(view, null);
 									}// Error response
 									else if(json.has("errorMessage")){
 										Toast.makeText(getActivity(), json.getString("errorMessage"), Toast.LENGTH_SHORT).show();
 									}
 								}catch (JSONException e) {
-									
+									// Handle exception
+									e.printStackTrace();
+									Toast.makeText(getActivity(), "Unable to get profile details", Toast.LENGTH_SHORT).show();
 								}
 							}
 						});
