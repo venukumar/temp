@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -500,6 +501,15 @@ public class Order {
 				// We are the recipient
 				((TextView) view.findViewById(R.id.view_order_state_description)).setText("You were offered a drink!");
 				((View) view.findViewById(R.id.view_order_background)).setBackgroundResource(android.R.color.darker_gray);
+				
+				// To display the strikethrough font
+				TextView tipAmountText=((TextView)view.findViewById(R.id.view_order_tip_amount));
+				tipAmountText.setPaintFlags(tipAmountText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+				TextView taxAmountText=((TextView) view.findViewById(R.id.view_order_tax_amount));
+				taxAmountText.setPaintFlags(taxAmountText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+				TextView totalAmountText=((TextView) view.findViewById(R.id.view_order_total_amount));
+				totalAmountText.setPaintFlags(totalAmountText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+				
 				view.findViewById(R.id.view_order_footer).setVisibility(View.VISIBLE);
 				view.findViewById(R.id.view_order_footer_reject).setTag(this);
 				view.findViewById(R.id.view_order_footer_accept).setTag(this);
