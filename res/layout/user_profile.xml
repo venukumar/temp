@@ -267,27 +267,6 @@
                         android:layout_width="90dp"
                         android:layout_height="fill_parent"
                         android:gravity="center_vertical"
-                        android:text="Ethnicity*" />
-
-                    <EditText
-                        android:id="@+id/view_profile_ethnicity"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="14"
-                        android:hint="Your ethnicity"
-                        android:inputType="text"
-                        android:textAppearance="?android:attr/textAppearanceSmall" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" >
-
-                    <TextView
-                        android:layout_width="90dp"
-                        android:layout_height="fill_parent"
-                        android:gravity="center_vertical"
                         android:text="City*" />
 
                     <EditText
@@ -623,6 +602,23 @@
                             android:ems="10"
                             android:hint="mm/dd/yyyy"
                             android:inputType="date" />
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/ethnicity_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content"
+                            android:text="Ethnicity:" />
+                        <com.vendsy.bartsy.view.MultiSpinner 
+                            android:id="@+id/ethnicity_multi_spinner" 
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
 
                     </LinearLayout>
 

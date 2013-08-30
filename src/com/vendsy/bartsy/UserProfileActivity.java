@@ -9,7 +9,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -44,6 +47,8 @@ import com.vendsy.bartsy.utils.AsymmetricCipherUtil;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.Utilities;
 import com.vendsy.bartsy.utils.WebServices;
+import com.vendsy.bartsy.view.MultiSpinner;
+import com.vendsy.bartsy.view.MultiSpinner.MultiSpinnerListener;
 
 public class UserProfileActivity extends SherlockActivity implements OnClickListener {
 
@@ -53,8 +58,11 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 	UserProfileActivity mActivity = this;
 	Handler mHandler = new Handler();
 	UserProfile person = null;
-	
+	private List<String> items = Arrays.asList("Asian", "Middle Eastern",
+			"Black", "Native", "American", "Indian", "Pacific Islander",
+			"Hispanic / Latin", "Other"); // List of Ethnicity values
 	EditText locuId, paypal, wifiName, wifiPassword,orderTimeOut;
+	MultiSpinner enthnicitySpinner;
 	
 	// Progress dialog
 	static final int MY_SCAN_REQUEST_CODE = 23453; // used here only, just some random unique number
@@ -71,7 +79,6 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-				
 		// Set up pointer to activity used as an input/output buffer
 		mApp = (BartsyApplication) getApplication();
 		
@@ -90,7 +97,12 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 
 		// Set the base view then pre-populate it with any existing values found in the application input buffer (mUser)
 		setContentView(R.layout.user_profile);
-
+		
+		// Display Ethnicity
+		enthnicitySpinner=((MultiSpinner)findViewById(R.id.ethnicity_multi_spinner));
+		enthnicitySpinner.setItems(items, "Select",null);
+		
+		
 		
 		// Pre-populate fields if there is a user object already 
 		if (person != null) {
@@ -145,8 +157,6 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 				findViewById(R.id.view_profile_no_cc).setVisibility(View.GONE);
 			}
 			// Set up credit card information
-			if(person.hasEthnicity())
-				((TextView) findViewById(R.id.view_profile_ethnicity)).setText(person.getEthnicity());
 			if(person.hasCity())
 				((TextView) findViewById(R.id.view_profile_city)).setText(person.getCity());
 			if(person.hasState())
@@ -154,6 +164,9 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 			if(person.hasZipcode())
 				((TextView) findViewById(R.id.view_profile_zipcode)).setText(person.getZipcode());
 			
+			// Setup Ethnicity on the spinner
+			if(person.hasEthnicity())
+				enthnicitySpinner.setItems(items, person.getEthnicity(),null);
 
 			// Setup visibility preference
 			if (person.hasVisibility() && person.getVisibility().equalsIgnoreCase(UserProfile.VISIBLE)) {
@@ -540,10 +553,11 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 			String first_name = ((TextView) findViewById(R.id.view_profile_first_name)).getText().toString();
 			String last_name = ((TextView) findViewById(R.id.view_profile_last_name)).getText().toString();
 			// Extract the ethnicity, city, state and zipcode
-			String ethnicity=((TextView)findViewById(R.id.view_profile_ethnicity)).getText().toString();
+			
 			String city=((TextView)findViewById(R.id.view_profile_city)).getText().toString();
 			String state=((TextView)findViewById(R.id.view_profile_state)).getText().toString();
 			String zipcode=((TextView)findViewById(R.id.view_profile_zipcode)).getText().toString();
+			String ethnicity=enthnicitySpinner.getSelectedItem().toString();
 
 			// Require first and last names
 			if (first_name == null || first_name.equals("") || last_name == null || last_name.equals("")) {
@@ -551,10 +565,11 @@ public class UserProfileActivity extends SherlockActivity implements OnClickList
 				return;			
 			}
 			// Requires location details such as city,ethnicity,state and zipcode
-			if (ethnicity == null || ethnicity.equals("") || city == null
-					|| city.equals("") || state == null || state.equals("")
-					|| zipcode == null || zipcode.equals("")) {
-				Toast.makeText(this, "Location details are required", Toast.LENGTH_SHORT).show();
+			if (city == null || city.equals("") || state == null
+					|| state.equals("") || zipcode == null
+					|| zipcode.equals("")) {
+				Toast.makeText(this, "Location details are required",
+						Toast.LENGTH_SHORT).show();
 				return;
 			}
 			user.setFirstName(first_name);
