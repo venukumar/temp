@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="beforeDescendants"
     android:divider="?android:dividerHorizontal"
-    android:focusableInTouchMode="true"
-    android:orientation="vertical"
-    android:showDividers="beginning|middle|end" >
+    android:focusableInTouchMode="true">
     
-    <LinearLayout
+    <LinearLayout android:orientation="horizontal" android:id="@+id/userProfileLayout"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2" >
-
+        android:layout_height="100dp" >
         <RelativeLayout
             android:layout_width="100dp"
             android:layout_height="100dp" >
@@ -60,21 +56,26 @@
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 </LinearLayout>
-
-            </LinearLayout>
+    </LinearLayout>
 
     <ListView
         android:id="@+id/item_list"
+        android:layout_below="@+id/userProfileLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/bottom_layout"
         android:layout_margin="@dimen/activity_vertical_margin" >
 
     </ListView>
-
+	<LinearLayout android:id="@+id/bottom_layout"
+	    android:layout_width="fill_parent"
+	    android:orientation="vertical"
+	    android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content"
+        >
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
         android:orientation="vertical"
         android:paddingLeft="@dimen/activity_horizontal_margin" >
 
@@ -144,16 +145,14 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@android:color/holo_blue_light" >
 
-                <requestFocus />
             </EditText>
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <LinearLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginRight="12dp"
-        android:layout_weight="2"
         android:paddingTop="1dp" >
 
         <TextView
@@ -210,5 +209,20 @@
             android:textStyle="bold" />
 
     </LinearLayout>
-
-</LinearLayout>
+    <LinearLayout android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        
+        <Button android:id="@+id/addMoreButton" 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:text="Add more items" />
+        
+        <Button android:id="@+id/placeOrderButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:text="Place order" />
+        
+    </LinearLayout>
+	</LinearLayout>
+</RelativeLayout>

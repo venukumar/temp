@@ -27,7 +27,6 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.plus.model.people.Person;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.ProfileDialogFragment;
 import com.vendsy.bartsy.model.AppObservable;
 import com.vendsy.bartsy.model.Item;
@@ -46,7 +45,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
 
-public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener, DrinkDialogFragment.OrderDialogListener, 
+public class VenueActivity extends SherlockFragmentActivity implements ActionBar.TabListener,
 	AppObserver, ProfileDialogFragment.ProfileDialogListener {
 
 	/****************
@@ -55,7 +54,9 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 * TODO - global variables
 	 * 
 	 */
-
+	
+	private static final int REQUEST_CODE_ORDER_DRINK = 2345;
+	
 	public static final String TAG = "VenueActivity";
 	public MenuSectionFragment mDrinksFragment = null;
 	public OrdersSectionFragment mOrdersFragment = null; 
@@ -360,10 +361,11 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		if (item == checkOut) {
 
 			if (mApp.hasActiveOrder()) {
-				
-				// if we have an order, show the order dialog 
-				new DrinkDialogFragment(mApp, mApp.getActiveOrder()).show(getSupportFragmentManager(),"Order drink");
-
+				// if we have an order, show the order Activity
+				// Display Order list activity
+				if(mDrinksFragment!=null){
+					mDrinksFragment.displayOrder();
+				}
 			} else {
 				
 				// Check out from the venue
@@ -397,9 +399,11 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		
 		return super.onOptionsItemSelected(item);
 	}
-
 	
-	
+	@Override
+	protected void onActivityResult(int code, int arg1, Intent intent) {
+		
+	}
 
 	/**
 	 * Invokes when the venue selected in the list view
@@ -528,7 +532,7 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	}
 	
 	
-	private void updateActionBarStatus() {
+	public void updateActionBarStatus() {
 
 		Log.v(TAG, "updateActionBarStatus()");
 
@@ -857,10 +861,9 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 	 * TODO - Send/receive drink order
 	 * 
 	 */
-
-	@Override
-	public void onOrderDialogPositiveClick(DrinkDialogFragment dialog) {
-
+	
+	
+	public void proceedPlaceOrder(){
 		if (mApp.mActiveVenue == null) {
 			// No active venue. We need to terminate venue activity. We also notify the user.
 			Toast.makeText(this, "You need to be logged in to place an order", Toast.LENGTH_SHORT).show();
@@ -874,16 +877,18 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 		// invokePaypalPayment(); // To enable paypal payment
 
 		// Web service call - the response in handled asynchronously in processOrderDataHandler()
-		if (WebServices.postOrderTOServer(mApp, dialog.mOrder, mApp.mActiveVenue.getId(), processOrderDataHandler)) {
+		if (WebServices.postOrderTOServer(mApp, mApp.getActiveOrder(), mApp.mActiveVenue.getId(), processOrderDataHandler)) {
 			// Failed to place syscall due to internal error
 			Toast.makeText(mActivity, "Unable to place order. Please restart application.", Toast.LENGTH_SHORT).show();
 		}
 	}
 	
-	
-	@Override
-	public void onOrderDialogNegativeClick(DrinkDialogFragment dialog) {
-
+	/**
+	 * 
+	 * It will invoke when user selects on the Add more button in Order Activity
+	 * 
+	 */
+	public void addMoreOrders(){
 		if (mApp.mActiveVenue == null) {
 			// No active venue. We need to terminate venue activity. We also notify the user.
 			Toast.makeText(this, "You need to be checked in to place an order", Toast.LENGTH_SHORT).show();
@@ -891,14 +896,9 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			return;
 		}
 
-		// Make this order the active order
-		mApp.setActiveOrder(dialog.mOrder);
-		
 		// Update action bar
 		updateActionBarStatus();
 	}
-	
-	
 	
 	/**
 	 * 
@@ -962,7 +962,6 @@ public class VenueActivity extends SherlockFragmentActivity implements ActionBar
 			}
 		}
 	};
-
 
 
 	/*

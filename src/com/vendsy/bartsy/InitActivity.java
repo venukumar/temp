@@ -298,7 +298,6 @@ public class InitActivity extends SherlockFragmentActivity implements
 				// Sync open orders
 				mApp.syncOrders();
 				
-				
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {

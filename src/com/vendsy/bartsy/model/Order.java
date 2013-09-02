@@ -23,8 +23,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
+//import com.google.zxing.BarcodeFormat;
+//import com.google.zxing.WriterException;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.utils.Constants;
 import com.vendsy.bartsy.utils.WebServices;
@@ -48,7 +48,7 @@ public class Order {
 	
 	// total = base + tax + fee + tip
     DecimalFormat df = new DecimalFormat();
-	public double baseAmount	= 0;
+	public double baseAmount = 0;
 	public double feeAmount	= 0;
 	public double taxAmount	= 0;
 	public double tipAmount	= 0;

@@ -30,10 +30,10 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.vendsy.bartsy.BartsyApplication;
 import com.vendsy.bartsy.CustomDrinksActivity;
 import com.vendsy.bartsy.CustomizeActivity;
+import com.vendsy.bartsy.OrderListActivity;
 import com.vendsy.bartsy.R;
 import com.vendsy.bartsy.VenueActivity;
 import com.vendsy.bartsy.adapter.ExpandableListAdapter;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.Menu;
 import com.vendsy.bartsy.model.OptionGroup;
@@ -102,6 +102,7 @@ public class MenuSectionFragment extends SherlockFragment {
 	}
 	
 	private static final int REQUEST_CODE_CUSTOM_DRINK = 9301;
+	private static final int REQUEST_CODE_ORDER_ITEM = 9302;
 
 	// We use this to store the json of a "compressed" option and replace compressed options on the fly
 	private HashMap<String, JSONObject> savedSelections = new HashMap<String, JSONObject>();
@@ -364,16 +365,27 @@ public class MenuSectionFragment extends SherlockFragment {
 			order = new Order(mApp.loadBartsyId(), mApp.mProfile, mApp.mProfile, mApp.mActiveVenue.getTaxRate(), Constants.defaultTip, item);
 		}
 		
-		// Create an instance of the dialog fragment and show it
-		DrinkDialogFragment dialog = new DrinkDialogFragment(mApp, order);				
-		dialog.show(getActivity().getSupportFragmentManager(),"Order drink");
-
+		// Display Order list activity
+		mApp.setActiveOrder(order);
+		
+		mActivity.updateActionBarStatus();
+		
+		// Display order screen
+		displayOrder();
+	}
+	
+	/**
+	 *  Start Order screen
+	 */
+	public void displayOrder(){
+		Intent intent = new Intent(mActivity, OrderListActivity.class);
+		startActivityForResult(intent, REQUEST_CODE_ORDER_ITEM);
 	}
 
 	@Override
 	public void onActivityResult(int requestCode, int responseCode, Intent data) {
 		
-		super.onActivityResult(requestCode, responseCode, data);
+//		super.onActivityResult(requestCode, responseCode, data);
 
 
 		Log.v(TAG, "Activity result for request: " + requestCode + " with response: " + responseCode);
@@ -388,7 +400,20 @@ public class MenuSectionFragment extends SherlockFragment {
 				Item item;
 				item = CustomizeActivity.getOutput(mApp);
 				order(item);
+				
 				break;
+			}
+			break;
+			
+		case REQUEST_CODE_ORDER_ITEM:
+			
+			switch (responseCode) {
+				case SherlockActivity.RESULT_OK:
+					mActivity.proceedPlaceOrder();
+					break;
+				case SherlockActivity.RESULT_FIRST_USER:
+					mActivity.addMoreOrders();
+					break;
 			}
 			break;
 		}

@@ -87,7 +87,6 @@ public class OptionGroup {
 	/**
 	 * TODO - Views
 	 */
-	
 	public View customizeView(LayoutInflater inflater) {
 		
 		View view = inflater.inflate(R.layout.order_option_group, null);

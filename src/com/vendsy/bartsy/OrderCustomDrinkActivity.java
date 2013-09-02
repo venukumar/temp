@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.vendsy.bartsy.adapter.CustomDrinksListViewAdapter;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.dialog.PeopleSectionDialog;
 import com.vendsy.bartsy.dialog.PeopleSectionFragmentDialog;
 import com.vendsy.bartsy.model.Category;

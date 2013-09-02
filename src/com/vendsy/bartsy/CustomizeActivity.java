@@ -23,7 +23,6 @@ import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
-import com.vendsy.bartsy.dialog.DrinkDialogFragment;
 import com.vendsy.bartsy.model.Item;
 import com.vendsy.bartsy.model.UserProfile;
 import com.vendsy.bartsy.utils.Utilities;
@@ -310,9 +309,6 @@ public class CustomizeActivity extends SherlockActivity implements OnClickListen
 			    publishItem();
 			}
 	 }
-
-
-
 
 
 	/** 
